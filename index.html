@@ -5,21 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LaGochaGaming | Sitio Oficial</title>
     <link rel="stylesheet" href="style.css">
-    <!-- CDN público ultraestable de Font Awesome 6.6.0 para evitar bloqueos por integridad -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
 
-<nav class="navbar">
+    <nav class="navbar">
         <div class="logo">LAGOCHA<span>GAMING</span></div>
         <div class="nav-links">
             <a href="#inicio">Inicio</a>
             <a href="#sobre-mi">Sobre Mí</a>
             <a href="#stream">Directo</a>
             <a href="#clips">Clips</a>
-            <a href="#youtube">YouTube</a>
             <a href="#social">Social</a>
-            <a href="sorteo.html" style="color: var(--accent-color);">🎁 Sorteo</a> <!-- <--- Agrega esta línea -->
+            <a href="#youtube">YouTube</a>
+            <a href="sorteo.html" style="color: var(--accent-color);">🎁 Sorteo</a>
         </div>
         <div class="auth-buttons">
             <a href="https://www.tiktok.com/@lagochagaming11" target="_blank" class="btn-login">TikTok</a>
@@ -48,17 +47,16 @@
         <div class="video-container">
             <iframe src="https://player.kick.com/lagochagaming?autoplay=true&muted=true" frameborder="0" scrolling="no" allowfullscreen="true"></iframe>
         </div>
-        <aside class="chat-sidebar" style="padding: 0; overflow: hidden;">
+        <aside class="chat-sidebar chat-sidebar-box">
             <iframe src="https://kick.com/popout/lagochagaming/chat" 
                     frameborder="0" 
                     scrolling="no" 
-                    height="100%" 
-                    width="100%" 
-                    style="border: none; border-radius: 12px; display: block;">
+                    class="chat-iframe">
             </iframe>
         </aside>
     </main>
-<!-- 🔥 SECCIÓN TOP CLIPS DE KICK -->
+
+    <!-- 🔥 SECCIÓN TOP CLIPS DE KICK -->
     <section id="clips" class="content-section clips-section">
         <h2>🔥 TOP CLIPS 🔥</h2>
         <div class="youtube-grid">
@@ -100,23 +98,8 @@
             </div>
         </div>
     </section>
-    <!-- 🎮 SECCIÓN DE VIDEOS (YOUTUBE INTEGRADO CON JUICER) -->
-    <section id="youtube" class="content-section">
-        <h2>🎮 Mis Videos de YouTube</h2>
-        <div class="social-column" style="border-color: rgba(255, 0, 127, 0.3); padding: 15px; border-radius: 16px; background-color: #0d1117; margin-top: 15px;">
-            <div style="width: 100%; height: 750px; border-radius: 12px; overflow: hidden; background: #05070a;">
-                <iframe src="https://www.juicer.io/api/feeds/lagochagaming-75a1986c-5861-49e2-910b-fdff15e7f5fb/iframe" 
-                        frameborder="0" 
-                        width="100%" 
-                        height="100%" 
-                        style="display:block; width:100%; height:100%; border:none;" 
-                        title="lagochagaming - Juicer social media feed">
-                </iframe>
-            </div>
-        </div>
-    </section>
 
-    <!-- SECCIÓN SOCIAL DIVIDIDA -->
+    <!-- 📱 SECCIÓN SOCIAL DIVIDIDA (ARRIBA) -->
     <section id="social" class="content-section">
         <h2>📱 Mi Feed Social</h2>
         <div class="social-grid">
@@ -137,7 +120,21 @@
         </div>
     </section>
 
-    <!-- FOOTER MODERNO INTEGRADO Y CORREGIDO -->
+    <!-- 🎮 SECCIÓN DE VIDEOS DE YOUTUBE (ABAJO Y COMPACTO) -->
+    <section id="youtube" class="content-section">
+        <h2>🎮 Mis Videos de YouTube</h2>
+        <div class="social-column youtube-wrapper">
+            <div class="youtube-box-compact">
+                <iframe src="https://www.juicer.io/api/feeds/lagochagaming-75a1986c-5861-49e2-910b-fdff15e7f5fb/iframe" 
+                        frameborder="0" 
+                        class="youtube-iframe-compact" 
+                        title="lagochagaming - YouTube feed">
+                </iframe>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
     <footer class="main-footer">
         <div class="footer-container">
             <div class="footer-social-icons">

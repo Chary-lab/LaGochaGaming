@@ -371,3 +371,39 @@ body { background-color: var(--bg-color); color: var(--text-main); font-family: 
     margin: 10px 0 0 0 !important;
     text-transform: uppercase !important;
 }
+/* --- NUEVAS CLASES DE DISEÑO Y ESTRUCTURA --- */
+.chat-sidebar-box {
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+
+.chat-iframe {
+    border: none !important;
+    border-radius: 12px !important;
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.youtube-wrapper {
+    border-color: rgba(255, 0, 127, 0.3) !important;
+    padding: 15px !important;
+    border-radius: 16px !important;
+    background-color: #0d1117 !important;
+    margin-top: 15px !important;
+}
+
+.youtube-box-compact {
+    width: 100% !important;
+    height: 380px !important; /* Altura exacta para mostrar solo los 3 primeros videos */
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    background: #05070a !important;
+}
+
+.youtube-iframe-compact {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    border: none !important;
+}
