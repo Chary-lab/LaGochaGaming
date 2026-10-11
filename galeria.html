@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galería | LaGochaGaming</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">LAGOCHA<span>GAMING</span></div>
+        <div class="nav-links">
+            <a href="index.html#inicio">Inicio</a>
+            <a href="index.html#sobre-mi">Sobre Mí</a>
+            <a href="index.html#stream">Directo</a>
+            <a href="index.html#clips">Clips</a>
+            <a href="index.html#social">Social</a>
+            <a href="index.html#youtube">YouTube</a>
+            <a href="sorteo.html" style="color: var(--accent-color);">🎁 Sorteo</a>
+            <a href="galeria.html" style="color: var(--accent-color);">📸 Galería</a>
+        </div>
+        <div class="auth-buttons">
+            <a href="https://www.tiktok.com/@lagochagaming11" target="_blank" class="btn-login">TikTok</a>
+            <a href="https://discord.com/invite/svrteKBbeh" target="_blank" class="btn-login">Discord</a>
+        </div>
+    </nav>
+    <div class="gallery-container">
+        <h1>Mi Galería</h1>
+        <div class="masonry-grid">
+            <div class="grid-item">
+                <img src="img/1.jpg" alt="Imagen 1" class="gallery-image" loading="lazy">
+            </div>
+            <div class="grid-item">
+                <img src="img/2.jpg" alt="Imagen 2" class="gallery-image" loading="lazy">
+            </div>
+            <div class="grid-item">
+                <img src="img/3.jpg" alt="Imagen 3" class="gallery-image" loading="lazy">
+            </div>
+            <div class="grid-item">
+                <img src="img/clip1.png" alt="Clip 1" class="gallery-image" loading="lazy">
+            </div>
+            <div class="grid-item">
+                <img src="img/clip2.png" alt="Clip 2" class="gallery-image" loading="lazy">
+            </div>
+            <div class="grid-item">
+                <img src="img/clip3.png" alt="Clip 3" class="gallery-image" loading="lazy">
+            </div>
+            <div class="grid-item">
+                <img src="img/clip4.png" alt="Clip 4" class="gallery-image" loading="lazy">
+            </div>
+            <div class="grid-item">
+                <img src="img/fono.png" alt="Fono" class="gallery-image" loading="lazy">
+            </div>
+        </div>
+    </div>
+    <footer class="main-footer">
+        <div class="footer-container">
+            <div class="footer-social-icons">
+                <a href="https://kick.com/lagochagaming" target="_blank" class="social-icon kick-icon" title="Kick">K</a>
+                <a href="https://www.tiktok.com/@lagochagaming11" target="_blank" class="social-icon" title="TikTok"><i class="fab fa-tiktok"></i></a>
+                <a href="https://www.instagram.com/oscurostefany" target="_blank" class="social-icon" title="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="https://discord.com/invite/svrteKBbeh" target="_blank" class="social-icon" title="Discord"><i class="fab fa-discord"></i></a>
+                <a href="https://www.youtube.com/@lagochagaming" target="_blank" class="social-icon" title="YouTube"><i class="fab fa-youtube"></i></a>
+                <a href="#" target="_blank" class="social-icon" title="Twitter"><i class="fab fa-x-twitter"></i></a>
+                <a href="#" target="_blank" class="social-icon" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+            </div>
+            <p class="footer-copyright">&copy; 2026 LAGOCHAGAMING - ALL RIGHTS RESERVED</p>
+        </div>
+    </footer>
+    <script>
+        // JavaScript for lightbox functionality
+        const galleryImages = document.querySelectorAll('.gallery-image');
+        const lightbox = document.createElement('div');
+        lightbox.id = 'lightbox';
+        document.body.appendChild(lightbox);
+        
+        galleryImages.forEach(image => {
+            image.addEventListener('click', () => {
+                lightbox.innerHTML = `<img src="${image.src}" alt="${image.alt}">`;
+                lightbox.style.display = 'flex';
+            });
+        });
+        
+        lightbox.addEventListener('click', () => {
+            lightbox.style.display = 'none';
+        });
+    </script>
+</body>
+</html>
