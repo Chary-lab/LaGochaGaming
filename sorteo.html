@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorteo Manual | LaGochaGaming</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" crossorigin="anonymous" />
+    <style>
+        .sorteo-container {
+            max-width: 850px;
+            margin: 120px auto 50px;
+            padding: 30px;
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 0, 127, 0.3);
+            box-shadow: var(--glow);
+            text-align: center;
+        }
+        .sorteo-container h1 {
+            color: var(--accent-color);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        .sorteo-container p {
+            color: #d1d5db;
+            margin-bottom: 25px;
+            font-size: 1rem;
+        }
+        .form-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .form-group input {
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 0, 127, 0.4);
+            background: #05070a;
+            color: white;
+            font-size: 1rem;
+            width: 300px;
+            outline: none;
+        }
+        .form-group input:focus {
+            border-color: var(--accent-color);
+            box-shadow: var(--glow);
+        }
+        .participants-box {
+            margin-top: 25px;
+            background: #05070a;
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.08);
+            max-height: 180px;
+            overflow-y: auto;
+        }
+        /* Estilo de la Ruleta / Ganador */
+        .ruleta-box {
+            margin-top: 30px;
+            padding: 25px;
+            background: rgba(13, 17, 23, 0.9);
+            border: 2px dashed rgba(255, 0, 127, 0.5);
+            border-radius: 12px;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .ruleta-title {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+        .ruleta-nombre {
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: #fff;
+            text-shadow: 0 0 20px rgba(255, 0, 127, 0.6);
+            letter-spacing: 1px;
+        }
+        .btn-sortear {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 14px 35px;
+            font-weight: bold;
+            font-size: 1.05rem;
+            border-radius: 8px;
+            cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: var(--glow);
+            transition: 0.2s;
+            margin-top: 25px;
+        }
+        .btn-sortear:hover {
+            filter: brightness(1.2);
+            transform: translateY(-2px);
+        }
+        .tag-participante {
+            background: #0d1117;
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,0,127,0.3);
+            color: #fff;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .tag-participante button {
+            background: none;
+            border: none;
+            color: #ff4d4d;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .tag-participante button:hover {
+            color: #ff1a1a;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="logo">LAGOCHA<span>GAMING</span></div>
+        <div class="nav-links">
+            <a href="index.html">← Volver al Inicio</a>
+        </div>
+    </nav>
+
+    <div class="sorteo-container">
+        <h1>🎁 Ruleta de Sorteos (Control de Streamer) 🎁</h1>
+        <p>Agrega los nombres de los participantes del chat y gira la ruleta cuando estés lista.</p>
+        
+        <!-- Input para agregar nombres rápido -->
+        <div class="form-group">
+            <input type="text" id="nombre-input" placeholder="Nombre del participante (ej. CarlosGamer)" onkeypress="handleKeyPress(event)">
+            <button class="btn-primary" onclick="agregarParticipante()" style="border:none; cursor:pointer;">Agregar</button>
+            <button class="btn-primary" onclick="limpiarLista()" style="background: #333; color: #aaa; border:none; cursor:pointer;">Limpiar todo</button>
+        </div>
+
+        <!-- Pantalla de la Ruleta / Ganador -->
+        <div class="ruleta-box" id="ruleta-container">
+            <div class="ruleta-title">🎲 Sorteo en Curso 🎲</div>
+            <div class="ruleta-nombre" id="ruleta-display">¡Listo para girar!</div>
+        </div>
+
+        <button class="btn-sortear" onclick="girarRuleta()">🎰 ¡Girar Ruleta!</button>
+
+        <!-- Lista de Participantes Registrados -->
+        <div class="participants-box">
+            <h4 style="margin-bottom: 12px; color: #8b949e;">Participantes en la tómbola (<span id="count">0</span>)</h4>
+            <ul id="lista-participantes" style="list-style: none; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
+                <!-- Los nombres se irán listando aquí -->
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let participantes = [];
+
+        function agregarParticipante() {
+            let input = document.getElementById('nombre-input');
+            let nombre = input.value.trim();
+
+            if (!nombre) return;
+
+            // Evitar duplicados exactos
+            if (participantes.some(p => p.toLowerCase() === nombre.toLowerCase())) {
+                alert("Este participante ya está en la lista.");
+                return;
+            }
+
+            participantes.push(nombre);
+            actualizarLista();
+            input.value = '';
+            input.focus();
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                agregarParticipante();
+            }
+        }
+
+        function eliminarParticipante(index) {
+            participantes.splice(index, 1);
+            actualizarLista();
+        }
+
+        function limpiarLista() {
+            if (confirm("¿Estás segura de vaciar toda la lista de participantes?")) {
+                participantes = [];
+                actualizarLista();
+                document.getElementById('ruleta-display').innerText = "¡Listo para girar!";
+            }
+        }
+
+        function actualizarLista() {
+            let lista = document.getElementById('lista-participantes');
+            let contador = document.getElementById('count');
+            lista.innerHTML = '';
+            
+            participantes.forEach((p, index) => {
+                let li = document.createElement('li');
+                li.className = 'tag-participante';
+                li.innerHTML = `${p} <button onclick="eliminarParticipante(${index})" title="Eliminar"><i class="fa-solid fa-xmark"></i></button>`;
+                lista.appendChild(li);
+            });
+            contador.innerText = participantes.length;
+        }
+
+        function girarRuleta() {
+            if (participantes.length === 0) {
+                alert("¡Agrega al menos un participante antes de girar la ruleta!");
+                return;
+            }
+
+            let display = document.getElementById('ruleta-display');
+            let counter = 0;
+            let velocidad = 50; // Velocidad inicial del parpadeo
+            
+            // Animación de ruleta pasando nombres rápidamente
+            let interval = setInterval(() => {
+                let randomIndex = Math.floor(Math.random() * participantes.length);
+                display.innerText = participantes[randomIndex];
+                counter++;
+
+                // A medida que pasa el tiempo, la ruleta va frenando poco a poco
+                if (counter > 25) {
+                    clearInterval(interval);
+                    // Seleccionar ganador final
+                    let ganadorFinal = participantes[Math.floor(Math.random() * participantes.length)];
+                    display.innerHTML = `🎉 ¡${ganadorFinal}! 🎉`;
+                }
+            }, velocidad);
+        }
+    </script>
+</body>
+</html>
