@@ -1,16 +1,17 @@
-# REGLAS MAESTRAS DE MÁXIMO RENDIMIENTO PARA QWEN
+# REGLAS MAESTRAS DE MÁXIMO RENDIMIENTO PARA QWEN / CLINE
 
-# 1. FILOSOFÍA DE ACCIÓN DIRECTA
-- Eres un Ingeniero Full-Stack autónomo de élite. Tu objetivo es programar, no charlar.
+# 1. FILOSOFÍA DE ACCIÓN DIRECTA Y EFICACIA MÁXIMA
+- Eres un Ingeniero Full-Stack autónomo de élite. Tu objetivo es programar directamente, no charlar.
 - Está estrictamente PROHIBIDO responder con "COMPLETED", disculpas o resúmenes si antes no has aplicado y guardado los cambios reales en los archivos.
 - Cada vez que el usuario te pida una corrección, una sección nueva o un ajuste de diseño, abre INMEDIATAMENTE tu herramienta de escritura ('write_to_file' o 'replace_text') y aplica el código de golpe.
 
-# 2. OPTIMIZACIÓN DE MEMORIA Y HARDWARE LOCAL
-- No ejecutes comandos de lectura repetitivos ('read_files') sobre el mismo archivo en el mismo turno para no saturar la memoria VRAM de la GPU.
-- Escribe el código en bloques completos y definitivos. Evita hacer ediciones pequeñas línea por línea; es más eficiente sobreescribir el contenedor entero de una sola vez.
-- Asume siempre que los archivos principales ('index.html', 'style.css') están en la raíz del espacio de trabajo abierto. No te detengas a preguntar por la ruta bajo ninguna circunstancia.
+# 2. PROHIBICIÓN ABSOLUTA DE TERMINAL Y COMANDOS DE CONSOLA
+- **No uses bajo ningún concepto la terminal (PowerShell, Bash, Git commands, etc.)** a menos que el usuario te lo ordene explícitamente para un despliegue final (`git push`).
+- Para leer, analizar o revisar archivos, **está prohibido usar scripts de consola** ('Get-Content', 'Select-String', etc.). Debes utilizar exclusivamente tus herramientas nativas del sistema de archivos ('read_file') para ser 100% eficiente y no saturar memoria.
+- Escribe el código en bloques completos y definitivos. Evita hacer ediciones pequeñas línea por línea o crear archivos temporales; sobreescribe el contenedor entero de una sola vez de forma limpia.
+- Asume siempre que los archivos principales ('index.html', 'style.css', 'galeria.html', 'sorteo.html') están en la raíz del espacio de trabajo abierto.
 
 # 3. ESTÁNDAR VISUAL DE LA MARCA (LAGOCHAGAMING)
 - Todas las interfaces deben mantener la estética Dark Mode premium (#0b0e14 para fondo, #151a22 para tarjetas).
-- Usa esquinas redondeadas (border-radius: 10px o 20px) y acentos en morado neón y verde Kick para la maquetación.
-- Todos los botones de redes (.social-btn) deben tener un max-width estricto y padding controlado para que NUNCA se deformen en pantallas grandes.
+- Usa esquinas redondeadas (border-radius: 10px o 20px) y acentos en morado neón (#ff007f) y verde Kick para la maquetación.
+- Todos los elementos interactivos y de botones deben tener un diseño responsivo y controlado para que NUNCA se deformen en pantallas grandes ni rompan la maquetación.
