@@ -27,30 +27,20 @@
     </nav>
     <div class="gallery-container">
         <h1>Mi Galería</h1>
-        <div class="masonry-grid">
-            <div class="grid-item">
-                <img src="img/1.jpg" alt="Imagen 1" class="gallery-image" loading="lazy">
+<div class="content-section">
+        <h1>Mi Galería</h1>
+        <div class="gallery-grid">
+            <div class="gallery-card">
+                <img src="img/1.jpg" alt="Imagen 1" loading="lazy">
             </div>
-            <div class="grid-item">
-                <img src="img/2.jpg" alt="Imagen 2" class="gallery-image" loading="lazy">
+            <div class="gallery-card">
+                <img src="img/2.jpg" alt="Imagen 2" loading="lazy">
             </div>
-            <div class="grid-item">
-                <img src="img/3.jpg" alt="Imagen 3" class="gallery-image" loading="lazy">
+            <div class="gallery-card">
+                <img src="img/3.jpg" alt="Imagen 3" loading="lazy">
             </div>
-            <div class="grid-item">
-                <img src="img/clip1.png" alt="Clip 1" class="gallery-image" loading="lazy">
-            </div>
-            <div class="grid-item">
-                <img src="img/clip2.png" alt="Clip 2" class="gallery-image" loading="lazy">
-            </div>
-            <div class="grid-item">
-                <img src="img/clip3.png" alt="Clip 3" class="gallery-image" loading="lazy">
-            </div>
-            <div class="grid-item">
-                <img src="img/clip4.png" alt="Clip 4" class="gallery-image" loading="lazy">
-            </div>
-            <div class="grid-item">
-                <img src="img/fono.png" alt="Fono" class="gallery-image" loading="lazy">
+            <div class="gallery-card">
+                <img src="img/fono.png" alt="Fono" loading="lazy">
             </div>
         </div>
     </div>
@@ -70,7 +60,7 @@
     </footer>
     <script>
         // JavaScript for lightbox functionality
-        const galleryImages = document.querySelectorAll('.gallery-image');
+        const galleryImages = document.querySelectorAll('.gallery-card img');
         const lightbox = document.createElement('div');
         lightbox.id = 'lightbox';
         document.body.appendChild(lightbox);
