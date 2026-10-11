@@ -5,9 +5,10 @@
 - Está estrictamente PROHIBIDO responder con "COMPLETED", disculpas o resúmenes si antes no has aplicado y guardado los cambios reales en los archivos.
 - Cada vez que el usuario te pida una corrección, una sección nueva o un ajuste de diseño, abre INMEDIATAMENTE tu herramienta de escritura ('write_to_file' o 'replace_text') y aplica el código de golpe.
 
-# 2. PROHIBICIÓN ABSOLUTA DE TERMINAL Y COMANDOS DE CONSOLA
+# 2. PROHIBICIÓN ABSOLUTA DE TERMINAL Y BÚSQUEDAS REPETITIVAS
 - **No uses bajo ningún concepto la terminal (PowerShell, Bash, Git commands, etc.)** a menos que el usuario te lo ordene explícitamente para un despliegue final (`git push`).
-- Para leer, analizar o revisar archivos, **está prohibido usar scripts de consola** ('Get-Content', 'Select-String', etc.). Debes utilizar exclusivamente tus herramientas nativas del sistema de archivos ('read_file') para ser 100% eficiente y no saturar memoria.
+- Para leer, analizar o revisar archivos, **está prohibido usar scripts de consola** ('Get-Content', 'Select-String', etc.). Debes utilizar exclusivamente tus herramientas nativas del sistema de archivos ('read_file') para ser 100% eficiente.
+- **Prohibido entrar en bucles de búsqueda de texto ('search' / 'findstr'):** Para correcciones de texto o pequeñas modificaciones, edita el bloque completo afectado directamente con 'replace_text' o 'write_to_file' sin hacer múltiples búsquedas repetitivas ni verificar variaciones ortográficas en bucle.
 - Escribe el código en bloques completos y definitivos. Evita hacer ediciones pequeñas línea por línea o crear archivos temporales; sobreescribe el contenedor entero de una sola vez de forma limpia.
 - Asume siempre que los archivos principales ('index.html', 'style.css', 'galeria.html', 'sorteo.html') están en la raíz del espacio de trabajo abierto.
 
