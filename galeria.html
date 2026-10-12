@@ -6,6 +6,7 @@
     <title>Galería | LaGochaGaming</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <nav class="navbar">
@@ -63,11 +64,69 @@
         </div>
     </footer>
 <script>
+        // Initialize Supabase client
+        const supabaseUrl = 'https://your-supabase-url.supabase.co';
+        const supabaseKey = 'your-supabase-anon-key';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
         // JavaScript for lightbox functionality
         const galleryImages = document.querySelectorAll('.gallery-card img');
         const lightbox = document.createElement('div');
         lightbox.id = 'lightbox';
         document.body.appendChild(lightbox);
+
+        // Load approved images from Supabase on page load
+        loadApprovedImages();
+
+        // Function to load approved images from Supabase
+        async function loadApprovedImages() {
+            try {
+                const { data, error } = await supabase
+                    .from('approved_images')
+                    .select('url, filename')
+                    .order('created_at', { ascending: false });
+
+                if (error) {
+                    console.error('Error loading approved images:', error);
+                    return;
+                }
+
+                data.forEach(image => {
+                    const galleryCard = document.createElement('div');
+                    galleryCard.className = 'gallery-card';
+                    galleryCard.innerHTML = `
+                        <img src="${image.url}" alt="${image.filename}" loading="lazy">
+                        <div class="gallery-card-info">
+                            <span>${image.filename}</span>
+                            <button class="like-btn" data-likes="0">
+                                <i class="far fa-heart"></i>
+                                <span>0</span>
+                            </button>
+                        </div>
+                    `;
+
+                    const newImage = galleryCard.querySelector('img');
+                    newImage.addEventListener('click', () => {
+                        lightbox.innerHTML = `<img src="${image.url}" alt="${image.filename}">`;
+                        lightbox.style.display = 'flex';
+                    });
+
+                    const likeBtn = galleryCard.querySelector('.like-btn');
+                    likeBtn.addEventListener('click', () => {
+                        let likes = parseInt(likeBtn.getAttribute('data-likes'));
+                        if (isNaN(likes)) likes = 0;
+                        likes++;
+                        likeBtn.setAttribute('data-likes', likes);
+                        likeBtn.innerHTML = `<i class="fas fa-heart"></i> <span>${likes}</span>`;
+                        likeBtn.classList.add('liked');
+                    });
+
+                    galleryGrid.prepend(galleryCard);
+                });
+            } catch (err) {
+                console.error('Error:', err);
+            }
+        }
 
         galleryImages.forEach(image => {
             image.addEventListener('click', () => {
@@ -108,61 +167,71 @@
             handleFiles(files);
         });
 
-        // Process uploaded files
+        // Update handleFiles function to use Supabase
         function handleFiles(files) {
-            Array.from(files).forEach(file => {
+            uploadToSupabase(files);
+        }
+
+        // Function to upload files to Supabase
+        async function uploadToSupabase(files) {
+            for (const file of Array.from(files)) {
                 if (file.type.startsWith('image/')) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        const imgData = e.target.result;
-                        const imgElement = document.createElement('img');
-                        imgElement.src = imgData;
-                        imgElement.alt = file.name;
-                        imgElement.loading = 'lazy';
-
-                        const galleryCard = document.createElement('div');
-                        galleryCard.className = 'gallery-card';
-                        galleryCard.innerHTML = `<img src="${imgData}" alt="${file.name}" loading="lazy">`;
-
-                        // Add like button and info section
-                        const safeFileName = file.name.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-                        const safeImgData = imgData.startsWith('data:image/') ? imgData : '';
-                        if (!safeImgData) return;
-
-                        const infoSection = document.createElement('div');
-                        infoSection.className = 'gallery-card-info';
-                        infoSection.innerHTML = `
-                            <span>${safeFileName}</span>
-                            <button class="like-btn" data-likes="0">
-                                <i class="far fa-heart"></i>
-                                <span>0</span>
-                            </button>
-                        `;
-
-                        galleryCard.appendChild(infoSection);
-                        galleryGrid.prepend(galleryCard);
-
-                        // Add click event to new image
-                        const newImage = galleryCard.querySelector('img');
-                        newImage.addEventListener('click', () => {
-                            lightbox.innerHTML = `<img src="${safeImgData}" alt="${safeFileName}">`;
-                            lightbox.style.display = 'flex';
+                    const fileName = `gallery_${Date.now()}_${file.name}`;
+                    const { data, error } = await supabase
+                        .storage
+                        .from('images')
+                        .upload(fileName, file, {
+                            cacheControl: '3600',
+                            upsert: false
                         });
 
-                        // Add like functionality
-                        const likeBtn = galleryCard.querySelector('.like-btn');
-                        likeBtn.addEventListener('click', () => {
-                            let likes = parseInt(likeBtn.getAttribute('data-likes'));
-                            if (isNaN(likes)) likes = 0;
-                            likes++;
-                            likeBtn.setAttribute('data-likes', likes);
-                            likeBtn.innerHTML = `<i class="fas fa-heart"></i> <span>${likes}</span>`;
-                            likeBtn.classList.add('liked');
-                        });
-                    };
-                    reader.readAsDataURL(file);
+                    if (error) {
+                        console.error('Error uploading file:', error);
+                        return;
+                    }
+
+                    const { data: publicURLData } = supabase
+                        .storage
+                        .from('images')
+                        .getPublicUrl(fileName);
+
+                    const publicUrl = publicURLData.publicUrl;
+
+                    // Send to Discord for moderation (simulated)
+                    await sendToDiscordForModeration(fileName, publicUrl);
                 }
-            });
+            }
+        }
+
+        // Simulated function to send image to Discord for moderation
+        async function sendToDiscordForModeration(fileName, publicUrl) {
+            console.log('Sending to Discord for moderation:', fileName, publicUrl);
+            // In real implementation, this would make an API call to Discord
+            // For now, we'll automatically approve with a small delay to simulate moderation
+            setTimeout(() => {
+                saveToSupabaseTable(fileName, publicUrl);
+            }, 2000);
+        }
+
+        // Function to save approved image to Supabase table
+        async function saveToSupabaseTable(fileName, publicUrl) {
+            const { data, error } = await supabase
+                .from('approved_images')
+                .insert([
+                    {
+                        filename: fileName,
+                        url: publicUrl,
+                        status: 'approved',
+                        created_at: new Date().toISOString()
+                    }
+                ]);
+
+            if (error) {
+                console.error('Error saving to Supabase table:', error);
+            } else {
+                console.log('Image saved to Supabase table:', data);
+                loadApprovedImages(); // Reload approved images
+            }
         }
     </script>
 </body>
