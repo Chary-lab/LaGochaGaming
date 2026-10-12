@@ -24,9 +24,16 @@
             <a href="https://discord.com/invite/svrteKBbeh" target="_blank" class="btn-login">Discord</a>
         </div>
     </nav>
-    <div class="content-section">
+    <div class="content-section" style="margin-top: 85px;">
         <h1>Mi Galería</h1>
-        <div class="gallery-grid">
+        <div class="upload-container" id="uploadContainer">
+            <input type="file" id="uploadInput" class="upload-input" accept="image/*" multiple>
+            <label for="uploadInput" class="upload-label">
+                <i class="fas fa-upload"></i> Subir Imágenes (o Arrastrar y Soltar)
+            </label>
+            <p style="margin-top: 15px; color: var(--text-muted); font-size: 0.9rem;">Formatos: JPG, PNG, GIF. Tamaño máximo: 5MB por imagen.</p>
+        </div>
+        <div class="gallery-grid" id="galleryGrid">
             <div class="gallery-card">
                 <img src="img/1.jpg" alt="Imagen 1" loading="lazy">
             </div>
@@ -55,23 +62,108 @@
             <p class="footer-copyright">&copy; 2026 LAGOCHAGAMING - ALL RIGHTS RESERVED</p>
         </div>
     </footer>
-    <script>
+<script>
         // JavaScript for lightbox functionality
         const galleryImages = document.querySelectorAll('.gallery-card img');
         const lightbox = document.createElement('div');
         lightbox.id = 'lightbox';
         document.body.appendChild(lightbox);
-        
+
         galleryImages.forEach(image => {
             image.addEventListener('click', () => {
                 lightbox.innerHTML = `<img src="${image.src}" alt="${image.alt}">`;
                 lightbox.style.display = 'flex';
             });
         });
-        
+
         lightbox.addEventListener('click', () => {
             lightbox.style.display = 'none';
         });
+
+        // Drag & Drop and File Upload Logic
+        const uploadContainer = document.getElementById('uploadContainer');
+        const uploadInput = document.getElementById('uploadInput');
+        const galleryGrid = document.getElementById('galleryGrid');
+
+        // Handle drag events
+        uploadContainer.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadContainer.classList.add('dragover');
+        });
+
+        uploadContainer.addEventListener('dragleave', () => {
+            uploadContainer.classList.remove('dragover');
+        });
+
+        uploadContainer.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadContainer.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            handleFiles(files);
+        });
+
+        // Handle file input change
+        uploadInput.addEventListener('change', (e) => {
+            const files = e.target.files;
+            handleFiles(files);
+        });
+
+        // Process uploaded files
+        function handleFiles(files) {
+            Array.from(files).forEach(file => {
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const imgData = e.target.result;
+                        const imgElement = document.createElement('img');
+                        imgElement.src = imgData;
+                        imgElement.alt = file.name;
+                        imgElement.loading = 'lazy';
+
+                        const galleryCard = document.createElement('div');
+                        galleryCard.className = 'gallery-card';
+                        galleryCard.innerHTML = `<img src="${imgData}" alt="${file.name}" loading="lazy">`;
+
+                        // Add like button and info section
+                        const safeFileName = file.name.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+                        const safeImgData = imgData.startsWith('data:image/') ? imgData : '';
+                        if (!safeImgData) return;
+
+                        const infoSection = document.createElement('div');
+                        infoSection.className = 'gallery-card-info';
+                        infoSection.innerHTML = `
+                            <span>${safeFileName}</span>
+                            <button class="like-btn" data-likes="0">
+                                <i class="far fa-heart"></i>
+                                <span>0</span>
+                            </button>
+                        `;
+
+                        galleryCard.appendChild(infoSection);
+                        galleryGrid.prepend(galleryCard);
+
+                        // Add click event to new image
+                        const newImage = galleryCard.querySelector('img');
+                        newImage.addEventListener('click', () => {
+                            lightbox.innerHTML = `<img src="${safeImgData}" alt="${safeFileName}">`;
+                            lightbox.style.display = 'flex';
+                        });
+
+                        // Add like functionality
+                        const likeBtn = galleryCard.querySelector('.like-btn');
+                        likeBtn.addEventListener('click', () => {
+                            let likes = parseInt(likeBtn.getAttribute('data-likes'));
+                            if (isNaN(likes)) likes = 0;
+                            likes++;
+                            likeBtn.setAttribute('data-likes', likes);
+                            likeBtn.innerHTML = `<i class="fas fa-heart"></i> <span>${likes}</span>`;
+                            likeBtn.classList.add('liked');
+                        });
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
     </script>
 </body>
 </html>

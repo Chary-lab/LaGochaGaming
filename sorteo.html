@@ -161,6 +161,7 @@
             <div class="ruleta-title">🎲 Sorteo en Curso 🎲</div>
             <div class="ruleta-nombre" id="ruleta-display">¡Listo para girar!</div>
         </div>
+        <canvas id="confetti-canvas"></canvas>
 
         <button class="btn-sortear" onclick="girarRuleta()">🎰 ¡Girar Ruleta!</button>
 
@@ -217,7 +218,7 @@
             let lista = document.getElementById('lista-participantes');
             let contador = document.getElementById('count');
             lista.innerHTML = '';
-            
+
             participantes.forEach((p, index) => {
                 let li = document.createElement('li');
                 li.className = 'tag-participante';
@@ -235,22 +236,71 @@
 
             let display = document.getElementById('ruleta-display');
             let counter = 0;
-            let velocidad = 50; // Velocidad inicial del parpadeo
-            
-            // Animación de ruleta pasando nombres rápidamente
+            let velocidad = 50;
+
             let interval = setInterval(() => {
                 let randomIndex = Math.floor(Math.random() * participantes.length);
                 display.innerText = participantes[randomIndex];
                 counter++;
 
-                // A medida que pasa el tiempo, la ruleta va frenando poco a poco
                 if (counter > 25) {
                     clearInterval(interval);
-                    // Seleccionar ganador final
                     let ganadorFinal = participantes[Math.floor(Math.random() * participantes.length)];
                     display.innerHTML = `🎉 ¡${ganadorFinal}! 🎉`;
+                    lanzarConfeti();
                 }
             }, velocidad);
+        }
+
+        // Efecto visual de confeti con Canvas JS puro
+        function lanzarConfeti() {
+            const canvas = document.getElementById('confetti-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const particles = [];
+            const colors = ['#ff007f', '#00f2fe', '#ffffff', '#ffeb3b', '#4caf50'];
+
+            for (let i = 0; i < 150; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height - canvas.height,
+                    size: Math.random() * 8 + 4,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    speedY: Math.random() * 5 + 2,
+                    speedX: Math.random() * 4 - 2,
+                    rotation: Math.random() * 360
+                });
+            }
+
+            function render() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                let finished = true;
+
+                particles.forEach(p => {
+                    p.y += p.speedY;
+                    p.x += p.speedX;
+                    p.rotation += 2;
+
+                    ctx.save();
+                    ctx.translate(p.x, p.y);
+                    ctx.rotate((p.rotation * Math.PI) / 180);
+                    ctx.fillStyle = p.color;
+                    ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+                    ctx.restore();
+
+                    if (p.y < canvas.height) finished = false;
+                });
+
+                if (!finished) {
+                    requestAnimationFrame(render);
+                } else {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                }
+            }
+
+            render();
         }
     </script>
 
