@@ -69,7 +69,7 @@
             try {
                 const { data, error } = await supabase
                     .from('galeria')
-                    .select('url, filename')
+                    .select('image_url, title')
                     .order('created_at', { ascending: false });
 
                 if (error) {
@@ -81,9 +81,9 @@
                     const galleryCard = document.createElement('div');
                     galleryCard.className = 'gallery-card';
                     galleryCard.innerHTML = `
-                        <img src="${image.url}" alt="${image.filename}" loading="lazy">
+                        <img src="${image.image_url}" alt="${image.title}" loading="lazy">
                         <div class="gallery-card-info">
-                            <span>${image.filename}</span>
+                            <span>${image.title}</span>
                             <button class="like-btn" data-likes="0">
                                 <i class="far fa-heart"></i>
                                 <span>0</span>
@@ -93,7 +93,7 @@
 
                     const newImage = galleryCard.querySelector('img');
                     newImage.addEventListener('click', () => {
-                        lightbox.innerHTML = `<img src="${image.url}" alt="${image.filename}">`;
+                        lightbox.innerHTML = `<img src="${image.image_url}" alt="${image.title}">`;
                         lightbox.style.display = 'flex';
                     });
 
@@ -205,8 +205,8 @@
                 .from('galeria')
                 .insert([
                     {
-                        filename: fileName,
-                        url: publicUrl
+                        title: fileName,
+                        image_url: publicUrl
                     }
                 ]);
 
