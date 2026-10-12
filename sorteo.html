@@ -210,8 +210,8 @@
         </div>
     </nav>
 
-<div class="sorteo-container">
-        <h1>🎁 Ruleta de Sorteos (Control de Streamer) 🎁</h1>
+    <div class="sorteo-container">
+        <h1>🎁 Ruleta de Sorteos 🎁</h1>
         <p>Agrega los nombres de los participantes del chat y gira la ruleta cuando estés lista.</p>
 
         <!-- Sección Pública: Local (funciona sin PIN) -->
@@ -252,19 +252,20 @@
         <div id="seccion-streamer" style="display: none; border-top: 1px solid rgba(255,0,127,0.3); margin-top: 30px; padding-top: 25px;">
             <div style="text-align: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,0,127,0.2);">
                 <p style="color: var(--accent-color); font-weight: bold; font-size: 0.9rem;">🔐 Modo Streamer Activado</p>
-                <button id="btn-salir-streamer" class="btn-primary" style="background: #444; color: #ccc; font-size: 0.85rem;">Salir del Modo Streamer</button>
+                <button id="btn-salir-streamer" class="btn-primary" style="background: #444; color: #ccc; font-size: 0.85rem; margin-top: 10px;">Salir del Modo Streamer</button>
             </div>
 
-            <!-- Input para agregar nombres rápido -->
+            <!-- Input para agregar nombres rápido con autocompletado de Supabase -->
             <div class="form-group">
-                <input type="text" id="nombre-input-streamer" placeholder="Nombre del participante (ej. CarlosGamer)" onkeypress="handleKeyPressStreamer(event)">
+                <input type="text" id="nombre-input-streamer" placeholder="Nombre del participante (ej. CarlosGamer)" list="participantes-sugeridos-streamer" onkeypress="handleKeyPressStreamer(event)">
+                <datalist id="participantes-sugeridos-streamer"></datalist>
                 <button class="btn-primary" onclick="agregarParticipanteStreamer()" style="border:none; cursor:pointer;">Agregar</button>
                 <button class="btn-primary" onclick="limpiarListaStreamer()" style="background: #333; color: #aaa; border:none; cursor:pointer;">Limpiar todo</button>
             </div>
 
             <!-- Pantalla de la Ruleta / Ganador (modo streamer) -->
             <div class="ruleta-box" id="ruleta-container-streamer">
-                <div class="ruleta-title">🎲 Sorteo en Curso (Streamer) 🎲</div>
+                <div class="ruleta-title">🎲 Sorteo Oficial 🎲</div>
                 <div class="ruleta-nombre" id="ruleta-display-streamer">¡Listo para girar!</div>
             </div>
             <canvas id="confetti-canvas-streamer"></canvas>
@@ -278,21 +279,26 @@
                     <!-- Los nombres se irán listando aquí -->
                 </ul>
             </div>
-
-            <!-- Panel de Ganadores Históricos (modo streamer) -->
-            <div class="ganadores-panel" id="ganadores-streamer">
-                <h3><i class="fa-solid fa-trophy"></i> 🏆 HISTORIAL DE GANADORES OFICIALES</h3>
-                <div class="ganadores-grid" id="ganadores-grid-streamer">
-                    <div class="ganadores-empty">Cargando ganadores...</div>
-                </div>
-            </div>
         </div>
 
-        <!-- Sección Top Ganadores Oficiales (solo lectura para público) -->
+        <!-- Sección Top Ganadores Oficiales (solo lectura para el público) -->
         <div class="ganadores-panel" id="top-ganadores-publico" style="margin-top: 30px; padding: 25px; background: #0a0c10; border-color: rgba(255,0,127,0.15);">
-            <h3><i class="fa-solid fa-list-ul"></i> 🏆 TOP GANADORES OFICIALES (Lectura)</h3>
+            <h3><i class="fa-solid fa-trophy"></i> 🏆 TOP GANADORES OFICIALES</h3>
             <div class="ganadores-grid" id="top-ganadores-grid">
                 <div class="ganadores-empty">Cargando ganadores oficiales...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal flotante personalizado para el PIN seguro -->
+    <div id="modal-pin" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5,7,10,0.85); backdrop-filter: blur(5px); z-index: 10000; justify-content: center; align-items: center;">
+        <div style="background: var(--card-bg); border: 1px solid var(--accent-color); padding: 30px; border-radius: 16px; box-shadow: var(--glow); text-align: center; max-width: 380px; width: 90%;">
+            <h3 style="color: var(--accent-color); margin-bottom: 15px; font-size: 1.2rem;">🔒 ACCESO STREAMER</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Ingresa el PIN de seguridad:</p>
+            <input type="password" id="input-pin-secret" placeholder="••••" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,0,127,0.4); background: #05070a; color: white; text-align: center; font-size: 1.2rem; letter-spacing: 5px; margin-bottom: 20px; outline: none;">
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button onclick="confirmarPin()" class="btn-primary" style="border: none; cursor: pointer;">Entrar</button>
+                <button onclick="cerrarModalPin()" class="btn-primary" style="background: #333; color: #ccc; border: none; cursor: pointer;">Cancelar</button>
             </div>
         </div>
     </div>
@@ -303,7 +309,6 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN5ZGl5YWFjbnl5ZHByZ2ZmbWtxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE3NjY1ODQsImV4cCI6MjEwNzM0MjU4NH0.fkipcX7Lx4lhGSa0zTDQ9BDNN3jiGTksB2hMlHH1bAs';
         var supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-        // Estado global de la aplicación
         const appState = {
             isStreamerMode: false,
             participantes: [],
@@ -311,57 +316,67 @@
         };
 
         const PIN_DEFAULT = '1234';
-        let userPin = '';
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Elementos UI
             const btnModoStreamer = document.getElementById('btn-modo-streamer');
             const btnSalirStreamer = document.getElementById('btn-salir-streamer');
-            const seccionPublica = document.getElementById('seccion-publica');
-            const seccionStreamer = document.getElementById('seccion-streamer');
+            const inputPin = document.getElementById('input-pin-secret');
 
-            // Event listeners para cambiar de modo
-            btnModoStreamer.addEventListener('click', () => mostrarModoStreamer());
-            btnSalirStreamer.addEventListener('click', () => salirModoStreamer());
+            btnModoStreamer.addEventListener('click', mostrarModoStreamer);
+            btnSalirStreamer.addEventListener('click', salirModoStreamer);
 
-            // Inicializar con solo la sección pública visible
-            appState.isStreamerMode = false;
-            seccionPublica.style.display = 'block';
-            seccionStreamer.style.display = 'none';
+            if (inputPin) {
+                inputPin.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        confirmarPin();
+                    }
+                });
+            }
 
-            // Cargar ganadores oficiales (solo lectura) al inicio
             cargarTopGanadores();
         });
 
-        // --- PIN Modal para Modo Streamer ---
+        // --- Manejo del Modal de PIN ---
         function mostrarModoStreamer() {
-            if (appState.isStreamerMode) return;
-
-            userPin = prompt("🔐 Ingresa el PIN de streamer para acceder a las funciones administrativas:", PIN_DEFAULT);
-
-            if (userPin === null || userPin !== PIN_DEFAULT) {
-                alert("❌ PIN incorrecto. Acceso denegado.");
-                return;
+            const modal = document.getElementById('modal-pin');
+            const input = document.getElementById('input-pin-secret');
+            if (modal && input) {
+                input.value = '';
+                modal.style.display = 'flex';
+                input.focus();
             }
+        }
 
-            appState.isStreamerMode = true;
-            seccionPublica.style.display = 'none';
-            seccionStreamer.style.display = 'block';
+        function cerrarModalPin() {
+            const modal = document.getElementById('modal-pin');
+            if (modal) modal.style.display = 'none';
+        }
 
-            // Cargar autocompletado y ganadores oficiales
-            cargarParticipantesSugeridos();
-            cargarTopGanadores();
+        function confirmarPin() {
+            const input = document.getElementById('input-pin-secret');
+            if (input && input.value === PIN_DEFAULT) {
+                cerrarModalPin();
+                appState.isStreamerMode = true;
+                document.getElementById('seccion-publica').style.display = 'none';
+                document.getElementById('seccion-streamer').style.display = 'block';
+                cargarParticipantesSugeridos();
+            } else {
+                alert("❌ PIN incorrecto. Acceso denegado.");
+                if (input) {
+                    input.value = '';
+                    input.focus();
+                }
+            }
         }
 
         function salirModoStreamer() {
             appState.isStreamerMode = false;
-            userPin = '';
-            document.getElementById('btn-modo-streamer').style.display = 'inline-block';
             document.getElementById('seccion-streamer').style.display = 'none';
             document.getElementById('seccion-publica').style.display = 'block';
+            cargarTopGanadores();
         }
 
-        // --- Autocompletado: Cargar nombres desde Supabase (solo streamer) ---
+        // --- Autocompletado desde Supabase ---
         async function cargarParticipantesSugeridos() {
             try {
                 const { data, error } = await supabase
@@ -375,21 +390,20 @@
                 }
 
                 const datalist = document.getElementById('participantes-sugeridos-streamer');
-                datalist.innerHTML = '';
-                data.forEach(p => {
-                    const option = document.createElement('option');
-                    option.value = p.nombre;
-                    datalist.appendChild(option);
-                });
+                if (datalist && data) {
+                    datalist.innerHTML = '';
+                    data.forEach(p => {
+                        const option = document.createElement('option');
+                        option.value = p.nombre;
+                        datalist.appendChild(option);
+                    });
+                }
             } catch (err) {
                 console.error('Error:', err);
             }
         }
 
-        // --- Guardar participante en Supabase (para autocompletado futuro, solo streamer) ---
         async function guardarParticipanteEnSupabase(nombre) {
-            if (!appState.isStreamerMode) return; // Solo streamer puede guardar en BD
-
             try {
                 await supabase
                     .from('participantes_sorteo')
@@ -399,18 +413,20 @@
             }
         }
 
+        // --- Lógica del Modo Público ---
         function agregarParticipante() {
             let input = document.getElementById('nombre-input');
             let nombre = input.value.trim();
 
             if (!nombre) return;
 
-            if (appState.isStreamerMode && !participantes.some(p => p.toLowerCase() === nombre.toLowerCase())) {
-                participantes.push(nombre);
-                guardarParticipanteEnSupabase(nombre); // Solo streamer guarda en BD
+            if (appState.participantes.some(p => p.toLowerCase() === nombre.toLowerCase())) {
+                alert("Este participante ya está en la lista.");
+                return;
             }
 
-            actualizarLista();
+            appState.participantes.push(nombre);
+            actualizarListaPublica();
             input.value = '';
             input.focus();
         }
@@ -422,34 +438,34 @@
         }
 
         function eliminarParticipante(index) {
-            participantes.splice(index, 1);
-            actualizarLista();
+            appState.participantes.splice(index, 1);
+            actualizarListaPublica();
         }
 
         function limpiarLista() {
-            if (confirm("¿Estás segura de vaciar toda la lista de participantes?")) {
-                participantes = [];
-                actualizarLista();
+            if (confirm("¿Estás segura de vaciar toda la lista?")) {
+                appState.participantes = [];
+                actualizarListaPublica();
                 document.getElementById('ruleta-display').innerText = "¡Listo para girar!";
             }
         }
 
-        function actualizarLista() {
+        function actualizarListaPublica() {
             let lista = document.getElementById('lista-participantes');
             let contador = document.getElementById('count');
             lista.innerHTML = '';
 
-            participantes.forEach((p, index) => {
+            appState.participantes.forEach((p, index) => {
                 let li = document.createElement('li');
                 li.className = 'tag-participante';
-                li.innerHTML = `${p} <button onclick="eliminarParticipante(${index})" title="Eliminar"><i class="fa-solid fa-xmark"></i></button>`;
+                li.innerHTML = `${escapeHtml(p)} <button onclick="eliminarParticipante(${index})" title="Eliminar"><i class="fa-solid fa-xmark"></i></button>`;
                 lista.appendChild(li);
             });
-            contador.innerText = participantes.length;
+            contador.innerText = appState.participantes.length;
         }
 
         function girarRuleta() {
-            if (participantes.length === 0) {
+            if (appState.participantes.length === 0) {
                 alert("¡Agrega al menos un participante antes de girar la ruleta!");
                 return;
             }
@@ -459,38 +475,34 @@
             let velocidad = 50;
 
             let interval = setInterval(() => {
-                let randomIndex = Math.floor(Math.random() * participantes.length);
-                display.innerText = participantes[randomIndex];
+                let randomIndex = Math.floor(Math.random() * appState.participantes.length);
+                display.innerText = appState.participantes[randomIndex];
                 counter++;
 
                 if (counter > 25) {
                     clearInterval(interval);
-                    let ganadorFinal = participantes[Math.floor(Math.random() * participantes.length)];
-                    display.innerHTML = `🎉 ¡${ganadorFinal}! 🎉`;
-                    lanzarConfeti();
-                    // Solo guardar en BD si es streamer
-                    if (appState.isStreamerMode) {
-                        guardarGanador(ganadorFinal);
-                    }
+                    let ganadorFinal = appState.participantes[Math.floor(Math.random() * appState.participantes.length)];
+                    display.innerHTML = `🎉 ¡${escapeHtml(ganadorFinal)}! 🎉`;
+                    lanzarConfeti('confetti-canvas');
                 }
             }, velocidad);
         }
 
+        // --- Lógica del Modo Streamer ---
         function agregarParticipanteStreamer() {
             let input = document.getElementById('nombre-input-streamer');
             let nombre = input.value.trim();
 
             if (!nombre) return;
 
-            // No permitir duplicados en la lista activa
-            if (participantes.some(p => p.toLowerCase() === nombre.toLowerCase())) {
+            if (appState.participantesStreamer.some(p => p.toLowerCase() === nombre.toLowerCase())) {
                 alert("Este participante ya está en la lista.");
                 return;
             }
 
-            participantes.push(nombre);
-            guardarParticipanteEnSupabase(nombre); // Streamer guarda en BD
-            actualizarLista();
+            appState.participantesStreamer.push(nombre);
+            guardarParticipanteEnSupabase(nombre);
+            actualizarListaStreamer();
             input.value = '';
             input.focus();
         }
@@ -501,16 +513,35 @@
             }
         }
 
+        function eliminarParticipanteStreamer(index) {
+            appState.participantesStreamer.splice(index, 1);
+            actualizarListaStreamer();
+        }
+
         function limpiarListaStreamer() {
-            if (confirm("¿Estás segura de vaciar toda la lista de participantes del streamer?")) {
-                participantes = [];
-                actualizarLista();
+            if (confirm("¿Estás segura de vaciar toda la lista?")) {
+                appState.participantesStreamer = [];
+                actualizarListaStreamer();
                 document.getElementById('ruleta-display-streamer').innerText = "¡Listo para girar!";
             }
         }
 
+        function actualizarListaStreamer() {
+            let lista = document.getElementById('lista-participantes-streamer');
+            let contador = document.getElementById('count-streamer');
+            lista.innerHTML = '';
+
+            appState.participantesStreamer.forEach((p, index) => {
+                let li = document.createElement('li');
+                li.className = 'tag-participante';
+                li.innerHTML = `${escapeHtml(p)} <button onclick="eliminarParticipanteStreamer(${index})" title="Eliminar"><i class="fa-solid fa-xmark"></i></button>`;
+                lista.appendChild(li);
+            });
+            contador.innerText = appState.participantesStreamer.length;
+        }
+
         function girarRuletaStreamer() {
-            if (participantes.length === 0) {
+            if (appState.participantesStreamer.length === 0) {
                 alert("¡Agrega al menos un participante antes de girar la ruleta!");
                 return;
             }
@@ -520,25 +551,22 @@
             let velocidad = 50;
 
             let interval = setInterval(() => {
-                let randomIndex = Math.floor(Math.random() * participantes.length);
-                display.innerText = participantes[randomIndex];
+                let randomIndex = Math.floor(Math.random() * appState.participantesStreamer.length);
+                display.innerText = appState.participantesStreamer[randomIndex];
                 counter++;
 
                 if (counter > 25) {
                     clearInterval(interval);
-                    let ganadorFinal = participantes[Math.floor(Math.random() * participantes.length)];
-                    display.innerHTML = `🎉 ¡${ganadorFinal}! 🎉`;
-                    lanzarConfeti();
-                    // Guardar en BD automáticamente solo para streamer
-                    guardarGanador(ganadorFinal);
+                    let ganadorFinal = appState.participantesStreamer[Math.floor(Math.random() * appState.participantesStreamer.length)];
+                    display.innerHTML = `🎉 ¡${escapeHtml(ganadorFinal)}! 🎉`;
+                    lanzarConfeti('confetti-canvas-streamer');
+                    guardarGanadorOficial(ganadorFinal);
                 }
             }, velocidad);
         }
 
-        // --- Guardar ganador en Supabase (solo streamer) ---
-        async function guardarGanador(nombre) {
-            if (!appState.isStreamerMode) return;
-
+        // --- Guardado y lectura de ganadores ---
+        async function guardarGanadorOficial(nombre) {
             try {
                 const { error } = await supabase
                     .from('ganadores_sorteo')
@@ -547,21 +575,20 @@
                 if (error) {
                     console.error('Error saving winner:', error);
                 } else {
-                    cargarTopGanadores(); // Actualizar vista pública en tiempo real
+                    cargarTopGanadores();
                 }
             } catch (err) {
                 console.error('Error:', err);
             }
         }
 
-        // --- Cargar y renderizar ganadores oficiales (vista pública) ---
         async function cargarTopGanadores() {
             try {
                 const { data, error } = await supabase
                     .from('ganadores_sorteo')
                     .select('nombre, fecha')
                     .order('fecha', { ascending: false })
-                    .limit(50);
+                    .limit(20);
 
                 if (error) {
                     console.error('Error loading winners:', error);
@@ -594,51 +621,10 @@
             }
         }
 
-        // --- Cargar y renderizar ganadores en panel streamer ---
-        async function cargarGanadores() {
-            const grid = document.getElementById('ganadores-grid-streamer');
-            if (!grid || !appState.isStreamerMode) return; // No cargar si no es streamer
-
-            try {
-                const { data, error } = await supabase
-                    .from('ganadores_sorteo')
-                    .select('nombre, fecha')
-                    .order('fecha', { ascending: false })
-                    .limit(10);
-
-                if (error) {
-                    console.error('Error loading winners:', error);
-                    return;
-                }
-
-                grid.innerHTML = '';
-
-                if (!data || data.length === 0) {
-                    grid.innerHTML = '<div class="ganadores-empty">Aún no hay ganadores registrados.</div>';
-                    return;
-                }
-
-                data.forEach(g => {
-                    const card = document.createElement('div');
-                    card.className = 'ganador-card';
-                    const fecha = new Date(g.fecha).toLocaleString('es-ES', {
-                        day: '2-digit', month: '2-digit', year: 'numeric',
-                        hour: '2-digit', minute: '2-digit'
-                    });
-                    card.innerHTML = `
-                        <div class="ganador-nombre">${escapeHtml(g.nombre)}</div>
-                        <div class="ganador-fecha">${fecha}</div>
-                    `;
-                    grid.appendChild(card);
-                });
-            } catch (err) {
-                console.error('Error:', err);
-            }
-        }
-
-        // Efecto visual de confeti con Canvas JS puro
-        function lanzarConfeti() {
-            const canvas = document.getElementById('confetti-canvas');
+        // --- Confeti en Canvas ---
+        function lanzarConfeti(canvasId) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
             const ctx = canvas.getContext('2d');
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
