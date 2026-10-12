@@ -66,8 +66,7 @@
             try {
                 const { data, error } = await supabase
                     .from('galeria')
-                    .select('image_url, title')
-                    .order('created_at', { ascending: false });
+                    .select('image_url, title');
 
                 if (error) {
                     console.error('Error loading approved images:', error);
