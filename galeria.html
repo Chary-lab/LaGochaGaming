@@ -168,10 +168,8 @@
         }
 
         async function sendToDiscordForModeration(filePath, publicUrl) {
-            console.log('Sending to Discord for moderation:', filePath, publicUrl);
-            setTimeout(() => {
-                saveToSupabaseTable(filePath, publicUrl);
-            }, 2000);
+            console.log('Saving to database:', filePath, publicUrl);
+            saveToSupabaseTable(filePath, publicUrl);
         }
 
         async function saveToSupabaseTable(filePath, publicUrl) {
