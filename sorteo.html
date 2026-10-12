@@ -123,6 +123,71 @@
         .tag-participante button:hover {
             color: #ff1a1a;
         }
+
+        /* Ganadores Panel */
+        .ganadores-panel {
+            margin-top: 40px;
+            padding: 25px;
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 0, 127, 0.3);
+            border-radius: 16px;
+            box-shadow: var(--glow);
+            text-align: left;
+        }
+        .ganadores-panel h3 {
+            color: var(--accent-color);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .ganadores-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .ganador-card {
+            background: #05070a;
+            border: 1px solid rgba(255, 0, 127, 0.2);
+            border-radius: 12px;
+            padding: 15px;
+            transition: 0.3s;
+        }
+        .ganador-card:hover {
+            border-color: var(--accent-color);
+            box-shadow: var(--glow);
+            transform: translateY(-2px);
+        }
+        .ganador-nombre {
+            font-weight: 900;
+            color: var(--accent-color);
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+        .ganador-fecha {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        .ganadores-empty {
+            color: var(--text-muted);
+            text-align: center;
+            padding: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .sorteo-container {
+                margin: 100px 15px 30px;
+                padding: 20px;
+            }
+            .form-group input {
+                width: 100%;
+            }
+            .ganadores-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
@@ -145,37 +210,156 @@
         </div>
     </nav>
 
-    <div class="sorteo-container">
+<div class="sorteo-container">
         <h1>🎁 Ruleta de Sorteos (Control de Streamer) 🎁</h1>
         <p>Agrega los nombres de los participantes del chat y gira la ruleta cuando estés lista.</p>
-        
-        <!-- Input para agregar nombres rápido -->
-        <div class="form-group">
-            <input type="text" id="nombre-input" placeholder="Nombre del participante (ej. CarlosGamer)" onkeypress="handleKeyPress(event)">
-            <button class="btn-primary" onclick="agregarParticipante()" style="border:none; cursor:pointer;">Agregar</button>
-            <button class="btn-primary" onclick="limpiarLista()" style="background: #333; color: #aaa; border:none; cursor:pointer;">Limpiar todo</button>
+
+        <!-- Sección Púbica: Local (funciona sin PIN) -->
+        <div id="seccion-publica">
+            <!-- Input para agregar nombres rápido con autocompletado -->
+            <div class="form-group">
+                <input type="text" id="nombre-input" placeholder="Nombre del participante (ej. CarlosGamer)" list="participantes-sugeridos" onkeypress="handleKeyPress(event)">
+                <datalist id="participantes-sugeridos"></datalist>
+                <button class="btn-primary" onclick="agregarParticipante()" style="border:none; cursor:pointer;">Agregar</button>
+                <button class="btn-primary" onclick="limpiarLista()" style="background: #333; color: #aaa; border:none; cursor:pointer;">Limpiar todo</button>
+            </div>
+
+            <!-- Pantalla de la Ruleta / Ganador -->
+            <div class="ruleta-box" id="ruleta-container">
+                <div class="ruleta-title">🎲 Sorteo en Curso 🎲</div>
+                <div class="ruleta-nombre" id="ruleta-display">¡Listo para girar!</div>
+            </div>
+            <canvas id="confetti-canvas"></canvas>
+
+            <button class="btn-sortear" onclick="girarRuleta()">🎰 ¡Girar Ruleta!</button>
+
+            <!-- Lista de Participantes Registrados -->
+            <div class="participants-box">
+                <h4 style="margin-bottom: 12px; color: #8b949e;">Participantes en la tómbola (<span id="count">0</span>)</h4>
+                <ul id="lista-participantes" style="list-style: none; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
+                    <!-- Los nombres se irán listando aquí -->
+                </ul>
+            </div>
+
+            <!-- Botón para ingresar al Modo Streamer -->
+            <div style="text-align: center; margin-top: 25px;">
+                <button id="btn-modo-streamer" class="btn-primary" style="background: rgba(255,0,127,0.15); color: var(--accent-color); border: 1px solid var(--accent-color);">
+                    🔒 Modo Streamer (PIN)
+                </button>
+            </div>
         </div>
 
-        <!-- Pantalla de la Ruleta / Ganador -->
-        <div class="ruleta-box" id="ruleta-container">
-            <div class="ruleta-title">🎲 Sorteo en Curso 🎲</div>
-            <div class="ruleta-nombre" id="ruleta-display">¡Listo para girar!</div>
-        </div>
-        <canvas id="confetti-canvas"></canvas>
+        <!-- Sección del Streamer: Protegida con PIN (inicialmente oculta) -->
+        <div id="seccion-streamer" style="display: none;">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <p style="color: var(--text-muted); font-size: 0.9rem;">Modo Streamer activado - Autocompletado desde Supabase + Guardado de ganadores oficial.</p>
+                <button id="btn-salir-streamer" class="btn-primary" style="background: #444; color: #ccc; font-size: 0.85rem;">Salir del Modo Streamer</button>
+            </div>
 
-        <button class="btn-sortear" onclick="girarRuleta()">🎰 ¡Girar Ruleta!</button>
+            <!-- Input para agregar nombres rápido con autocompletado (modo streamer) -->
+            <div class="form-group">
+                <input type="text" id="nombre-input-streamer" placeholder="Nombre del participante (ej. CarlosGamer)" list="participantes-sugeridos-streamer" onkeypress="handleKeyPressStreamer(event)">
+                <datalist id="participantes-sugeridos-streamer"></datalist>
+                <button class="btn-primary" onclick="agregarParticipanteStreamer()" style="border:none; cursor:pointer;">Agregar</button>
+                <button class="btn-primary" onclick="limpiarListaStreamer()" style="background: #333; color: #aaa; border:none; cursor:pointer;">Limpiar todo</button>
+            </div>
 
-        <!-- Lista de Participantes Registrados -->
-        <div class="participants-box">
-            <h4 style="margin-bottom: 12px; color: #8b949e;">Participantes en la tómbola (<span id="count">0</span>)</h4>
-            <ul id="lista-participantes" style="list-style: none; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
-                <!-- Los nombres se irán listando aquí -->
-            </ul>
+            <!-- Pantalla de la Ruleta / Ganador (modo streamer) -->
+            <div class="ruleta-box" id="ruleta-container-streamer">
+                <div class="ruleta-title">🎲 Sorteo en Curso (Streamer) 🎲</div>
+                <div class="ruleta-nombre" id="ruleta-display-streamer">¡Listo para girar!</div>
+            </div>
+            <canvas id="confetti-canvas-streamer"></canvas>
+
+            <button class="btn-sortear" onclick="girarRuletaStreamer()">🎰 ¡Girar Ruleta!</button>
+
+            <!-- Lista de Participantes Registrados (modo streamer) -->
+            <div class="participants-box">
+                <h4 style="margin-bottom: 12px; color: #8b949e;">Participantes en la tómbola (<span id="count-streamer">0</span>)</h4>
+                <ul id="lista-participantes-streamer" style="list-style: none; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
+                    <!-- Los nombres se irán listando aquí -->
+                </ul>
+            </div>
+
+            <!-- Panel de Ganadores Históricos (modo streamer) -->
+            <div class="ganadores-panel">
+                <h3><i class="fa-solid fa-trophy"></i> 🏆 ÚLTIMOS GANADORES OFICIALES DE SORTEOS</h3>
+                <div class="ganadores-grid" id="ganadores-grid-streamer">
+                    <div class="ganadores-empty">Cargando ganadores...</div>
+                </div>
+            </div>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        let participantes = [];
+        const supabaseUrl = 'https://cydiyaacnyydprgffmkq.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN5ZGl5YWFjbnl5ZHByZ2ZmbWtxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE3NjY1ODQsImV4cCI6MjEwNzM0MjU4NH0.fkipcX7Lx4lhGSa0zTDQ9BDNN3jiGTksB2hMlHH1bAs';
+        var supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Estado global de la aplicación
+        const appState = {
+            isStreamerMode: false,
+            participantes: [],
+            participantesStreamer: []
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Elementos UI
+            const btnModoStreamer = document.getElementById('btn-modo-streamer');
+            const btnSalirStreamer = document.getElementById('btn-salir-streamer');
+            const seccionPublica = document.getElementById('seccion-publica');
+            const seccionStreamer = document.getElementById('seccion-streamer');
+
+            // Event listeners para cambiar de modo
+            btnModoStreamer.addEventListener('click', () => mostrarModoStreamer());
+            btnSalirStreamer.addEventListener('click', () => salirModoStreamer());
+
+            // Inicializar con solo la sección pública visible
+            appState.isStreamerMode = false;
+            seccionPublica.style.display = 'block';
+            seccionStreamer.style.display = 'none';
+
+            // Cargar datos compartidas
+            cargarParticipantesSugeridos();
+            cargarGanadores();
+        });
+
+        // --- Autocompletado: Cargar nombres desde Supabase ---
+        async function cargarParticipantesSugeridos() {
+            try {
+                const { data, error } = await supabase
+                    .from('participantes_sorteo')
+                    .select('nombre')
+                    .order('nombre', { ascending: true });
+
+                if (error) {
+                    console.error('Error loading suggested participants:', error);
+                    return;
+                }
+
+                const datalist = document.getElementById('participantes-sugeridos');
+                datalist.innerHTML = '';
+                data.forEach(p => {
+                    const option = document.createElement('option');
+                    option.value = p.nombre;
+                    datalist.appendChild(option);
+                });
+            } catch (err) {
+                console.error('Error:', err);
+            }
+        }
+
+        // --- Guardar participante en Supabase (para autocompletado futuro) ---
+        async function guardarParticipanteEnSupabase(nombre) {
+            try {
+                await supabase
+                    .from('participantes_sorteo')
+                    .upsert({ nombre }, { onConflict: 'nombre' });
+            } catch (err) {
+                console.error('Error saving participant:', err);
+            }
+        }
 
         function agregarParticipante() {
             let input = document.getElementById('nombre-input');
@@ -183,7 +367,6 @@
 
             if (!nombre) return;
 
-            // Evitar duplicados exactos
             if (participantes.some(p => p.toLowerCase() === nombre.toLowerCase())) {
                 alert("Este participante ya está en la lista.");
                 return;
@@ -193,6 +376,9 @@
             actualizarLista();
             input.value = '';
             input.focus();
+
+            // Guardar en Supabase para autocompletado futuro (fire and forget)
+            guardarParticipanteEnSupabase(nombre);
         }
 
         function handleKeyPress(event) {
@@ -248,8 +434,66 @@
                     let ganadorFinal = participantes[Math.floor(Math.random() * participantes.length)];
                     display.innerHTML = `🎉 ¡${ganadorFinal}! 🎉`;
                     lanzarConfeti();
+                    guardarGanador(ganadorFinal);
                 }
             }, velocidad);
+        }
+
+        // --- Guardar ganador en Supabase ---
+        async function guardarGanador(nombre) {
+            try {
+                const { error } = await supabase
+                    .from('ganadores_sorteo')
+                    .insert([{ nombre, fecha: new Date().toISOString() }]);
+
+                if (error) {
+                    console.error('Error saving winner:', error);
+                } else {
+                    cargarGanadores();
+                }
+            } catch (err) {
+                console.error('Error:', err);
+            }
+        }
+
+        // --- Cargar y renderizar ganadores ---
+        async function cargarGanadores() {
+            try {
+                const { data, error } = await supabase
+                    .from('ganadores_sorteo')
+                    .select('nombre, fecha')
+                    .order('fecha', { ascending: false })
+                    .limit(10);
+
+                if (error) {
+                    console.error('Error loading winners:', error);
+                    return;
+                }
+
+                const grid = document.getElementById('ganadores-grid');
+                grid.innerHTML = '';
+
+                if (!data || data.length === 0) {
+                    grid.innerHTML = '<div class="ganadores-empty">Aún no hay ganadores registrados.</div>';
+                    return;
+                }
+
+                data.forEach(g => {
+                    const card = document.createElement('div');
+                    card.className = 'ganador-card';
+                    const fecha = new Date(g.fecha).toLocaleString('es-ES', {
+                        day: '2-digit', month: '2-digit', year: 'numeric',
+                        hour: '2-digit', minute: '2-digit'
+                    });
+                    card.innerHTML = `
+                        <div class="ganador-nombre">${escapeHtml(g.nombre)}</div>
+                        <div class="ganador-fecha">${fecha}</div>
+                    `;
+                    grid.appendChild(card);
+                });
+            } catch (err) {
+                console.error('Error:', err);
+            }
         }
 
         // Efecto visual de confeti con Canvas JS puro
@@ -301,6 +545,12 @@
             }
 
             render();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
     </script>
 
