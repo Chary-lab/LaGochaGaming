@@ -51,20 +51,17 @@
             <p class="footer-copyright">&copy; 2026 LAGOCHAGAMING - ALL RIGHTS RESERVED</p>
         </div>
     </footer>
-<script>
+    <script>
         const supabaseUrl = 'https://cydiyaacnyydprgffmkq.supabase.co';
         const supabaseKey = 'sb_publishable_cyfbnC5mBPbmeD0EK4Rj0w_SAHXDw-C';
         const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-        // JavaScript for lightbox functionality
         const lightbox = document.createElement('div');
         lightbox.id = 'lightbox';
         document.body.appendChild(lightbox);
 
-        // Load approved images from Supabase on page load
         loadApprovedImages();
 
-        // Function to load approved images from Supabase
         async function loadApprovedImages() {
             try {
                 const { data, error } = await supabase
@@ -77,6 +74,7 @@
                     return;
                 }
 
+                const galleryGrid = document.getElementById('galleryGrid');
                 data.forEach(image => {
                     const galleryCard = document.createElement('div');
                     galleryCard.className = 'gallery-card';
@@ -118,12 +116,10 @@
             lightbox.style.display = 'none';
         });
 
-        // Drag & Drop and File Upload Logic
         const uploadContainer = document.getElementById('uploadContainer');
         const uploadInput = document.getElementById('uploadInput');
-        const galleryGrid = document.getElementById('galleryGrid');
+        const uploadLabel = document.querySelector('.upload-label');
 
-        // Handle drag events
         uploadContainer.addEventListener('dragover', (e) => {
             e.preventDefault();
             uploadContainer.classList.add('dragover');
@@ -140,85 +136,57 @@
             handleFiles(files);
         });
 
-        // Handle file input change
         uploadInput.addEventListener('change', (e) => {
             const files = e.target.files;
             handleFiles(files);
         });
 
-        // Handle label click to trigger file input
-        const uploadLabel = document.querySelector('.upload-label');
         uploadLabel.addEventListener('click', (e) => {
             e.preventDefault();
             uploadInput.click();
         });
 
-        // Update handleFiles function to use Supabase
         function handleFiles(files) {
             uploadToSupabase(files);
         }
 
-        // Function to upload files to Supabase
         async function uploadToSupabase(files) {
             for (const file of Array.from(files)) {
                 if (file.type.startsWith('image/')) {
-                    const fileName = `gallery_${Date.now()}_${file.name}`;
-                    const { data, error } = await supabase
-                        .storage
-                        .from('fotos-galeria')
-                        .upload(fileName, file, {
-                            cacheControl: '3600',
-                            upsert: false
-                        });
+                    const filePath = `gallery_${Date.now()}_${file.name}`;
+                    const { error } = await supabase.storage.from('fotos-galeria').upload(filePath, file);
 
                     if (error) {
                         console.error('Error uploading file:', error);
-                        return;
+                        continue;
                     }
 
-                    const { data: publicURLData } = supabase
-                        .storage
-                        .from('fotos-galeria')
-                        .getPublicUrl(fileName);
-
+                    const { data: publicURLData } = supabase.storage.from('fotos-galeria').getPublicUrl(filePath);
                     const publicUrl = publicURLData.publicUrl;
-
-                    // Send to Discord for moderation (simulated)
-                    await sendToDiscordForModeration(fileName, publicUrl);
+                    await sendToDiscordForModeration(filePath, publicUrl);
                 }
             }
         }
 
-        // Simulated function to send image to Discord for moderation
-        async function sendToDiscordForModeration(fileName, publicUrl) {
-            console.log('Sending to Discord for moderation:', fileName, publicUrl);
-            // In real implementation, this would make an API call to Discord
-            // For now, we'll automatically approve with a small delay to simulate moderation
+        async function sendToDiscordForModeration(filePath, publicUrl) {
+            console.log('Sending to Discord for moderation:', filePath, publicUrl);
             setTimeout(() => {
-                saveToSupabaseTable(fileName, publicUrl);
+                saveToSupabaseTable(filePath, publicUrl);
             }, 2000);
         }
 
-        // Function to save approved image to Supabase table
-        async function saveToSupabaseTable(fileName, publicUrl) {
-            const { data, error } = await supabase
+        async function saveToSupabaseTable(filePath, publicUrl) {
+            const { error } = await supabase
                 .from('galeria')
-                .insert([
-                    {
-                        title: fileName,
-                        image_url: publicUrl
-                    }
-                ]);
+                .insert([{ title: filePath, image_url: publicUrl }]);
 
             if (error) {
                 console.error('Error saving to Supabase table:', error);
             } else {
-                console.log('Image saved to Supabase table:', data);
-                loadApprovedImages(); // Reload approved images
+                loadApprovedImages();
             }
         }
 
-        // Expose handleFiles globally for drag-drop compatibility
         window.handleFiles = handleFiles;
     </script>
 </body>
