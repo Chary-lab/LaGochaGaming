@@ -146,6 +146,13 @@
             handleFiles(files);
         });
 
+        // Handle label click to trigger file input
+        const uploadLabel = document.querySelector('.upload-label');
+        uploadLabel.addEventListener('click', (e) => {
+            e.preventDefault();
+            uploadInput.click();
+        });
+
         // Update handleFiles function to use Supabase
         function handleFiles(files) {
             uploadToSupabase(files);
@@ -210,6 +217,9 @@
                 loadApprovedImages(); // Reload approved images
             }
         }
+
+        // Expose handleFiles globally for drag-drop compatibility
+        window.handleFiles = handleFiles;
     </script>
 </body>
 </html>
