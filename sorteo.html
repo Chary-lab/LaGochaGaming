@@ -11,7 +11,7 @@
     <meta name="theme-color" content="#ffffff">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sorteo Manual | LaGochaGaming</title>
+    <title>GochiSorteo | LaGochaGaming</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" crossorigin="anonymous" />
     <style>
@@ -71,47 +71,114 @@
             text-transform: uppercase;
         }
 
-        .sorteo-container h1 {
-            color: var(--accent-color);
-            margin-bottom: 8px;
-            font-size: 1.8rem;
-            text-transform: uppercase;
+        /* Botones Principales de Navegación */
+        .mode-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 25px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+            flex-wrap: wrap;
         }
-        .sorteo-container p {
+        .tab-btn {
+            background: var(--card-bg-subtle);
             color: var(--text-muted);
-            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+            padding: 12px 22px;
+            border-radius: 10px;
+            font-weight: bold;
             font-size: 0.95rem;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
+        .tab-btn:hover {
+            color: var(--text-main);
+            border-color: var(--accent-color);
+        }
+        .tab-btn.active {
+            background: var(--accent-color);
+            color: #fff;
+            border-color: var(--accent-color);
+            box-shadow: var(--glow);
+        }
+
+        /* Banner GochiSorteo */
+        .banner-sorteo-activo {
+            background: linear-gradient(135deg, rgba(83, 252, 24, 0.15), rgba(255, 102, 178, 0.2));
+            border: 2px solid #53fc18;
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 0 25px rgba(83, 252, 24, 0.25);
+            animation: pulseBanner 2s infinite ease-in-out;
+        }
+        @keyframes pulseBanner {
+            0% { box-shadow: 0 0 15px rgba(83, 252, 24, 0.2); }
+            50% { box-shadow: 0 0 30px rgba(83, 252, 24, 0.45); }
+            100% { box-shadow: 0 0 15px rgba(83, 252, 24, 0.2); }
+        }
+
+        .banner-sorteo-registrado {
+            background: rgba(83, 252, 24, 0.12);
+            border: 2px solid #53fc18;
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 0 15px rgba(83, 252, 24, 0.3);
+        }
+
+        .banner-sorteo-cerrado {
+            background: var(--card-bg-subtle);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
         .form-group {
             display: flex;
             gap: 10px;
             justify-content: center;
-            margin-bottom: 15px;
+            margin-top: 10px;
             flex-wrap: wrap;
         }
         .form-group input {
             padding: 10px 14px;
             border-radius: 8px;
             border: 1px solid var(--border-color);
-            background: var(--card-bg-subtle);
+            background: var(--card-bg);
             color: var(--text-main);
             font-size: 0.95rem;
-            width: 240px;
+            width: 250px;
             outline: none;
         }
         .form-group input:focus {
             border-color: var(--accent-color);
             box-shadow: var(--glow);
         }
-        .participants-box {
-            margin-top: 15px;
-            background: var(--card-bg-subtle);
-            border-radius: 10px;
-            padding: 15px;
-            border: 1px solid var(--border-color);
-            max-height: 140px;
-            overflow-y: auto;
+
+        /* Feedback en Pantalla */
+        .feedback-msg {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            min-height: 20px;
+            transition: 0.3s ease;
         }
+        .feedback-success { color: #53fc18; }
+        .feedback-error { color: #ff4d4d; }
+
         .ruleta-box {
             margin-top: 20px;
             padding: 25px 20px;
@@ -156,9 +223,18 @@
             filter: brightness(1.15);
             transform: translateY(-2px);
         }
+        .participants-box {
+            margin-top: 15px;
+            background: var(--card-bg-subtle);
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            max-height: 200px;
+            overflow-y: auto;
+        }
         .tag-participante {
             background: var(--card-bg);
-            padding: 5px 12px;
+            padding: 6px 14px;
             border-radius: 20px;
             border: 1px solid var(--border-color);
             color: var(--text-main);
@@ -166,6 +242,7 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
+            font-weight: bold;
         }
         .tag-participante button {
             background: none;
@@ -244,66 +321,74 @@
         </div>
 
         <div class="sorteo-container">
-            <h1>🎁 Ruleta de Sorteos</h1>
-            <p>Agrega los nombres de los participantes del chat y gira la ruleta cuando estés lista.</p>
+            <!-- BOTONES DE SECCIÓN PRINCIPAL -->
+            <div class="mode-tabs">
+                <button id="tab-manual" class="tab-btn" onclick="cambiarTab('manual')"><i class="fa-solid fa-pen-to-square"></i> Modo Manual</button>
+                <button id="tab-streamer" class="tab-btn" onclick="cambiarTab('streamer')"><i class="fa-solid fa-lock"></i> Modo Streamer (Exclusivo)</button>
+            </div>
 
-            <div id="seccion-publica">
-                <div class="form-group">
-                    <input type="text" id="nombre-input" placeholder="Nombre del participante (ej. CarlosGamer)" onkeypress="handleKeyPress(event)">
-                    <button class="btn-primary" onclick="agregarParticipante()" style="border:none; cursor:pointer; padding: 10px 15px;">Agregar</button>
-                    <button class="btn-primary" onclick="limpiarLista()" style="background: var(--text-muted); color: #fff; border:none; cursor:pointer; padding: 10px 15px;">Limpiar</button>
-                </div>
-
-                <div class="ruleta-box" id="ruleta-container">
-                    <div class="ruleta-title">🎲 Sorteo en Curso 🎲</div>
-                    <div class="ruleta-nombre" id="ruleta-display">¡Listo para girar!</div>
-                </div>
-                <canvas id="confetti-canvas"></canvas>
-
-                <div style="text-align: center;">
-                    <button class="btn-sortear" onclick="girarRuleta()">🎰 ¡Girar Ruleta!</button>
-                </div>
-
-                <div class="participants-box">
-                    <h4 style="margin-bottom: 8px; color: var(--text-muted); font-size: 0.9rem;">Participantes en la tómbola (<span id="count">0</span>)</h4>
-                    <ul id="lista-participantes" style="list-style: none; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;">
-                    </ul>
-                </div>
-
-                <div style="text-align: center; margin-top: 20px;">
-                    <button id="btn-modo-streamer" class="btn-primary" style="background: rgba(255, 102, 178, 0.15); color: var(--accent-color); border: 1px solid var(--accent-color); font-size: 0.8rem; padding: 8px 16px;">
-                        🔒 Acceso Streamer
-                    </button>
+            <!-- ESTADO DEL GOCHISORTEO PUBLICO -->
+            <div id="banner-estado-sorteo">
+                <div class="banner-sorteo-cerrado">
+                    <i class="fa-solid fa-lock"></i> El GochiSorteo está cerrado en este momento.
                 </div>
             </div>
 
-            <div id="seccion-streamer" style="display: none; border-top: 1px solid var(--border-color); margin-top: 20px; padding-top: 20px;">
-                <div style="text-align: center; margin-bottom: 15px;">
-                    <p style="color: var(--accent-color); font-weight: bold; font-size: 0.85rem;">🔐 Modo Streamer Activado</p>
-                    <button id="btn-salir-streamer" class="btn-primary" style="background: var(--text-muted); color: #fff; font-size: 0.8rem; padding: 6px 12px; margin-top: 8px;">Salir</button>
+            <!-- SECCIÓN 1: MODO MANUAL -->
+            <div id="sec-modo-manual" style="display: none;">
+                <h1 style="font-size: 1.5rem; margin-top: 10px;">✍️ App de Sorteos Manual</h1>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">
+                    Agrega los nombres de tus participantes para realizar sorteos libres.
+                </p>
+
+                <div class="form-group" style="margin-bottom: 5px;">
+                    <input type="text" id="nombre-input-publico" placeholder="Nombre (ej. CarlosGamer)" onkeypress="handleKeyPressPublico(event)">
+                    <button class="btn-primary" onclick="agregarParticipantePublico()" style="border:none; cursor:pointer; padding: 10px 18px;">Agregar</button>
+                    <button class="btn-primary" onclick="limpiarListaPublica()" style="background: var(--text-muted); color: #fff; border:none; cursor:pointer; padding: 10px 18px;">Limpiar</button>
+                </div>
+                <div id="feedback-manual" class="feedback-msg"></div>
+
+                <div class="ruleta-box">
+                    <div class="ruleta-title">🎲 Estado del Sorteo 🎲</div>
+                    <div class="ruleta-nombre" id="ruleta-display-publico">¡Sorteo Listo!</div>
+                </div>
+                <canvas id="confetti-canvas-publico"></canvas>
+
+                <div style="text-align: center;">
+                    <button class="btn-sortear" onclick="girarRuletaPublica()">🎰 ¡Girar Ruleta!</button>
                 </div>
 
-                <div class="form-group">
-                    <input type="text" id="nombre-input-streamer" placeholder="Nombre del participante (ej. CarlosGamer)" list="participantes-sugeridos-streamer" onkeypress="handleKeyPressStreamer(event)">
-                    <datalist id="participantes-sugeridos-streamer"></datalist>
-                    <button class="btn-primary" onclick="agregarParticipanteStreamer()" style="border:none; cursor:pointer; padding: 10px 15px;">Agregar</button>
-                    <button class="btn-primary" onclick="limpiarListaStreamer()" style="background: var(--text-muted); color: #fff; border:none; cursor:pointer; padding: 10px 15px;">Limpiar</button>
+                <div class="participants-box">
+                    <h4 style="margin-bottom: 10px; color: var(--text-muted); font-size: 0.9rem;">Participantes (<span id="count-publico">0</span>)</h4>
+                    <ul id="lista-participantes-publico" style="list-style: none; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;"></ul>
+                </div>
+            </div>
+
+            <!-- SECCIÓN 2: MODO STREAMER (EXCLUSIVO LA GOCHA) -->
+            <div id="sec-modo-streamer" style="display: none; border-top: 1px solid var(--border-color); padding-top: 20px; margin-top: 15px;">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <p style="color: var(--accent-color); font-weight: bold; font-size: 0.9rem;">🔐 Panel Exclusivo GochiSorteo</p>
+                    <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 10px;">
+                        <button id="btn-toggle-sorteo" onclick="toggleEstadoSorteo()" class="btn-primary" style="background: #2ecc71; font-size: 0.85rem; padding: 8px 16px; border:none; cursor:pointer;">🟢 ABRIR SORTEO EN VIVO</button>
+                        <button onclick="vaciarTombolaOnline()" class="btn-primary" style="background: #ff4d4d; font-size: 0.85rem; padding: 8px 16px; border:none; cursor:pointer;">🗑️ Limpiar Tómbola</button>
+                        <button onclick="salirModoStreamer()" class="btn-primary" style="background: var(--text-muted); font-size: 0.85rem; padding: 8px 16px; border:none; cursor:pointer;">Salir</button>
+                    </div>
+                    <div id="feedback-streamer-direct" class="feedback-msg"></div>
                 </div>
 
-                <div class="ruleta-box" id="ruleta-container-streamer">
-                    <div class="ruleta-title">🎲 Sorteo Oficial 🎲</div>
-                    <div class="ruleta-nombre" id="ruleta-display-streamer">¡Listo para girar!</div>
+                <div class="ruleta-box">
+                    <div class="ruleta-title">🎲 Ruleta Oficial GochiSorteo 🎲</div>
+                    <div class="ruleta-nombre" id="ruleta-display-streamer">¡Sorteo Listo!</div>
                 </div>
                 <canvas id="confetti-canvas-streamer"></canvas>
 
                 <div style="text-align: center;">
-                    <button class="btn-sortear" onclick="girarRuletaStreamer()">🎰 ¡Girar Ruleta!</button>
+                    <button class="btn-sortear" onclick="girarRuletaStreamer()">🎰 ¡Girar Ruleta Oficial!</button>
                 </div>
 
                 <div class="participants-box">
-                    <h4 style="margin-bottom: 8px; color: var(--text-muted); font-size: 0.9rem;">Participantes en la tómbola (<span id="count-streamer">0</span>)</h4>
-                    <ul id="lista-participantes-streamer" style="list-style: none; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;">
-                    </ul>
+                    <h4 style="margin-bottom: 10px; color: var(--text-muted); font-size: 0.9rem;">Participantes Registrados Online (<span id="count-streamer">0</span>)</h4>
+                    <ul id="lista-participantes-streamer" style="list-style: none; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;"></ul>
                 </div>
             </div>
         </div>
@@ -311,17 +396,19 @@
         <div class="sidebar-info">
             <h3><i class="fa-solid fa-gift"></i> Reglas del Sorteo</h3>
             <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.5;">
-                • Todos los participantes deben estar presentes en el chat.<br><br>
-                • ¡Mucha suerte a toda la comunidad! 🍀
+                • El GochiSorteo se activa automáticamente cuando La Gocha abre las inscripciones en directo.<br><br>
+                • ¡Mucha suerte a todos! 🍀
             </p>
         </div>
     </div>
 
+    <!-- Modal PIN -->
     <div id="modal-pin" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5,7,10,0.85); backdrop-filter: blur(5px); z-index: 10000; justify-content: center; align-items: center;">
         <div style="background: var(--card-bg); border: 1px solid var(--accent-color); padding: 30px; border-radius: 16px; box-shadow: var(--glow); text-align: center; max-width: 380px; width: 90%;">
-            <h3 style="color: var(--accent-color); margin-bottom: 15px; font-size: 1.2rem;">🔒 ACCESO STREAMER</h3>
+            <h3 style="color: var(--accent-color); margin-bottom: 15px; font-size: 1.2rem;">🔒 ACCESO EXCLUSIVO GOCHA</h3>
             <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Ingresa el PIN de seguridad:</p>
-            <input type="password" id="input-pin-secret" placeholder="••••" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg-subtle); color: var(--text-main); text-align: center; font-size: 1.2rem; letter-spacing: 5px; margin-bottom: 20px; outline: none;">
+            <input type="password" id="input-pin-secret" placeholder="••••" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg-subtle); color: var(--text-main); text-align: center; font-size: 1.2rem; letter-spacing: 5px; margin-bottom: 10px; outline: none;">
+            <div id="feedback-pin" class="feedback-msg" style="margin-bottom:15px;"></div>
             <div style="display: flex; gap: 10px; justify-content: center;">
                 <button onclick="confirmarPin()" class="btn-primary" style="border: none; cursor: pointer;">Entrar</button>
                 <button onclick="cerrarModalPin()" class="btn-primary" style="background: var(--text-muted); color: #fff; border: none; cursor: pointer;">Cancelar</button>
@@ -335,8 +422,11 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN5ZGl5YWFjbnl5ZHByZ2ZmbWtxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE3NjY1ODQsImV4cCI6MjEwNzM0MjU4NH0.fkipcX7Lx4lhGSa0zTDQ9BDNN3jiGTksB2hMlHH1bAs';
         var supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-        let listaParticipantes = [];
-        let isStreamerMode = false;
+        let listaPublica = [];
+        let listaStreamerOnline = [];
+        let sorteoAbierto = false;
+        let modoManualAbierto = false;
+        let streamerAutenticado = false;
         const PIN_DEFAULT = '1234';
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -362,188 +452,329 @@
                 });
             }
 
-            const btnModoStreamer = document.getElementById('btn-modo-streamer');
-            const btnSalirStreamer = document.getElementById('btn-salir-streamer');
-            const inputPin = document.getElementById('input-pin-secret');
-
-            btnModoStreamer?.addEventListener('click', mostrarModoStreamer);
-            btnSalirStreamer?.addEventListener('click', salirModoStreamer);
-
-            if (inputPin) {
-                inputPin.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') confirmarPin();
-                });
-            }
-
+            cargarEstadoSorteo();
+            cargarParticipantesOnline();
             cargarTopGanadores();
+
+            // Tiempo Real de Supabase
+            try {
+                supabase
+                    .channel('realtime_sorteo_total')
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'participantes_en_vivo' }, () => { cargarParticipantesOnline(); })
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'config_sorteo' }, () => { cargarEstadoSorteo(); })
+                    .subscribe();
+            } catch(e) { console.log('Modo local detectado'); }
+
+            document.getElementById('input-pin-secret')?.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') confirmarPin();
+            });
         });
 
-        function mostrarModoStreamer() {
-            const modal = document.getElementById('modal-pin');
-            const input = document.getElementById('input-pin-secret');
-            if (modal && input) {
-                input.value = '';
-                modal.style.display = 'flex';
-                input.focus();
+        // FEEDBACK VISUAL
+        function mostrarFeedback(elementId, mensaje, esError = false) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            el.innerText = mensaje;
+            el.className = `feedback-msg ${esError ? 'feedback-error' : 'feedback-success'}`;
+            setTimeout(() => {
+                if (el) el.innerText = '';
+            }, 3500);
+        }
+
+        // --- NAVEGACIÓN TABS ---
+        function cambiarTab(tab) {
+            const secManual = document.getElementById('sec-modo-manual');
+            const secStreamer = document.getElementById('sec-modo-streamer');
+            const btnManual = document.getElementById('tab-manual');
+            const btnStreamer = document.getElementById('tab-streamer');
+
+            if (tab === 'manual') {
+                modoManualAbierto = !modoManualAbierto;
+                if (modoManualAbierto) {
+                    secManual.style.display = 'block';
+                    secStreamer.style.display = 'none';
+                    btnManual.classList.add('active');
+                    btnStreamer.classList.remove('active');
+                } else {
+                    secManual.style.display = 'none';
+                    btnManual.classList.remove('active');
+                }
+            } else if (tab === 'streamer') {
+                if (!streamerAutenticado) {
+                    document.getElementById('modal-pin').style.display = 'flex';
+                    document.getElementById('input-pin-secret').focus();
+                } else {
+                    secManual.style.display = 'none';
+                    secStreamer.style.display = 'block';
+                    btnManual.classList.remove('active');
+                    btnStreamer.classList.add('active');
+                }
             }
         }
 
         function cerrarModalPin() {
-            const modal = document.getElementById('modal-pin');
-            if (modal) modal.style.display = 'none';
+            document.getElementById('modal-pin').style.display = 'none';
+            document.getElementById('input-pin-secret').value = '';
         }
 
         function confirmarPin() {
             const input = document.getElementById('input-pin-secret');
             if (input && input.value === PIN_DEFAULT) {
+                streamerAutenticado = true;
                 cerrarModalPin();
-                isStreamerMode = true;
-                document.getElementById('seccion-publica').style.display = 'none';
-                document.getElementById('seccion-streamer').style.display = 'block';
-                actualizarListaStreamer();
-                cargarParticipantesSugeridos();
+                document.getElementById('sec-modo-manual').style.display = 'none';
+                document.getElementById('sec-modo-streamer').style.display = 'block';
+                document.getElementById('tab-manual').classList.remove('active');
+                document.getElementById('tab-streamer').classList.add('active');
             } else {
-                alert("❌ PIN incorrecto. Acceso denegado.");
-                if (input) { input.value = ''; input.focus(); }
+                mostrarFeedback('feedback-pin', '❌ PIN de acceso incorrecto.', true);
+                if (input) input.value = '';
             }
         }
 
         function salirModoStreamer() {
-            isStreamerMode = false;
-            document.getElementById('seccion-streamer').style.display = 'none';
-            document.getElementById('seccion-publica').style.display = 'block';
-            actualizarListaPublica();
-            cargarTopGanadores();
+            streamerAutenticado = false;
+            document.getElementById('sec-modo-streamer').style.display = 'none';
+            document.getElementById('tab-streamer').classList.remove('active');
         }
 
-        async function cargarParticipantesSugeridos() {
+        // --- ABRIR / CERRAR SORTEO ---
+        async function toggleEstadoSorteo() {
+            sorteoAbierto = !sorteoAbierto;
             try {
-                const { data, error } = await supabase.from('participantes_sorteo').select('nombre').order('nombre', { ascending: true });
-                if (error) return;
-                const datalist = document.getElementById('participantes-sugeridos-streamer');
-                if (datalist && data) {
-                    datalist.innerHTML = '';
-                    data.forEach(p => {
-                        const option = document.createElement('option');
-                        option.value = p.nombre;
-                        datalist.appendChild(option);
-                    });
+                await supabase.from('config_sorteo').upsert({ id: 1, abierto: sorteoAbierto });
+            } catch(e) { console.log('Actualizado localmente'); }
+            
+            actualizarUIEstadoSorteo();
+        }
+
+        async function cargarEstadoSorteo() {
+            try {
+                const { data, error } = await supabase.from('config_sorteo').select('abierto').eq('id', 1).single();
+                if (!error && data) {
+                    sorteoAbierto = data.abierto;
                 }
             } catch (err) { console.error('Error:', err); }
+            actualizarUIEstadoSorteo();
         }
 
-        async function guardarParticipanteEnSupabase(nombre) {
-            try {
-                await supabase.from('participantes_sorteo').upsert({ nombre }, { onConflict: 'nombre' });
-            } catch (err) { console.error('Error:', err); }
+        function actualizarUIEstadoSorteo() {
+            const btnToggle = document.getElementById('btn-toggle-sorteo');
+            const bannerArea = document.getElementById('banner-estado-sorteo');
+
+            if (btnToggle) {
+                if (sorteoAbierto) {
+                    btnToggle.innerText = "🔴 CERRAR SORTEO EN VIVO";
+                    btnToggle.style.background = "#ff4d4d";
+                } else {
+                    btnToggle.innerText = "🟢 ABRIR SORTEO EN VIVO";
+                    btnToggle.style.background = "#2ecc71";
+                }
+            }
+
+            if (bannerArea) {
+                if (sorteoAbierto) {
+                    const registradoUser = localStorage.getItem('gochi_registrado_user');
+
+                    if (registradoUser) {
+                        bannerArea.innerHTML = `
+                            <div class="banner-sorteo-registrado">
+                                <h3 style="color: #53fc18; font-size: 1.1rem; margin-bottom: 6px; text-transform: uppercase;">
+                                    ✅ ¡YA ESTÁS PARTICIPANDO EN EL GOCHISORTEO!
+                                </h3>
+                                <p style="font-size: 0.95rem; color: var(--text-main); margin-bottom: 4px;">
+                                    Inscrito con el usuario: <strong style="color: #53fc18;">@${escapeHtml(registradoUser)}</strong>
+                                </p>
+                                <p style="font-size: 0.8rem; color: var(--text-muted);">
+                                    Permanece atento a la transmisión para conocer al ganador. ¡Mucha suerte! 🍀
+                                </p>
+                            </div>
+                        `;
+                    } else {
+                        bannerArea.innerHTML = `
+                            <div class="banner-sorteo-activo">
+                                <h3 style="color: #53fc18; font-size: 1.1rem; margin-bottom: 6px; text-transform: uppercase;">
+                                    🎉 ¡GochiSorteo Oficial ABIERTO! 🎉
+                                </h3>
+                                <p style="font-size: 0.88rem; color: var(--text-main); margin-bottom: 12px;">
+                                    Ingresa tu nombre de usuario exacto de Kick para participar en directo:
+                                </p>
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <input type="text" id="input-usuario-temporal" placeholder="Tu usuario de Kick..." onkeypress="handleKeyPressTemporal(event)">
+                                    <button class="btn-primary" onclick="enviarParticipacionTemporal()" style="border:none; cursor:pointer; padding: 10px 20px; background: #53fc18; color: #000; font-weight: 900;">
+                                        🎁 ¡Unirme al GochiSorteo!
+                                    </button>
+                                </div>
+                                <div id="feedback-publico-temporal" class="feedback-msg"></div>
+                            </div>
+                        `;
+                    }
+                } else {
+                    bannerArea.innerHTML = `
+                        <div class="banner-sorteo-cerrado">
+                            <i class="fa-solid fa-lock"></i> El GochiSorteo está cerrado en este momento.
+                        </div>
+                    `;
+                }
+            }
         }
 
-        function agregarParticipante() {
-            let input = document.getElementById('nombre-input');
-            let nombre = input.value.trim();
-            if (!nombre) return;
-            if (listaParticipantes.some(p => p.toLowerCase() === nombre.toLowerCase())) {
-                alert("Este participante ya está en la lista.");
+        async function enviarParticipacionTemporal() {
+            const input = document.getElementById('input-usuario-temporal');
+            if (!input) return;
+            let username = input.value.trim().replace('@', '');
+
+            if (!username) {
+                mostrarFeedback('feedback-publico-temporal', 'Por favor escribe tu usuario de Kick.', true);
                 return;
             }
-            listaParticipantes.push(nombre);
+
+            registrarUsuarioEnLista(username, 'feedback-publico-temporal');
+        }
+
+        async function registrarUsuarioEnLista(username, feedbackId) {
+            if (listaStreamerOnline.some(u => u.toLowerCase() === username.toLowerCase())) {
+                mostrarFeedback(feedbackId, '⚠️ ¡Este usuario ya está registrado en el sorteo!', true);
+                return;
+            }
+
+            listaStreamerOnline.push(username);
+            renderListaStreamer();
+
+            try {
+                await supabase.from('participantes_en_vivo').insert([{ username: username }]);
+            } catch (err) { console.error('Guardado localmente:', err); }
+
+            localStorage.setItem('gochi_registrado_user', username);
+            actualizarUIEstadoSorteo();
+        }
+
+        function handleKeyPressTemporal(e) {
+            if (e.key === 'Enter') enviarParticipacionTemporal();
+        }
+
+        // --- MODO MANUAL ---
+        function agregarParticipantePublico() {
+            const input = document.getElementById('nombre-input-publico');
+            if (!input) return;
+            let nombre = input.value.trim().replace('@', '');
+            if (!nombre) return;
+
+            if (listaPublica.some(p => p.toLowerCase() === nombre.toLowerCase())) {
+                mostrarFeedback('feedback-manual', '⚠️ Este participante ya está en la lista.', true);
+                return;
+            }
+
+            listaPublica.push(nombre);
             actualizarListaPublica();
             input.value = '';
             input.focus();
+            mostrarFeedback('feedback-manual', `✅ @${nombre} agregado a la lista.`);
         }
 
-        function handleKeyPress(event) { if (event.key === 'Enter') agregarParticipante(); }
-        function eliminarParticipante(index) { listaParticipantes.splice(index, 1); actualizarListaPublica(); }
-        function limpiarLista() {
-            if (confirm("¿Estás segura de vaciar toda la lista?")) {
-                listaParticipantes = [];
-                actualizarListaPublica();
-                document.getElementById('ruleta-display').innerText = "¡Listo para girar!";
-            }
+        function handleKeyPressPublico(e) {
+            if (e.key === 'Enter') agregarParticipantePublico();
+        }
+
+        function eliminarParticipantePublico(index) {
+            listaPublica.splice(index, 1);
+            actualizarListaPublica();
+        }
+
+        function limpiarListaPublica() {
+            listaPublica = [];
+            actualizarListaPublica();
+            document.getElementById('ruleta-display-publico').innerText = "¡Sorteo Listo!";
+            mostrarFeedback('feedback-manual', '🧹 Lista de participantes limpiada.');
         }
 
         function actualizarListaPublica() {
-            let lista = document.getElementById('lista-participantes');
-            let contador = document.getElementById('count');
-            if (!lista || !contador) return;
-            lista.innerHTML = '';
-            listaParticipantes.forEach((p, index) => {
-                let li = document.createElement('li');
+            const ul = document.getElementById('lista-participantes-publico');
+            const count = document.getElementById('count-publico');
+            if (!ul || !count) return;
+
+            ul.innerHTML = '';
+            listaPublica.forEach((p, index) => {
+                const li = document.createElement('li');
                 li.className = 'tag-participante';
-                li.innerHTML = `${escapeHtml(p)} <button onclick="eliminarParticipante(${index})" title="Eliminar"><i class="fa-solid fa-xmark"></i></button>`;
-                lista.appendChild(li);
+                li.innerHTML = `@${escapeHtml(p)} <button onclick="eliminarParticipantePublico(${index})"><i class="fa-solid fa-xmark"></i></button>`;
+                ul.appendChild(li);
             });
-            contador.innerText = listaParticipantes.length;
+            count.innerText = listaPublica.length;
         }
 
-        function girarRuleta() {
-            if (listaParticipantes.length === 0) { alert("¡Agrega al menos un participante antes de girar la ruleta!"); return; }
-            let display = document.getElementById('ruleta-display');
+        function girarRuletaPublica() {
+            if (listaPublica.length === 0) {
+                mostrarFeedback('feedback-manual', '⚠️ Agrega al menos un participante antes de girar.', true);
+                return;
+            }
+            let display = document.getElementById('ruleta-display-publico');
             let counter = 0;
             let interval = setInterval(() => {
-                let randomIndex = Math.floor(Math.random() * listaParticipantes.length);
-                display.innerText = listaParticipantes[randomIndex];
+                let randomIndex = Math.floor(Math.random() * listaPublica.length);
+                display.innerText = `@${listaPublica[randomIndex]}`;
                 counter++;
                 if (counter > 25) {
                     clearInterval(interval);
-                    let ganadorFinal = listaParticipantes[Math.floor(Math.random() * listaParticipantes.length)];
-                    display.innerHTML = `🎉 ¡${escapeHtml(ganadorFinal)}! 🎉`;
-                    lanzarConfeti('confetti-canvas');
+                    let ganadorFinal = listaPublica[Math.floor(Math.random() * listaPublica.length)];
+                    display.innerHTML = `🎉 ¡@${escapeHtml(ganadorFinal)}! 🎉`;
+                    lanzarConfeti('confetti-canvas-publico');
                 }
             }, 50);
         }
 
-        function agregarParticipanteStreamer() {
-            let input = document.getElementById('nombre-input-streamer');
-            let nombre = input.value.trim();
-            if (!nombre) return;
-            if (listaParticipantes.some(p => p.toLowerCase() === nombre.toLowerCase())) {
-                alert("Este participante ya está en la lista.");
-                return;
-            }
-            listaParticipantes.push(nombre);
-            guardarParticipanteEnSupabase(nombre);
-            actualizarListaStreamer();
-            input.value = '';
-            input.focus();
+        // --- LISTA Y RULETA STREAMER ---
+        async function cargarParticipantesOnline() {
+            try {
+                const { data, error } = await supabase.from('participantes_en_vivo').select('username').order('created_at', { ascending: true });
+                if (!error && data && data.length > 0) {
+                    listaStreamerOnline = data.map(p => p.username);
+                }
+            } catch (err) { console.error('Error:', err); }
+            renderListaStreamer();
         }
 
-        function handleKeyPressStreamer(event) { if (event.key === 'Enter') agregarParticipanteStreamer(); }
-        function eliminarParticipanteStreamer(index) { listaParticipantes.splice(index, 1); actualizarListaStreamer(); }
-        function limpiarListaStreamer() {
-            if (confirm("¿Estás segura de vaciar toda la lista?")) {
-                listaParticipantes = [];
-                actualizarListaStreamer();
-                document.getElementById('ruleta-display-streamer').innerText = "¡Listo para girar!";
-            }
-        }
+        function renderListaStreamer() {
+            const ul = document.getElementById('lista-participantes-streamer');
+            const count = document.getElementById('count-streamer');
+            if (!ul || !count) return;
 
-        function actualizarListaStreamer() {
-            let lista = document.getElementById('lista-participantes-streamer');
-            let contador = document.getElementById('count-streamer');
-            if (!lista || !contador) return;
-            lista.innerHTML = '';
-            listaParticipantes.forEach((p, index) => {
-                let li = document.createElement('li');
+            ul.innerHTML = '';
+            listaStreamerOnline.forEach(p => {
+                const li = document.createElement('li');
                 li.className = 'tag-participante';
-                li.innerHTML = `${escapeHtml(p)} <button onclick="eliminarParticipanteStreamer(${index})" title="Eliminar"><i class="fa-solid fa-xmark"></i></button>`;
-                lista.appendChild(li);
+                li.innerHTML = `@${escapeHtml(p)}`;
+                ul.appendChild(li);
             });
-            contador.innerText = listaParticipantes.length;
+            count.innerText = listaStreamerOnline.length;
+        }
+
+        async function vaciarTombolaOnline() {
+            listaStreamerOnline = [];
+            localStorage.removeItem('gochi_registrado_user');
+            renderListaStreamer();
+            actualizarUIEstadoSorteo();
+            try {
+                await supabase.from('participantes_en_vivo').delete().neq('id', 0);
+            } catch (err) { console.error('Error:', err); }
+            mostrarFeedback('feedback-streamer-direct', '🧹 Tómbola vaciada y registros limpiados.');
         }
 
         function girarRuletaStreamer() {
-            if (listaParticipantes.length === 0) { alert("¡Agrega al menos un participante antes de girar la ruleta!"); return; }
+            if (listaStreamerOnline.length === 0) {
+                mostrarFeedback('feedback-streamer-direct', '⚠️ No hay participantes inscritos.', true);
+                return;
+            }
             let display = document.getElementById('ruleta-display-streamer');
             let counter = 0;
             let interval = setInterval(() => {
-                let randomIndex = Math.floor(Math.random() * listaParticipantes.length);
-                display.innerText = listaParticipantes[randomIndex];
+                let randomIndex = Math.floor(Math.random() * listaStreamerOnline.length);
+                display.innerText = `@${listaStreamerOnline[randomIndex]}`;
                 counter++;
                 if (counter > 25) {
                     clearInterval(interval);
-                    let ganadorFinal = listaParticipantes[Math.floor(Math.random() * listaParticipantes.length)];
-                    display.innerHTML = `🎉 ¡${escapeHtml(ganadorFinal)}! 🎉`;
+                    let ganadorFinal = listaStreamerOnline[Math.floor(Math.random() * listaStreamerOnline.length)];
+                    display.innerHTML = `🎉 ¡@${escapeHtml(ganadorFinal)}! 🎉`;
                     lanzarConfeti('confetti-canvas-streamer');
                     guardarGanadorOficial(ganadorFinal);
                 }
@@ -552,7 +783,7 @@
 
         async function guardarGanadorOficial(nombre) {
             try {
-                const { error } = await supabase.from('ganadores_sorteo').insert([{ nombre, fecha: new Date().toISOString() }]);
+                const { error } = await supabase.from('ganadores_sorteo').insert([{ nombre: `@${nombre}`, fecha: new Date().toISOString() }]);
                 if (!error) cargarTopGanadores();
             } catch (err) { console.error('Error:', err); }
         }
@@ -565,7 +796,7 @@
                 if (!grid) return;
                 grid.innerHTML = '';
                 if (!data || data.length === 0) {
-                    grid.innerHTML = '<div class="ganadores-empty">Aún no hay ganadores oficiales registrados.</div>';
+                    grid.innerHTML = '<div class="ganadores-empty">Sin ganadores registrados.</div>';
                     return;
                 }
                 data.forEach(g => {
@@ -628,7 +859,6 @@
             <div class="footer-social-icons">
                 <a href="https://kick.com/lagochagaming" target="_blank" class="social-icon kick-icon" title="Kick">K</a>
                 <a href="https://www.tiktok.com/@lagochagaming11" target="_blank" class="social-icon" title="TikTok"><i class="fab fa-tiktok"></i></a>
-                <a href="https://www.instagram.com/oscurostefany" target="_blank" class="social-icon" title="Instagram"><i class="fab fa-instagram"></i></a>
                 <a href="https://discord.com/invite/svrteKBbeh" target="_blank" class="social-icon" title="Discord"><i class="fab fa-discord"></i></a>
                 <a href="https://www.youtube.com/@lagochagaming" target="_blank" class="social-icon" title="YouTube"><i class="fab fa-youtube"></i></a>
                 <a href="#" target="_blank" class="social-icon" title="Twitter"><i class="fab fa-x-twitter"></i></a>
