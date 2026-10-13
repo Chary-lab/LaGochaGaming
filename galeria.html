@@ -15,6 +15,105 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .admin-controls-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .btn-admin-mode {
+            background: var(--card-bg-subtle);
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-admin-mode.active {
+            background: var(--accent-color);
+            color: #fff;
+            border-color: var(--accent-color);
+            box-shadow: var(--glow);
+        }
+
+        .panel-pendientes {
+            background: var(--card-bg);
+            border: 2px dashed #f39c12;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 0 15px rgba(243, 156, 18, 0.2);
+            display: none;
+        }
+        .panel-pendientes h3 {
+            color: #f39c12;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-aprobar {
+            background: #2ecc71;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        .btn-aprobar:hover { filter: brightness(1.15); }
+
+        .btn-rechazar {
+            background: #ff4d4d;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        .btn-rechazar:hover { filter: brightness(1.15); }
+
+        .btn-eliminar-publica {
+            background: #ff4d4d;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: none;
+            align-items: center;
+            gap: 4px;
+        }
+        .admin-mode-active .btn-eliminar-publica {
+            display: inline-flex;
+        }
+
+        .msg-subida-exito {
+            color: #53fc18;
+            font-weight: bold;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar">
@@ -38,9 +137,20 @@
     </nav>
 
     <div class="content-section" style="margin-top: 85px;">
-        <h1>Mi Galería</h1>
+        <div class="admin-controls-panel">
+            <h1>Mi Galería</h1>
+            <button id="btn-toggle-admin" class="btn-admin-mode" onclick="toggleModoAdmin()">
+                <i class="fa-solid fa-lock"></i> Modo Moderación
+            </button>
+        </div>
+
+        <!-- PANEL EXCLUSIVO ADMIN: IMÁGENES PENDIENTES DE APROBACIÓN -->
+        <div id="panelPendientes" class="panel-pendientes">
+            <h3><i class="fa-solid fa-clock-rotate-left"></i> Imágenes Pendientes por Aprobar (<span id="cantPendientes">0</span>)</h3>
+            <div class="gallery-grid" id="gridPendientes"></div>
+        </div>
+
         <div class="upload-container" id="uploadContainer">
-            <!-- Campo para que el usuario escriba su propio título -->
             <div style="margin-bottom: 15px;">
                 <input type="text" id="imageTitleInput" placeholder="Escribe un título para tu imagen..." maxlength="40" style="width: 100%; max-width: 400px; padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg-subtle); color: var(--text-main); font-size: 0.95rem; outline: none;">
             </div>
@@ -50,8 +160,25 @@
                 <i class="fas fa-upload"></i> Seleccionar Imagen
             </label>
             <p style="margin-top: 15px; color: var(--text-muted); font-size: 0.9rem;">Formatos: JPG, PNG, GIF. Tamaño máximo: 5MB por imagen.</p>
+            <div id="uploadFeedback"></div>
         </div>
+
+        <h2 style="font-size: 1.2rem; margin-bottom: 15px; color: var(--text-muted);">📸 Galería Pública</h2>
         <div class="gallery-grid" id="galleryGrid"></div>
+    </div>
+
+    <!-- Modal PIN Administrador -->
+    <div id="modal-pin" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5,7,10,0.85); backdrop-filter: blur(5px); z-index: 10000; justify-content: center; align-items: center;">
+        <div style="background: var(--card-bg); border: 1px solid var(--accent-color); padding: 30px; border-radius: 16px; box-shadow: var(--glow); text-align: center; max-width: 380px; width: 90%;">
+            <h3 style="color: var(--accent-color); margin-bottom: 15px; font-size: 1.2rem;">🔒 MODERACIÓN DE GALERÍA</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Ingresa el PIN de seguridad:</p>
+            <input type="password" id="input-pin-secret" placeholder="••••" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg-subtle); color: var(--text-main); text-align: center; font-size: 1.2rem; letter-spacing: 5px; margin-bottom: 10px; outline: none;">
+            <div id="feedback-pin" style="margin-bottom:15px; color: #ff4d4d; font-size: 0.85rem; font-weight: bold;"></div>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button onclick="confirmarPinAdmin()" class="btn-primary" style="border: none; cursor: pointer;">Entrar</button>
+                <button onclick="cerrarModalPin()" class="btn-primary" style="background: var(--text-muted); color: #fff; border: none; cursor: pointer;">Cancelar</button>
+            </div>
+        </div>
     </div>
 
     <footer class="main-footer">
@@ -73,6 +200,9 @@
         const supabaseUrl = 'https://cydiyaacnyydprgffmkq.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN5ZGl5YWFjbnl5ZHByZ2ZmbWtxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE3NjY1ODQsImV4cCI6MjEwNzM0MjU4NH0.fkipcX7Lx4lhGSa0zTDQ9BDNN3jiGTksB2hMlHH1bAs';
         var supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        let adminAutenticado = false;
+        const PIN_DEFAULT = '1234';
 
         document.addEventListener('DOMContentLoaded', () => {
             const themeBtn = document.getElementById('theme-toggle');
@@ -96,6 +226,10 @@
                     localStorage.setItem('theme', theme);
                 });
             }
+
+            document.getElementById('input-pin-secret')?.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') confirmarPinAdmin();
+            });
         });
 
         const lightbox = document.createElement('div');
@@ -104,23 +238,39 @@
 
         loadApprovedImages();
 
+        // Cargar sólo imágenes aprobadas para el público
         async function loadApprovedImages() {
             try {
-                const { data, error } = await supabase.from('galeria').select('image_url, title');
+                const { data, error } = await supabase
+                    .from('galeria')
+                    .select('id, image_url, title, estado')
+                    .or('estado.eq.aprobado,estado.is.null'); // Compatible con registros antiguos sin la columna 'estado'
+
                 if (error) return;
                 const galleryGrid = document.getElementById('galleryGrid');
                 galleryGrid.innerHTML = '';
+
+                if (!data || data.length === 0) {
+                    galleryGrid.innerHTML = '<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center;">No hay imágenes públicas aún.</p>';
+                    return;
+                }
+
                 data.forEach(image => {
                     const galleryCard = document.createElement('div');
                     galleryCard.className = 'gallery-card';
                     galleryCard.innerHTML = `
                         <img src="${image.image_url}" alt="${image.title}" loading="lazy">
                         <div class="gallery-card-info">
-                            <span>${image.title}</span>
-                            <button class="like-btn" data-likes="0">
-                                <i class="far fa-heart"></i>
-                                <span>0</span>
-                            </button>
+                            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px;" title="${image.title}">${image.title}</span>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <button class="btn-eliminar-publica" onclick="eliminarImagenPublica('${image.id}')" title="Borrar foto de la galería">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                                <button class="like-btn" data-likes="0">
+                                    <i class="far fa-heart"></i>
+                                    <span>0</span>
+                                </button>
+                            </div>
                         </div>
                     `;
                     galleryCard.querySelector('img').addEventListener('click', () => {
@@ -137,12 +287,119 @@
                     });
                     galleryGrid.prepend(galleryCard);
                 });
+
+                if (adminAutenticado) {
+                    document.body.classList.add('admin-mode-active');
+                }
             } catch (err) { console.error('Error:', err); }
         }
 
         lightbox.addEventListener('click', () => { lightbox.style.display = 'none'; });
 
-        const uploadContainer = document.getElementById('uploadContainer');
+        // Cargar panel de imágenes pendientes para el Administrador
+        async function loadPendingImages() {
+            if (!adminAutenticado) return;
+            try {
+                const { data, error } = await supabase
+                    .from('galeria')
+                    .select('id, image_url, title')
+                    .eq('estado', 'pendiente');
+
+                if (error) return;
+
+                const gridPendientes = document.getElementById('gridPendientes');
+                const cantSpan = document.getElementById('cantPendientes');
+                gridPendientes.innerHTML = '';
+                cantSpan.innerText = data ? data.length : 0;
+
+                if (!data || data.length === 0) {
+                    gridPendientes.innerHTML = '<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center;">¡No hay fotos pendientes por moderar! 🎉</p>';
+                    return;
+                }
+
+                data.forEach(image => {
+                    const card = document.createElement('div');
+                    card.className = 'gallery-card';
+                    card.style.border = '1px solid #f39c12';
+                    card.innerHTML = `
+                        <img src="${image.image_url}" alt="${image.title}" loading="lazy">
+                        <div class="gallery-card-info" style="flex-direction: column; gap: 8px; align-items: stretch;">
+                            <span style="font-weight: bold; text-align: center;">${image.title}</span>
+                            <div style="display: flex; justify-content: space-between; gap: 5px;">
+                                <button class="btn-aprobar" onclick="aprobarImagen('${image.id}')"><i class="fa-solid fa-check"></i> Aprobar</button>
+                                <button class="btn-rechazar" onclick="eliminarImagenPublica('${image.id}')"><i class="fa-solid fa-xmark"></i> Rechazar</button>
+                            </div>
+                        </div>
+                    `;
+                    gridPendientes.appendChild(card);
+                });
+            } catch (err) { console.error('Error:', err); }
+        }
+
+        async function aprobarImagen(id) {
+            try {
+                const { error } = await supabase.from('galeria').update({ estado: 'aprobado' }).eq('id', id);
+                if (!error) {
+                    loadPendingImages();
+                    loadApprovedImages();
+                } else {
+                    alert("Error al aprobar imagen.");
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function eliminarImagenPublica(id) {
+            if (!confirm("¿Deseas eliminar/rechazar esta imagen?")) return;
+            try {
+                const { error } = await supabase.from('galeria').delete().eq('id', id);
+                if (!error) {
+                    loadPendingImages();
+                    loadApprovedImages();
+                } else {
+                    alert("Error al eliminar la imagen.");
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        // --- MODO ADMIN / PIN ---
+        function toggleModoAdmin() {
+            if (!adminAutenticado) {
+                document.getElementById('modal-pin').style.display = 'flex';
+                document.getElementById('input-pin-secret').focus();
+            } else {
+                adminAutenticado = false;
+                document.body.classList.remove('admin-mode-active');
+                document.getElementById('panelPendientes').style.display = 'none';
+                const btn = document.getElementById('btn-toggle-admin');
+                btn.innerHTML = '<i class="fa-solid fa-lock"></i> Modo Moderación';
+                btn.classList.remove('active');
+            }
+        }
+
+        function cerrarModalPin() {
+            document.getElementById('modal-pin').style.display = 'none';
+            document.getElementById('input-pin-secret').value = '';
+            document.getElementById('feedback-pin').innerText = '';
+        }
+
+        function confirmarPinAdmin() {
+            const input = document.getElementById('input-pin-secret');
+            if (input && input.value === PIN_DEFAULT) {
+                adminAutenticado = true;
+                cerrarModalPin();
+                document.body.classList.add('admin-mode-active');
+                document.getElementById('panelPendientes').style.display = 'block';
+                const btn = document.getElementById('btn-toggle-admin');
+                btn.innerHTML = '<i class="fa-solid fa-lock-open"></i> Moderación Activa';
+                btn.classList.add('active');
+                loadPendingImages();
+            } else {
+                document.getElementById('feedback-pin').innerText = '❌ PIN de acceso incorrecto';
+                if (input) input.value = '';
+            }
+        }
+
+        // --- SUBIDA DE IMÁGENES ---
         const uploadInput = document.getElementById('uploadInput');
         const titleInput = document.getElementById('imageTitleInput');
 
@@ -167,12 +424,11 @@
                 const { error } = await supabase.storage.from('fotos-galeria').upload(filePath, file);
                 
                 if (error) {
-                    alert("Error al subir la imagen.");
+                    alert("Error al subir el archivo.");
                     return;
                 }
 
                 const { data: publicURLData } = supabase.storage.from('fotos-galeria').getPublicUrl(filePath);
-                
                 await saveToSupabaseTable(title, publicURLData.publicUrl);
                 
                 titleInput.value = '';
@@ -181,9 +437,13 @@
         }
 
         async function saveToSupabaseTable(title, publicUrl) {
-            const { error } = await supabase.from('galeria').insert([{ title: title, image_url: publicUrl }]);
+            // Guardamos la foto con estado 'pendiente'
+            const { error } = await supabase.from('galeria').insert([{ title: title, image_url: publicUrl, estado: 'pendiente' }]);
             if (!error) {
-                loadApprovedImages();
+                const feedback = document.getElementById('uploadFeedback');
+                feedback.innerHTML = '<p class="msg-subida-exito">✅ ¡Imagen enviada con éxito! Aparecerá en la galería cuando La Gocha la apruebe. 💖</p>';
+                setTimeout(() => { feedback.innerHTML = ''; }, 5000);
+                if (adminAutenticado) loadPendingImages();
             } else {
                 alert("Error al guardar en la base de datos.");
             }
