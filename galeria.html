@@ -40,9 +40,14 @@
     <div class="content-section" style="margin-top: 85px;">
         <h1>Mi Galería</h1>
         <div class="upload-container" id="uploadContainer">
-            <input type="file" id="uploadInput" class="upload-input" accept="image/*" multiple>
+            <!-- Campo para que el usuario escriba su propio título -->
+            <div style="margin-bottom: 15px;">
+                <input type="text" id="imageTitleInput" placeholder="Escribe un título para tu imagen..." maxlength="40" style="width: 100%; max-width: 400px; padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg-subtle); color: var(--text-main); font-size: 0.95rem; outline: none;">
+            </div>
+
+            <input type="file" id="uploadInput" class="upload-input" accept="image/*">
             <label for="uploadInput" class="upload-label">
-                <i class="fas fa-upload"></i> Subir Imágenes (o Arrastrar y Soltar)
+                <i class="fas fa-upload"></i> Seleccionar Imagen
             </label>
             <p style="margin-top: 15px; color: var(--text-muted); font-size: 0.9rem;">Formatos: JPG, PNG, GIF. Tamaño máximo: 5MB por imagen.</p>
         </div>
@@ -139,35 +144,50 @@
 
         const uploadContainer = document.getElementById('uploadContainer');
         const uploadInput = document.getElementById('uploadInput');
-        const uploadLabel = document.querySelector('.upload-label');
+        const titleInput = document.getElementById('imageTitleInput');
 
-        uploadContainer.addEventListener('dragover', (e) => { e.preventDefault(); uploadContainer.classList.add('dragover'); });
-        uploadContainer.addEventListener('dragleave', () => { uploadContainer.classList.remove('dragover'); });
-        uploadContainer.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadContainer.classList.remove('dragover');
-            handleFiles(e.dataTransfer.files);
+        uploadInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            const customTitle = titleInput.value.trim();
+
+            if (!file) return;
+
+            if (!customTitle) {
+                alert("Por favor, escribe un título antes de subir la imagen.");
+                uploadInput.value = ''; // Resetea el input
+                return;
+            }
+
+            uploadToSupabase(file, customTitle);
         });
-        uploadInput.addEventListener('change', (e) => { handleFiles(e.target.files); });
-        uploadLabel.addEventListener('click', (e) => { e.preventDefault(); uploadInput.click(); });
 
-        function handleFiles(files) { uploadToSupabase(files); }
-
-        async function uploadToSupabase(files) {
-            for (const file of Array.from(files)) {
-                if (file.type.startsWith('image/')) {
-                    const filePath = `gallery_${Date.now()}_${file.name}`;
-                    const { error } = await supabase.storage.from('fotos-galeria').upload(filePath, file);
-                    if (error) continue;
-                    const { data: publicURLData } = supabase.storage.from('fotos-galeria').getPublicUrl(filePath);
-                    await saveToSupabaseTable(filePath, publicURLData.publicUrl);
+        async function uploadToSupabase(file, title) {
+            if (file.type.startsWith('image/')) {
+                const filePath = `gallery_${Date.now()}_${file.name}`;
+                const { error } = await supabase.storage.from('fotos-galeria').upload(filePath, file);
+                
+                if (error) {
+                    alert("Error al subir la imagen.");
+                    return;
                 }
+
+                const { data: publicURLData } = supabase.storage.from('fotos-galeria').getPublicUrl(filePath);
+                
+                await saveToSupabaseTable(title, publicURLData.publicUrl);
+                
+                // Limpiar campos después de subir con éxito
+                titleInput.value = '';
+                uploadInput.value = '';
             }
         }
 
-        async function saveToSupabaseTable(filePath, publicUrl) {
-            const { error } = await supabase.from('galeria').insert([{ title: filePath, image_url: publicUrl }]);
-            if (!error) loadApprovedImages();
+        async function saveToSupabaseTable(title, publicUrl) {
+            const { error } = await supabase.from('galeria').insert([{ title: title, image_url: publicUrl }]);
+            if (!error) {
+                loadApprovedImages();
+            } else {
+                alert("Error al guardar en la base de datos.");
+            }
         }
     </script>
 </body>
