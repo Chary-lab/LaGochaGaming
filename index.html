@@ -20,13 +20,13 @@
     <nav class="navbar">
         <div class="logo">LAGOCHA<span>GAMING</span></div>
         <div class="nav-links">
-            <a href="#inicio">Inicio</a>
-            <a href="#stream">Directo</a>
-            <a href="#clips">Clips</a>
-            <a href="#social">Social</a>
-            <a href="#youtube">YouTube</a>
-            <a href="sorteo.html" style="color: var(--accent-color);">🎁 Sorteo</a>
-            <a href="galeria.html" style="color: var(--accent-color);">📸 Galería</a>
+            <a href="./#inicio">Inicio</a>
+            <a href="./#stream">Directo</a>
+            <a href="./#clips">Clips</a>
+            <a href="./#social">Social</a>
+            <a href="./#youtube">YouTube</a>
+            <a href="sorteo" style="color: var(--accent-color);">🎁 Sorteo</a>
+            <a href="galeria" style="color: var(--accent-color);">📸 Galería</a>
         </div>
         <div class="auth-buttons">
             <button id="theme-toggle" class="theme-toggle-btn" title="Cambiar tema">
@@ -43,7 +43,7 @@
         <div class="hero-content">
             <span class="hero-subtitle">— STREAMER DE KICK · CREADORA DE CONTENIDO</span>
             <h1 class="hero-title">LAGOCHAGAMING</h1>
-            <p class="hero-bio">Me llamo Stefany pero todos o la mayoría me dicen La Gocha o Gochita, a veces parezco esquizofrénica con mis locuras pero soy muy pana. Créeme que siempre que entres a mi stream te vas a reír muchísimo. Me gusta mucho hablar, reírme y hacerlos reír, ¡y también jugar! Todo es humor, pásatela bien y ¡no se te olvide seguirme en todas mis redes sociales y unirte a la comunidad de Discord!</p>
+            <p class="hero-bio">Me llamo Stefany pero todos o la mayoría me dicen La Gocha o Gochita, a veces parezco esquizofrénica con mis locuras pero soy muy pana. Créeme que siempre que entres a mi stream te vas a reír muchísimo. Me gusta mucho hablar, reírme y hacerlos reír, ¡y también jugar! Todo es humor, pásatela bien y ¡no se te olvide seguirme en todas mes redes sociales y unirte a la comunidad de Discord!</p>
             <div class="hero-buttons">
                 <a href="https://kick.com/lagochagaming" target="_blank" class="btn-primary">ÚNETE AL STREAM</a>
                 <div class="follower-widget">
@@ -176,12 +176,17 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
+        // Limpieza automática de 'index.html' en la barra de direcciones para GitHub Pages
+        if (window.location.pathname.endsWith('/index.html')) {
+            const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname.replace('/index.html', '/') + window.location.search + window.location.hash;
+            window.history.replaceState(null, null, cleanUrl);
+        }
+
         const supabaseUrl = 'https://cydiyaacnyydprgffmkq.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN5ZGl5YWFjbnl5ZHByZ2ZmbWtxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE3NjY1ODQsImV4cCI6MjEwNzM0MjU4NH0.fkipcX7Lx4lhGSa0zTDQ9BDNN3jiGTksB2hMlHH1bAs';
         var supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Control de Modo Oscuro / Claro
             const themeBtn = document.getElementById('theme-toggle');
             const currentTheme = localStorage.getItem('theme');
 
