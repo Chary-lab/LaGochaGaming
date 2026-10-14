@@ -174,14 +174,10 @@
         </div>
     </footer>
 
-    <!-- Scripts centralizados -->
-    <script src="main.js"></script>
+    <!-- Scripts centralizados (Supabase SDK primero, luego main.js) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="main.js"></script>
     <script>
-        const supabaseUrl = 'https://cydiyaacnyydprgffmkq.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN5ZGl5YWFjbnl5ZHByZ2ZmbWtxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE3NjY1ODQsImV4cCI6MjEwNzM0MjU4NH0.fkipcX7Lx4lhGSa0zTDQ9BDNN3jiGTksB2hMlHH1bAs';
-        var supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-
         document.addEventListener('DOMContentLoaded', () => {
             cargarMensajes();
             document.getElementById('muro-form').addEventListener('submit', (e) => {

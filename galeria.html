@@ -14,7 +14,6 @@
     <title>Galería | LaGochaGaming</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         .admin-controls-panel {
             display: flex;
@@ -207,19 +206,15 @@
         </div>
     </footer>
 
-    <!-- Scripts centralizados -->
+    <!-- Scripts centralizados (Supabase SDK primero, luego main.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="main.js"></script>
     <script>
-        const supabaseUrl = 'https://cydiyaacnyydprgffmkq.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN5ZGl5YWFjbnl5ZHByZ2ZmbWtxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE3NjY1ODQsImV4cCI6MjEwNzM0MjU4NH0.fkipcX7Lx4lhGSa0zTDQ9BDNN3jiGTksB2hMlHH1bAs';
-        var supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-
         let adminAutenticado = false;
 
         document.addEventListener('DOMContentLoaded', async () => {
             loadApprovedImages();
             
-            // Verificar si ya hay una sesión activa guardada
             const { data: { session } } = await supabase.auth.getSession();
             if (session) {
                 adminAutenticado = true;
@@ -240,7 +235,6 @@
         lightbox.id = 'lightbox';
         document.body.appendChild(lightbox);
 
-        // Cargar imágenes públicas
         async function loadApprovedImages() {
             try {
                 const { data, error } = await supabase
@@ -299,7 +293,6 @@
             } catch (err) { console.error('Error:', err); }
         }
 
-        // Sistema de Likes optimizado con Toggle
         async function toggleLike(imageId, currentLikes) {
             let userLikes = JSON.parse(localStorage.getItem('gocha_user_likes') || '[]');
             const idStr = String(imageId);
@@ -345,7 +338,6 @@
 
         lightbox.addEventListener('click', () => { lightbox.style.display = 'none'; });
 
-        // Cargar panel de imágenes pendientes para el Administrador
         async function loadPendingImages() {
             if (!adminAutenticado) return;
             try {
@@ -423,7 +415,6 @@
             } catch (e) { console.error(e); }
         }
 
-        // --- MODO ADMIN / AUTENTICACIÓN SEGURA CON SUPABASE ---
         function toggleModoAdmin() {
             if (!adminAutenticado) {
                 document.getElementById('modal-pin').style.display = 'flex';
@@ -476,7 +467,6 @@
             loadPendingImages();
         }
 
-        // --- SUBIDA DE IMÁGENES CON VALIDACIÓN DE TAMAÑO (5MB) ---
         const uploadInput = document.getElementById('uploadInput');
         const titleInput = document.getElementById('imageTitleInput');
         const uploadFeedback = document.getElementById('uploadFeedback');
