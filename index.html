@@ -185,78 +185,93 @@
             });
         });
 
- async function cargarMensajes() {
-    try {
-        const { data, error } = await supabase
-            .from('muro_saludos')
-            .select('autor, mensaje, created_at')
-            .order('created_at', { ascending: false })
-            .limit(100); // Aumentado a 100 mensajes con scroll disponible
+        /**
+         * Carga los mensajes del muro de saludos desde Supabase
+         * Obtiene los últimos 100 mensajes ordenados por fecha descendente
+         */
+        async function cargarMensajes() {
+            try {
+                const { data, error } = await supabase
+                    .from('muro_saludos')
+                    .select('autor, mensaje, created_at')
+                    .order('created_at', { ascending: false })
+                    .limit(100);
 
-        if (error) {
-            console.error('Error loading messages:', error);
-            return;
+                if (error) {
+                    console.error('Error loading messages:', error);
+                    return;
+                }
+
+                const container = document.getElementById('muro-mensajes-container');
+                container.innerHTML = '';
+
+                if (!data || data.length === 0) {
+                    container.innerHTML = '<p style="color: var(--text-muted); text-align: center; grid-column: 1/-1;">Aún no hay saludos. ¡Sé el primero en escribir uno! 💖</p>';
+                    return;
+                }
+
+                data.forEach(msg => {
+                    const card = document.createElement('div');
+                    card.className = 'muro-card';
+                    const fecha = new Date(msg.created_at).toLocaleString('es-ES', {
+                        day: '2-digit', month: '2-digit', year: 'numeric',
+                        hour: '2-digit', minute: '2-digit'
+                    });
+                    card.innerHTML = `
+                        <div class="muro-card-header">
+                            <span class="muro-autor">${escapeHtml(msg.autor)}</span>
+                            <span class="muro-fecha">${fecha}</span>
+                        </div>
+                        <p class="muro-texto">${escapeHtml(msg.mensaje)}</p>
+                    `;
+                    container.appendChild(card);
+                });
+            } catch (err) {
+                console.error('Error:', err);
+            }
         }
 
-        const container = document.getElementById('muro-mensajes-container');
-        container.innerHTML = '';
+        /**
+         * Envía un nuevo mensaje al muro de saludos
+         * Valida campos vacíos e inserta en la tabla 'muro_saludos'
+         */
+        async function enviarMensaje() {
+            const autorInput = document.getElementById('muro-autor');
+            const mensajeInput = document.getElementById('muro-mensaje');
+            const autor = autorInput.value.trim();
+            const mensaje = mensajeInput.value.trim();
 
-        if (!data || data.length === 0) {
-            container.innerHTML = '<p style="color: var(--text-muted); text-align: center; grid-column: 1/-1;">Aún no hay saludos. ¡Sé el primero en escribir uno! 💖</p>';
-            return;
+            if (!autor || !mensaje) return;
+
+            try {
+                const { error } = await supabase
+                    .from('muro_saludos')
+                    .insert([{ autor, mensaje }]);
+
+                if (error) {
+                    console.error('Error sending message:', error);
+                    alert('Error al enviar el saludo. Intenta de nuevo.');
+                    return;
+                }
+
+                document.getElementById('muro-form').reset();
+                cargarMensajes();
+            } catch (err) {
+                console.error('Error:', err);
+                alert('Error de conexión. Intenta de nuevo.');
+            }
         }
 
-        data.forEach(msg => {
-            const card = document.createElement('div');
-            card.className = 'muro-card';
-            const fecha = new Date(msg.created_at).toLocaleString('es-ES', {
-                day: '2-digit', month: '2-digit', year: 'numeric',
-                hour: '2-digit', minute: '2-digit'
-            });
-            card.innerHTML = `
-                <div class="muro-card-header">
-                    <span class="muro-autor">${escapeHtml(msg.autor)}</span>
-                    <span class="muro-fecha">${fecha}</span>
-                </div>
-                <p class="muro-texto">${escapeHtml(msg.mensaje)}</p>
-            `;
-            container.appendChild(card);
-        });
-    } catch (err) {
-        console.error('Error:', err);
-    }
-}
-
-async function enviarMensaje() {
-    const autor = document.getElementById('muro-autor').value.trim();
-    const mensaje = document.getElementById('muro-mensaje').value.trim();
-
-    if (!autor || !mensaje) return;
-
-    try {
-        const { error } = await supabase
-            .from('muro_saludos')
-            .insert([{ autor, mensaje }]);
-
-        if (error) {
-            console.error('Error sending message:', error);
-            alert('Error al enviar el saludo. Intenta de nuevo.');
-            return;
+        /**
+         * Escapa caracteres HTML para prevenir ataques XSS
+         * @param {string} text - El texto a escapar
+         * @returns {string} - El texto sanitizado
+         */
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
-
-        document.getElementById('muro-form').reset();
-        cargarMensajes();
-    } catch (err) {
-        console.error('Error:', err);
-        alert('Error de conexión. Intenta de nuevo.');
-    }
-}
-
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
     </script>
 </body>
 </html>
