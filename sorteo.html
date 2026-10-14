@@ -397,15 +397,20 @@
         </div>
     </div>
 
-    <!-- Modal PIN -->
+    <!-- Modal de Inicio de Sesión de Streamer -->
     <div id="modal-pin" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5,7,10,0.85); backdrop-filter: blur(5px); z-index: 10000; justify-content: center; align-items: center;">
         <div style="background: var(--card-bg); border: 1px solid var(--accent-color); padding: 30px; border-radius: 16px; box-shadow: var(--glow); text-align: center; max-width: 380px; width: 90%;">
             <h3 style="color: var(--accent-color); margin-bottom: 15px; font-size: 1.2rem;">🔒 ACCESO EXCLUSIVO GOCHA</h3>
-            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Ingresa el PIN de seguridad:</p>
-            <input type="password" id="input-pin-secret" placeholder="••••" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg-subtle); color: var(--text-main); text-align: center; font-size: 1.2rem; letter-spacing: 5px; margin-bottom: 10px; outline: none;">
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Ingresa tus datos de acceso:</p>
+            
+            <input type="email" id="streamer-email" placeholder="Correo electrónico" style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg-subtle); color: var(--text-main); font-size: 0.95rem; margin-bottom: 10px; outline: none;">
+            
+            <input type="password" id="streamer-password" placeholder="Contraseña" style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg-subtle); color: var(--text-main); font-size: 0.95rem; margin-bottom: 10px; outline: none;">
+            
             <div id="feedback-pin" class="feedback-msg" style="margin-bottom:15px;"></div>
+            
             <div style="display: flex; gap: 10px; justify-content: center;">
-                <button onclick="confirmarPin()" class="btn-primary" style="border: none; cursor: pointer;">Entrar</button>
+                <button onclick="confirmarLoginStreamer()" class="btn-primary" style="border: none; cursor: pointer;">Entrar</button>
                 <button onclick="cerrarModalPin()" class="btn-primary" style="background: var(--text-muted); color: #fff; border: none; cursor: pointer;">Cancelar</button>
             </div>
         </div>
@@ -424,12 +429,17 @@
         let sorteoAbierto = false;
         let modoManualAbierto = false;
         let streamerAutenticado = false;
-        const PIN_DEFAULT = '1234';
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             cargarEstadoSorteo();
             cargarParticipantesOnline();
             cargarTopGanadores();
+
+            // Verificar si ya hay una sesión activa guardada
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                streamerAutenticado = true;
+            }
 
             try {
                 supabase
@@ -439,8 +449,8 @@
                     .subscribe();
             } catch(e) { console.log('Modo local detectado'); }
 
-            document.getElementById('input-pin-secret')?.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') confirmarPin();
+            document.getElementById('streamer-password')?.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') confirmarLoginStreamer();
             });
         });
 
@@ -474,7 +484,7 @@
             } else if (tab === 'streamer') {
                 if (!streamerAutenticado) {
                     document.getElementById('modal-pin').style.display = 'flex';
-                    document.getElementById('input-pin-secret').focus();
+                    document.getElementById('streamer-email').focus();
                 } else {
                     secManual.style.display = 'none';
                     secStreamer.style.display = 'block';
@@ -486,25 +496,40 @@
 
         function cerrarModalPin() {
             document.getElementById('modal-pin').style.display = 'none';
-            document.getElementById('input-pin-secret').value = '';
+            document.getElementById('streamer-email').value = '';
+            document.getElementById('streamer-password').value = '';
+            document.getElementById('feedback-pin').innerText = '';
         }
 
-        function confirmarPin() {
-            const input = document.getElementById('input-pin-secret');
-            if (input && input.value === PIN_DEFAULT) {
-                streamerAutenticado = true;
-                cerrarModalPin();
-                document.getElementById('sec-modo-manual').style.display = 'none';
-                document.getElementById('sec-modo-streamer').style.display = 'block';
-                document.getElementById('tab-manual').classList.remove('active');
-                document.getElementById('tab-streamer').classList.add('active');
-            } else {
-                mostrarFeedback('feedback-pin', '❌ PIN de acceso incorrecto.', true);
-                if (input) input.value = '';
+        async function confirmarLoginStreamer() {
+            const email = document.getElementById('streamer-email').value.trim();
+            const password = document.getElementById('streamer-password').value.trim();
+
+            if (!email || !password) {
+                mostrarFeedback('feedback-pin', 'Rellena todos los campos', true);
+                return;
             }
+
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password,
+            });
+
+            if (error) {
+                mostrarFeedback('feedback-pin', '❌ Credenciales incorrectas', true);
+                return;
+            }
+
+            streamerAutenticado = true;
+            cerrarModalPin();
+            document.getElementById('sec-modo-manual').style.display = 'none';
+            document.getElementById('sec-modo-streamer').style.display = 'block';
+            document.getElementById('tab-manual').classList.remove('active');
+            document.getElementById('tab-streamer').classList.add('active');
         }
 
         function salirModoStreamer() {
+            supabase.auth.signOut();
             streamerAutenticado = false;
             document.getElementById('sec-modo-streamer').style.display = 'none';
             document.getElementById('tab-streamer').classList.remove('active');

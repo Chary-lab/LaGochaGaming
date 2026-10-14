@@ -173,15 +173,20 @@
         <div class="gallery-grid" id="galleryGrid"></div>
     </div>
 
-    <!-- Modal PIN Administrador -->
+    <!-- Modal de Inicio de Sesión de Administrador -->
     <div id="modal-pin" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5,7,10,0.85); backdrop-filter: blur(5px); z-index: 10000; justify-content: center; align-items: center;">
         <div style="background: var(--card-bg); border: 1px solid var(--accent-color); padding: 30px; border-radius: 16px; box-shadow: var(--glow); text-align: center; max-width: 380px; width: 90%;">
             <h3 style="color: var(--accent-color); margin-bottom: 15px; font-size: 1.2rem;">🔒 MODERACIÓN DE GALERÍA</h3>
-            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Ingresa el PIN de seguridad:</p>
-            <input type="password" id="input-pin-secret" placeholder="••••" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg-subtle); color: var(--text-main); text-align: center; font-size: 1.2rem; letter-spacing: 5px; margin-bottom: 10px; outline: none;">
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Ingresa tus datos de acceso:</p>
+            
+            <input type="email" id="admin-email" placeholder="Correo electrónico" style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg-subtle); color: var(--text-main); font-size: 0.95rem; margin-bottom: 10px; outline: none;">
+            
+            <input type="password" id="admin-password" placeholder="Contraseña" style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg-subtle); color: var(--text-main); font-size: 0.95rem; margin-bottom: 10px; outline: none;">
+            
             <div id="feedback-pin" style="margin-bottom:15px; color: #ff4d4d; font-size: 0.85rem; font-weight: bold;"></div>
+            
             <div style="display: flex; gap: 10px; justify-content: center;">
-                <button onclick="confirmarPinAdmin()" class="btn-primary" style="border: none; cursor: pointer;">Entrar</button>
+                <button onclick="iniciarSesionAdmin()" class="btn-primary" style="border: none; cursor: pointer;">Entrar</button>
                 <button onclick="cerrarModalPin()" class="btn-primary" style="background: var(--text-muted); color: #fff; border: none; cursor: pointer;">Cancelar</button>
             </div>
         </div>
@@ -210,12 +215,24 @@
         var supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         let adminAutenticado = false;
-        const PIN_DEFAULT = '1234';
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             loadApprovedImages();
-            document.getElementById('input-pin-secret')?.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') confirmarPinAdmin();
+            
+            // Verificar si ya hay una sesión activa guardada
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                adminAutenticado = true;
+                document.body.classList.add('admin-mode-active');
+                document.getElementById('panelPendientes').style.display = 'block';
+                const btn = document.getElementById('btn-toggle-admin');
+                btn.innerHTML = '<i class="fa-solid fa-lock-open"></i> Moderación Activa';
+                btn.classList.add('active');
+                loadPendingImages();
+            }
+
+            document.getElementById('admin-password')?.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') iniciarSesionAdmin();
             });
         });
 
@@ -406,12 +423,13 @@
             } catch (e) { console.error(e); }
         }
 
-        // --- MODO ADMIN / PIN ---
+        // --- MODO ADMIN / AUTENTICACIÓN SEGURA CON SUPABASE ---
         function toggleModoAdmin() {
             if (!adminAutenticado) {
                 document.getElementById('modal-pin').style.display = 'flex';
-                document.getElementById('input-pin-secret').focus();
+                document.getElementById('admin-email').focus();
             } else {
+                supabase.auth.signOut();
                 adminAutenticado = false;
                 document.body.classList.remove('admin-mode-active');
                 document.getElementById('panelPendientes').style.display = 'none';
@@ -423,25 +441,39 @@
 
         function cerrarModalPin() {
             document.getElementById('modal-pin').style.display = 'none';
-            document.getElementById('input-pin-secret').value = '';
+            document.getElementById('admin-email').value = '';
+            document.getElementById('admin-password').value = '';
             document.getElementById('feedback-pin').innerText = '';
         }
 
-        function confirmarPinAdmin() {
-            const input = document.getElementById('input-pin-secret');
-            if (input && input.value === PIN_DEFAULT) {
-                adminAutenticado = true;
-                cerrarModalPin();
-                document.body.classList.add('admin-mode-active');
-                document.getElementById('panelPendientes').style.display = 'block';
-                const btn = document.getElementById('btn-toggle-admin');
-                btn.innerHTML = '<i class="fa-solid fa-lock-open"></i> Moderación Activa';
-                btn.classList.add('active');
-                loadPendingImages();
-            } else {
-                document.getElementById('feedback-pin').innerText = '❌ PIN de acceso incorrecto';
-                if (input) input.value = '';
+        async function iniciarSesionAdmin() {
+            const email = document.getElementById('admin-email').value.trim();
+            const password = document.getElementById('admin-password').value.trim();
+            const feedback = document.getElementById('feedback-pin');
+
+            if (!email || !password) {
+                feedback.innerText = 'Rellena todos los campos';
+                return;
             }
+
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password,
+            });
+
+            if (error) {
+                feedback.innerText = '❌ Credenciales incorrectas';
+                return;
+            }
+
+            adminAutenticado = true;
+            cerrarModalPin();
+            document.body.classList.add('admin-mode-active');
+            document.getElementById('panelPendientes').style.display = 'block';
+            const btn = document.getElementById('btn-toggle-admin');
+            btn.innerHTML = '<i class="fa-solid fa-lock-open"></i> Moderación Activa';
+            btn.classList.add('active');
+            loadPendingImages();
         }
 
         // --- SUBIDA DE IMÁGENES CON VALIDACIÓN DE TAMAÑO (5MB) ---
@@ -461,7 +493,6 @@
                 return;
             }
 
-            // Validación de tamaño máximo (5MB)
             if (file.size > 5 * 1024 * 1024) {
                 uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ La imagen es demasiado pesada. El tamaño máximo permitido es 5MB.</p>';
                 uploadInput.value = '';
