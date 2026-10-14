@@ -244,7 +244,7 @@
                 const { data, error } = await supabase
                     .from('galeria')
                     .select('id, image_url, title, estado')
-                    .or('estado.eq.aprobado,estado.is.null'); // Compatible con registros antiguos sin la columna 'estado'
+                    .or('estado.eq.aprobado,estado.is.null');
 
                 if (error) return;
                 const galleryGrid = document.getElementById('galleryGrid');
@@ -338,27 +338,47 @@
 
         async function aprobarImagen(id) {
             try {
-                const { error } = await supabase.from('galeria').update({ estado: 'aprobado' }).eq('id', id);
-                if (!error) {
-                    loadPendingImages();
-                    loadApprovedImages();
-                } else {
-                    alert("Error al aprobar imagen.");
+                const idNumerico = isNaN(id) ? id : Number(id);
+                const { error } = await supabase
+                    .from('galeria')
+                    .update({ estado: 'aprobado' })
+                    .eq('id', idNumerico);
+
+                if (error) {
+                    console.error("Error de Supabase:", error);
+                    alert(`No se pudo aprobar la imagen: ${error.message}`);
+                    return;
                 }
-            } catch (e) { console.error(e); }
+
+                loadPendingImages();
+                loadApprovedImages();
+            } catch (e) {
+                console.error(e);
+                alert("Ocurrió un error inesperado de conexión.");
+            }
         }
 
         async function eliminarImagenPublica(id) {
             if (!confirm("¿Deseas eliminar/rechazar esta imagen?")) return;
             try {
-                const { error } = await supabase.from('galeria').delete().eq('id', id);
-                if (!error) {
-                    loadPendingImages();
-                    loadApprovedImages();
-                } else {
-                    alert("Error al eliminar la imagen.");
+                const idNumerico = isNaN(id) ? id : Number(id);
+                const { error } = await supabase
+                    .from('galeria')
+                    .delete()
+                    .eq('id', idNumerico);
+
+                if (error) {
+                    console.error("Error de Supabase:", error);
+                    alert(`No se pudo eliminar la imagen: ${error.message}`);
+                    return;
                 }
-            } catch (e) { console.error(e); }
+
+                loadPendingImages();
+                loadApprovedImages();
+            } catch (e) {
+                console.error(e);
+                alert("Ocurrió un error inesperado de conexión.");
+            }
         }
 
         // --- MODO ADMIN / PIN ---
@@ -437,7 +457,6 @@
         }
 
         async function saveToSupabaseTable(title, publicUrl) {
-            // Guardamos la foto con estado 'pendiente'
             const { error } = await supabase.from('galeria').insert([{ title: title, image_url: publicUrl, estado: 'pendiente' }]);
             if (!error) {
                 const feedback = document.getElementById('uploadFeedback');
