@@ -71,7 +71,6 @@
             text-transform: uppercase;
         }
 
-        /* Botones Principales de Navegación */
         .mode-tabs {
             display: flex;
             justify-content: center;
@@ -106,7 +105,6 @@
             box-shadow: var(--glow);
         }
 
-        /* Banner GochiSorteo */
         .banner-sorteo-activo {
             background: linear-gradient(135deg, rgba(83, 252, 24, 0.15), rgba(255, 102, 178, 0.2));
             border: 2px solid #53fc18;
@@ -168,7 +166,6 @@
             box-shadow: var(--glow);
         }
 
-        /* Feedback en Pantalla */
         .feedback-msg {
             margin-top: 10px;
             font-size: 0.9rem;
@@ -321,20 +318,18 @@
         </div>
 
         <div class="sorteo-container">
-            <!-- BOTONES DE SECCIÓN PRINCIPAL -->
             <div class="mode-tabs">
                 <button id="tab-manual" class="tab-btn" onclick="cambiarTab('manual')"><i class="fa-solid fa-pen-to-square"></i> Modo Manual</button>
                 <button id="tab-streamer" class="tab-btn" onclick="cambiarTab('streamer')"><i class="fa-solid fa-lock"></i> Modo Streamer (Exclusivo)</button>
             </div>
 
-            <!-- ESTADO DEL GOCHISORTEO PUBLICO -->
             <div id="banner-estado-sorteo">
                 <div class="banner-sorteo-cerrado">
                     <i class="fa-solid fa-lock"></i> El GochiSorteo está cerrado en este momento.
                 </div>
             </div>
 
-            <!-- SECCIÓN 1: MODO MANUAL -->
+            <!-- MODO MANUAL -->
             <div id="sec-modo-manual" style="display: none;">
                 <h1 style="font-size: 1.5rem; margin-top: 10px;">✍️ App de Sorteos Manual</h1>
                 <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">
@@ -364,7 +359,7 @@
                 </div>
             </div>
 
-            <!-- SECCIÓN 2: MODO STREAMER (EXCLUSIVO LA GOCHA) -->
+            <!-- MODO STREAMER -->
             <div id="sec-modo-streamer" style="display: none; border-top: 1px solid var(--border-color); padding-top: 20px; margin-top: 15px;">
                 <div style="text-align: center; margin-bottom: 20px;">
                     <p style="color: var(--accent-color); font-weight: bold; font-size: 0.9rem;">🔐 Panel Exclusivo GochiSorteo</p>
@@ -416,6 +411,8 @@
         </div>
     </div>
 
+    <!-- Scripts centralizados -->
+    <script src="main.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         const supabaseUrl = 'https://cydiyaacnyydprgffmkq.supabase.co';
@@ -430,33 +427,10 @@
         const PIN_DEFAULT = '1234';
 
         document.addEventListener('DOMContentLoaded', () => {
-            const themeBtn = document.getElementById('theme-toggle');
-            const currentTheme = localStorage.getItem('theme');
-
-            if (currentTheme === 'light') {
-                document.body.classList.add('light-mode');
-                if (themeBtn) themeBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
-            }
-
-            if (themeBtn) {
-                themeBtn.addEventListener('click', () => {
-                    document.body.classList.toggle('light-mode');
-                    let theme = 'dark';
-                    if (document.body.classList.contains('light-mode')) {
-                        theme = 'light';
-                        themeBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
-                    } else {
-                        themeBtn.innerHTML = '<i class="fa-solid fa-moon"></i>';
-                    }
-                    localStorage.setItem('theme', theme);
-                });
-            }
-
             cargarEstadoSorteo();
             cargarParticipantesOnline();
             cargarTopGanadores();
 
-            // Tiempo Real de Supabase
             try {
                 supabase
                     .channel('realtime_sorteo_total')
@@ -470,7 +444,6 @@
             });
         });
 
-        // FEEDBACK VISUAL
         function mostrarFeedback(elementId, mensaje, esError = false) {
             const el = document.getElementById(elementId);
             if (!el) return;
@@ -481,7 +454,6 @@
             }, 3500);
         }
 
-        // --- NAVEGACIÓN TABS ---
         function cambiarTab(tab) {
             const secManual = document.getElementById('sec-modo-manual');
             const secStreamer = document.getElementById('sec-modo-streamer');
@@ -538,7 +510,6 @@
             document.getElementById('tab-streamer').classList.remove('active');
         }
 
-        // --- ABRIR / CERRAR SORTEO ---
         async function toggleEstadoSorteo() {
             sorteoAbierto = !sorteoAbierto;
             try {
@@ -653,7 +624,6 @@
             if (e.key === 'Enter') enviarParticipacionTemporal();
         }
 
-        // --- MODO MANUAL ---
         function agregarParticipantePublico() {
             const input = document.getElementById('nombre-input-publico');
             if (!input) return;
@@ -723,7 +693,6 @@
             }, 50);
         }
 
-        // --- LISTA Y RULETA STREAMER ---
         async function cargarParticipantesOnline() {
             try {
                 const { data, error } = await supabase.from('participantes_en_vivo').select('username').order('created_at', { ascending: true });

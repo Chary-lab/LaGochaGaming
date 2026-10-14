@@ -113,6 +113,12 @@
             font-size: 0.9rem;
             margin-top: 10px;
         }
+        .msg-subida-error {
+            color: #ff4d4d;
+            font-weight: bold;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -196,6 +202,8 @@
         </div>
     </footer>
 
+    <!-- Scripts centralizados -->
+    <script src="main.js"></script>
     <script>
         const supabaseUrl = 'https://cydiyaacnyydprgffmkq.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN5ZGl5YWFjbnl5ZHByZ2ZmbWtxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE3NjY1ODQsImV4cCI6MjEwNzM0MjU4NH0.fkipcX7Lx4lhGSa0zTDQ9BDNN3jiGTksB2hMlHH1bAs';
@@ -205,28 +213,7 @@
         const PIN_DEFAULT = '1234';
 
         document.addEventListener('DOMContentLoaded', () => {
-            const themeBtn = document.getElementById('theme-toggle');
-            const currentTheme = localStorage.getItem('theme');
-
-            if (currentTheme === 'light') {
-                document.body.classList.add('light-mode');
-                if (themeBtn) themeBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
-            }
-
-            if (themeBtn) {
-                themeBtn.addEventListener('click', () => {
-                    document.body.classList.toggle('light-mode');
-                    let theme = 'dark';
-                    if (document.body.classList.contains('light-mode')) {
-                        theme = 'light';
-                        themeBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
-                    } else {
-                        themeBtn.innerHTML = '<i class="fa-solid fa-moon"></i>';
-                    }
-                    localStorage.setItem('theme', theme);
-                });
-            }
-
+            loadApprovedImages();
             document.getElementById('input-pin-secret')?.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') confirmarPinAdmin();
             });
@@ -236,9 +223,7 @@
         lightbox.id = 'lightbox';
         document.body.appendChild(lightbox);
 
-        loadApprovedImages();
-
-        // Cargar imágenes públicas (traemos todas las que no estén explícitamente en estado 'pendiente')
+        // Cargar imágenes públicas
         async function loadApprovedImages() {
             try {
                 const { data, error } = await supabase
@@ -253,7 +238,6 @@
                 const galleryGrid = document.getElementById('galleryGrid');
                 galleryGrid.innerHTML = '';
 
-                // Filtramos en JavaScript para asegurarnos de mostrar las aprobadas, nulas o vacías (excluyendo solo las pendientes)
                 const imagenesPublicas = data ? data.filter(img => !img.estado || img.estado.toLowerCase() !== 'pendiente') : [];
 
                 if (imagenesPublicas.length === 0) {
@@ -298,7 +282,7 @@
             } catch (err) { console.error('Error:', err); }
         }
 
-        // Lógica para Dar/Quitar Like
+        // Sistema de Likes optimizado con Toggle
         async function toggleLike(imageId, currentLikes) {
             let userLikes = JSON.parse(localStorage.getItem('gocha_user_likes') || '[]');
             const idStr = String(imageId);
@@ -354,7 +338,6 @@
 
                 if (error) return;
 
-                // Filtramos estrictamente las que tengan estado 'pendiente'
                 const pendientes = data ? data.filter(img => img.estado && img.estado.toLowerCase() === 'pendiente') : [];
 
                 const gridPendientes = document.getElementById('gridPendientes');
@@ -395,17 +378,13 @@
                     .eq('id', idNumerico);
 
                 if (error) {
-                    console.error("Error de Supabase:", error);
                     alert(`No se pudo aprobar la imagen: ${error.message}`);
                     return;
                 }
 
                 loadPendingImages();
                 loadApprovedImages();
-            } catch (e) {
-                console.error(e);
-                alert("Ocurrió un error inesperado de conexión.");
-            }
+            } catch (e) { console.error(e); }
         }
 
         async function eliminarImagenPublica(id) {
@@ -418,17 +397,13 @@
                     .eq('id', idNumerico);
 
                 if (error) {
-                    console.error("Error de Supabase:", error);
                     alert(`No se pudo eliminar la imagen: ${error.message}`);
                     return;
                 }
 
                 loadPendingImages();
                 loadApprovedImages();
-            } catch (e) {
-                console.error(e);
-                alert("Ocurrió un error inesperado de conexión.");
-            }
+            } catch (e) { console.error(e); }
         }
 
         // --- MODO ADMIN / PIN ---
@@ -469,9 +444,10 @@
             }
         }
 
-        // --- SUBIDA DE IMÁGENES ---
+        // --- SUBIDA DE IMÁGENES CON VALIDACIÓN DE TAMAÑO (5MB) ---
         const uploadInput = document.getElementById('uploadInput');
         const titleInput = document.getElementById('imageTitleInput');
+        const uploadFeedback = document.getElementById('uploadFeedback');
 
         uploadInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
@@ -485,16 +461,24 @@
                 return;
             }
 
+            // Validación de tamaño máximo (5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ La imagen es demasiado pesada. El tamaño máximo permitido es 5MB.</p>';
+                uploadInput.value = '';
+                return;
+            }
+
             uploadToSupabase(file, customTitle);
         });
 
         async function uploadToSupabase(file, title) {
             if (file.type.startsWith('image/')) {
+                uploadFeedback.innerHTML = '<p style="color: var(--text-muted); margin-top:10px;">⏳ Subiendo imagen...</p>';
                 const filePath = `gallery_${Date.now()}_${file.name}`;
                 const { error } = await supabase.storage.from('fotos-galeria').upload(filePath, file);
                 
                 if (error) {
-                    alert("Error al subir el archivo.");
+                    uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ Error al subir la imagen al almacenamiento.</p>';
                     return;
                 }
 
@@ -509,12 +493,11 @@
         async function saveToSupabaseTable(title, publicUrl) {
             const { error } = await supabase.from('galeria').insert([{ title: title, image_url: publicUrl, estado: 'pendiente', likes: 0 }]);
             if (!error) {
-                const feedback = document.getElementById('uploadFeedback');
-                feedback.innerHTML = '<p class="msg-subida-exito">✅ ¡Imagen enviada con éxito! Aparecerá en la galería cuando La Gocha la apruebe. 💖</p>';
-                setTimeout(() => { feedback.innerHTML = ''; }, 5000);
+                uploadFeedback.innerHTML = '<p class="msg-subida-exito">✅ ¡Imagen enviada con éxito! Aparecerá en la galería cuando La Gocha la apruebe. 💖</p>';
+                setTimeout(() => { uploadFeedback.innerHTML = ''; }, 5000);
                 if (adminAutenticado) loadPendingImages();
             } else {
-                alert("Error al guardar en la base de datos.");
+                uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ Error al guardar en la base de datos.</p>';
             }
         }
     </script>

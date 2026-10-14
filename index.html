@@ -110,7 +110,7 @@
         </div>
     </section>
 
-    <!-- 📱 SECCIÓN SOCIAL DIVIDIDA (ARRIBA) -->
+    <!-- 📱 SECCIÓN SOCIAL -->
     <section id="social" class="content-section">
         <h2>📱 Mi Feed Social</h2>
         <div class="social-grid">
@@ -174,41 +174,15 @@
         </div>
     </footer>
 
+    <!-- Scripts centralizados -->
+    <script src="main.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // Limpieza automática de 'index.html' en la barra de direcciones para GitHub Pages
-        if (window.location.pathname.endsWith('/index.html')) {
-            const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname.replace('/index.html', '/') + window.location.search + window.location.hash;
-            window.history.replaceState(null, null, cleanUrl);
-        }
-
         const supabaseUrl = 'https://cydiyaacnyydprgffmkq.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN5ZGl5YWFjbnl5ZHByZ2ZmbWtxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE3NjY1ODQsImV4cCI6MjEwNzM0MjU4NH0.fkipcX7Lx4lhGSa0zTDQ9BDNN3jiGTksB2hMlHH1bAs';
         var supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         document.addEventListener('DOMContentLoaded', () => {
-            const themeBtn = document.getElementById('theme-toggle');
-            const currentTheme = localStorage.getItem('theme');
-
-            if (currentTheme === 'light') {
-                document.body.classList.add('light-mode');
-                if (themeBtn) themeBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
-            }
-
-            if (themeBtn) {
-                themeBtn.addEventListener('click', () => {
-                    document.body.classList.toggle('light-mode');
-                    let theme = 'dark';
-                    if (document.body.classList.contains('light-mode')) {
-                        theme = 'light';
-                        themeBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
-                    } else {
-                        themeBtn.innerHTML = '<i class="fa-solid fa-moon"></i>';
-                    }
-                    localStorage.setItem('theme', theme);
-                });
-            }
-
             cargarMensajes();
             document.getElementById('muro-form').addEventListener('submit', (e) => {
                 e.preventDefault();
