@@ -266,7 +266,7 @@
                     const galleryCard = document.createElement('div');
                     galleryCard.className = 'gallery-card';
                     galleryCard.innerHTML = `
-                        <img src="${image.image_url}" alt="${image.title}" loading="lazy">
+                        <img src="${image.image_url}" alt="Fotografía de comunidad compartida en galería: ${image.title}" loading="lazy">
                         <div class="gallery-card-info">
                             <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px;" title="${image.title}">${image.title}</span>
                             <div style="display: flex; gap: 8px; align-items: center;">
@@ -281,7 +281,7 @@
                         </div>
                     `;
                     galleryCard.querySelector('img').addEventListener('click', () => {
-                        lightbox.innerHTML = `<img src="${image.image_url}" alt="${image.title}">`;
+                        lightbox.innerHTML = `<img src="${image.image_url}" alt="Fotografía de comunidad compartida en galería: ${image.title}">`;
                         lightbox.style.display = 'flex';
                     });
                     galleryGrid.prepend(galleryCard);
@@ -364,7 +364,7 @@
                     card.className = 'gallery-card';
                     card.style.border = '1px solid #f39c12';
                     card.innerHTML = `
-                        <img src="${image.image_url}" alt="${image.title}" loading="lazy">
+                        <img src="${image.image_url}" alt="Fotografía de comunidad compartida en galería: ${image.title}" loading="lazy">
                         <div class="gallery-card-info" style="flex-direction: column; gap: 8px; align-items: stretch;">
                             <span style="font-weight: bold; text-align: center;">${image.title}</span>
                             <div style="display: flex; justify-content: space-between; gap: 5px;">
