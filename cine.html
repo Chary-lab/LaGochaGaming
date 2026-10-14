@@ -184,8 +184,9 @@
                     Pega cualquier enlace (<strong>Google Drive</strong>, <strong>YouTube</strong> o enlace directo <strong>.mp4</strong>). ¡Se transforma automáticamente!
                 </p>
                 <div style="display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap;">
-                    <input type="text" id="inputVideoUrl" placeholder="Pega aquí el enlace de Google Drive, YouTube o MP4..." style="flex: 1; min-width: 250px; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg-subtle); color: var(--text-main); outline: none;">
+                    <input type="text" id="inputVideoUrl" placeholder="Pega aquí el enlace de Google Drive, YouTube ou MP4..." style="flex: 1; min-width: 250px; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg-subtle); color: var(--text-main); outline: none;">
                     <button onclick="actualizarUrlPelicula()" class="btn-primary" style="padding: 10px 20px; border: none; cursor: pointer;">Cargar Video</button>
+                    <button onclick="cerrarReproductorTotal()" class="btn-primary" style="background: #ff4d4d; padding: 10px 20px; border: none; cursor: pointer;" title="Apagar reproductor para todos">🛑 Apagar / Cerrar</button>
                 </div>
                 <div style="display: flex; gap: 10px; align-items: center;">
                     <span style="font-size: 0.85rem; color: #53fc18; font-weight: bold;" id="statusSyncText">🟢 Sincronización en tiempo real activa</span>
@@ -258,12 +259,10 @@
         function procesarUrlEntrante(url) {
             if (!url) return '';
             
-            // 1. Detectar si es un enlace de Google Drive
             if (url.includes('drive.google.com') || url.includes('googleusercontent.com')) {
                 const matchDrive = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
                 if (matchDrive && matchDrive[1]) {
                     const driveId = matchDrive[1];
-                    // Transforma automáticamente al formato directo
                     return `https://lh3.googleusercontent.com/d/${driveId}`;
                 }
             }
@@ -296,7 +295,6 @@
                     .subscribe();
             } catch(e) { console.log('Modo local activo'); }
 
-            // Eventos MP4 / Drive Directo
             mp4Player.addEventListener('play', () => { if (streamerCineAutenticado && !actualizandoLocalmente && !esYouTube) enviarComandoSync('play', mp4Player.currentTime); });
             mp4Player.addEventListener('pause', () => { if (streamerCineAutenticado && !actualizandoLocalmente && !esYouTube) enviarComandoSync('pause', mp4Player.currentTime); });
             mp4Player.addEventListener('seeked', () => { if (streamerCineAutenticado && !actualizandoLocalmente && !esYouTube) enviarComandoSync('seek', mp4Player.currentTime); });
@@ -321,7 +319,6 @@
                 return;
             }
 
-            // Transformar la URL automáticamente si viene de Drive
             const processedUrl = procesarUrlEntrante(rawUrl);
 
             try {
@@ -336,6 +333,40 @@
             } catch(e) { alert('Error al actualizar'); }
         }
 
+        // Función para apagar y cerrar el reproductor por completo
+        async function cerrarReproductorTotal() {
+            if (!streamerCineAutenticado) return;
+
+            // Limpiar localmente
+            if (mp4Player) {
+                mp4Player.pause();
+                mp4Player.currentTime = 0;
+                mp4Player.style.display = 'none';
+            }
+            if (ytPlayer && typeof ytPlayer.destroy === 'function') {
+                ytPlayer.destroy();
+                ytPlayer = null;
+            }
+            if (ytContainer) {
+                ytContainer.style.display = 'none';
+                ytContainer.innerHTML = '';
+            }
+
+            // Sintonizar en Supabase con enlace vacío para todos los espectadores
+            try {
+                await supabase.from('sync_cine').upsert({
+                    id: 1,
+                    video_url: '',
+                    estado: 'pause',
+                    tiempo: 0,
+                    updated_at: new Date().toISOString()
+                });
+                alert('Reproductor apagado y cerrado para todos.');
+            } catch(e) {
+                console.error('Error al apagar el reproductor:', e);
+            }
+        }
+
         async function enviarComandoSync(estado, tiempo) {
             try {
                 await supabase.from('sync_cine').upsert({
@@ -348,7 +379,23 @@
         }
 
         function sincronizarReproductorRemoto(data) {
-            if (!data || !data.video_url) return;
+            // Si no hay datos o la URL está vacía, ocultar y limpiar reproductores
+            if (!data || !data.video_url) {
+                if (mp4Player) {
+                    mp4Player.pause();
+                    mp4Player.currentTime = 0;
+                    mp4Player.style.display = 'none';
+                }
+                if (ytPlayer && typeof ytPlayer.destroy === 'function') {
+                    ytPlayer.destroy();
+                    ytPlayer = null;
+                }
+                if (ytContainer) {
+                    ytContainer.style.display = 'none';
+                    ytContainer.innerHTML = '';
+                }
+                return;
+            }
 
             const finalUrl = procesarUrlEntrante(data.video_url);
             const ytId = extraerYouTubeId(finalUrl);
