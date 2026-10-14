@@ -379,6 +379,12 @@
         }
 
         async function aprobarImagen(id) {
+            if (!(await validarSesionStreamer())) {
+                adminAutenticado = false;
+                toggleModoAdmin();
+                alert('Tu sesión ha expirado. Vuelve a iniciar sesión.');
+                return;
+            }
             try {
                 const idNumerico = isNaN(id) ? id : Number(id);
                 const { error } = await supabase
@@ -397,6 +403,12 @@
         }
 
         async function eliminarImagenPublica(id) {
+            if (!(await validarSesionStreamer())) {
+                adminAutenticado = false;
+                toggleModoAdmin();
+                alert('Tu sesión ha expirado. Vuelve a iniciar sesión.');
+                return;
+            }
             if (!confirm("¿Deseas eliminar/rechazar esta imagen?")) return;
             try {
                 const idNumerico = isNaN(id) ? id : Number(id);

@@ -532,11 +532,18 @@
         }
 
         async function toggleEstadoSorteo() {
+            if (!(await validarSesionStreamer())) {
+                streamerAutenticado = false;
+                salirModoStreamer();
+                mostrarFeedback('feedback-streamer-direct', '❌ Sesión expirada. Por favor, ingresa de nuevo.', true);
+                return;
+            }
+
             sorteoAbierto = !sorteoAbierto;
             try {
                 await supabase.from('config_sorteo').upsert({ id: 1, abierto: sorteoAbierto });
             } catch(e) { console.log('Actualizado localmente'); }
-            
+
             actualizarUIEstadoSorteo();
         }
 
@@ -740,6 +747,13 @@
         }
 
         async function vaciarTombolaOnline() {
+            if (!(await validarSesionStreamer())) {
+                streamerAutenticado = false;
+                salirModoStreamer();
+                mostrarFeedback('feedback-streamer-direct', '❌ Sesión expirada. Por favor, ingresa de nuevo.', true);
+                return;
+            }
+
             listaStreamerOnline = [];
             localStorage.removeItem('gochi_registrado_user');
             renderListaStreamer();

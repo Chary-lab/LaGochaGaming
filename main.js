@@ -34,3 +34,20 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+/**
+ * Verifica si la sesión del streamer/admin sigue activa.
+ * @returns {Promise<boolean>} - Retorna true si la sesión es válida, false si expiró.
+ */
+async function validarSesionStreamer() {
+    try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error || !session) {
+            return false;
+        }
+        return true;
+    } catch (e) {
+        console.error("Error validando sesión:", e);
+        return false;
+    }
+}
