@@ -198,7 +198,7 @@
 
     <script>
         const supabaseUrl = 'https://cydiyaacnyydprgffmkq.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN5ZGl5YWFjbnl5ZHByZ2ZmbWtxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE3NjY1ODQsImV4cCI6MjEwNzM0MjU4NH0.fkipcX7Lx4lhGSa0zTDQ9BDNN3jiGTksB2hMlHH1bAs';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN5ZGl5YWFjbnl5ZHPrZ2ZmbWtxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE3NjY1ODQsImV4cCI6MjEwNzM0MjU4NH0.fkipcX7Lx4lhGSa0zTDQ9BDNN3jiGTksB2hMlHH1bAs';
         var supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         let adminAutenticado = false;
@@ -238,12 +238,12 @@
 
         loadApprovedImages();
 
-        // Cargar sólo imágenes aprobadas para el público
+        // Cargar imágenes aprobadas con sistema de Likes Persistente
         async function loadApprovedImages() {
             try {
                 const { data, error } = await supabase
                     .from('galeria')
-                    .select('id, image_url, title, estado')
+                    .select('id, image_url, title, estado, likes')
                     .or('estado.eq.aprobado,estado.is.null');
 
                 if (error) return;
@@ -255,7 +255,14 @@
                     return;
                 }
 
+                // Obtener lista de IDs likeweadas localmente por el usuario
+                const userLikes = JSON.parse(localStorage.getItem('gocha_user_likes') || '[]');
+
                 data.forEach(image => {
+                    const cantLikes = image.likes || 0;
+                    const idStr = String(image.id);
+                    const isLiked = userLikes.includes(idStr);
+
                     const galleryCard = document.createElement('div');
                     galleryCard.className = 'gallery-card';
                     galleryCard.innerHTML = `
@@ -266,9 +273,9 @@
                                 <button class="btn-eliminar-publica" onclick="eliminarImagenPublica('${image.id}')" title="Borrar foto de la galería">
                                     <i class="fa-solid fa-trash-can"></i>
                                 </button>
-                                <button class="like-btn" data-likes="0">
-                                    <i class="far fa-heart"></i>
-                                    <span>0</span>
+                                <button class="like-btn ${isLiked ? 'liked' : ''}" id="like-btn-${image.id}" onclick="toggleLike('${image.id}', ${cantLikes})">
+                                    <i class="${isLiked ? 'fas' : 'far'} fa-heart"></i>
+                                    <span id="like-count-${image.id}">${cantLikes}</span>
                                 </button>
                             </div>
                         </div>
@@ -277,14 +284,6 @@
                         lightbox.innerHTML = `<img src="${image.image_url}" alt="${image.title}">`;
                         lightbox.style.display = 'flex';
                     });
-                    const likeBtn = galleryCard.querySelector('.like-btn');
-                    likeBtn.addEventListener('click', () => {
-                        let likes = parseInt(likeBtn.getAttribute('data-likes')) || 0;
-                        likes++;
-                        likeBtn.setAttribute('data-likes', likes);
-                        likeBtn.innerHTML = `<i class="fas fa-heart"></i> <span>${likes}</span>`;
-                        likeBtn.classList.add('liked');
-                    });
                     galleryGrid.prepend(galleryCard);
                 });
 
@@ -292,6 +291,55 @@
                     document.body.classList.add('admin-mode-active');
                 }
             } catch (err) { console.error('Error:', err); }
+        }
+
+        // Lógica para Dar/Quitar Like (Máximo 1 por usuario)
+        async function toggleLike(imageId, currentLikes) {
+            let userLikes = JSON.parse(localStorage.getItem('gocha_user_likes') || '[]');
+            const idStr = String(imageId);
+            const idNumerico = isNaN(imageId) ? imageId : Number(imageId);
+            const isLiked = userLikes.includes(idStr);
+
+            let newLikesCount = currentLikes;
+
+            if (isLiked) {
+                // Quitar Like
+                userLikes = userLikes.filter(id => id !== idStr);
+                newLikesCount = Math.max(0, currentLikes - 1);
+            } else {
+                // Dar Like
+                userLikes.push(idStr);
+                newLikesCount = currentLikes + 1;
+            }
+
+            // Actualizar UI inmediatamente para respuesta fluida
+            const btn = document.getElementById(`like-btn-${imageId}`);
+            const countSpan = document.getElementById(`like-count-${imageId}`);
+
+            if (btn && countSpan) {
+                countSpan.innerText = newLikesCount;
+                if (!isLiked) {
+                    btn.classList.add('liked');
+                    btn.querySelector('i').className = 'fas fa-heart';
+                } else {
+                    btn.classList.remove('liked');
+                    btn.querySelector('i').className = 'far fa-heart';
+                }
+                btn.setAttribute('onclick', `toggleLike('${imageId}', ${newLikesCount})`);
+            }
+
+            // Guardar localmente
+            localStorage.setItem('gocha_user_likes', JSON.stringify(userLikes));
+
+            // Sincronizar en Supabase
+            try {
+                await supabase
+                    .from('galeria')
+                    .update({ likes: newLikesCount })
+                    .eq('id', idNumerico);
+            } catch (e) {
+                console.error("Error actualizando likes en Supabase:", e);
+            }
         }
 
         lightbox.addEventListener('click', () => { lightbox.style.display = 'none'; });
@@ -457,7 +505,7 @@
         }
 
         async function saveToSupabaseTable(title, publicUrl) {
-            const { error } = await supabase.from('galeria').insert([{ title: title, image_url: publicUrl, estado: 'pendiente' }]);
+            const { error } = await supabase.from('galeria').insert([{ title: title, image_url: publicUrl, estado: 'pendiente', likes: 0 }]);
             if (!error) {
                 const feedback = document.getElementById('uploadFeedback');
                 feedback.innerHTML = '<p class="msg-subida-exito">✅ ¡Imagen enviada con éxito! Aparecerá en la galería cuando La Gocha la apruebe. 💖</p>';
