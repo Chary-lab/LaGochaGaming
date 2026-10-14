@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <!-- Favicon package -->
     <link rel="icon" type="image/x-icon" href="img/favicon.ico">
     <link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16x16.png">
     <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
@@ -144,12 +143,17 @@
     <div class="content-section" style="margin-top: 85px;">
         <div class="admin-controls-panel">
             <h1>Mi Galería</h1>
-            <button id="btn-toggle-admin" class="btn-admin-mode" onclick="toggleModoAdmin()">
-                <i class="fa-solid fa-lock"></i> Modo Moderación
-            </button>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <button id="btn-toggle-admin" class="btn-admin-mode" onclick="toggleModoAdmin()">
+                    <i class="fa-solid fa-lock"></i> Modo Moderación
+                </button>
+                <button id="btn-logout-galeria" class="btn-admin-mode" onclick="cerrarSesionAdminGlobal()" style="display: none; background: #c0392b; color: #fff;">
+                    <i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión Admin
+                </button>
+            </div>
         </div>
 
-        <!-- PANEL EXCLUSIVO ADMIN: IMÁGENES PENDIENTES DE APROBACIÓN -->
+        <!-- PANEL DE MODERACIÓN -->
         <div id="panelPendientes" class="panel-pendientes">
             <h3><i class="fa-solid fa-clock-rotate-left"></i> Imágenes Pendientes por Aprobar (<span id="cantPendientes">0</span>)</h3>
             <div class="gallery-grid" id="gridPendientes"></div>
@@ -172,7 +176,7 @@
         <div class="gallery-grid" id="galleryGrid"></div>
     </div>
 
-    <!-- Modal de Inicio de Sesión de Administrador -->
+    <!-- Modal de Inicio de Sesión -->
     <div id="modal-pin" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5,7,10,0.85); backdrop-filter: blur(5px); z-index: 10000; justify-content: center; align-items: center;">
         <div style="background: var(--card-bg); border: 1px solid var(--accent-color); padding: 30px; border-radius: 16px; box-shadow: var(--glow); text-align: center; max-width: 380px; width: 90%;">
             <h3 style="color: var(--accent-color); margin-bottom: 15px; font-size: 1.2rem;">🔒 MODERACIÓN DE GALERÍA</h3>
@@ -199,14 +203,11 @@
                 <a href="https://www.instagram.com/oscurostefany" target="_blank" class="social-icon" title="Instagram"><i class="fab fa-instagram"></i></a>
                 <a href="https://discord.com/invite/svrteKBbeh" target="_blank" class="social-icon" title="Discord"><i class="fab fa-discord"></i></a>
                 <a href="https://www.youtube.com/@lagochagaming" target="_blank" class="social-icon" title="YouTube"><i class="fab fa-youtube"></i></a>
-                <a href="#" target="_blank" class="social-icon" title="Twitter"><i class="fab fa-x-twitter"></i></a>
-                <a href="#" target="_blank" class="social-icon" title="Facebook"><i class="fab fa-facebook-f"></i></a>
             </div>
             <p class="footer-copyright">&copy; 2026 LAGOCHAGAMING - ALL RIGHTS RESERVED</p>
         </div>
     </footer>
 
-    <!-- Scripts centralizados (Supabase SDK primero, luego main.js) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="main.js"></script>
     <script>
@@ -220,6 +221,7 @@
                 adminAutenticado = true;
                 document.body.classList.add('admin-mode-active');
                 document.getElementById('panelPendientes').style.display = 'block';
+                document.getElementById('btn-logout-galeria').style.display = 'inline-flex';
                 const btn = document.getElementById('btn-toggle-admin');
                 btn.innerHTML = '<i class="fa-solid fa-lock-open"></i> Moderación Activa';
                 btn.classList.add('active');
@@ -241,18 +243,15 @@
                     .from('galeria')
                     .select('id, image_url, title, estado, likes');
 
-                if (error) {
-                    console.error("Error al cargar galería:", error);
-                    return;
-                }
+                if (error) return;
 
                 const galleryGrid = document.getElementById('galleryGrid');
                 galleryGrid.innerHTML = '';
 
-                const imagenesPublicas = data ? data.filter(img => !img.estado || img.estado.toLowerCase() !== 'pendiente') : [];
+                const imagenesPublicas = data ? data.filter(img => img.estado && img.estado.toLowerCase() === 'aprobado') : [];
 
                 if (imagenesPublicas.length === 0) {
-                    galleryGrid.innerHTML = '<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center;">No hay imágenes públicas aún.</p>';
+                    galleryGrid.innerHTML = '<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center;">No hay imágenes públicas aprobadas aún.</p>';
                     return;
                 }
 
@@ -266,7 +265,7 @@
                     const galleryCard = document.createElement('div');
                     galleryCard.className = 'gallery-card';
                     galleryCard.innerHTML = `
-                        <img src="${image.image_url}" alt="Fotografía de comunidad compartida en galería: ${image.title}" loading="lazy">
+                        <img src="${image.image_url}" alt="${image.title}" loading="lazy">
                         <div class="gallery-card-info">
                             <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px;" title="${image.title}">${image.title}</span>
                             <div style="display: flex; gap: 8px; align-items: center;">
@@ -281,7 +280,7 @@
                         </div>
                     `;
                     galleryCard.querySelector('img').addEventListener('click', () => {
-                        lightbox.innerHTML = `<img src="${image.image_url}" alt="Fotografía de comunidad compartida en galería: ${image.title}">`;
+                        lightbox.innerHTML = `<img src="${image.image_url}" alt="${image.title}">`;
                         lightbox.style.display = 'flex';
                     });
                     galleryGrid.prepend(galleryCard);
@@ -327,13 +326,8 @@
             localStorage.setItem('gocha_user_likes', JSON.stringify(userLikes));
 
             try {
-                await supabase
-                    .from('galeria')
-                    .update({ likes: newLikesCount })
-                    .eq('id', idNumerico);
-            } catch (e) {
-                console.error("Error actualizando likes en Supabase:", e);
-            }
+                await supabase.from('galeria').update({ likes: newLikesCount }).eq('id', idNumerico);
+            } catch (e) { console.error(e); }
         }
 
         lightbox.addEventListener('click', () => { lightbox.style.display = 'none'; });
@@ -341,10 +335,7 @@
         async function loadPendingImages() {
             if (!adminAutenticado) return;
             try {
-                const { data, error } = await supabase
-                    .from('galeria')
-                    .select('id, image_url, title, estado');
-
+                const { data, error } = await supabase.from('galeria').select('id, image_url, title, estado');
                 if (error) return;
 
                 const pendientes = data ? data.filter(img => img.estado && img.estado.toLowerCase() === 'pendiente') : [];
@@ -364,7 +355,7 @@
                     card.className = 'gallery-card';
                     card.style.border = '1px solid #f39c12';
                     card.innerHTML = `
-                        <img src="${image.image_url}" alt="Fotografía de comunidad compartida en galería: ${image.title}" loading="lazy">
+                        <img src="${image.image_url}" alt="${image.title}" loading="lazy">
                         <div class="gallery-card-info" style="flex-direction: column; gap: 8px; align-items: stretch;">
                             <span style="font-weight: bold; text-align: center;">${image.title}</span>
                             <div style="display: flex; justify-content: space-between; gap: 5px;">
@@ -382,21 +373,13 @@
             if (!(await validarSesionStreamer())) {
                 adminAutenticado = false;
                 toggleModoAdmin();
-                alert('Tu sesión ha expirado. Vuelve a iniciar sesión.');
+                alert('Tu sesión ha expirado.');
                 return;
             }
             try {
                 const idNumerico = isNaN(id) ? id : Number(id);
-                const { error } = await supabase
-                    .from('galeria')
-                    .update({ estado: 'aprobado' })
-                    .eq('id', idNumerico);
-
-                if (error) {
-                    alert(`No se pudo aprobar la imagen: ${error.message}`);
-                    return;
-                }
-
+                const { error } = await supabase.from('galeria').update({ estado: 'aprobado' }).eq('id', idNumerico);
+                if (error) { alert(`Error: ${error.message}`); return; }
                 loadPendingImages();
                 loadApprovedImages();
             } catch (e) { console.error(e); }
@@ -406,22 +389,14 @@
             if (!(await validarSesionStreamer())) {
                 adminAutenticado = false;
                 toggleModoAdmin();
-                alert('Tu sesión ha expirado. Vuelve a iniciar sesión.');
+                alert('Tu sesión ha expirado.');
                 return;
             }
             if (!confirm("¿Deseas eliminar/rechazar esta imagen?")) return;
             try {
                 const idNumerico = isNaN(id) ? id : Number(id);
-                const { error } = await supabase
-                    .from('galeria')
-                    .delete()
-                    .eq('id', idNumerico);
-
-                if (error) {
-                    alert(`No se pudo eliminar la imagen: ${error.message}`);
-                    return;
-                }
-
+                const { error } = await supabase.from('galeria').delete().eq('id', idNumerico);
+                if (error) { alert(`Error: ${error.message}`); return; }
                 loadPendingImages();
                 loadApprovedImages();
             } catch (e) { console.error(e); }
@@ -432,10 +407,9 @@
                 document.getElementById('modal-pin').style.display = 'flex';
                 document.getElementById('admin-email').focus();
             } else {
-                supabase.auth.signOut();
-                adminAutenticado = false;
                 document.body.classList.remove('admin-mode-active');
                 document.getElementById('panelPendientes').style.display = 'none';
+                document.getElementById('btn-logout-galeria').style.display = 'none';
                 const btn = document.getElementById('btn-toggle-admin');
                 btn.innerHTML = '<i class="fa-solid fa-lock"></i> Modo Moderación';
                 btn.classList.remove('active');
@@ -459,10 +433,7 @@
                 return;
             }
 
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email: email,
-                password: password,
-            });
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
             if (error) {
                 feedback.innerText = '❌ Credenciales incorrectas';
@@ -473,6 +444,7 @@
             cerrarModalPin();
             document.body.classList.add('admin-mode-active');
             document.getElementById('panelPendientes').style.display = 'block';
+            document.getElementById('btn-logout-galeria').style.display = 'inline-flex';
             const btn = document.getElementById('btn-toggle-admin');
             btn.innerHTML = '<i class="fa-solid fa-lock-open"></i> Moderación Activa';
             btn.classList.add('active');
@@ -496,7 +468,7 @@
             }
 
             if (file.size > 5 * 1024 * 1024) {
-                uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ La imagen es demasiado pesada. El tamaño máximo permitido es 5MB.</p>';
+                uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ La imagen supera el límite máximo de 5MB.</p>';
                 uploadInput.value = '';
                 return;
             }
@@ -511,7 +483,7 @@
                 const { error } = await supabase.storage.from('fotos-galeria').upload(filePath, file);
                 
                 if (error) {
-                    uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ Error al subir la imagen al almacenamiento.</p>';
+                    uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ Error al subir imagen.</p>';
                     return;
                 }
 
@@ -526,11 +498,11 @@
         async function saveToSupabaseTable(title, publicUrl) {
             const { error } = await supabase.from('galeria').insert([{ title: title, image_url: publicUrl, estado: 'pendiente', likes: 0 }]);
             if (!error) {
-                uploadFeedback.innerHTML = '<p class="msg-subida-exito">✅ ¡Imagen enviada con éxito! Aparecerá en la galería cuando La Gocha la apruebe. 💖</p>';
+                uploadFeedback.innerHTML = '<p class="msg-subida-exito">✅ ¡Imagen enviada! Aparecerá cuando sea aprobada. 💖</p>';
                 setTimeout(() => { uploadFeedback.innerHTML = ''; }, 5000);
                 if (adminAutenticado) loadPendingImages();
             } else {
-                uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ Error al guardar en la base de datos.</p>';
+                uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ Error al guardar en base de datos.</p>';
             }
         }
     </script>

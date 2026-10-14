@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <!-- Favicon package -->
     <link rel="icon" type="image/x-icon" href="img/favicon.ico">
     <link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16x16.png">
     <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
@@ -365,6 +364,7 @@
                     <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 10px;">
                         <button id="btn-toggle-sorteo" onclick="toggleEstadoSorteo()" class="btn-primary" style="background: #2ecc71; font-size: 0.85rem; padding: 8px 16px; border:none; cursor:pointer;">🟢 ABRIR SORTEO EN VIVO</button>
                         <button onclick="vaciarTombolaOnline()" class="btn-primary" style="background: #ff4d4d; font-size: 0.85rem; padding: 8px 16px; border:none; cursor:pointer;">🗑️ Limpiar Tómbola</button>
+                        <button onclick="cerrarSesionAdminGlobal()" class="btn-primary" style="background: #c0392b; font-size: 0.85rem; padding: 8px 16px; border:none; cursor:pointer;"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión Admin</button>
                         <button onclick="salirModoStreamer()" class="btn-primary" style="background: var(--text-muted); font-size: 0.85rem; padding: 8px 16px; border:none; cursor:pointer;">Salir</button>
                     </div>
                     <div id="feedback-streamer-direct" class="feedback-msg"></div>
@@ -396,7 +396,7 @@
         </div>
     </div>
 
-    <!-- Modal de Inicio de Sesión de Streamer -->
+    <!-- Modal de Inicio de Sesión -->
     <div id="modal-pin" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5,7,10,0.85); backdrop-filter: blur(5px); z-index: 10000; justify-content: center; align-items: center;">
         <div style="background: var(--card-bg); border: 1px solid var(--accent-color); padding: 30px; border-radius: 16px; box-shadow: var(--glow); text-align: center; max-width: 380px; width: 90%;">
             <h3 style="color: var(--accent-color); margin-bottom: 15px; font-size: 1.2rem;">🔒 ACCESO EXCLUSIVO GOCHA</h3>
@@ -415,7 +415,6 @@
         </div>
     </div>
 
-    <!-- Scripts centralizados (Supabase SDK primero, luego main.js) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="main.js"></script>
     <script>
@@ -504,10 +503,7 @@
                 return;
             }
 
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email: email,
-                password: password,
-            });
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
             if (error) {
                 mostrarFeedback('feedback-pin', '❌ Credenciales incorrectas', true);
@@ -523,19 +519,15 @@
         }
 
         function salirModoStreamer() {
-            supabase.auth.signOut();
-            streamerAutenticado = false;
             document.getElementById('sec-modo-streamer').style.display = 'none';
             document.getElementById('tab-streamer').classList.remove('active');
-            document.getElementById('streamer-email').value = '';
-            document.getElementById('streamer-password').value = '';
         }
 
         async function toggleEstadoSorteo() {
             if (!(await validarSesionStreamer())) {
                 streamerAutenticado = false;
                 salirModoStreamer();
-                mostrarFeedback('feedback-streamer-direct', '❌ Sesión expirada. Por favor, ingresa de nuevo.', true);
+                mostrarFeedback('feedback-streamer-direct', '❌ Sesión expirada.', true);
                 return;
             }
 
@@ -633,7 +625,7 @@
 
         async function registrarUsuarioEnLista(username, feedbackId) {
             if (listaStreamerOnline.some(u => u.toLowerCase() === username.toLowerCase())) {
-                mostrarFeedback(feedbackId, '⚠️ ¡Este usuario ya está registrado en el sorteo!', true);
+                mostrarFeedback(feedbackId, '⚠️ ¡Este usuario ya está registrado!', true);
                 return;
             }
 
@@ -750,7 +742,7 @@
             if (!(await validarSesionStreamer())) {
                 streamerAutenticado = false;
                 salirModoStreamer();
-                mostrarFeedback('feedback-streamer-direct', '❌ Sesión expirada. Por favor, ingresa de nuevo.', true);
+                mostrarFeedback('feedback-streamer-direct', '❌ Sesión expirada.', true);
                 return;
             }
 
@@ -759,7 +751,7 @@
             renderListaStreamer();
             actualizarUIEstadoSorteo();
             try {
-                await supabase.from('participantes_en_vivo').delete().neq('id', 0);
+                await supabase.from('participantes_en_vivo').delete().gt('id', 0);
             } catch (err) { console.error('Error:', err); }
             mostrarFeedback('feedback-streamer-direct', '🧹 Tómbola vaciada y registros limpiados.');
         }
@@ -865,8 +857,6 @@
                 <a href="https://www.tiktok.com/@lagochagaming11" target="_blank" class="social-icon" title="TikTok"><i class="fab fa-tiktok"></i></a>
                 <a href="https://discord.com/invite/svrteKBbeh" target="_blank" class="social-icon" title="Discord"><i class="fab fa-discord"></i></a>
                 <a href="https://www.youtube.com/@lagochagaming" target="_blank" class="social-icon" title="YouTube"><i class="fab fa-youtube"></i></a>
-                <a href="#" target="_blank" class="social-icon" title="Twitter"><i class="fab fa-x-twitter"></i></a>
-                <a href="#" target="_blank" class="social-icon" title="Facebook"><i class="fab fa-facebook-f"></i></a>
             </div>
             <p class="footer-copyright">&copy; 2026 LAGOCHAGAMING - ALL RIGHTS RESERVED</p>
         </div>

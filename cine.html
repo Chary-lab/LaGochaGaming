@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <!-- Favicon package -->
     <link rel="icon" type="image/x-icon" href="img/favicon.ico">
     <link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16x16.png">
     <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
@@ -140,7 +139,6 @@
             box-shadow: var(--glow);
         }
 
-        /* Notificaciones Toast Modernas */
         #gochi-toast {
             position: fixed;
             bottom: 30px;
@@ -194,7 +192,6 @@
         </div>
     </nav>
 
-    <!-- Notificación Flotante Toast -->
     <div id="gochi-toast">
         <i id="toast-icon" class="fa-solid fa-circle-check" style="color: #53fc18; font-size: 1.2rem;"></i>
         <span id="toast-message">¡Acción realizada con éxito!</span>
@@ -209,38 +206,36 @@
                 </button>
             </div>
 
-            <!-- PANEL DE CONTROL EXCLUSIVO DE LA GOCHA -->
+            <!-- PANEL DE CONTROL EXCLUSIVO -->
             <div id="streamerAdminPanel" class="streamer-admin-panel">
                 <h3><i class="fa-solid fa-sliders"></i> Panel Maestro de Reproducción</h3>
                 <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">
-                    Pega cualquier enlace (<strong>Google Drive</strong>, <strong>YouTube</strong> o enlace directo <strong>.mp4</strong>). ¡Se transforma automáticamente!
+                    Pega cualquier enlace (<strong>Google Drive</strong>, <strong>YouTube</strong> o <strong>.mp4</strong>).
                 </p>
                 <div style="display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap;">
-                    <input type="text" id="inputVideoUrl" placeholder="Pega aquí el enlace de Google Drive, YouTube o MP4..." style="flex: 1; min-width: 250px; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg-subtle); color: var(--text-main); outline: none;">
+                    <input type="text" id="inputVideoUrl" placeholder="Pega aquí el enlace..." style="flex: 1; min-width: 250px; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg-subtle); color: var(--text-main); outline: none;">
                     <button onclick="actualizarUrlPelicula()" class="btn-primary" style="padding: 10px 20px; border: none; cursor: pointer;">Cargar Video</button>
-                    <button onclick="cerrarReproductorTotal()" class="btn-primary" style="background: #ff4d4d; padding: 10px 20px; border: none; cursor: pointer;" title="Apagar reproductor para todos">🛑 Apagar / Cerrar</button>
+                    <button onclick="cerrarReproductorTotal()" class="btn-primary" style="background: #ff4d4d; padding: 10px 20px; border: none; cursor: pointer;">🛑 Apagar</button>
+                    <button onclick="cerrarSesionAdminGlobal()" class="btn-primary" style="background: #c0392b; padding: 10px 20px; border: none; cursor: pointer;"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión</button>
                 </div>
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    <span style="font-size: 0.85rem; color: #53fc18; font-weight: bold;" id="statusSyncText">🟢 Sincronización en tiempo real activa</span>
+                <div>
+                    <span style="font-size: 0.85rem; color: #53fc18; font-weight: bold;" id="statusSyncText">🟢 Sincronización activa</span>
                 </div>
             </div>
 
-            <!-- CONTENEDOR DE REPRODUCTOR (MP4 / GOOGLE DRIVE O YOUTUBE) -->
             <div class="video-player-box" id="videoBoxContainer">
                 <video id="cineVideoPlayer" controls controlslist="nodownload" style="display: none;">
                     <source id="cineVideoSource" src="" type="video/mp4">
-                    Tu navegador no soporta reproducción de video.
+                    Tu navegador no soporta reproducción.
                 </video>
                 <div id="ytPlayerContainer" style="display: none; width:100%; height:100%;"></div>
 
-                <!-- Cámara de Kick de La Gocha flotando abajo a la derecha -->
                 <div class="streamer-overlay-cam">
-                    <iframe src="https://player.kick.com/lagochagaming?autoplay=true&muted=false" frameborder="0" scrolling="no" allowfullscreen="true" title="Transmisión en directo de LaGochaGaming"></iframe>
+                    <iframe src="https://player.kick.com/lagochagaming?autoplay=true&muted=false" frameborder="0" scrolling="no" allowfullscreen="true" title="Transmisión en directo"></iframe>
                 </div>
             </div>
         </div>
 
-        <!-- SIDEBAR DE CHAT -->
         <div class="cine-sidebar">
             <div class="chat-box-cine">
                 <iframe src="https://kick.com/popout/lagochagaming/chat" frameborder="0" scrolling="no" title="Chat de Kick"></iframe>
@@ -248,13 +243,13 @@
             <div class="sidebar-info" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 18px; text-align: center;">
                 <h3 style="color: var(--accent-color); font-size: 0.9rem; margin-bottom: 8px; text-transform: uppercase;">ℹ️ ¿Cómo funciona?</h3>
                 <p style="color: var(--text-muted); font-size: 0.82rem; line-height: 1.5;">
-                    La Gocha transmite su reacción y cámara en el recuadro inferior mientras disfrutan juntos de la película/video totalmente sincronizados.
+                    La Gocha transmite su reacción en directo mientras disfrutan de la película totalmente sincronizados.
                 </p>
             </div>
         </div>
     </div>
 
-    <!-- Modal de Login para La Gocha -->
+    <!-- Modal de Login -->
     <div id="modal-pin-cine" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5,7,10,0.85); backdrop-filter: blur(5px); z-index: 10000; justify-content: center; align-items: center;">
         <div style="background: var(--card-bg); border: 1px solid var(--accent-color); padding: 30px; border-radius: 16px; box-shadow: var(--glow); text-align: center; max-width: 380px; width: 90%;">
             <h3 style="color: var(--accent-color); margin-bottom: 15px; font-size: 1.2rem;">🔒 ACCESO STREAMER CINE</h3>
@@ -273,9 +268,7 @@
         </div>
     </div>
 
-    <!-- API de YouTube -->
     <script src="https://www.youtube.com/iframe_api"></script>
-    <!-- Scripts centralizados -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="main.js"></script>
     <script>
@@ -287,7 +280,6 @@
         let actualizandoLocalmente = false;
         let urlActual = '';
 
-        // Función para mostrar notificaciones flotantes modernas (Toast)
         function mostrarToast(mensaje, esError = false) {
             const toast = document.getElementById('gochi-toast');
             const toastMsg = document.getElementById('toast-message');
@@ -305,9 +297,7 @@
             }
 
             toast.classList.add('show');
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3500);
+            setTimeout(() => { toast.classList.remove('show'); }, 3500);
         }
 
         function procesarUrlEntrante(url) {
@@ -335,8 +325,6 @@
             if (session) {
                 streamerCineAutenticado = true;
                 activarModoStreamerUI();
-            } else {
-                streamerCineAutenticado = false;
             }
 
             await cargarEstadoCine();
@@ -367,9 +355,8 @@
         }
 
         async function actualizarUrlPelicula() {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) {
-                mostrarToast('Tu sesión ha expirado. Vuelve a iniciar sesión.', true);
+            if (!(await validarSesionStreamer())) {
+                mostrarToast('Tu sesión ha expirado.', true);
                 streamerCineAutenticado = false;
                 toggleModoStreamerCine();
                 return;
@@ -397,15 +384,10 @@
         }
 
         async function cerrarReproductorTotal() {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) {
+            if (!(await validarSesionStreamer())) {
                 mostrarToast('Tu sesión ha expirado.', true);
-                streamerCineAutenticado = false;
-                toggleModoStreamerCine();
                 return;
             }
-
-            if (!streamerCineAutenticado) return;
 
             if (mp4Player) {
                 mp4Player.pause();
@@ -429,15 +411,12 @@
                     tiempo: 0,
                     updated_at: new Date().toISOString()
                 });
-                mostrarToast('Reproductor apagado y cerrado para todos.');
-            } catch(e) {
-                mostrarToast('Error al apagar el reproductor.', true);
-            }
+                mostrarToast('Reproductor cerrado para todos.');
+            } catch(e) { mostrarToast('Error al apagar el reproductor.', true); }
         }
 
         async function enviarComandoSync(estado, tiempo) {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) return;
+            if (!(await validarSesionStreamer())) return;
 
             try {
                 await supabase.from('sync_cine').upsert({
@@ -537,8 +516,6 @@
                 document.getElementById('modal-pin-cine').style.display = 'flex';
                 document.getElementById('streamer-cine-email').focus();
             } else {
-                supabase.auth.signOut();
-                streamerCineAutenticado = false;
                 document.getElementById('streamerAdminPanel').style.display = 'none';
                 const btn = document.getElementById('btn-toggle-streamer');
                 btn.innerHTML = '<i class="fa-solid fa-lock"></i> Panel Streamer';

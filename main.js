@@ -51,3 +51,17 @@ async function validarSesionStreamer() {
         return false;
     }
 }
+
+/**
+ * Cierra la sesión de administrador globalmente e interrumpe el acceso en la página actual.
+ */
+async function cerrarSesionAdminGlobal() {
+    if (confirm("¿Estás segura de que deseas cerrar sesión de administración?")) {
+        try {
+            await supabase.auth.signOut();
+            location.reload();
+        } catch (e) {
+            console.error("Error al cerrar sesión:", e);
+        }
+    }
+}
