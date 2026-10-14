@@ -198,7 +198,7 @@
 
     <script>
         const supabaseUrl = 'https://cydiyaacnyydprgffmkq.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN5ZGl5YWFjbnl5ZHPrZ2ZmbWtxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE3NjY1ODQsImV4cCI6MjEwNzM0MjU4NH0.fkipcX7Lx4lhGSa0zTDQ9BDNN3jiGTksB2hMlHH1bAs';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN5ZGl5YWFjbnl5ZHByZ2ZmbWtxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE3NjY1ODQsImV4cCI6MjEwNzM0MjU4NH0.fkipcX7Lx4lhGSa0zTDQ9BDNN3jiGTksB2hMlHH1bAs';
         var supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         let adminAutenticado = false;
@@ -238,27 +238,32 @@
 
         loadApprovedImages();
 
-        // Cargar imágenes aprobadas con sistema de Likes Persistente
+        // Cargar imágenes públicas (traemos todas las que no estén explícitamente en estado 'pendiente')
         async function loadApprovedImages() {
             try {
                 const { data, error } = await supabase
                     .from('galeria')
-                    .select('id, image_url, title, estado, likes')
-                    .or('estado.eq.aprobado,estado.is.null');
+                    .select('id, image_url, title, estado, likes');
 
-                if (error) return;
+                if (error) {
+                    console.error("Error al cargar galería:", error);
+                    return;
+                }
+
                 const galleryGrid = document.getElementById('galleryGrid');
                 galleryGrid.innerHTML = '';
 
-                if (!data || data.length === 0) {
+                // Filtramos en JavaScript para asegurarnos de mostrar las aprobadas, nulas o vacías (excluyendo solo las pendientes)
+                const imagenesPublicas = data ? data.filter(img => !img.estado || img.estado.toLowerCase() !== 'pendiente') : [];
+
+                if (imagenesPublicas.length === 0) {
                     galleryGrid.innerHTML = '<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center;">No hay imágenes públicas aún.</p>';
                     return;
                 }
 
-                // Obtener lista de IDs likeweadas localmente por el usuario
                 const userLikes = JSON.parse(localStorage.getItem('gocha_user_likes') || '[]');
 
-                data.forEach(image => {
+                imagenesPublicas.forEach(image => {
                     const cantLikes = image.likes || 0;
                     const idStr = String(image.id);
                     const isLiked = userLikes.includes(idStr);
@@ -293,7 +298,7 @@
             } catch (err) { console.error('Error:', err); }
         }
 
-        // Lógica para Dar/Quitar Like (Máximo 1 por usuario)
+        // Lógica para Dar/Quitar Like
         async function toggleLike(imageId, currentLikes) {
             let userLikes = JSON.parse(localStorage.getItem('gocha_user_likes') || '[]');
             const idStr = String(imageId);
@@ -303,16 +308,13 @@
             let newLikesCount = currentLikes;
 
             if (isLiked) {
-                // Quitar Like
                 userLikes = userLikes.filter(id => id !== idStr);
                 newLikesCount = Math.max(0, currentLikes - 1);
             } else {
-                // Dar Like
                 userLikes.push(idStr);
                 newLikesCount = currentLikes + 1;
             }
 
-            // Actualizar UI inmediatamente para respuesta fluida
             const btn = document.getElementById(`like-btn-${imageId}`);
             const countSpan = document.getElementById(`like-count-${imageId}`);
 
@@ -328,10 +330,8 @@
                 btn.setAttribute('onclick', `toggleLike('${imageId}', ${newLikesCount})`);
             }
 
-            // Guardar localmente
             localStorage.setItem('gocha_user_likes', JSON.stringify(userLikes));
 
-            // Sincronizar en Supabase
             try {
                 await supabase
                     .from('galeria')
@@ -350,22 +350,24 @@
             try {
                 const { data, error } = await supabase
                     .from('galeria')
-                    .select('id, image_url, title')
-                    .eq('estado', 'pendiente');
+                    .select('id, image_url, title, estado');
 
                 if (error) return;
+
+                // Filtramos estrictamente las que tengan estado 'pendiente'
+                const pendientes = data ? data.filter(img => img.estado && img.estado.toLowerCase() === 'pendiente') : [];
 
                 const gridPendientes = document.getElementById('gridPendientes');
                 const cantSpan = document.getElementById('cantPendientes');
                 gridPendientes.innerHTML = '';
-                cantSpan.innerText = data ? data.length : 0;
+                cantSpan.innerText = pendientes.length;
 
-                if (!data || data.length === 0) {
+                if (pendientes.length === 0) {
                     gridPendientes.innerHTML = '<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center;">¡No hay fotos pendientes por moderar! 🎉</p>';
                     return;
                 }
 
-                data.forEach(image => {
+                pendientes.forEach(image => {
                     const card = document.createElement('div');
                     card.className = 'gallery-card';
                     card.style.border = '1px solid #f39c12';
