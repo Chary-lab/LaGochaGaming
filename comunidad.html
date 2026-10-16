@@ -132,11 +132,12 @@
         <div class="sidebar-comunidad">
             <div class="sidebar-card">
                 <h3 style="color: var(--accent-color); margin-bottom: 10px;"><i class="fa-solid fa-tower-broadcast"></i> Estado del Canal</h3>
-                <div id="canal-estado" style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 10px;">
-                    Comprobando estado...
-                </div>
-                <div id="usuarios-online" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px;">
+                <div id="usuarios-online" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 6px;">
                     Usuarios en línea: <span id="contador-usuarios">0</span>
+                </div>
+                <div id="canal-estado" style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                    <span id="estado-dot" style="display: inline-block; width: 10px; height: 10px; background: #ff4d4d; border-radius: 50%;"></span>
+                    <span id="estado-texto">Comprobando estado...</span>
                 </div>
                 <a href="./#stream" class="btn-primary" style="display: block; text-align: center; margin-top: 15px; text-decoration: none;">Ir al Directo</a>
             </div>
@@ -175,8 +176,9 @@
             const chatMensajes = document.getElementById('chat-mensajes');
             const inputAutor = document.getElementById('chat-autor');
             const inputMensaje = document.getElementById('chat-mensaje');
-            const canalEstadoEl = document.getElementById('canal-estado');
             const contadorUsuariosEl = document.getElementById('contador-usuarios');
+            const estadoDot = document.getElementById('estado-dot');
+            const estadoTexto = document.getElementById('estado-texto');
 
             let ultimoEnvio = 0; // Anti-spam / Rate limiting
             let ultimaEstadoEnVivo = null; // Para detectar cambios y mostrar notificación
@@ -307,13 +309,13 @@
                     const data = await response.json();
                     const enVivo = data && data.live === true; // Ajustar según la estructura real de la API
                     // Actualizar UI
-                    if (canalEstadoEl) {
+                    if (estadoDot && estadoTexto) {
                         if (enVivo) {
-                            canalEstadoEl.innerHTML = '<span style="color: #53fc18;"><i class="fa-solid fa-circle"></i> EN VIVO AHORA</span>';
-                            canalEstadoEl.style.color = '#53fc18';
+                            estadoDot.style.backgroundColor = '#53fc18';
+                            estadoTexto.textContent = 'EN VIVO AHORA';
                         } else {
-                            canalEstadoEl.innerHTML = '<span style="color: var(--text-muted);"><i class="fa-solid fa-circle"></i> Offline</span>';
-                            canalEstadoEl.style.color = 'var(--text-muted)';
+                            estadoDot.style.backgroundColor = '#ff4d4d';
+                            estadoTexto.textContent = 'Offline';
                         }
                     }
                     // Notificación cuando pasa de offline a online
@@ -323,9 +325,9 @@
                     ultimaEstadoEnVivo = enVivo;
                 } catch (err) {
                     console.error('Error verificando estado del stream:', err);
-                    if (canalEstadoEl) {
-                        canalEstadoEl.innerHTML = '<span style="color: #ff4d4d;">Error al verificar estado</span>';
-                        canalEstadoEl.style.color = '#ff4d4d';
+                    if (estadoDot && estadoTexto) {
+                        estadoDot.style.backgroundColor = '#ff4d4d';
+                        estadoTexto.textContent = 'Error';
                     }
                 }
             }
