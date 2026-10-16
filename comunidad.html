@@ -18,7 +18,7 @@
     <style>
         .comunidad-layout {
             display: grid;
-            grid-template-columns: 1fr 350px;
+            grid-template-columns: 260px 1fr 350px;
             gap: 20px;
             max-width: 1200px;
             margin: 100px auto 40px auto;
@@ -28,6 +28,54 @@
             .comunidad-layout {
                 grid-template-columns: 1fr;
             }
+        }
+        .online-users-column {
+            width: 260px;
+            min-width: 220px;
+            display: flex;
+            flex-direction: column;
+        }
+        #online-users-list {
+            flex: 1;
+            min-height: 100px;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+            background: var(--card-bg-subtle);
+        }
+        #online-users-list .user-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 4px;
+            margin: 4px 0;
+            border-radius: 6px;
+            background: rgba(255,255,255,0.02);
+        }
+        #online-users-list .user-item:hover {
+            background: rgba(255,255,255,0.04);
+        }
+        #online-users-list .user-icon {
+            width: 28px;
+            height: 28px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: #fff;
+            font-weight: bold;
+        }
+        #online-users-list .user-name {
+            font-size: 0.9rem;
+            color: var(--text-main);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 150px;
         }
         .chat-box-container {
             background: var(--card-bg, #1a1a1a);
@@ -107,13 +155,23 @@
 
     <!-- CONTENIDO PRINCIPAL COMUNIDAD -->
     <main class="comunidad-layout">
-        <!-- COLUMNA IZQUIERDA: CHAT EN VIVO -->
+        <!-- COLUMNA IZQUIERDA: USUARIOS EN LÍNEA -->
+        <section id="online-users" class="online-users-column">
+            <h3 style="color: var(--accent-color); margin-bottom: 8px;">
+                <i class="fa-solid fa-users"></i> Usuarios en línea
+            </h3>
+            <div id="online-users-list" style="text-align:center; color:var(--text-muted); padding:20px;">
+                Cargando usuarios...
+            </div>
+        </section>
+
+        <!-- COLUMNA CENTRO: CHAT EN VIVO -->
         <div class="chat-box-container">
             <div class="chat-header">
                 <i class="fa-solid fa-comments" style="color: var(--accent-color);"></i>
                 <span>Chat Comunitario (Offline / Online)</span>
             </div>
-            
+
             <div id="chat-mensajes" class="chat-messages">
                 <!-- Los mensajes se cargarán dinámicamente aquí -->
                 <div style="text-align: center; color: var(--text-muted); margin-top: 40px;">
@@ -179,15 +237,56 @@
             const contadorUsuariosEl = document.getElementById('contador-usuarios');
             const estadoDot = document.getElementById('estado-dot');
             const estadoTexto = document.getElementById('estado-texto');
+            const onlineUsersListEl = document.getElementById('online-users-list');
+
+            const STORAGE_KEY_NICK = 'comunidad_nickname';
+            const STORAGE_KEY_USERID = 'comunidad_user_id';
 
             let ultimoEnvio = 0; // Anti-spam / Rate limiting
             let ultimaEstadoEnVivo = null; // Para detectar cambios y mostrar notificación
+            let userNickname = null;
+            let userId = null;
 
             // Sanitizar texto contra XSS
             function escaparHTML(str) {
-                return str.replace(/[&<>'"]/g, 
+                return str.replace(/[&<>'"]/g,
                     tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'}[tag] || tag)
                 );
+            }
+
+            // Obtener o pedir nickname
+            function getOrAskNickname() {
+                const stored = localStorage.getItem(STORAGE_KEY_NICK);
+                if (stored) {
+                    return stored;
+                }
+                let nick = '';
+                while (!nick || nick.trim() === '') {
+                    nick = prompt('Introduce tu apodo para el chat (máx. 20 caracteres):', '');
+                    if (nick === null) { // usuario canceló
+                        nick = `Anonimo_${Math.floor(Math.random()*1000)}`;
+                    }
+                    nick = nick.trim();
+                    if (nick.length > 20) {
+                        alert('El apodo es demasiado largo. Máximo 20 caracteres.');
+                        nick = '';
+                    }
+                }
+                localStorage.setItem(STORAGE_KEY_NICK, nick);
+                return nick;
+            }
+
+            // Inicializar nickname y user ID
+            userNickname = getOrAskNickname();
+            userId = localStorage.getItem(STORAGE_KEY_USERID);
+            if (!userId) {
+                userId = Math.random().toString(36).substr(2, 9);
+                localStorage.setItem(STORAGE_KEY_USERID, userId);
+            }
+            // Prefijar y bloquear campo de autor
+            if (inputAutor) {
+                inputAutor.value = userNickname;
+                inputAutor.readOnly = true;
             }
 
             // Cargar mensajes iniciales desde Supabase
@@ -247,7 +346,7 @@
                         return;
                     }
 
-                    const autor = inputAutor.value.trim();
+                    const autor = inputAutor.value.trim(); // ya viene prellenado y readonly
                     const mensaje = inputMensaje.value.trim();
 
                     if (!autor || !mensaje) return;
@@ -301,6 +400,32 @@
                     .subscribe();
             }
 
+            // Renderizar lista de usuarios en línea
+            function renderizarListaUsuarios(estadoPresencia) {
+                if (!onlineUsersListEl) return;
+                if (!estadoPresencia || Object.keys(estadoPresencia).length === 0) {
+                    onlineUsersListEl.innerHTML = '<div style="text-align:center; color:var(--text-muted); padding:20px;">Nadie en línea</div>';
+                    return;
+                }
+                let html = '';
+                for (const [key, { presence }] of Object.entries(estadoPresencia)) {
+                    const datos = presence[0] || {};
+                    const nickRaw = datos.nickname || 'Anónimo';
+                    // Escape básico
+                    const nickSafe = nickRaw.replace(/[&<>"']/g, c => ({
+                        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+                    })[c]);
+                    const initial = nickSafe.charAt(0).toUpperCase();
+                    html += `
+                        <div class="user-item">
+                            <div class="user-icon">${initial}</div>
+                            <div class="user-name">${nickSafe}</div>
+                        </div>
+                    `;
+                }
+                onlineUsersListEl.innerHTML = html;
+            }
+
             // --- Estado del Stream (Kick API) ---
             async function verificarEstadoStream() {
                 try {
@@ -334,27 +459,18 @@
 
             // --- Presencia de Usuarios Online (Supabase Realtime Presence) ---
             function iniciarPresenciaUsuarios() {
-                // Generar un ID de usuario único para esta sesión (guardado en localStorage para recargas)
-                let userId = localStorage.getItem('comunidad_user_id');
-                if (!userId) {
-                    userId = Math.random().toString(36).substr(2, 9);
-                    localStorage.setItem('comunidad_user_id', userId);
-                }
-                const nombreUsuario = inputAutor.value.trim() || `Usuario_${Math.floor(Math.random()*1000)}`;
+                // userId y userNickname ya están definidos en este scope
                 const canalPresencia = supabase.channel('presence:comunidad', {
                     // Puedes ajustar el nombre del canal según necesites
                 })
                 .on('presence', { event: 'sync' }, () => {
                     const estado = canalPresencia.presenceState();
-                    const count = Object.keys(estado).length;
-                    if (contadorUsuariosEl) {
-                        contadorUsuariosEl.textContent = count;
-                    }
+                    renderizarListaUsuarios(estado);
                 })
                 .subscribe((state) => {
                     if (state === 'SUBSCRIBED') {
-                        // Enviar nuestro propio presencia
-                        canalPresencia.track({ user_id: userId, name: nombreUsuario });
+                        // Enviar nuestra presencia con nickname
+                        canalPresencia.track({ user_id: userId, nickname: userNickname });
                     }
                 });
 
