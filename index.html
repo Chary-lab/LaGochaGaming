@@ -11,6 +11,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LaGochaGaming | Sitio Oficial</title>
+    <meta property="og:title" content="LaGochaGaming | Sitio Oficial">
+    <meta property="og:description" content="Streamer de Kick y Creadora de contenido. ¡Únete a la comunidad!">
+    <meta property="og:image" content="img/3.jpg">
+    <meta property="og:type" content="website">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
@@ -49,6 +53,7 @@
             <a href="cine" style="color: var(--accent-color);">🍿 GochiWatch</a>
             <a href="sorteo" style="color: var(--accent-color);">🎁 Sorteo</a>
             <a href="galeria" style="color: var(--accent-color);">📸 Galería</a>
+            <a href="comunidad" style="color: var(--accent-color);">💬 Comunidad</a>
         </div>
         <div class="auth-buttons">
             <button id="theme-toggle" class="theme-toggle-btn" title="Cambiar tema">
@@ -78,13 +83,14 @@
 
     <main class="main-container" id="stream">
         <div class="video-container">
-            <iframe src="https://player.kick.com/lagochagaming?autoplay=true&muted=true" frameborder="0" scrolling="no" allowfullscreen="true"></iframe>
+            <iframe src="https://player.kick.com/lagochagaming?autoplay=true&muted=true" frameborder="0" scrolling="no" allowfullscreen="true" loading="lazy"></iframe>
         </div>
         <aside class="chat-sidebar chat-sidebar-box">
-            <iframe src="https://kick.com/popout/lagochagaming/chat" 
-                    frameborder="0" 
-                    scrolling="no" 
-                    class="chat-iframe">
+            <iframe src="https://kick.com/popout/lagochagaming/chat"
+                    frameborder="0"
+                    scrolling="no"
+                    class="chat-iframe"
+                    loading="lazy">
             </iframe>
         </aside>
     </main>
@@ -135,13 +141,13 @@
             <div class="social-column">
                 <h3>📸 Instagram</h3>
                 <div class="social-feed-box">
-                    <iframe src="https://www.juicer.io/api/feeds/oscurostefany/iframe" frameborder="0" title="oscurostefany - Instagram feed"></iframe>
+                    <iframe src="https://www.juicer.io/api/feeds/oscurostefany/iframe" frameborder="0" title="oscurostefany - Instagram feed" loading="lazy"></iframe>
                 </div>
             </div>
             <div class="social-column tiktok-col">
                 <h3>🎵 TikTok Shorts</h3>
                 <div class="social-feed-box">
-                    <iframe src="https://www.juicer.io/api/feeds/lagochagaming/iframe" frameborder="0" title="lagochagaming - TikTok feed"></iframe>
+                    <iframe src="https://www.juicer.io/api/feeds/lagochagaming/iframe" frameborder="0" title="lagochagaming - TikTok feed" loading="lazy"></iframe>
                 </div>
             </div>
         </div>
@@ -152,10 +158,11 @@
         <h2>🎮 Mis Videos de YouTube</h2>
         <div class="social-column youtube-wrapper">
             <div class="youtube-box-compact">
-                <iframe src="https://www.juicer.io/api/feeds/lagochagaming-75a1986c-5861-49e2-910b-fdff15e7f5fb/iframe" 
-                        frameborder="0" 
-                        class="youtube-iframe-compact" 
-                        title="lagochagaming - YouTube feed">
+                <iframe src="https://www.juicer.io/api/feeds/lagochagaming-75a1986c-5861-49e2-910b-fdff15e7f5fb/iframe"
+                        frameborder="0"
+                        class="youtube-iframe-compact"
+                        title="lagochagaming - YouTube feed"
+                        loading="lazy">
                 </iframe>
             </div>
         </div>
