@@ -304,10 +304,10 @@
             // --- Estado del Stream (Kick API) ---
             async function verificarEstadoStream() {
                 try {
-                    const response = await fetch('https://api.kick.com/public/v1/channels/lagochagaming');
+                    const response = await fetch('https://kick.com/api/v2/channels/lagochagaming');
                     if (!response.ok) throw new Error('Error al obtener estado del stream');
                     const data = await response.json();
-                    const enVivo = data && data.live === true; // Ajustar según la estructura real de la API
+                    const enVivo = data.livestream && data.livestream.is_live === true;
                     // Actualizar UI
                     if (estadoDot && estadoTexto) {
                         if (enVivo) {
