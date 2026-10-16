@@ -117,11 +117,97 @@
             font-size: 0.9rem;
             margin-top: 10px;
         }
+
+        /* --- PESTAÑAS DE FILTRO --- */
+        .filter-tabs-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 10px;
+        }
+
+        .tab-filter-btn {
+            background: var(--card-bg-subtle);
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tab-filter-btn:hover {
+            color: var(--text-main);
+            border-color: var(--accent-color);
+        }
+
+        .tab-filter-btn.active {
+            background: var(--accent-color);
+            color: #fff;
+            border-color: var(--accent-color);
+            box-shadow: var(--glow);
+        }
+
+        /* --- INSIGNIAS Y BADGES FLOTANTES EN LAS TARJETAS --- */
+        .gallery-card {
+            position: relative;
+        }
+
+        .badge-tag {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-top1 {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #000;
+            border: 1px solid #fff;
+        }
+
+        .badge-top3 {
+            background: linear-gradient(135deg, #ff66b2, #9b59b6);
+            color: #fff;
+            border: 1px solid var(--accent-color);
+        }
+
+        .badge-nuevo {
+            background: #53fc18;
+            color: #000;
+            border: 1px solid #000;
+            right: 12px;
+            left: auto;
+        }
     </style>
 </head>
 <body>
     
-<nav class="navbar">
+    <nav class="navbar">
         <div class="logo">LAGOCHA<span>GAMING</span></div>
         <div class="nav-links">
             <a href="./#inicio">Inicio</a>
@@ -159,6 +245,7 @@
             <div class="gallery-grid" id="gridPendientes"></div>
         </div>
 
+        <!-- SUBIDA DE IMÁGENES -->
         <div class="upload-container" id="uploadContainer">
             <div style="margin-bottom: 15px;">
                 <input type="text" id="imageTitleInput" placeholder="Escribe un título para tu imagen..." maxlength="40" style="width: 100%; max-width: 400px; padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg-subtle); color: var(--text-main); font-size: 0.95rem; outline: none;">
@@ -172,11 +259,23 @@
             <div id="uploadFeedback"></div>
         </div>
 
-        <h2 style="font-size: 1.2rem; margin-bottom: 15px; color: var(--text-muted);">📸 Galería Pública</h2>
+        <!-- FILTROS Y PESTAÑAS POPULARES / RECIENTES -->
+        <div class="filter-tabs-container">
+            <h2 style="font-size: 1.2rem; margin: 0; color: var(--text-muted);">📸 Galería Pública</h2>
+            <div class="filter-tabs">
+                <button id="tab-populares" class="tab-filter-btn active" onclick="cambiarFiltroGaleria('populares')">
+                    <i class="fa-solid fa-fire"></i> Más Populares
+                </button>
+                <button id="tab-recientes" class="tab-filter-btn" onclick="cambiarFiltroGaleria('recientes')">
+                    <i class="fa-solid fa-sparkles"></i> Más Recientes
+                </button>
+            </div>
+        </div>
+
         <div class="gallery-grid" id="galleryGrid"></div>
     </div>
 
-    <!-- Modal de Inicio de Sesión -->
+    <!-- MODAL DE INICIO DE SESIÓN ADMIN -->
     <div id="modal-pin" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5,7,10,0.85); backdrop-filter: blur(5px); z-index: 10000; justify-content: center; align-items: center;">
         <div style="background: var(--card-bg); border: 1px solid var(--accent-color); padding: 30px; border-radius: 16px; box-shadow: var(--glow); text-align: center; max-width: 380px; width: 90%;">
             <h3 style="color: var(--accent-color); margin-bottom: 15px; font-size: 1.2rem;">🔒 MODERACIÓN DE GALERÍA</h3>
@@ -195,6 +294,7 @@
         </div>
     </div>
 
+    <!-- FOOTER -->
     <footer class="main-footer">
         <div class="footer-container">
             <div class="footer-social-icons">
@@ -212,6 +312,7 @@
     <script src="main.js"></script>
     <script>
         let adminAutenticado = false;
+        let filtroActual = 'populares'; // 'populares' o 'recientes'
 
         document.addEventListener('DOMContentLoaded', async () => {
             loadApprovedImages();
@@ -223,7 +324,7 @@
                 document.getElementById('panelPendientes').style.display = 'block';
                 document.getElementById('btn-logout-galeria').style.display = 'inline-flex';
                 const btn = document.getElementById('btn-toggle-admin');
-                btn.innerHTML = '<i class="fa-solid fa-lock-open"></i> Moderación Activa';
+                btn.innerHTML = '<i class="fa-solid fa-lock-open"></i> Ocultar Moderación';
                 btn.classList.add('active');
                 loadPendingImages();
             }
@@ -237,12 +338,31 @@
         lightbox.id = 'lightbox';
         document.body.appendChild(lightbox);
 
+        // ===================================================
+        // 1. CAMBIAR PESTAÑAS / FILTROS DE LA GALERÍA
+        // ===================================================
+        function cambiarFiltroGaleria(filtro) {
+            filtroActual = filtro;
+            document.getElementById('tab-populares').classList.toggle('active', filtro === 'populares');
+            document.getElementById('tab-recientes').classList.toggle('active', filtro === 'recientes');
+            loadApprovedImages();
+        }
+
+        // ===================================================
+        // 2. CARGAR IMÁGENES APROBADAS (CON MEDALLAS Y BADGES)
+        // ===================================================
         async function loadApprovedImages() {
             try {
-                const { data, error } = await supabase
-                    .from('galeria')
-                    .select('id, image_url, title, estado, likes');
+                // Ordenar según la pestaña seleccionada
+                let query = supabase.from('galeria').select('id, image_url, title, estado, likes, created_at');
+                
+                if (filtroActual === 'populares') {
+                    query = query.order('likes', { ascending: false }).order('created_at', { ascending: false });
+                } else {
+                    query = query.order('created_at', { ascending: false });
+                }
 
+                const { data, error } = await query;
                 if (error) return;
 
                 const galleryGrid = document.getElementById('galleryGrid');
@@ -255,19 +375,39 @@
                     return;
                 }
 
+                // Determinar el máximo de likes para insignias
+                const maxLikes = imagenesPublicas.length > 0 ? Math.max(...imagenesPublicas.map(i => i.likes || 0)) : 0;
                 const userLikes = JSON.parse(localStorage.getItem('gocha_user_likes') || '[]');
+                const horaAhora = new Date().getTime();
 
-                imagenesPublicas.forEach(image => {
+                imagenesPublicas.forEach((image, index) => {
                     const cantLikes = image.likes || 0;
                     const idStr = String(image.id);
                     const isLiked = userLikes.includes(idStr);
 
+                    // Verificar si la foto tiene menos de 48 horas (es Nueva)
+                    const fechaFoto = new Date(image.created_at).getTime();
+                    const esNueva = (horaAhora - fechaFoto) < (48 * 60 * 60 * 1000);
+
+                    // Determinar insignias de Top Likes
+                    let badgeHTML = '';
+                    if (cantLikes > 0 && cantLikes === maxLikes) {
+                        badgeHTML = `<span class="badge-tag badge-top1">👑 TOP 1</span>`;
+                    } else if (index < 3 && cantLikes > 0 && filtroActual === 'populares') {
+                        badgeHTML = `<span class="badge-tag badge-top3">🔥 TOP ${index + 1}</span>`;
+                    }
+
+                    if (esNueva) {
+                        badgeHTML += `<span class="badge-tag badge-nuevo">✨ NUEVO</span>`;
+                    }
+
                     const galleryCard = document.createElement('div');
                     galleryCard.className = 'gallery-card';
                     galleryCard.innerHTML = `
+                        ${badgeHTML}
                         <img src="${image.image_url}" alt="${image.title}" loading="lazy">
                         <div class="gallery-card-info">
-                            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px;" title="${image.title}">${image.title}</span>
+                            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px;" title="${image.title}">${escapeHtml(image.title)}</span>
                             <div style="display: flex; gap: 8px; align-items: center;">
                                 <button class="btn-eliminar-publica" onclick="eliminarImagenPublica('${image.id}')" title="Borrar foto de la galería">
                                     <i class="fa-solid fa-trash-can"></i>
@@ -283,7 +423,7 @@
                         lightbox.innerHTML = `<img src="${image.image_url}" alt="${image.title}">`;
                         lightbox.style.display = 'flex';
                     });
-                    galleryGrid.prepend(galleryCard);
+                    galleryGrid.appendChild(galleryCard);
                 });
 
                 if (adminAutenticado) {
@@ -292,6 +432,9 @@
             } catch (err) { console.error('Error:', err); }
         }
 
+        // ===================================================
+        // 3. SISTEMA DE LIKES EN TIEMPO REAL
+        // ===================================================
         async function toggleLike(imageId, currentLikes) {
             let userLikes = JSON.parse(localStorage.getItem('gocha_user_likes') || '[]');
             const idStr = String(imageId);
@@ -327,11 +470,15 @@
 
             try {
                 await supabase.from('galeria').update({ likes: newLikesCount }).eq('id', idNumerico);
+                if (filtroActual === 'populares') loadApprovedImages();
             } catch (e) { console.error(e); }
         }
 
         lightbox.addEventListener('click', () => { lightbox.style.display = 'none'; });
 
+        // ===================================================
+        // 4. MODERACIÓN Y APROBACIÓN DE FOTOS
+        // ===================================================
         async function loadPendingImages() {
             if (!adminAutenticado) return;
             try {
@@ -357,7 +504,7 @@
                     card.innerHTML = `
                         <img src="${image.image_url}" alt="${image.title}" loading="lazy">
                         <div class="gallery-card-info" style="flex-direction: column; gap: 8px; align-items: stretch;">
-                            <span style="font-weight: bold; text-align: center;">${image.title}</span>
+                            <span style="font-weight: bold; text-align: center;">${escapeHtml(image.title)}</span>
                             <div style="display: flex; justify-content: space-between; gap: 5px;">
                                 <button class="btn-aprobar" onclick="aprobarImagen('${image.id}')"><i class="fa-solid fa-check"></i> Aprobar</button>
                                 <button class="btn-rechazar" onclick="eliminarImagenPublica('${image.id}')"><i class="fa-solid fa-xmark"></i> Rechazar</button>
@@ -470,6 +617,9 @@
             mostrarToast('¡Modo moderación activado!');
         }
 
+        // ===================================================
+        // 5. SUBIDA DE ARCHIVOS A SUPABASE STORAGE
+        // ===================================================
         const uploadInput = document.getElementById('uploadInput');
         const titleInput = document.getElementById('imageTitleInput');
         const uploadFeedback = document.getElementById('uploadFeedback');
@@ -481,7 +631,7 @@
             if (!file) return;
 
             if (!customTitle) {
-                alert("Por favor, escribe un título antes de subir la imagen.");
+                mostrarToast('Por favor escribe un título para la foto.', true);
                 uploadInput.value = '';
                 return;
             }
@@ -523,6 +673,13 @@
             } else {
                 uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ Error al guardar en base de datos.</p>';
             }
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
     </script>
 </body>
