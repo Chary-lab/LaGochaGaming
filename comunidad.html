@@ -129,7 +129,60 @@
             border-radius: 12px;
             padding: 20px;
         }
-    </style>
+    /* Nickname Modal Styles */
+#nickname-modal {
+    display: none; /* hidden by default */
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6);
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+#nickname-modal-content {
+    background: var(--card-bg);
+    color: var(--text-main);
+    padding: 30px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+    position: relative;
+}
+#nickname-modal-content h3 {
+    margin-top: 0;
+}
+#nickname-modal-input {
+    width: 100%;
+    padding: 12px;
+    margin: 15px 0;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-main);
+    color: var(--text-main);
+}
+#nickname-modal-btn {
+    background: var(--accent-color);
+    color: #fff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+}
+#nickname-modal-btn:hover {
+    filter: brightness(1.15);
+}
+#nickname-modal-close {
+    position: absolute;
+    top: 10px; right: 10px;
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-muted);
+    cursor: pointer;
+}
+</style>
 </head>
 <body>
 
@@ -225,6 +278,19 @@
         </div>
     </footer>
 
+    <!-- Nickname Modal -->
+    <div id="nickname-modal">
+        <div id="nickname-modal-content">
+            <button id="nickname-modal-close" aria-label="Close">&times;</button>
+            <h3>¡Elige tu apodo!</h3>
+            <p>Ingresa un apodo para participar en el chat (máx. 20 caracteres).</p>
+            <input type="text" id="nickname-modal-input" placeholder="Tu apodo" maxlength="20">
+            <div>
+                <button id="nickname-modal-set-btn" class="btn-primary">Establecer apodo</button>
+            </div>
+            <p id="nickname-modal-error" style="color:#ff4d4d; margin-top:10px; display:none;"></p>
+        </div>
+    </div>
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="main.js"></script>
@@ -238,6 +304,12 @@
             const estadoDot = document.getElementById('estado-dot');
             const estadoTexto = document.getElementById('estado-texto');
             const onlineUsersListEl = document.getElementById('online-users-list');
+
+            const nicknameModal = document.getElementById('nickname-modal');
+            const nicknameModalInput = document.getElementById('nickname-modal-input');
+            const nicknameModalSetBtn = document.getElementById('nickname-modal-set-btn');
+            const nicknameModalCloseBtn = document.getElementById('nickname-modal-close');
+            const nicknameModalError = document.getElementById('nickname-modal-error');
 
             const STORAGE_KEY_NICK = 'comunidad_nickname';
             const STORAGE_KEY_USERID = 'comunidad_user_id';
@@ -254,39 +326,62 @@
                 );
             }
 
-            // Obtener o pedir nickname
-            function getOrAskNickname() {
-                const stored = localStorage.getItem(STORAGE_KEY_NICK);
-                if (stored) {
-                    return stored;
-                }
-                let nick = '';
-                while (!nick || nick.trim() === '') {
-                    nick = prompt('Introduce tu apodo para el chat (máx. 20 caracteres):', '');
-                    if (nick === null) { // usuario canceló
-                        nick = `Anonimo_${Math.floor(Math.random()*1000)}`;
-                    }
-                    nick = nick.trim();
-                    if (nick.length > 20) {
-                        alert('El apodo es demasiado largo. Máximo 20 caracteres.');
-                        nick = '';
-                    }
-                }
-                localStorage.setItem(STORAGE_KEY_NICK, nick);
-                return nick;
+            // Mostrar modal para obtener nickname
+            function showNicknameModal() {
+                nicknameModal.style.display = 'flex';
+                nicknameModalInput.value = '';
+                nicknameModalInput.focus();
+                nicknameModalError.style.display = 'none';
             }
 
-            // Inicializar nickname y user ID
-            userNickname = getOrAskNickname();
-            userId = localStorage.getItem(STORAGE_KEY_USERID);
-            if (!userId) {
-                userId = Math.random().toString(36).substr(2, 9);
-                localStorage.setItem(STORAGE_KEY_USERID, userId);
+            function hideNicknameModal() {
+                nicknameModal.style.display = 'none';
             }
-            // Prefijar y bloquear campo de autor
-            if (inputAutor) {
-                inputAutor.value = userNickname;
-                inputAutor.readOnly = true;
+
+            function setNicknameFromModal() {
+                const nick = nicknameModalInput.value.trim();
+                if (!nick) {
+                    nicknameModalError.textContent = 'El apodo no puede estar vacío.';
+                    nicknameModalError.style.display = 'block';
+                    return;
+                }
+                if (nick.length > 20) {
+                    nicknameModalError.textContent = 'El apodo es demasiado largo (máx. 20 caracteres).';
+                    nicknameModalError.style.display = 'block';
+                    return;
+                }
+                localStorage.setItem(STORAGE_KEY_NICK, nick);
+                userNickname = nick;
+                if (inputAutor) {
+                    inputAutor.value = userNickname;
+                    inputAutor.readOnly = true;
+                }
+                hideNicknameModal();
+                const btnEnviar = chatForm.querySelector('button[type="submit"]');
+                if (btnEnviar) btnEnviar.disabled = false;
+            }
+
+            // Initialize nickname and user ID from storage
+            function initUserData() {
+                const storedNick = localStorage.getItem(STORAGE_KEY_NICK);
+                if (storedNick) {
+                    userNickname = storedNick;
+                }
+                userId = localStorage.getItem(STORAGE_KEY_USERID);
+                if (!userId) {
+                    userId = Math.random().toString(36).substr(2, 9);
+                    localStorage.setItem(STORAGE_KEY_USERID, userId);
+                }
+                if (userNickname) {
+                    if (inputAutor) {
+                        inputAutor.value = userNickname;
+                        inputAutor.readOnly = true;
+                    }
+                } else {
+                    showNicknameModal();
+                }
+                const btnEnviar = chatForm.querySelector('button[type="submit"]');
+                if (btnEnviar) btnEnviar.disabled = !userNickname;
             }
 
             // Cargar mensajes iniciales desde Supabase
@@ -346,7 +441,7 @@
                         return;
                     }
 
-                    const autor = inputAutor.value.trim(); // ya viene prellenado y readonly
+                    const autor = inputAutor.value.trim();
                     const mensaje = inputMensaje.value.trim();
 
                     if (!autor || !mensaje) return;
@@ -380,7 +475,6 @@
                     .channel('public:comunidad_chat')
                     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'comunidad_chat' }, payload => {
                         const nuevoMsg = payload.new;
-                        // Si ya no hay mensajes o dice "Cargando...", limpiamos
                         if (chatMensajes.querySelector('div[style*="margin-top"]')) {
                             chatMensajes.innerHTML = '';
                         }
@@ -411,7 +505,6 @@
                 for (const [key, { presence }] of Object.entries(estadoPresencia)) {
                     const datos = presence[0] || {};
                     const nickRaw = datos.nickname || 'Anónimo';
-                    // Escape básico
                     const nickSafe = nickRaw.replace(/[&<>"']/g, c => ({
                         '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
                     })[c]);
@@ -433,7 +526,6 @@
                     if (!response.ok) throw new Error('Error al obtener estado del stream');
                     const data = await response.json();
                     const enVivo = data.livestream && data.livestream.is_live === true;
-                    // Actualizar UI
                     if (estadoDot && estadoTexto) {
                         if (enVivo) {
                             estadoDot.style.backgroundColor = '#53fc18';
@@ -443,7 +535,6 @@
                             estadoTexto.textContent = 'Offline';
                         }
                     }
-                    // Notificación cuando pasa de offline a online
                     if (ultimaEstadoEnVivo === false && enVivo && typeof mostrarToast === 'function') {
                         mostrarToast('¡La Gocha está en directo! 🎉', false);
                     }
@@ -459,7 +550,6 @@
 
             // --- Presencia de Usuarios Online (Supabase Realtime Presence) ---
             function iniciarPresenciaUsuarios() {
-                // userId y userNickname ya están definidos en este scope
                 const canalPresencia = supabase.channel('presence:comunidad', {
                     // Puedes ajustar el nombre del canal según necesites
                 })
@@ -469,25 +559,31 @@
                 })
                 .subscribe((state) => {
                     if (state === 'SUBSCRIBED') {
-                        // Enviar nuestra presencia con nickname
                         canalPresencia.track({ user_id: userId, nickname: userNickname });
                     }
                 });
 
-                // Devolver la función para detener si fuera necesario (no la usamos ahora)
                 return () => {
                     supabase.removeChannel(canalPresencia);
                 };
             }
 
             // Inicializar carga, realtime, estado del stream y presencia
+            initUserData();
             cargarMensajesChat();
             iniciarRealtimeChat();
-            verificarEstadoStream(); // Verificación inicial
-            setInterval(verificarEstadoStream, 30000); // Cada 30 segundos
+            verificarEstadoStream();
+            setInterval(verificarEstadoStream, 30000);
             const detenerPresencia = iniciarPresenciaUsuarios();
-            // Opcional: limpiar al salir
             // window.addEventListener('beforeunload', detenerPresencia);
+            // Event listeners for modal
+            nicknameModalSetBtn.addEventListener('click', setNicknameFromModal);
+            nicknameModalCloseBtn.addEventListener('click', hideNicknameModal);
+            nicknameModalInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    setNicknameFromModal();
+                }
+            });
         });
     </script>
 </body>
