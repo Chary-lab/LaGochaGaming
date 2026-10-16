@@ -349,34 +349,38 @@
         }
 
         // ===================================================
-        // 2. CARGAR IMÁGENES APROBADAS (CON MEDALLAS Y BADGES)
+        // 2. CARGAR IMÁGENES APROBADAS (CON ORDENAMIENTO Y BADGES)
         // ===================================================
         async function loadApprovedImages() {
             try {
-                // Ordenar según la pestaña seleccionada
-                let query = supabase.from('galeria').select('id, image_url, title, estado, likes, created_at');
-                
-                if (filtroActual === 'populares') {
-                    query = query.order('likes', { ascending: false }).order('created_at', { ascending: false });
-                } else {
-                    query = query.order('created_at', { ascending: false });
-                }
+                const { data, error } = await supabase
+                    .from('galeria')
+                    .select('id, image_url, title, estado, likes, created_at');
 
-                const { data, error } = await query;
-                if (error) return;
+                if (error) {
+                    console.error('Error cargando imágenes:', error);
+                    return;
+                }
 
                 const galleryGrid = document.getElementById('galleryGrid');
                 galleryGrid.innerHTML = '';
 
-                const imagenesPublicas = data ? data.filter(img => img.estado && img.estado.toLowerCase() === 'aprobado') : [];
+                // Filtrar aprobadas o sin estado
+                let imagenesPublicas = data ? data.filter(img => !img.estado || img.estado.toLowerCase() === 'aprobado') : [];
 
                 if (imagenesPublicas.length === 0) {
-                    galleryGrid.innerHTML = '<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center;">No hay imágenes públicas aprobadas aún.</p>';
+                    galleryGrid.innerHTML = '<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center;">No hay imágenes públicas aprobadas aún. ¡Sé el primero en subir una! 📸</p>';
                     return;
                 }
 
-                // Determinar el máximo de likes para insignias
-                const maxLikes = imagenesPublicas.length > 0 ? Math.max(...imagenesPublicas.map(i => i.likes || 0)) : 0;
+                // Ordenar según la pestaña seleccionada de manera segura
+                if (filtroActual === 'populares') {
+                    imagenesPublicas.sort((a, b) => (b.likes || 0) - (a.likes || 0));
+                } else {
+                    imagenesPublicas.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+                }
+
+                const maxLikes = Math.max(...imagenesPublicas.map(i => i.likes || 0));
                 const userLikes = JSON.parse(localStorage.getItem('gocha_user_likes') || '[]');
                 const horaAhora = new Date().getTime();
 
@@ -385,11 +389,9 @@
                     const idStr = String(image.id);
                     const isLiked = userLikes.includes(idStr);
 
-                    // Verificar si la foto tiene menos de 48 horas (es Nueva)
-                    const fechaFoto = new Date(image.created_at).getTime();
-                    const esNueva = (horaAhora - fechaFoto) < (48 * 60 * 60 * 1000);
+                    const fechaFoto = image.created_at ? new Date(image.created_at).getTime() : 0;
+                    const esNueva = fechaFoto > 0 && (horaAhora - fechaFoto) < (48 * 60 * 60 * 1000);
 
-                    // Determinar insignias de Top Likes
                     let badgeHTML = '';
                     if (cantLikes > 0 && cantLikes === maxLikes) {
                         badgeHTML = `<span class="badge-tag badge-top1">👑 TOP 1</span>`;
@@ -405,9 +407,9 @@
                     galleryCard.className = 'gallery-card';
                     galleryCard.innerHTML = `
                         ${badgeHTML}
-                        <img src="${image.image_url}" alt="${image.title}" loading="lazy">
+                        <img src="${image.image_url}" alt="${image.title || 'Foto Gocha'}" loading="lazy">
                         <div class="gallery-card-info">
-                            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px;" title="${image.title}">${escapeHtml(image.title)}</span>
+                            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px;" title="${image.title}">${escapeHtml(image.title || 'Sin título')}</span>
                             <div style="display: flex; gap: 8px; align-items: center;">
                                 <button class="btn-eliminar-publica" onclick="eliminarImagenPublica('${image.id}')" title="Borrar foto de la galería">
                                     <i class="fa-solid fa-trash-can"></i>
@@ -420,7 +422,7 @@
                         </div>
                     `;
                     galleryCard.querySelector('img').addEventListener('click', () => {
-                        lightbox.innerHTML = `<img src="${image.image_url}" alt="${image.title}">`;
+                        lightbox.innerHTML = `<img src="${image.image_url}" alt="${image.title || 'Foto'}">`;
                         lightbox.style.display = 'flex';
                     });
                     galleryGrid.appendChild(galleryCard);
