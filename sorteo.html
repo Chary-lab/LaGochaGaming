@@ -308,13 +308,18 @@
     </nav>
 
     <div class="sorteo-layout">
+        <!-- SECCIÓN IZQUIERDA: HISTORIAL Y GANADORES -->
         <div class="sidebar-ganadores">
             <h3><i class="fa-solid fa-trophy"></i> Top Ganadores</h3>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">
+                Registro histórico con los últimos ganadores afortunados de los sorteos oficiales de la comunidad.
+            </p>
             <div id="top-ganadores-grid">
                 <div class="ganadores-empty">Cargando ganadores oficiales...</div>
             </div>
         </div>
 
+        <!-- SECCIÓN CENTRAL: CONTROLES DEL SORTEO -->
         <div class="sorteo-container">
             <div class="mode-tabs">
                 <button id="tab-manual" class="tab-btn" onclick="cambiarTab('manual')"><i class="fa-solid fa-pen-to-square"></i> Modo Manual</button>
@@ -331,7 +336,7 @@
             <div id="sec-modo-manual" style="display: none;">
                 <h1 style="font-size: 1.5rem; margin-top: 10px;">✍️ App de Sorteos Manual</h1>
                 <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">
-                    Agrega los nombres de tus participantes para realizar sorteos libres.
+                    Función para la comunidad y moderadores: Agrega nombres personalizados de participantes de forma local y haz girar la ruleta de prueba con efectos de confeti.
                 </p>
 
                 <div class="form-group" style="margin-bottom: 5px;">
@@ -361,6 +366,9 @@
             <div id="sec-modo-streamer" style="display: none; border-top: 1px solid var(--border-color); padding-top: 20px; margin-top: 15px;">
                 <div style="text-align: center; margin-bottom: 20px;">
                     <p style="color: var(--accent-color); font-weight: bold; font-size: 0.9rem;">🔐 Panel Exclusivo GochiSorteo</p>
+                    <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 10px;">
+                        Controla el estado de las inscripciones en vivo, abre o cierra la tómbola sincronizada con la base de datos y vacía registros anteriores.
+                    </p>
                     <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 10px;">
                         <button id="btn-toggle-sorteo" onclick="toggleEstadoSorteo()" class="btn-primary" style="background: #2ecc71; font-size: 0.85rem; padding: 8px 16px; border:none; cursor:pointer;">🟢 ABRIR SORTEO EN VIVO</button>
                         <button onclick="vaciarTombolaOnline()" class="btn-primary" style="background: #ff4d4d; font-size: 0.85rem; padding: 8px 16px; border:none; cursor:pointer;">🗑️ Limpiar Tómbola</button>
@@ -387,10 +395,11 @@
             </div>
         </div>
 
+        <!-- SECCIÓN DERECHA: REGLAS E INFORMACIÓN -->
         <div class="sidebar-info">
             <h3><i class="fa-solid fa-gift"></i> Reglas del Sorteo</h3>
             <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.5;">
-                • El GochiSorteo se activa automáticamente cuando La Gocha abre las inscripciones en directo[cite: 3].<br><br>
+                • El GochiSorteo se activa automáticamente cuando La Gocha abre las inscripciones en directo. Los espectadores pueden registrarse con su usuario de Kick.<br><br>
                 • ¡Mucha suerte a todos! 🍀
             </p>
         </div>
@@ -435,7 +444,6 @@
             }
 
             try {
-                // Suscripción Realtime combinada para actualizar estado de config_sorteo al instante sin F5
                 supabase
                     .channel('realtime_sorteo_total')
                     .on('postgres_changes', { event: '*', schema: 'public', table: 'participantes_en_vivo' }, () => { cargarParticipantesOnline(); })
