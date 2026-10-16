@@ -172,3 +172,27 @@ async function cerrarSesionAdminGlobal() {
         }
     });
 }
+// --- SCRIPT PARA OCULTAR HASHES EN ENLACES INTERNOS ---
+document.addEventListener('DOMContentLoaded', () => {
+    const navLinks = document.querySelectorAll('a[href*="#"]');
+    
+    navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            const href = link.getAttribute('href');
+            // Detecta si el enlace pertenece a una ancla en la página principal
+            if (href.includes('#') && (href.startsWith('./#') || href.startsWith('#') || href.includes('index.html#'))) {
+                const targetId = href.substring(href.indexOf('#'));
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    e.preventDefault();
+                    // Realiza scroll suave hacia la sección sin ensuciar la URL
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            }
+        });
+    });
+});
