@@ -148,6 +148,7 @@
 </head>
 <body>
 
+    <!-- NAVEGACIÓN PRINCIPAL -->
     <nav class="navbar">
         <div class="logo">LAGOCHA<span>GAMING</span></div>
         <div class="nav-links">
@@ -169,6 +170,7 @@
 
     <div class="cine-layout">
         <div class="cine-main-screen">
+            <!-- BARRA DE TÍTULO Y BOTÓN DE PANEL -->
             <div class="cine-controls-bar">
                 <h1 style="font-size: 1.3rem;"><i class="fa-solid fa-film" style="color: var(--accent-color);"></i> GochiWatch - Cine en Directo</h1>
                 <button id="btn-toggle-streamer" class="btn-streamer-login" onclick="toggleModoStreamerCine()">
@@ -176,14 +178,14 @@
                 </button>
             </div>
 
-            <!-- PANEL DE CONTROL EXCLUSIVO -->
+            <!-- PANEL DE CONTROL DEL STREAMER (SOLO ADMINS) -->
             <div id="streamerAdminPanel" class="streamer-admin-panel">
                 <h3><i class="fa-solid fa-sliders"></i> Panel Maestro de Reproducción</h3>
                 <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">
-                    Pega cualquier enlace (<strong>Google Drive</strong>, <strong>YouTube</strong> o <strong>.mp4</strong>).
+                    Pega cualquier enlace (<strong>Google Drive</strong>, <strong>YouTube</strong> o <strong>.mp4 directos</strong>).
                 </p>
                 <div style="display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap;">
-                    <input type="text" id="inputVideoUrl" placeholder="Pega aquí el enlace..." style="flex: 1; min-width: 250px; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg-subtle); color: var(--text-main); outline: none;">
+                    <input type="text" id="inputVideoUrl" placeholder="Pega aquí el enlace de Drive, YouTube o .mp4..." style="flex: 1; min-width: 250px; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg-subtle); color: var(--text-main); outline: none;">
                     <button onclick="actualizarUrlPelicula()" class="btn-primary" style="padding: 10px 20px; border: none; cursor: pointer;">Cargar Video</button>
                     <button onclick="cerrarReproductorTotal()" class="btn-primary" style="background: #ff4d4d; padding: 10px 20px; border: none; cursor: pointer;">🛑 Apagar</button>
                     <button onclick="cerrarSesionAdminGlobal()" class="btn-primary" style="background: #c0392b; padding: 10px 20px; border: none; cursor: pointer;"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión</button>
@@ -193,19 +195,25 @@
                 </div>
             </div>
 
+            <!-- CONTENEDOR DE REPRODUCCIÓN Y CÁMARA DE KICK -->
             <div class="video-player-box" id="videoBoxContainer">
+                <!-- Reproductor HTML5 para MP4 / Google Drive -->
                 <video id="cineVideoPlayer" controls controlslist="nodownload" style="display: none;">
                     <source id="cineVideoSource" src="" type="video/mp4">
                     Tu navegador no soporta reproducción.
                 </video>
+
+                <!-- Reproductor IFrame para YouTube -->
                 <div id="ytPlayerContainer" style="display: none; width:100%; height:100%;"></div>
 
+                <!-- Overlay con la cámara/stream en directo de La Gocha -->
                 <div class="streamer-overlay-cam">
                     <iframe src="https://player.kick.com/lagochagaming?autoplay=true&muted=false" frameborder="0" scrolling="no" allowfullscreen="true" title="Transmisión en directo"></iframe>
                 </div>
             </div>
         </div>
 
+        <!-- BARRA LATERAL (CHAT DE KICK) -->
         <div class="cine-sidebar">
             <div class="chat-box-cine">
                 <iframe src="https://kick.com/popout/lagochagaming/chat" frameborder="0" scrolling="no" title="Chat de Kick"></iframe>
@@ -213,20 +221,19 @@
             <div class="sidebar-info" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 18px; text-align: center;">
                 <h3 style="color: var(--accent-color); font-size: 0.9rem; margin-bottom: 8px; text-transform: uppercase;">ℹ️ ¿Cómo funciona?</h3>
                 <p style="color: var(--text-muted); font-size: 0.82rem; line-height: 1.5;">
-                    La Gocha transmite su reacción en directo mientras disfrutan de la película totalmente sincronizados[cite: 5].
+                    La Gocha transmite su reacción en directo mientras disfrutan de la película totalmente sincronizados.
                 </p>
             </div>
         </div>
     </div>
 
-    <!-- Modal de Login -->
+    <!-- MODAL DE LOGIN PARA STREAMER -->
     <div id="modal-pin-cine" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5,7,10,0.85); backdrop-filter: blur(5px); z-index: 10000; justify-content: center; align-items: center;">
         <div style="background: var(--card-bg); border: 1px solid var(--accent-color); padding: 30px; border-radius: 16px; box-shadow: var(--glow); text-align: center; max-width: 380px; width: 90%;">
             <h3 style="color: var(--accent-color); margin-bottom: 15px; font-size: 1.2rem;">🔒 ACCESO STREAMER CINE</h3>
             <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Ingresa tus datos para controlar la reproducción:</p>
             
             <input type="email" id="streamer-cine-email" placeholder="Correo electrónico" style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg-subtle); color: var(--text-main); font-size: 0.95rem; margin-bottom: 10px; outline: none;">
-            
             <input type="password" id="streamer-cine-password" placeholder="Contraseña" style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg-subtle); color: var(--text-main); font-size: 0.95rem; margin-bottom: 10px; outline: none;">
             
             <div id="feedback-cine-pin" style="margin-bottom:15px; color: #ff4d4d; font-size: 0.85rem; font-weight: bold;"></div>
@@ -238,10 +245,14 @@
         </div>
     </div>
 
+    <!-- SCRIPTS EXTERNOS -->
     <script src="https://www.youtube.com/iframe_api"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="main.js"></script>
+
+    <!-- LÓGICA DE JAVASCRIPT DEL CINE -->
     <script>
+        // --- VARIABLES GLOBALES DE ESTADO ---
         let streamerCineAutenticado = false;
         const mp4Player = document.getElementById('cineVideoPlayer');
         const ytContainer = document.getElementById('ytPlayerContainer');
@@ -250,19 +261,39 @@
         let actualizandoLocalmente = false;
         let urlActual = '';
 
+        // ===================================================
+        // 1. CONVERTIDOR ROBUSO DE URLS (Drive, YouTube, MP4)
+        // ===================================================
         function procesarUrlEntrante(url) {
             if (!url) return '';
+            url = url.trim();
+
+            // Convierte cualquier formato de Google Drive a enlace directo HTML5
             if (url.includes('drive.google.com') || url.includes('googleusercontent.com')) {
+                let driveId = null;
+                // Detecta enlace corto /d/ID_DEL_ARCHIVO/
                 const matchDrive = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
                 if (matchDrive && matchDrive[1]) {
-                    const driveId = matchDrive[1];
+                    driveId = matchDrive[1];
+                } else {
+                    // Detecta enlace largo con parámetros ?id=ID_DEL_ARCHIVO
+                    const urlParams = new URLSearchParams(url.split('?')[1]);
+                    if (urlParams.has('id')) {
+                        driveId = urlParams.get('id');
+                    }
+                }
+
+                if (driveId) {
                     return `https://lh3.googleusercontent.com/d/${driveId}`;
                 }
             }
+
             return url;
         }
 
+        // Extractor universal de IDs de YouTube
         function extraerYouTubeId(url) {
+            if (!url) return null;
             const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
             const match = url.match(regExp);
             return (match && match[2].length === 11) ? match[2] : null;
@@ -270,15 +301,21 @@
 
         function onYouTubeIframeAPIReady() {}
 
+        // ===================================================
+        // 2. INICIALIZACIÓN Y SUSCRIPCIÓN EN TIEMPO REAL
+        // ===================================================
         document.addEventListener('DOMContentLoaded', async () => {
+            // Verificar si el usuario ya es un admin logueado
             const { data: { session } } = await supabase.auth.getSession();
             if (session) {
                 streamerCineAutenticado = true;
                 activarModoStreamerUI();
             }
 
+            // Cargar estado inicial de la película desde Supabase
             await cargarEstadoCine();
 
+            // Suscripción Realtime por WebSockets para sincronizar estado con todos
             try {
                 supabase
                     .channel('realtime_cine_sync')
@@ -288,13 +325,16 @@
                     .subscribe();
             } catch(e) { console.log('Modo local activo'); }
 
+            // Eventos del reproductor local MP4 para transmitir play/pause/seek al admin
             mp4Player.addEventListener('play', () => { if (streamerCineAutenticado && !actualizandoLocalmente && !esYouTube) enviarComandoSync('play', mp4Player.currentTime); });
             mp4Player.addEventListener('pause', () => { if (streamerCineAutenticado && !actualizandoLocalmente && !esYouTube) enviarComandoSync('pause', mp4Player.currentTime); });
             mp4Player.addEventListener('seeked', () => { if (streamerCineAutenticado && !actualizandoLocalmente && !esYouTube) enviarComandoSync('seek', mp4Player.currentTime); });
 
+            // Enviar formulario al presionar Enter en contraseña
             document.getElementById('streamer-cine-password')?.addEventListener('keypress', (e) => { if (e.key === 'Enter') iniciarSesionStreamerCine(); });
         });
 
+        // Carga la información guardada del video activo desde Supabase
         async function cargarEstadoCine() {
             try {
                 const { data, error } = await supabase.from('sync_cine').select('*').eq('id', 1).single();
@@ -304,6 +344,11 @@
             } catch(e) { console.error(e); }
         }
 
+        // ===================================================
+        // 3. CONTROLES MAESTROS DEL STREAMER
+        // ===================================================
+        
+        // Carga una nueva película o video en el sistema
         async function actualizarUrlPelicula() {
             if (!(await validarSesionStreamer())) {
                 mostrarToast('Tu sesión ha expirado.', true);
@@ -333,6 +378,7 @@
             } catch(e) { mostrarToast('Error al actualizar el video.', true); }
         }
 
+        // Apaga y resetea el reproductor para todos los usuarios
         async function cerrarReproductorTotal() {
             if (!(await validarSesionStreamer())) {
                 mostrarToast('Tu sesión ha expirado.', true);
@@ -365,6 +411,7 @@
             } catch(e) { mostrarToast('Error al apagar el reproductor.', true); }
         }
 
+        // Envía órdenes de tiempo y estado (play/pause) a Supabase
         async function enviarComandoSync(estado, tiempo) {
             if (!(await validarSesionStreamer())) return;
 
@@ -378,7 +425,11 @@
             } catch(e) { console.error(e); }
         }
 
+        // ===================================================
+        // 4. MOTOR DE SINCRONIZACIÓN REMOTA DE REPRODUCCIÓN
+        // ===================================================
         function sincronizarReproductorRemoto(data) {
+            // Si la URL está vacía, ocultar todo el reproductor
             if (!data || !data.video_url) {
                 if (mp4Player) {
                     mp4Player.pause();
@@ -399,6 +450,7 @@
             const finalUrl = procesarUrlEntrante(data.video_url);
             const ytId = extraerYouTubeId(finalUrl);
 
+            // A. CASO YOUTUBE
             if (ytId) {
                 esYouTube = true;
                 mp4Player.style.display = 'none';
@@ -436,6 +488,7 @@
                     actualizandoLocalmente = false;
                 }
             } else {
+                // B. CASO MP4 DIRECTO O GOOGLE DRIVE CONVERTIDO
                 esYouTube = false;
                 ytContainer.style.display = 'none';
                 if (ytPlayer && ytPlayer.stopVideo) ytPlayer.stopVideo();
@@ -461,6 +514,11 @@
             }
         }
 
+        // ===================================================
+        // 5. GESTIÓN DE INTERFAZ Y AUTENTICACIÓN
+        // ===================================================
+        
+        // Muestra u oculta el panel de administración
         function toggleModoStreamerCine() {
             const adminPanel = document.getElementById('streamerAdminPanel');
             const btn = document.getElementById('btn-toggle-streamer');
@@ -469,7 +527,6 @@
                 document.getElementById('modal-pin-cine').style.display = 'flex';
                 document.getElementById('streamer-cine-email').focus();
             } else {
-                // Comportamiento Toggle fluido para abrir/cerrar el panel de admin sin perder sesión
                 if (adminPanel.style.display === 'none' || adminPanel.style.display === '') {
                     adminPanel.style.display = 'block';
                     btn.innerHTML = '<i class="fa-solid fa-lock-open"></i> Ocultar Panel';
@@ -514,6 +571,7 @@
         }
     </script>
 
+    <!-- FOOTER -->
     <footer class="main-footer">
         <div class="footer-container">
             <div class="footer-social-icons">
