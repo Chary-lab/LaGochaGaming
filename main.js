@@ -172,25 +172,42 @@ async function cerrarSesionAdminGlobal() {
         }
     });
 }
-// --- SCRIPT PARA OCULTAR HASHES EN ENLACES INTERNOS ---
+// --- SCRIPT PARA NAVEGACIÓN LIMPIA DE ANCLAS ---
 document.addEventListener('DOMContentLoaded', () => {
     const navLinks = document.querySelectorAll('a[href*="#"]');
     
     navLinks.forEach(link => {
         link.addEventListener('click', (e) => {
             const href = link.getAttribute('href');
-            // Detecta si el enlace pertenece a una ancla en la página principal
-            if (href.includes('#') && (href.startsWith('./#') || href.startsWith('#') || href.includes('index.html#'))) {
-                const targetId = href.substring(href.indexOf('#'));
-                const targetElement = document.querySelector(targetId);
+            
+            if (href && href.includes('#')) {
+                const parts = href.split('#');
+                const targetPage = parts[0]; // Ej: "./", "index.html", o vacío
+                const targetId = '#' + parts[1]; // Ej: "#inicio"
                 
-                if (targetElement) {
+                const isCurrentPage = window.location.pathname.endsWith('index.html') || 
+                                      window.location.pathname === '/' || 
+                                      window.location.pathname.endsWith('Gocha/') ||
+                                      window.location.pathname.endsWith('Gocha');
+
+                // Si estamos en otra página (ej. cine.html) y quieren ir a una sección del index
+                if (targetPage && !isCurrentPage && (targetPage.includes('index') || targetPage === './' || targetPage === '.')) {
+                    // Deja que navegue normalmente al index con su hash
+                    return; 
+                }
+
+                // Si ya estamos en el index, evitamos el salto brusco y ocultamos el hash
+                const targetElement = document.querySelector(targetId);
+                if (targetElement && isCurrentPage) {
                     e.preventDefault();
-                    // Realiza scroll suave hacia la sección sin ensuciar la URL
                     targetElement.scrollIntoView({
                         behavior: 'smooth',
                         block: 'start'
                     });
+                    // Limpia cualquier hash residual en la URL
+                    if (window.location.hash) {
+                        history.replaceState(null, null, window.location.pathname);
+                    }
                 }
             }
         });
