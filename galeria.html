@@ -373,13 +373,14 @@
             if (!(await validarSesionStreamer())) {
                 adminAutenticado = false;
                 toggleModoAdmin();
-                alert('Tu sesión ha expirado.');
+                mostrarToast('Tu sesión ha expirado.', true);
                 return;
             }
             try {
                 const idNumerico = isNaN(id) ? id : Number(id);
                 const { error } = await supabase.from('galeria').update({ estado: 'aprobado' }).eq('id', idNumerico);
-                if (error) { alert(`Error: ${error.message}`); return; }
+                if (error) { mostrarToast(`Error: ${error.message}`, true); return; }
+                mostrarToast('¡Imagen aprobada con éxito!');
                 loadPendingImages();
                 loadApprovedImages();
             } catch (e) { console.error(e); }
@@ -389,30 +390,47 @@
             if (!(await validarSesionStreamer())) {
                 adminAutenticado = false;
                 toggleModoAdmin();
-                alert('Tu sesión ha expirado.');
+                mostrarToast('Tu sesión ha expirado.', true);
                 return;
             }
-            if (!confirm("¿Deseas eliminar/rechazar esta imagen?")) return;
-            try {
-                const idNumerico = isNaN(id) ? id : Number(id);
-                const { error } = await supabase.from('galeria').delete().eq('id', idNumerico);
-                if (error) { alert(`Error: ${error.message}`); return; }
-                loadPendingImages();
-                loadApprovedImages();
-            } catch (e) { console.error(e); }
+
+            mostrarConfirmacionModal({
+                titulo: '🗑️ Eliminar Imagen',
+                mensaje: '¿Deseas eliminar permanentemente esta imagen?',
+                textoConfirmar: 'Eliminar',
+                enConfirmar: async () => {
+                    try {
+                        const idNumerico = isNaN(id) ? id : Number(id);
+                        const { error } = await supabase.from('galeria').delete().eq('id', idNumerico);
+                        if (error) { mostrarToast(`Error: ${error.message}`, true); return; }
+                        mostrarToast('Imagen eliminada de la galería.');
+                        loadPendingImages();
+                        loadApprovedImages();
+                    } catch (e) { console.error(e); }
+                }
+            });
         }
 
         function toggleModoAdmin() {
+            const panel = document.getElementById('panelPendientes');
+            const btn = document.getElementById('btn-toggle-admin');
+            const btnLogout = document.getElementById('btn-logout-galeria');
+
             if (!adminAutenticado) {
                 document.getElementById('modal-pin').style.display = 'flex';
                 document.getElementById('admin-email').focus();
             } else {
-                document.body.classList.remove('admin-mode-active');
-                document.getElementById('panelPendientes').style.display = 'none';
-                document.getElementById('btn-logout-galeria').style.display = 'none';
-                const btn = document.getElementById('btn-toggle-admin');
-                btn.innerHTML = '<i class="fa-solid fa-lock"></i> Modo Moderación';
-                btn.classList.remove('active');
+                if (panel.style.display === 'none' || panel.style.display === '') {
+                    panel.style.display = 'block';
+                    btnLogout.style.display = 'inline-flex';
+                    btn.innerHTML = '<i class="fa-solid fa-lock-open"></i> Ocultar Moderación';
+                    btn.classList.add('active');
+                } else {
+                    panel.style.display = 'none';
+                    btnLogout.style.display = 'none';
+                    btn.innerHTML = '<i class="fa-solid fa-lock"></i> Modo Moderación';
+                    btn.classList.remove('active');
+                }
             }
         }
 
@@ -446,9 +464,10 @@
             document.getElementById('panelPendientes').style.display = 'block';
             document.getElementById('btn-logout-galeria').style.display = 'inline-flex';
             const btn = document.getElementById('btn-toggle-admin');
-            btn.innerHTML = '<i class="fa-solid fa-lock-open"></i> Moderación Activa';
+            btn.innerHTML = '<i class="fa-solid fa-lock-open"></i> Ocultar Moderación';
             btn.classList.add('active');
             loadPendingImages();
+            mostrarToast('¡Modo moderación activado!');
         }
 
         const uploadInput = document.getElementById('uploadInput');

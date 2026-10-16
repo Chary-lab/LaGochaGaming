@@ -390,7 +390,7 @@
         <div class="sidebar-info">
             <h3><i class="fa-solid fa-gift"></i> Reglas del Sorteo</h3>
             <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.5;">
-                • El GochiSorteo se activa automáticamente cuando La Gocha abre las inscripciones en directo.<br><br>
+                • El GochiSorteo se activa automáticamente cuando La Gocha abre las inscripciones en directo[cite: 3].<br><br>
                 • ¡Mucha suerte a todos! 🍀
             </p>
         </div>
@@ -435,10 +435,16 @@
             }
 
             try {
+                // Suscripción Realtime combinada para actualizar estado de config_sorteo al instante sin F5
                 supabase
                     .channel('realtime_sorteo_total')
                     .on('postgres_changes', { event: '*', schema: 'public', table: 'participantes_en_vivo' }, () => { cargarParticipantesOnline(); })
-                    .on('postgres_changes', { event: '*', schema: 'public', table: 'config_sorteo' }, () => { cargarEstadoSorteo(); })
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'config_sorteo' }, (payload) => { 
+                        if (payload.new) {
+                            sorteoAbierto = payload.new.abierto;
+                            actualizarUIEstadoSorteo();
+                        }
+                    })
                     .subscribe();
             } catch(e) { console.log('Modo local detectado'); }
 

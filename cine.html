@@ -139,31 +139,6 @@
             box-shadow: var(--glow);
         }
 
-        #gochi-toast {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            background: var(--card-bg);
-            border: 2px solid var(--accent-color);
-            color: var(--text-main);
-            padding: 14px 22px;
-            border-radius: 12px;
-            box-shadow: var(--glow);
-            z-index: 99999;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 600;
-            font-size: 0.95rem;
-            transform: translateY(120px);
-            opacity: 0;
-            transition: transform 0.3s ease, opacity 0.3s ease;
-        }
-        #gochi-toast.show {
-            transform: translateY(0);
-            opacity: 1;
-        }
-
         @media (max-width: 1100px) {
             .cine-layout { grid-template-columns: 1fr; }
             .chat-box-cine { height: 400px; }
@@ -191,11 +166,6 @@
             <a href="https://discord.com/invite/svrteKBbeh" target="_blank" class="btn-login">Discord</a>
         </div>
     </nav>
-
-    <div id="gochi-toast">
-        <i id="toast-icon" class="fa-solid fa-circle-check" style="color: #53fc18; font-size: 1.2rem;"></i>
-        <span id="toast-message">¡Acción realizada con éxito!</span>
-    </div>
 
     <div class="cine-layout">
         <div class="cine-main-screen">
@@ -243,7 +213,7 @@
             <div class="sidebar-info" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 18px; text-align: center;">
                 <h3 style="color: var(--accent-color); font-size: 0.9rem; margin-bottom: 8px; text-transform: uppercase;">ℹ️ ¿Cómo funciona?</h3>
                 <p style="color: var(--text-muted); font-size: 0.82rem; line-height: 1.5;">
-                    La Gocha transmite su reacción en directo mientras disfrutan de la película totalmente sincronizados.
+                    La Gocha transmite su reacción en directo mientras disfrutan de la película totalmente sincronizados[cite: 5].
                 </p>
             </div>
         </div>
@@ -279,26 +249,6 @@
         let esYouTube = false;
         let actualizandoLocalmente = false;
         let urlActual = '';
-
-        function mostrarToast(mensaje, esError = false) {
-            const toast = document.getElementById('gochi-toast');
-            const toastMsg = document.getElementById('toast-message');
-            const toastIcon = document.getElementById('toast-icon');
-
-            toastMsg.innerText = mensaje;
-            if (esError) {
-                toastIcon.className = 'fa-solid fa-triangle-exclamation';
-                toastIcon.style.color = '#ff4d4d';
-                toast.style.borderColor = '#ff4d4d';
-            } else {
-                toastIcon.className = 'fa-solid fa-circle-check';
-                toastIcon.style.color = '#53fc18';
-                toast.style.borderColor = 'var(--accent-color)';
-            }
-
-            toast.classList.add('show');
-            setTimeout(() => { toast.classList.remove('show'); }, 3500);
-        }
 
         function procesarUrlEntrante(url) {
             if (!url) return '';
@@ -512,14 +462,23 @@
         }
 
         function toggleModoStreamerCine() {
+            const adminPanel = document.getElementById('streamerAdminPanel');
+            const btn = document.getElementById('btn-toggle-streamer');
+
             if (!streamerCineAutenticado) {
                 document.getElementById('modal-pin-cine').style.display = 'flex';
                 document.getElementById('streamer-cine-email').focus();
             } else {
-                document.getElementById('streamerAdminPanel').style.display = 'none';
-                const btn = document.getElementById('btn-toggle-streamer');
-                btn.innerHTML = '<i class="fa-solid fa-lock"></i> Panel Streamer';
-                btn.classList.remove('active');
+                // Comportamiento Toggle fluido para abrir/cerrar el panel de admin sin perder sesión
+                if (adminPanel.style.display === 'none' || adminPanel.style.display === '') {
+                    adminPanel.style.display = 'block';
+                    btn.innerHTML = '<i class="fa-solid fa-lock-open"></i> Ocultar Panel';
+                    btn.classList.add('active');
+                } else {
+                    adminPanel.style.display = 'none';
+                    btn.innerHTML = '<i class="fa-solid fa-lock"></i> Panel Streamer';
+                    btn.classList.remove('active');
+                }
             }
         }
 
@@ -550,7 +509,7 @@
         function activarModoStreamerUI() {
             document.getElementById('streamerAdminPanel').style.display = 'block';
             const btn = document.getElementById('btn-toggle-streamer');
-            btn.innerHTML = '<i class="fa-solid fa-lock-open"></i> Panel Activo';
+            btn.innerHTML = '<i class="fa-solid fa-lock-open"></i> Ocultar Panel';
             btn.classList.add('active');
         }
     </script>
