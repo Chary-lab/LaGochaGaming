@@ -250,10 +250,16 @@
 
             <!-- ÁREA DE CHAT: Login/Registro cuando no hay sesión, Formulario cuando hay sesión -->
             <div id="chat-login-area" class="chat-input-area" style="display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 20px; text-align: center;">
-                <div style="color: var(--text-muted); font-size: 0.9rem;">Inicia sesión para participar en el chat</div>
-                <button id="btn-login-chat" class="btn-primary" onclick="showNicknameModal()" style="width: 100%; max-width: 300px; padding: 12px 24px; font-size: 1rem;">
-                    <i class="fa-solid fa-user-plus"></i> Iniciar Sesión / Registrarse
-                </button>
+                <div style="color: var(--text-muted); font-size: 0.9rem;">Inicia sesión o regístrate para participar en el chat</div>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
+                    <button id="btn-login-chat" class="btn-primary" onclick="abrirModalLogin()" style="flex: 1; min-width: 140px; padding: 12px 18px; font-size: 0.95rem;">
+                        <i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión
+                    </button>
+                    <button id="btn-registro-chat" class="btn-primary" onclick="abrirModalRegistro()" style="flex: 1; min-width: 140px; padding: 12px 18px; font-size: 0.95rem; background: var(--accent-color);">
+                        <i class="fa-solid fa-user-plus"></i> Registrarse
+                    </button>
+                </div>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 5px 0 0 0;">Ambos requieren un apodo y un PIN de 4 dígitos para proteger tu cuenta y puntos.</p>
             </div>
 
             <form id="chat-form" class="chat-input-area" style="display: none;">
@@ -341,12 +347,12 @@
     <div id="nickname-modal">
         <div id="nickname-modal-content">
             <button id="nickname-modal-close" aria-label="Close">&times;</button>
-            <h3>¡Bienvenido a la Comunidad!</h3>
-            <p style="font-size:0.9rem;color:var(--text-muted);">Ingresa un apodo y un PIN de 4 dígitos para proteger tu cuenta y acumular puntos.</p>
+            <h3 id="modal-titulo-accion">¡Bienvenido a la Comunidad!</h3>
+            <p id="modal-subtitulo-accion" style="font-size:0.9rem;color:var(--text-muted);">Ingresa tu apodo y tu PIN de 4 dígitos.</p>
             <input type="text" id="nickname-modal-input" placeholder="Tu apodo" maxlength="20">
             <input type="password" id="nickname-modal-pin" placeholder="PIN (4 dígitos)" maxlength="4" pattern="[0-9]*" inputmode="numeric">
             <div>
-                <button id="nickname-modal-set-btn" class="btn-primary" style="width:100%;margin-top:10px;">Guardar y Entrar</button>
+                <button id="nickname-modal-set-btn" class="btn-primary" style="width:100%;margin-top:10px;">Entrar</button>
             </div>
             <p id="nickname-modal-error" style="color:#ff4d4d; margin-top:10px; display:none;font-size:0.85rem;"></p>
         </div>
@@ -356,6 +362,31 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="main.js"></script>
     <script>
+        // Funciones globales para los botones de login/registro (llamadas desde HTML)
+        let _modalModo = 'login'; // 'login' o 'registro'
+
+        function abrirModalLogin() {
+            _modalModo = 'login';
+            document.getElementById('modal-titulo-accion').textContent = 'Iniciar Sesión';
+            document.getElementById('modal-subtitulo-accion').textContent = 'Ingresa tu apodo y PIN de 4 dígitos para acceder a tu cuenta.';
+            document.getElementById('nickname-modal-input').value = '';
+            document.getElementById('nickname-modal-pin').value = '';
+            document.getElementById('nickname-modal-error').style.display = 'none';
+            document.getElementById('nickname-modal').style.display = 'flex';
+            document.getElementById('nickname-modal-input').focus();
+        }
+
+        function abrirModalRegistro() {
+            _modalModo = 'registro';
+            document.getElementById('modal-titulo-accion').textContent = 'Registrarse en la Comunidad';
+            document.getElementById('modal-subtitulo-accion').textContent = 'Crea un nuevo perfil con apodo y PIN de 4 dígitos.';
+            document.getElementById('nickname-modal-input').value = '';
+            document.getElementById('nickname-modal-pin').value = '';
+            document.getElementById('nickname-modal-error').style.display = 'none';
+            document.getElementById('nickname-modal').style.display = 'flex';
+            document.getElementById('nickname-modal-input').focus();
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             const chatForm = document.getElementById('chat-form');
             const chatMensajes = document.getElementById('chat-mensajes');
@@ -467,19 +498,32 @@
                     if (nicknameModalError) { nicknameModalError.textContent = 'PIN inválido (debe ser 4 dígitos).'; nicknameModalError.style.display = 'block'; }
                     return;
                 }
+
+                // Si estamos en modo registro, forzamos crear cuenta nueva
+                if (_modalModo === 'registro') {
+                    const verif = await verificarLogin(nick, pin);
+                    if (verif.success) {
+                        if (nicknameModalError) { nicknameModalError.textContent = 'Este usuario ya existe. Usa "Iniciar Sesión" si es tu cuenta.'; nicknameModalError.style.display = 'block'; }
+                        return;
+                    }
+                    const reg = await registrarUsuario(nick, pin);
+                    if (reg.success) {
+                        guardarSesion(nick, null, 0);
+                        hideNicknameModal();
+                        return;
+                    }
+                    if (nicknameModalError) { nicknameModalError.textContent = 'Error: ' + (reg.error || 'No se pudo crear la cuenta.'); nicknameModalError.style.display = 'block'; }
+                    return;
+                }
+
+                // Modo login: intentar autenticar
                 const verif = await verificarLogin(nick, pin);
                 if (verif.success) {
                     guardarSesion(nick, verif.user.session_token, verif.user.puntos);
                     hideNicknameModal();
                     return;
                 }
-                const reg = await registrarUsuario(nick, pin);
-                if (reg.success) {
-                    guardarSesion(nick, null, 0);
-                    hideNicknameModal();
-                    return;
-                }
-                if (nicknameModalError) { nicknameModalError.textContent = 'Error: ' + (reg.error || 'No se pudo crear la cuenta.'); nicknameModalError.style.display = 'block'; }
+                if (nicknameModalError) { nicknameModalError.textContent = 'Credenciales incorrectas. Verifica tu apodo y PIN.'; nicknameModalError.style.display = 'block'; }
             }
 
             async function cargarMensajesChat() {
