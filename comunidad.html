@@ -129,60 +129,66 @@
             border-radius: 12px;
             padding: 20px;
         }
-    /* Nickname Modal Styles */
-#nickname-modal {
-    display: none; /* hidden by default */
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.6);
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-}
-#nickname-modal-content {
-    background: var(--card-bg);
-    color: var(--text-main);
-    padding: 30px;
-    border-radius: 12px;
-    width: 90%;
-    max-width: 400px;
-    text-align: center;
-    position: relative;
-}
-#nickname-modal-content h3 {
-    margin-top: 0;
-}
-#nickname-modal-input {
-    width: 100%;
-    padding: 12px;
-    margin: 15px 0;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    background: var(--bg-main);
-    color: var(--text-main);
-}
-#nickname-modal-btn {
-    background: var(--accent-color);
-    color: #fff;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
-}
-#nickname-modal-btn:hover {
-    filter: brightness(1.15);
-}
-#nickname-modal-close {
-    position: absolute;
-    top: 10px; right: 10px;
-    background: transparent;
-    border: none;
-    font-size: 1.5rem;
-    color: var(--text-muted);
-    cursor: pointer;
-}
-</style>
+        /* Nickname Modal Styles */
+        #nickname-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        #nickname-modal-content {
+            background: var(--card-bg);
+            color: var(--text-main);
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            position: relative;
+        }
+        #nickname-modal-content h3 {
+            margin-top: 0;
+        }
+        #nickname-modal-input, #nickname-modal-pin {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--bg-main);
+            color: var(--text-main);
+            box-sizing: border-box;
+        }
+        #nickname-modal-pin {
+            text-align: center;
+            letter-spacing: 5px;
+            font-size: 1.2rem;
+        }
+        #nickname-modal-btn {
+            background: var(--accent-color);
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        #nickname-modal-btn:hover {
+            filter: brightness(1.15);
+        }
+        #nickname-modal-close {
+            position: absolute;
+            top: 10px; right: 10px;
+            background: transparent;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
 
@@ -251,6 +257,14 @@
                     <i class="fa-solid fa-eye"></i> <span id="viewers-num">0</span> espectadores
                 </div>
                 <a href="./#stream" class="btn-primary" style="display: block; text-align: center; margin-top: 15px; text-decoration: none;">Ir al Directo</a>
+                
+                <!-- PANEL DE USUARIO LOGUEADO -->
+                <div id="user-profile-panel" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border-color); display: none;">
+                    <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px;">Tu Perfil:</div>
+                    <div id="user-info-display" style="font-size: 0.95rem; color: var(--text-main); font-weight: bold; margin-bottom: 8px;"></div>
+                    <div id="user-points-display" style="font-size: 0.85rem; color: var(--accent-color); margin-bottom: 10px;"></div>
+                    <button onclick="cerrarSesion()" class="btn-primary" style="background:#ff4d4d; font-size: 0.75rem; padding: 6px 12px; border:none; cursor:pointer; width: 100%;">Cerrar Sesión</button>
+                </div>
             </div>
 
             <div class="sidebar-card">
@@ -258,7 +272,34 @@
                 <ul style="font-size: 0.88rem; color: var(--text-muted); padding-left: 18px; display: flex; flex-direction: column; gap: 8px;">
                     <li>Respeto ante todo con la comunidad.</li>
                     <li>No hacer spam ni flood de mensajes.</li>
+                    <li>No compartir enlaces sospechosos ni info personal.</li>
                     <li>Todo es humor, pásatela bien y ríete mucho.</li>
+                </ul>
+            </div>
+
+            <!-- CANJE DE PUNTOS (PRÓXIMAMENTE) -->
+            <div class="sidebar-card" style="border-color: var(--accent-color);">
+                <h3 style="color: var(--accent-color); margin-bottom: 10px;"><i class="fa-solid fa-gift"></i> Tienda de Puntos <span style="font-size:0.7rem;background:var(--accent-color);color:#000;padding:2px 6px;border-radius:4px;margin-left:8px;">PRÓXIMAMENTE</span></h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px;">
+                    Estamos preparando recompensas exclusivas para canjear tus puntos ganados por participar en la comunidad.
+                </p>
+                <div style="background: var(--card-bg-subtle); border-radius: 8px; padding: 12px; text-align: center; border: 1px dashed var(--accent-color);">
+                    <i class="fa-solid fa-lock" style="font-size: 1.5rem; color: var(--accent-color); margin-bottom: 8px;"></i>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Sección en desarrollo. ¡Sigue sumando puntos!</p>
+                </div>
+            </div>
+
+            <!-- CÓMO FUNCIONAN LOS PUNTOS Y LA PÁGINA -->
+            <div class="sidebar-card">
+                <h3 style="color: var(--accent-color); margin-bottom: 10px;"><i class="fa-solid fa-circle-info"></i> ¿Cómo funciona?</h3>
+                <ul style="font-size: 0.82rem; color: var(--text-muted); padding-left: 18px; display: flex; flex-direction: column; gap: 6px; line-height: 1.5;">
+                    <li><strong>💎 Puntos:</strong> Ganas 1 punto cada 5 minutos estando conectado en el chat.</li>
+                    <li><strong>🔒 PIN de 4 dígitos:</strong> Protege tu cuenta y progreso. Nadie puede robar tus puntos sin tu PIN.</li>
+                    <li><strong>💬 Chat en vivo:</strong> Habla con la comunidad en tiempo real. Los mensajes se sincronizan al instante.</li>
+                    <li><strong>👥 Usuarios en línea:</strong> Lista a la izquierda con avatares de iniciales. Verás quién está conectado.</li>
+                    <li><strong>📺 Estado del stream:</strong> El círculo verde = EN VIVO, rojo = Offline. Verás los viewers actuales.</li>
+                    <li><strong>🔔 Notificaciones:</strong> Si el stream empieza, salta un aviso aunque estés en otra pestaña.</li>
+                    <li><strong>🎁 Futuro:</strong> Podrás canjear puntos por premios, roles y acceso a sorteos exclusivos.</li>
                 </ul>
             </div>
         </div>
@@ -282,15 +323,17 @@
     <div id="nickname-modal">
         <div id="nickname-modal-content">
             <button id="nickname-modal-close" aria-label="Close">&times;</button>
-            <h3>¡Elige tu apodo!</h3>
-            <p>Ingresa un apodo para participar en el chat (máx. 20 caracteres).</p>
+            <h3>¡Bienvenido a la Comunidad!</h3>
+            <p style="font-size:0.9rem;color:var(--text-muted);">Ingresa un apodo y un PIN de 4 dígitos para proteger tu cuenta y acumular puntos.</p>
             <input type="text" id="nickname-modal-input" placeholder="Tu apodo" maxlength="20">
+            <input type="password" id="nickname-modal-pin" placeholder="PIN (4 dígitos)" maxlength="4" pattern="[0-9]*" inputmode="numeric">
             <div>
-                <button id="nickname-modal-set-btn" class="btn-primary">Establecer apodo</button>
+                <button id="nickname-modal-set-btn" class="btn-primary" style="width:100%;margin-top:10px;">Guardar y Entrar</button>
             </div>
-            <p id="nickname-modal-error" style="color:#ff4d4d; margin-top:10px; display:none;"></p>
+            <p id="nickname-modal-error" style="color:#ff4d4d; margin-top:10px; display:none;font-size:0.85rem;"></p>
         </div>
     </div>
+
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="main.js"></script>
@@ -300,232 +343,190 @@
             const chatMensajes = document.getElementById('chat-mensajes');
             const inputAutor = document.getElementById('chat-autor');
             const inputMensaje = document.getElementById('chat-mensaje');
-            const contadorUsuariosEl = document.getElementById('contador-usuarios');
             const estadoDot = document.getElementById('estado-dot');
             const estadoTexto = document.getElementById('estado-texto');
             const onlineUsersListEl = document.getElementById('online-users-list');
-
+            const userProfilePanel = document.getElementById('user-profile-panel');
+            const userInfoDisplay = document.getElementById('user-info-display');
+            const userPointsDisplay = document.getElementById('user-points-display');
+            
             const nicknameModal = document.getElementById('nickname-modal');
             const nicknameModalInput = document.getElementById('nickname-modal-input');
+            const nicknameModalPin = document.getElementById('nickname-modal-pin');
             const nicknameModalSetBtn = document.getElementById('nickname-modal-set-btn');
             const nicknameModalCloseBtn = document.getElementById('nickname-modal-close');
             const nicknameModalError = document.getElementById('nickname-modal-error');
 
             const STORAGE_KEY_NICK = 'comunidad_nickname';
-            const STORAGE_KEY_USERID = 'comunidad_user_id';
+            const STORAGE_KEY_TOKEN = 'comunidad_session_token';
 
-            let ultimoEnvio = 0; // Anti-spam / Rate limiting
-            let ultimaEstadoEnVivo = null; // Para detectar cambios y mostrar notificación
+            let ultimoEnvio = 0;
+            let ultimaEstadoEnVivo = null;
             let userNickname = null;
+            let userToken = null;
             let userId = null;
 
-            // Sanitizar texto contra XSS
             function escaparHTML(str) {
-                return str.replace(/[&<>'"]/g,
-                    tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'}[tag] || tag)
-                );
+                return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'}[tag] || tag));
             }
 
-            // Mostrar modal para obtener nickname
             function showNicknameModal() {
                 nicknameModal.style.display = 'flex';
                 nicknameModalInput.value = '';
-                nicknameModalInput.focus();
+                nicknameModalPin.value = '';
                 nicknameModalError.style.display = 'none';
+                nicknameModalInput.focus();
             }
 
             function hideNicknameModal() {
                 nicknameModal.style.display = 'none';
             }
 
-            function setNicknameFromModal() {
-                const nick = nicknameModalInput.value.trim();
-                if (!nick) {
-                    nicknameModalError.textContent = 'El apodo no puede estar vacío.';
-                    nicknameModalError.style.display = 'block';
-                    return;
+            async function registrarUsuario(apodo, pin) {
+                try {
+                    const { data, error } = await supabase.from('usuarios_comunidad').insert([{ apodo, pin, puntos: 0 }]);
+                    return { success: !error, error: error?.message };
+                } catch (e) { return { success: false, error: e.message }; }
+            }
+
+            async function verificarLogin(apodo, pin) {
+                try {
+                    const { data, error } = await supabase.from('usuarios_comunidad').select('id, puntos, session_token').eq('apodo', apodo).eq('pin', pin).single();
+                    if (error || !data) return { success: false, user: null };
+                    return { success: true, user: data };
+                } catch (e) { return { success: false, user: null }; }
+            }
+
+            function guardarSesion(apodo, token, puntos) {
+                localStorage.setItem(STORAGE_KEY_NICK, apodo);
+                localStorage.setItem(STORAGE_KEY_TOKEN, token || btoa(Date.now().toString()));
+                if (userProfilePanel && userInfoDisplay && userPointsDisplay) {
+                    userProfilePanel.style.display = 'block';
+                    userInfoDisplay.textContent = '👤 ' + apodo;
+                    userPointsDisplay.textContent = '💎 Puntos: ' + (puntos || 0);
                 }
-                if (nick.length > 20) {
-                    nicknameModalError.textContent = 'El apodo es demasiado largo (máx. 20 caracteres).';
-                    nicknameModalError.style.display = 'block';
-                    return;
-                }
-                localStorage.setItem(STORAGE_KEY_NICK, nick);
-                userNickname = nick;
                 if (inputAutor) {
-                    inputAutor.value = userNickname;
+                    inputAutor.value = apodo;
                     inputAutor.readOnly = true;
                 }
-                hideNicknameModal();
-                const btnEnviar = chatForm.querySelector('button[type="submit"]');
+                const btnEnviar = chatForm ? chatForm.querySelector('button[type="submit"]') : null;
                 if (btnEnviar) btnEnviar.disabled = false;
             }
 
-            // Initialize nickname and user ID from storage
-            function initUserData() {
-                const storedNick = localStorage.getItem(STORAGE_KEY_NICK);
-                if (storedNick) {
-                    userNickname = storedNick;
-                }
-                userId = localStorage.getItem(STORAGE_KEY_USERID);
-                if (!userId) {
-                    userId = Math.random().toString(36).substr(2, 9);
-                    localStorage.setItem(STORAGE_KEY_USERID, userId);
-                }
-                // No abrir modal al cargar la página; permitir acceso libre
-                if (userNickname) {
-                    if (inputAutor) {
-                        inputAutor.value = userNickname;
-                        inputAutor.readOnly = true;
+            async function validarSesionGuardada() {
+                const savedApodo = localStorage.getItem(STORAGE_KEY_NICK);
+                const savedToken = localStorage.getItem(STORAGE_KEY_TOKEN);
+                if (!savedApodo || !savedToken) return false;
+                try {
+                    const { data, error } = await supabase.from('usuarios_comunidad').select('id, puntos, session_token').eq('apodo', savedApodo).single();
+                    if (!error && data && data.session_token === savedToken) {
+                        guardarSesion(savedApodo, savedToken, data.puntos);
+                        return true;
                     }
-                }
-                // Botón de envío deshabilitado hasta que se establezca el apodo
-                const btnEnviar = chatForm.querySelector('button[type="submit"]');
-                if (btnEnviar) btnEnviar.disabled = !userNickname;
+                } catch (e) {}
+                return false;
             }
 
-            // Cargar mensajes iniciales desde Supabase
+            async function enviarNickConPIN() {
+                const nick = nicknameModalInput.value.trim();
+                const pin = nicknameModalPin.value.trim();
+                if (nicknameModalError) nicknameModalError.style.display = 'none';
+                if (!nick || nick.length > 20) {
+                    if (nicknameModalError) { nicknameModalError.textContent = 'Apodo inválido (1-20 caracteres).'; nicknameModalError.style.display = 'block'; }
+                    return;
+                }
+                if (!pin || pin.length !== 4 || !/^\d{4}$/.test(pin)) {
+                    if (nicknameModalError) { nicknameModalError.textContent = 'PIN inválido (debe ser 4 dígitos).'; nicknameModalError.style.display = 'block'; }
+                    return;
+                }
+                const verif = await verificarLogin(nick, pin);
+                if (verif.success) {
+                    guardarSesion(nick, verif.user.session_token, verif.user.puntos);
+                    hideNicknameModal();
+                    return;
+                }
+                const reg = await registrarUsuario(nick, pin);
+                if (reg.success) {
+                    guardarSesion(nick, null, 0);
+                    hideNicknameModal();
+                    return;
+                }
+                if (nicknameModalError) { nicknameModalError.textContent = 'Error: ' + (reg.error || 'No se pudo crear la cuenta.'); nicknameModalError.style.display = 'block'; }
+            }
+
             async function cargarMensajesChat() {
                 try {
-                    const { data, error } = await supabase
-                        .from('comunidad_chat')
-                        .select('*')
-                        .order('created_at', { ascending: true })
-                        .limit(50);
-
-                    if (error) {
-                        console.error("Error al cargar chat:", error);
-                        chatMensajes.innerHTML = `<div style="text-align: center; color: #ff4d4d;">Error al cargar el chat. Verifica la conexión o la tabla en Supabase.</div>`;
-                        return;
-                    }
-
+                    const { data, error } = await supabase.from('comunidad_chat').select('*').order('created_at', { ascending: true }).limit(50);
+                    if (error) { chatMensajes.innerHTML = '<div style="text-align:center;color:#ff4d4d;padding:40px;">Error al cargar el chat.</div>'; return; }
                     renderizarMensajes(data);
-                } catch (e) {
-                    console.error("Excepción al cargar chat:", e);
-                }
+                } catch (e) { console.error(e); }
             }
 
             function renderizarMensajes(mensajes) {
                 if (!mensajes || mensajes.length === 0) {
-                    chatMensajes.innerHTML = `<div style="text-align: center; color: var(--text-muted); margin-top: 40px;">¡Sé el primero en escribir en el chat de la comunidad!</div>`;
+                    chatMensajes.innerHTML = '<div style="text-align:center;color:var(--text-muted);margin-top:40px;">¡Sé el primero en escribir!</div>';
                     return;
                 }
-
                 chatMensajes.innerHTML = '';
                 mensajes.forEach(msg => {
                     const fecha = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                     const div = document.createElement('div');
-                    div.style.cssText = "background: rgba(255,255,255,0.03); padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border-color, #333);";
-                    div.innerHTML = `
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 0.8rem;">
-                            <span style="color: var(--accent-color); font-weight: bold;">${escaparHTML(msg.autor || 'Anónimo')}</span>
-                            <span style="color: var(--text-muted);">${fecha}</span>
-                        </div>
-                        <div style="color: var(--text-main); font-size: 0.95rem; word-break: break-word;">${escaparHTML(msg.mensaje || '')}</div>
-                    `;
+                    div.style.cssText = 'background:rgba(255,255,255,0.03);padding:10px 14px;border-radius:8px;border:1px solid var(--border-color);';
+                    div.innerHTML = '<div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:0.8rem;"><span style="color:var(--accent-color);font-weight:bold;">'+escaparHTML(msg.autor||'Anónimo')+'</span><span style="color:var(--text-muted);">'+fecha+'</span></div><div style="color:var(--text-main);font-size:0.95rem;word-break:break-word;">'+escaparHTML(msg.mensaje||'')+'</div>';
                     chatMensajes.appendChild(div);
                 });
-
-                // Auto-scroll al final
                 chatMensajes.scrollTop = chatMensajes.scrollHeight;
             }
 
-            // Enviar mensaje a Supabase
             if (chatForm) {
                 chatForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
-
                     const ahora = Date.now();
-                    if (ahora - ultimoEnvio < 2500) {
-                        if (typeof mostrarToast === 'function') mostrarToast("Espera unos segundos antes de enviar otro mensaje.", true);
-                        return;
-                    }
-
-                    let autor = inputAutor.value.trim();
+                    if (ahora - ultimoEnvio < 2500) return;
+                    if (!userNickname) return;
                     const mensaje = inputMensaje.value.trim();
-
                     if (!mensaje) return;
-
-                    // Si no hay apodo guardado, abrir modal y bloquear envío
-                    if (!autor) {
-                        showNicknameModal();
-                        return;
-                    }
-
                     ultimoEnvio = ahora;
                     const btnEnviar = chatForm.querySelector('button[type="submit"]');
                     if (btnEnviar) btnEnviar.disabled = true;
-
                     try {
-                        const { error } = await supabase
-                            .from('comunidad_chat')
-                            .insert([{ autor, mensaje }]);
-
-                        if (error) {
-                            console.error("Error al enviar mensaje:", error);
-                            if (typeof mostrarToast === 'function') mostrarToast("Error al enviar el mensaje", true);
-                        } else {
-                            inputMensaje.value = '';
-                        }
-                    } catch (e) {
-                        console.error("Excepción al enviar mensaje:", e);
-                    } finally {
-                        if (btnEnviar) btnEnviar.disabled = false;
-                    }
+                        const { error } = await supabase.from('comunidad_chat').insert([{ autor: userNickname, mensaje }]);
+                        if (error) console.error('Error:', error);
+                        else inputMensaje.value = '';
+                    } catch (e) { console.error(e); }
+                    if (btnEnviar) btnEnviar.disabled = false;
                 });
             }
 
-            // Suscripción Realtime a nuevos mensajes
             function iniciarRealtimeChat() {
-                supabase
-                    .channel('public:comunidad_chat')
-                    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'comunidad_chat' }, payload => {
-                        const nuevoMsg = payload.new;
-                        if (chatMensajes.querySelector('div[style*="margin-top"]')) {
-                            chatMensajes.innerHTML = '';
-                        }
-                        const fecha = new Date(nuevoMsg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                        const div = document.createElement('div');
-                        div.style.cssText = "background: rgba(255,255,255,0.03); padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border-color, #333);";
-                        div.innerHTML = `
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 0.8rem;">
-                                <span style="color: var(--accent-color); font-weight: bold;">${escaparHTML(nuevoMsg.autor || 'Anónimo')}</span>
-                                <span style="color: var(--text-muted);">${fecha}</span>
-                            </div>
-                            <div style="color: var(--text-main); font-size: 0.95rem; word-break: break-word;">${escaparHTML(nuevoMsg.mensaje || '')}</div>
-                        `;
-                        chatMensajes.appendChild(div);
-                        chatMensajes.scrollTop = chatMensajes.scrollHeight;
-                    })
-                    .subscribe();
+                supabase.channel('public:comunidad_chat').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'comunidad_chat' }, payload => {
+                    const nuevoMsg = payload.new;
+                    if (chatMensajes.querySelector('div[style*="margin-top"]')) chatMensajes.innerHTML = '';
+                    const fecha = new Date(nuevoMsg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    const div = document.createElement('div');
+                    div.style.cssText = 'background:rgba(255,255,255,0.03);padding:10px 14px;border-radius:8px;border:1px solid var(--border-color);';
+                    div.innerHTML = '<div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:0.8rem;"><span style="color:var(--accent-color);font-weight:bold;">'+escaparHTML(nuevoMsg.autor||'Anónimo')+'</span><span style="color:var(--text-muted);">'+fecha+'</span></div><div style="color:var(--text-main);font-size:0.95rem;word-break:break-word;">'+escaparHTML(nuevoMsg.mensaje||'')+'</div>';
+                    chatMensajes.appendChild(div);
+                    chatMensajes.scrollTop = chatMensajes.scrollHeight;
+                }).subscribe();
             }
 
-            // Renderizar lista de usuarios en línea
             function renderizarListaUsuarios(estadoPresencia) {
                 if (!onlineUsersListEl) return;
                 if (!estadoPresencia || Object.keys(estadoPresencia).length === 0) {
-                    onlineUsersListEl.innerHTML = '<div style="text-align:center; color:var(--text-muted); padding:20px;">Nadie en línea</div>';
+                    onlineUsersListEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:20px;">Nadie en línea</div>';
                     return;
                 }
                 let html = '';
                 for (const [key, { presence }] of Object.entries(estadoPresencia)) {
                     const datos = presence[0] || {};
-                    const nickRaw = datos.nickname || 'Anónimo';
-                    const nickSafe = nickRaw.replace(/[&<>"']/g, c => ({
-                        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-                    })[c]);
+                    const nickSafe = (datos.nickname || 'Anónimo').toString().replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
                     const initial = nickSafe.charAt(0).toUpperCase();
-                    html += `
-                        <div class="user-item">
-                            <div class="user-icon">${initial}</div>
-                            <div class="user-name">${nickSafe}</div>
-                        </div>
-                    `;
+                    html += '<div class="user-item"><div class="user-icon">'+initial+'</div><div class="user-name">'+nickSafe+'</div></div>';
                 }
                 onlineUsersListEl.innerHTML = html;
             }
 
-            // --- Estado del Stream (Kick API) ---
             async function verificarEstadoStream() {
                 try {
                     const response = await fetch('https://kick.com/api/v2/channels/lagochagaming');
@@ -535,73 +536,87 @@
                     const viewers = data.livestream ? data.livestream.viewer_count : 0;
                     const viewersEl = document.getElementById('viewers-count');
                     const viewersNumEl = document.getElementById('viewers-num');
-                    
                     if (estadoDot && estadoTexto) {
                         if (enVivo) {
                             estadoDot.style.backgroundColor = '#53fc18';
                             estadoTexto.textContent = 'EN VIVO AHORA';
-                            if (viewersEl && viewersNumEl) {
-                                viewersEl.style.display = 'block';
-                                viewersNumEl.textContent = viewers.toLocaleString();
-                            }
+                            if (viewersEl && viewersNumEl) { viewersEl.style.display = 'block'; viewersNumEl.textContent = viewers.toLocaleString(); }
                         } else {
                             estadoDot.style.backgroundColor = '#ff4d4d';
                             estadoTexto.textContent = 'Offline';
                             if (viewersEl) viewersEl.style.display = 'none';
                         }
                     }
-                    if (ultimaEstadoEnVivo === false && enVivo && typeof mostrarToast === 'function') {
-                        mostrarToast('¡La Gocha está en directo! 🎉', false);
-                    }
+                    if (ultimaEstadoEnVivo === false && enVivo && typeof mostrarToast === 'function') { mostrarToast('¡La Gocha está en directo! 🎉', false); }
                     ultimaEstadoEnVivo = enVivo;
                 } catch (err) {
                     console.error('Error verificando estado del stream:', err);
-                    if (estadoDot && estadoTexto) {
-                        estadoDot.style.backgroundColor = '#ff4d4d';
-                        estadoTexto.textContent = 'Error';
-                    }
+                    if (estadoDot && estadoTexto) { estadoDot.style.backgroundColor = '#ff4d4d'; estadoTexto.textContent = 'Error'; }
                     const viewersEl = document.getElementById('viewers-count');
                     if (viewersEl) viewersEl.style.display = 'none';
                 }
             }
 
-            // --- Presencia de Usuarios Online (Supabase Realtime Presence) ---
             function iniciarPresenciaUsuarios() {
-                const canalPresencia = supabase.channel('presence:comunidad', {
-                    // Puedes ajustar el nombre del canal según necesites
-                })
-                .on('presence', { event: 'sync' }, () => {
+                if (!userId) { userId = Math.random().toString(36).substr(2, 9); localStorage.setItem('comunidad_user_id', userId); }
+                const canalPresencia = supabase.channel('presence:comunidad').on('presence', { event: 'sync' }, () => {
                     const estado = canalPresencia.presenceState();
                     renderizarListaUsuarios(estado);
-                })
-                .subscribe((state) => {
-                    if (state === 'SUBSCRIBED') {
+                }).subscribe((state) => {
+                    if (state === 'SUBSCRIBED' && userNickname) {
                         canalPresencia.track({ user_id: userId, nickname: userNickname });
                     }
                 });
-
-                return () => {
-                    supabase.removeChannel(canalPresencia);
-                };
+                return () => supabase.removeChannel(canalPresencia);
             }
 
-            // Inicializar carga, realtime, estado del stream y presencia
-            initUserData();
+            // Event listeners
+            nicknameModalSetBtn.addEventListener('click', enviarNickConPIN);
+            nicknameModalCloseBtn.addEventListener('click', hideNicknameModal);
+            nicknameModalInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') enviarNickConPIN(); });
+            nicknameModalPin.addEventListener('keypress', (e) => { if (e.key === 'Enter') enviarNickConPIN(); });
+
+            // Inicializar
             cargarMensajesChat();
             iniciarRealtimeChat();
+            validarSesionGuardada().then(logueado => { if (!logueado) showNicknameModal(); });
             verificarEstadoStream();
             setInterval(verificarEstadoStream, 30000);
-            const detenerPresencia = iniciarPresenciaUsuarios();
-            // window.addEventListener('beforeunload', detenerPresencia);
-            // Event listeners for modal
-            nicknameModalSetBtn.addEventListener('click', setNicknameFromModal);
-            nicknameModalCloseBtn.addEventListener('click', hideNicknameModal);
-            nicknameModalInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    setNicknameFromModal();
+            iniciarPresenciaUsuarios();
+
+            // Puntos automáticos: +1 punto cada 5 minutos (300,000 ms)
+            setInterval(async () => {
+                const currentNick = localStorage.getItem(STORAGE_KEY_NICK);
+                if (currentNick) {
+                    try {
+                        const { error } = await supabase.rpc('incrementar_puntos', { apodo_param: currentNick });
+                        if (!error) {
+                            // Actualizar UI de puntos
+                            const { data } = await supabase.from('usuarios_comunidad').select('puntos').eq('apodo', currentNick).single();
+                            if (data && userPointsDisplay) {
+                                userPointsDisplay.textContent = '💎 Puntos: ' + data.puntos;
+                            }
+                        }
+                    } catch (e) { console.error('Error al sumar puntos:', e); }
                 }
-            });
+            }, 300000); // 5 minutos
         });
+
+        function cerrarSesion() {
+            localStorage.removeItem('comunidad_nickname');
+            localStorage.removeItem('comunidad_session_token');
+            const panel = document.getElementById('user-profile-panel');
+            if (panel) panel.style.display = 'none';
+            const input = document.getElementById('chat-autor');
+            if (input) { input.value = ''; input.readOnly = false; }
+            const btn = document.querySelector('#chat-form button[type="submit"]');
+            if (btn) btn.disabled = true;
+            const modalInput = document.getElementById('nickname-modal-input');
+            const modalPin = document.getElementById('nickname-modal-pin');
+            if (modalInput) modalInput.value = '';
+            if (modalPin) modalPin.value = '';
+            document.getElementById('nickname-modal').style.display = 'flex';
+        }
     </script>
 </body>
 </html>
