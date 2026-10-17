@@ -35,7 +35,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     insertarComponentesUIGlobales();
     inicializarMenuMovil();
+    
+    // Verificar sesión de usuario de comunidad en todas las páginas
+    verificarSesionGlobal();
 });
+
+// Verificar sesión de usuario y mostrar apodo en navbar si existe
+function verificarSesionGlobal() {
+    const apodoGuardado = localStorage.getItem('comunidad_nickname');
+    const tokenGuardado = localStorage.getItem('comunidad_session_token');
+    
+    if (!apodoGuardado || !tokenGuardado) return;
+    
+    // Buscar navbar y añadir indicador de usuario si no existe
+    const navbar = document.querySelector('.nav-links');
+    if (navbar && !document.getElementById('navbar-user-indicator')) {
+        const userBadge = document.createElement('a');
+        userBadge.id = 'navbar-user-indicator';
+        userBadge.href = 'comunidad';
+        userBadge.style.cssText = 'color: var(--accent-color); font-weight: bold; display: flex; align-items: center; gap: 6px; font-size: 0.9rem;';
+        userBadge.innerHTML = '<i class="fa-solid fa-user-circle"></i> ' + apodoGuardado;
+        navbar.appendChild(userBadge);
+    }
+}
 
 // Toast Notificación Flotante Abajo-Centro
 function mostrarToast(mensaje, esError = false) {

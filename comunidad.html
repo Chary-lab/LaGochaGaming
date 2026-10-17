@@ -415,6 +415,18 @@
             let userToken = null;
             let userId = null;
 
+            // CARGA SÍNCRONA DEL APODO DESDE LOCALSTORAGE AL INICIAR
+            const savedApodo = localStorage.getItem('comunidad_nickname');
+            const savedToken = localStorage.getItem('comunidad_session_token');
+            if (savedApodo) {
+                userNickname = savedApodo;
+                userToken = savedToken;
+                if (inputAutor) {
+                    inputAutor.value = savedApodo;
+                    inputAutor.readOnly = true;
+                }
+            }
+
             function escaparHTML(str) {
                 return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'}[tag] || tag));
             }
@@ -691,16 +703,19 @@
             cargarLeaderboard();
             setInterval(cargarLeaderboard, 60000); // Actualizar ranking cada minuto
             
-            // Verificar si hay sesión guardada
+            // Verificar sesión guardada y restaurar UI inmediatamente
             validarSesionGuardada().then(logueado => {
+                const chatLoginForm = document.getElementById('chat-form');
+                const chatLoginArea = document.getElementById('chat-login-area');
+                
                 if (logueado) {
                     // Mostrar formulario de chat
-                    if (chatForm) chatForm.style.display = 'flex';
-                    document.getElementById('chat-login-area').style.display = 'none';
+                    if (chatLoginForm) chatLoginForm.style.display = 'flex';
+                    if (chatLoginArea) chatLoginArea.style.display = 'none';
                 } else {
                     // Ocultar formulario, mostrar botón login
-                    if (chatForm) chatForm.style.display = 'none';
-                    document.getElementById('chat-login-area').style.display = 'flex';
+                    if (chatLoginForm) chatLoginForm.style.display = 'none';
+                    if (chatLoginArea) chatLoginArea.style.display = 'flex';
                 }
             });
             
