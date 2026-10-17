@@ -372,7 +372,7 @@
                 <div style="text-align: center; margin-bottom: 20px;">
                     <p style="color: var(--accent-color); font-weight: bold; font-size: 0.9rem;">🔐 Panel Exclusivo GochiSorteo</p>
                     <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 10px;">
-                        Controla el estado de las inscripciones en vivo, abre o cierra la tómbola sincronizada con la base de datos y vacía registros anteriores.
+                        Controla el estado de las inscripciones en vivo, añade participantes con peso especial o vacía registros anteriores.
                     </p>
                     <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 10px;">
                         <button id="btn-toggle-sorteo" onclick="toggleEstadoSorteo()" class="btn-primary" style="background: #2ecc71; font-size: 0.85rem; padding: 8px 16px; border:none; cursor:pointer;">🟢 ABRIR SORTEO EN VIVO</button>
@@ -380,6 +380,22 @@
                         <button onclick="cerrarSesionAdminGlobal()" class="btn-primary" style="background: #c0392b; font-size: 0.85rem; padding: 8px 16px; border:none; cursor:pointer;"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión Admin</button>
                         <button onclick="salirModoStreamer()" class="btn-primary" style="background: var(--text-muted); font-size: 0.85rem; padding: 8px 16px; border:none; cursor:pointer;">Salir</button>
                     </div>
+
+                    <!-- HERRAMIENTA BONUS PARTICIPANTES ADMIN -->
+                    <div style="background: var(--card-bg-subtle); border: 1px dashed var(--accent-color); border-radius: 12px; padding: 15px; margin-top: 15px; max-width: 500px; margin-left: auto; margin-right: auto;">
+                        <p style="font-size: 0.88rem; font-weight: bold; color: var(--accent-color); margin-bottom: 8px;">⭐ Asignar Tickets Extra (Mayor Probabilidad)</p>
+                        <div class="form-group" style="margin: 0; gap: 8px;">
+                            <input type="text" id="input-usuario-admin" placeholder="Usuario (ej. Juan)" style="width: 160px; font-size: 0.85rem; padding: 8px 10px;">
+                            <select id="select-peso-admin" style="padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); font-size: 0.85rem; outline: none;">
+                                <option value="1">1x (Normal)</option>
+                                <option value="2">2x (Doble Suerte 🔥)</option>
+                                <option value="3">3x (Triple Suerte ⚡)</option>
+                                <option value="5">5x (Mega Suerte 👑)</option>
+                            </select>
+                            <button onclick="agregarParticipanteAdminBonus()" class="btn-primary" style="padding: 8px 14px; font-size: 0.85rem; border: none; cursor: pointer;">Añadir</button>
+                        </div>
+                    </div>
+
                     <div id="feedback-streamer-direct" class="feedback-msg"></div>
                 </div>
 
@@ -732,11 +748,45 @@
             }, 50);
         }
 
+        async function agregarParticipanteAdminBonus() {
+            const input = document.getElementById('input-usuario-admin');
+            const selectPeso = document.getElementById('select-peso-admin');
+            const username = input.value.trim().replace('@', '');
+            const peso = parseInt(selectPeso.value);
+
+            if (!username) {
+                mostrarFeedback('feedback-streamer-direct', '❌ Escribe un usuario.', true);
+                return;
+            }
+
+            try {
+                // Insertar con el peso seleccionado
+                const { error } = await supabase
+                    .from('participantes_en_vivo')
+                    .insert([{ username: username, peso: peso }]);
+
+                if (error) {
+                    mostrarFeedback('feedback-streamer-direct', '❌ Error al agregar participante.', true);
+                } else {
+                    mostrarFeedback('feedback-streamer-direct', `✅ @${username} añadido con ${peso}x de probabilidad.`);
+                    input.value = '';
+                    cargarParticipantesOnline();
+                }
+            } catch (err) {
+                console.error('Error:', err);
+            }
+        }
+
         async function cargarParticipantesOnline() {
             try {
-                const { data, error } = await supabase.from('participantes_en_vivo').select('username').order('created_at', { ascending: true });
-                if (!error && data && data.length > 0) {
-                    listaStreamerOnline = data.map(p => p.username);
+                const { data, error } = await supabase
+                    .from('participantes_en_vivo')
+                    .select('username, peso')
+                    .order('created_at', { ascending: true });
+                
+                if (!error && data) {
+                    // Ahora guardamos objetos { username, peso }
+                    listaStreamerOnline = data;
                 }
             } catch (err) { console.error('Error:', err); }
             renderListaStreamer();
@@ -751,7 +801,9 @@
             listaStreamerOnline.forEach(p => {
                 const li = document.createElement('li');
                 li.className = 'tag-participante';
-                li.innerHTML = `@${escapeHtml(p)}`;
+                // Mostrar peso si es > 1
+                const tagPeso = p.peso > 1 ? ` <span style="font-size:0.7rem; background:var(--accent-color); padding:1px 4px; border-radius:4px; color:#fff;">${p.peso}x</span>` : '';
+                li.innerHTML = `@${escapeHtml(p.username)}${tagPeso}`;
                 ul.appendChild(li);
             });
             count.innerText = listaStreamerOnline.length;
@@ -780,15 +832,25 @@
                 mostrarFeedback('feedback-streamer-direct', '⚠️ No hay participantes inscritos.', true);
                 return;
             }
+
+            // CREAR ARRAY PONDERADO (Bingo virtual)
+            let bolillero = [];
+            listaStreamerOnline.forEach(p => {
+                const peso = p.peso || 1;
+                for(let i = 0; i < peso; i++) {
+                    bolillero.push(p.username);
+                }
+            });
+
             let display = document.getElementById('ruleta-display-streamer');
             let counter = 0;
             let interval = setInterval(() => {
-                let randomIndex = Math.floor(Math.random() * listaStreamerOnline.length);
-                display.innerText = `@${listaStreamerOnline[randomIndex]}`;
+                let randomIndex = Math.floor(Math.random() * bolillero.length);
+                display.innerText = `@${bolillero[randomIndex]}`;
                 counter++;
                 if (counter > 25) {
                     clearInterval(interval);
-                    let ganadorFinal = listaStreamerOnline[Math.floor(Math.random() * listaStreamerOnline.length)];
+                    let ganadorFinal = bolillero[Math.floor(Math.random() * bolillero.length)];
                     display.innerHTML = `🎉 ¡@${escapeHtml(ganadorFinal)}! 🎉`;
                     lanzarConfeti('confetti-canvas-streamer');
                     guardarGanadorOficial(ganadorFinal);
