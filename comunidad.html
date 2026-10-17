@@ -776,7 +776,7 @@
                 }).subscribe();
             }
 
-            function renderizarListaUsuarios(estadoPresencia) {
+            async function renderizarListaUsuarios(estadoPresencia) {
                 if (!onlineUsersListEl) return;
 
                 // Si el estado está vacío y nunca hemos recibido presencia, mantener "Cargando usuarios..."
@@ -793,11 +793,47 @@
                 // Marcar como que ya recibimos presencia al menos una vez
                 onlineUsersListEl.dataset.loaded = 'true';
                 let html = '';
+                
+                // Cargar rangos de todos los usuarios de una sola vez
+                const nicknames = Object.values(estadoPresencia).map(arr => (arr[0] || {}).nickname).filter(Boolean);
+                let rangosMap = {};
+                
+                if (nicknames.length > 0) {
+                    try {
+                        const { data: usuariosData } = await supabase
+                            .from('usuarios_comunidad')
+                            .select('apodo, rango')
+                            .in('apodo', nicknames);
+                        
+                        if (usuariosData) {
+                            usuariosData.forEach(u => {
+                                rangosMap[u.apodo] = u.rango;
+                            });
+                        }
+                    } catch (e) {
+                        console.error('Error cargando rangos:', e);
+                    }
+                }
+                
                 for (const [key, presenceArray] of Object.entries(estadoPresencia)) {
                     const datos = presenceArray[0] || {};
-                    const nickSafe = (datos.nickname || 'Anónimo').toString().replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+                    const nickSafe = (datos.nickname || 'Anónimo').toString().replace(/[&<>"\']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
                     const initial = nickSafe.charAt(0).toUpperCase();
-                    html += '<div class="user-item"><div class="user-icon">'+initial+'</div><div class="user-name">'+nickSafe+'</div></div>';
+                    
+                    // Obtener badge de rango desde el mapa cargado
+                    let badgeHTML = '';
+                    const rango = rangosMap[datos.nickname];
+                    if (rango && rango !== 'semilla') {
+                        const rangoLower = rango.toLowerCase();
+                        const emojiMap = {
+                            'semilla': '🌱', 'gota': '💧', 'flor': '🌸', 
+                            'estrella': '⭐', 'leyenda': '👑'
+                        };
+                        const emoji = emojiMap[rangoLower] || '🌱';
+                        badgeHTML = `<span class="rango-badge rango-${rangoLower}"><span>${emoji}</span><span>${rangoLower.charAt(0).toUpperCase() + rangoLower.slice(1)}</span></span>`;
+                    }
+                    
+                    html += `<div class="user-item"><div class="user-icon">${initial}</div><div class="user-name">${nickSafe}${badgeHTML}</div></div>`;
                 }
                 onlineUsersListEl.innerHTML = html;
             }
@@ -898,27 +934,40 @@
             nicknameModalInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') enviarNickConPIN(); });
             nicknameModalPin.addEventListener('keypress', (e) => { if (e.key === 'Enter') enviarNickConPIN(); });
 
-            // Cargar leaderboard público
+// Cargar leaderboard público
             async function cargarLeaderboard() {
                 const leaderboardEl = document.getElementById('leaderboard-list');
                 if (!leaderboardEl) return;
                 try {
                     const { data, error } = await supabase
                         .from('usuarios_comunidad')
-                        .select('apodo, puntos')
+                        .select('apodo, puntos, rango')
                         .order('puntos', { ascending: false })
                         .limit(10);
-                    
+
                     if (error || !data || data.length === 0) {
                         leaderboardEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:20px;">Sin participantes aún</div>';
                         return;
                     }
-                    
+
                     let html = '';
                     data.forEach((user, index) => {
                         const medalla = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`;
+                        
+                        // Agregar badge de rango si existe
+                        let rangoBadge = '';
+                        if (user.rango && user.rango !== 'semilla') {
+                            const rango = user.rango.toLowerCase();
+                            const emojiMap = {
+                                'semilla': '🌱', 'gota': '💧', 'flor': '🌸', 
+                                'estrella': '⭐', 'leyenda': '👑'
+                            };
+                            const emoji = emojiMap[rango] || '🌱';
+                            rangoBadge = `<span class="rango-badge rango-${rango}" style="margin-left:6px;"><span>${emoji}</span><span>${rango.charAt(0).toUpperCase() + rango.slice(1)}</span></span>`;
+                        }
+                        
                         html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 4px;border-bottom:1px solid var(--border-color);${index === 0 ? 'background:rgba(255,215,0,0.1);' : ''}">
-                            <span style="font-size:0.9rem;font-weight:bold;">${medalla} ${escaparHTML(user.apodo)}</span>
+                            <span style="font-size:0.9rem;font-weight:bold;">${medalla} ${escaparHTML(user.apodo)}${rangoBadge}</span>
                             <span style="color:var(--accent-color);font-size:0.85rem;">${user.puntos} pts</span>
                         </div>`;
                     });
@@ -944,14 +993,29 @@
                 if (chatLoginForm) chatLoginForm.style.display = 'flex';
                 if (chatLoginArea) chatLoginArea.style.display = 'none';
 
-                // Mostrar panel de perfil
+// Mostrar panel de perfil
                 if (userProfilePanel && userInfoDisplay && userPointsDisplay) {
                     userProfilePanel.style.display = 'block';
                     userInfoDisplay.textContent = '👤 ' + savedApodo;
-                    // Cargar puntos actuales
-                    supabase.from('usuarios_comunidad').select('puntos').eq('apodo', savedApodo).single().then(({ data }) => {
+                    // Cargar puntos y rango actuales
+                    supabase.from('usuarios_comunidad').select('puntos, rango').eq('apodo', savedApodo).single().then(({ data }) => {
                         if (data && userPointsDisplay) {
                             userPointsDisplay.textContent = '💎 Puntos: ' + data.puntos;
+                            // Mostrar badge de rango en el perfil
+                            const rangoBadge = document.createElement('div');
+                            rangoBadge.id = 'user-rango-badge';
+                            if (data.rango && data.rango !== 'semilla') {
+                                const rango = data.rango.toLowerCase();
+                                const emojiMap = {
+                                    'semilla': '🌱', 'gota': '💧', 'flor': '🌸', 
+                                    'estrella': '⭐', 'leyenda': '👑'
+                                };
+                                const emoji = emojiMap[rango] || '🌱';
+                                rangoBadge.className = `rango-badge rango-${rango}`;
+                                rangoBadge.style.cssText = 'display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:12px;font-size:0.75rem;font-weight:700;margin-top:6px;';
+                                rangoBadge.innerHTML = `<span>${emoji}</span><span>${rango.charAt(0).toUpperCase() + rango.slice(1)}</span>`;
+                                userPointsDisplay.parentNode.insertBefore(rangoBadge, userPointsDisplay.nextSibling);
+                            }
                         }
                     });
                 }
@@ -972,17 +1036,29 @@
                 }, 500);
             }
 
-            // Puntos automáticos: +1 punto cada 5 minutos (300,000 ms)
+// Puntos automáticos: +1 punto cada 5 minutos (300,000 ms)
             setInterval(async () => {
                 const currentNick = localStorage.getItem(STORAGE_KEY_NICK);
                 if (currentNick) {
                     try {
                         const { error } = await supabase.rpc('incrementar_puntos', { apodo_param: currentNick });
                         if (!error) {
-                            // Actualizar UI de puntos
-                            const { data } = await supabase.from('usuarios_comunidad').select('puntos').eq('apodo', currentNick).single();
+                            // Actualizar UI de puntos y rango
+                            const { data } = await supabase.from('users_comunidad').select('puntos, rango').eq('apodo', currentNick).single();
                             if (data && userPointsDisplay) {
                                 userPointsDisplay.textContent = '💎 Puntos: ' + data.puntos;
+                            }
+                            // Actualizar badge de rango si está visible
+                            const rangoBadge = document.getElementById('user-rango-badge');
+                            if (rangoBadge && data.rango) {
+                                const rango = data.rango.toLowerCase();
+                                const emojiMap = {
+                                    'semilla': '🌱', 'gota': '💧', 'flor': '🌸', 
+                                    'estrella': '⭐', 'leyenda': '👑'
+                                };
+                                const emoji = emojiMap[rango] || '🌱';
+                                rangoBadge.className = `rango-badge rango-${rango}`;
+                                rangoBadge.innerHTML = `<span>${emoji}</span><span>${rango.charAt(0).toUpperCase() + rango.slice(1)}</span>`;
                             }
                         }
                     } catch (e) { console.error('Error al sumar puntos:', e); }
