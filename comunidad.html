@@ -552,6 +552,84 @@
                 } catch (e) { console.error(e); }
             }
 
+            // Reacciones disponibles para el chat
+            const REACCIONES = ['❤️', '😂', '🔥', '😮', '👍'];
+            const MAX_MENSAJES_DOM = 100;
+            const REACCIONES_STORAGE_KEY = 'gochi_chat_reacciones';
+
+            // Obtener reacciones guardadas del localStorage
+            function obtenerReaccionesGuardadas() {
+                try {
+                    return JSON.parse(localStorage.getItem(REACCIONES_STORAGE_KEY) || '{}');
+                } catch (e) { return {}; }
+            }
+
+            // Guardar reacción en localStorage
+            function guardarReaccion(msgId, reaccion) {
+                const reacciones = obtenerReaccionesGuardadas();
+                if (!reacciones[msgId]) reacciones[msgId] = [];
+                if (!reacciones[msgId].includes(reaccion)) {
+                    reacciones[msgId].push(reaccion);
+                    localStorage.setItem(REACCIONES_STORAGE_KEY, JSON.stringify(reacciones));
+                }
+            }
+
+            // Contar reacciones de un mensaje
+            function contarReacciones(msgId) {
+                const reacciones = obtenerReaccionesGuardadas();
+                return (reacciones[msgId] || []).length;
+            }
+
+            // Crear HTML de reacciones rápidas (hover)
+            function crearReaccionesRapidas(msgId) {
+                const container = document.createElement('div');
+                container.className = 'chat-msg-reacciones';
+                container.style.cssText = 'position:absolute;bottom:-10px;left:0;display:flex;gap:4px;background:var(--card-bg);border:1px solid var(--accent-color);border-radius:20px;padding:4px 8px;box-shadow:var(--glow);z-index:10;opacity:0;transform:translateY(10px);transition:opacity 0.2s,transform 0.2s;';
+                
+                REACCIONES.forEach(reaccion => {
+                    const btn = document.createElement('button');
+                    btn.className = 'btn-reaccion-chat';
+                    btn.textContent = reaccion;
+                    btn.style.cssText = 'background:transparent;border:none;cursor:pointer;font-size:1rem;padding:4px 6px;border-radius:50%;transition:transform 0.2s,background 0.2s;width:28px;height:28px;display:flex;align-items:center;justify-content:center;';
+                    btn.onmouseenter = function() { this.style.transform = 'scale(1.2)'; this.style.background = 'var(--card-bg-subtle)'; };
+                    btn.onmouseleave = function() { this.style.transform = 'scale(1)'; this.style.background = 'transparent'; };
+                    btn.onclick = (e) => {
+                        e.stopPropagation();
+                        guardarReaccion(msgId, reaccion);
+                        actualizarContadorReacciones(msgId);
+                        container.style.opacity = '0';
+                        container.style.transform = 'translateY(10px)';
+                    };
+                    container.appendChild(btn);
+                });
+                return container;
+            }
+
+            // Actualizar contador de reacciones
+            function actualizarContadorReacciones(msgId) {
+                const badge = document.getElementById(`reacciones-badge-${msgId}`);
+                if (badge) {
+                    const count = contarReacciones(msgId);
+                    if (count > 0) {
+                        badge.textContent = count;
+                        badge.style.display = 'inline-flex';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+            }
+
+            // Crear badge de contador de reacciones
+            function crearBadgeReacciones(msgId) {
+                const count = contarReacciones(msgId);
+                const badge = document.createElement('span');
+                badge.id = `reacciones-badge-${msgId}`;
+                badge.className = 'reacciones-count';
+                badge.textContent = count;
+                badge.style.cssText = 'position:absolute;bottom:-8px;right:-8px;background:var(--accent-color);color:#000;font-size:0.65rem;font-weight:700;border-radius:10px;padding:1px 6px;min-width:18px;text-align:center;box-shadow:0 0 6px rgba(255,102,178,0.5);' + (count > 0 ? '' : 'display:none;');
+                return badge;
+            }
+
             function renderizarMensajes(mensajes) {
                 if (!mensajes || mensajes.length === 0) {
                     chatMensajes.innerHTML = '<div style="text-align:center;color:var(--text-muted);margin-top:40px;">¡Sé el primero en escribir!</div>';
@@ -560,12 +638,62 @@
                 chatMensajes.innerHTML = '';
                 mensajes.forEach(msg => {
                     const fecha = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                    const div = document.createElement('div');
-                    div.style.cssText = 'background:rgba(255,255,255,0.03);padding:10px 14px;border-radius:8px;border:1px solid var(--border-color);';
-                    div.innerHTML = '<div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:0.8rem;"><span style="color:var(--accent-color);font-weight:bold;">'+escaparHTML(msg.autor||'Anónimo')+'</span><span style="color:var(--text-muted);">'+fecha+'</span></div><div style="color:var(--text-main);font-size:0.95rem;word-break:break-word;">'+escaparHTML(msg.mensaje||'')+'</div>';
-                    chatMensajes.appendChild(div);
+                    const msgId = msg.id || Date.now() + Math.random();
+                    
+                    const container = document.createElement('div');
+                    container.className = 'chat-msg-container';
+                    container.style.cssText = 'position:relative;background:rgba(255,255,255,0.03);padding:10px 14px;border-radius:8px;border:1px solid var(--border-color);cursor:pointer;';
+                    
+                    // Mostrar reacciones al hover
+                    container.onmouseenter = function() {
+                        const reaccionesEl = this.querySelector('.chat-msg-reacciones');
+                        if (reaccionesEl) {
+                            reaccionesEl.style.opacity = '1';
+                            reaccionesEl.style.transform = 'translateY(0)';
+                        }
+                    };
+                    container.onmouseleave = function() {
+                        const reaccionesEl = this.querySelector('.chat-msg-reacciones');
+                        if (reaccionesEl) {
+                            reaccionesEl.style.opacity = '0';
+                            reaccionesEl.style.transform = 'translateY(10px)';
+                        }
+                    };
+
+                    const headerDiv = document.createElement('div');
+                    headerDiv.style.cssText = 'display:flex;justify-content:space-between;margin-bottom:4px;font-size:0.8rem;';
+                    headerDiv.innerHTML = '<span style="color:var(--accent-color);font-weight:bold;">'+escaparHTML(msg.autor||'Anónimo')+'</span><span style="color:var(--text-muted);">'+fecha+'</span>';
+
+                    const mensajeDiv = document.createElement('div');
+                    mensajeDiv.style.cssText = 'color:var(--text-main);font-size:0.95rem;word-break:break-word;';
+                    mensajeDiv.textContent = msg.mensaje || '';
+
+                    container.appendChild(headerDiv);
+                    container.appendChild(mensajeDiv);
+                    
+                    // Badge de contador de reacciones
+                    const badge = crearBadgeReacciones(msgId);
+                    container.appendChild(badge);
+                    
+                    // Reacciones rápidas (hover)
+                    const reaccionesEl = crearReaccionesRapidas(msgId);
+                    reaccionesEl.dataset.msgId = msgId;
+                    container.appendChild(reaccionesEl);
+
+                    chatMensajes.appendChild(container);
                 });
                 chatMensajes.scrollTop = chatMensajes.scrollHeight;
+            }
+
+            // Limpiar mensajes antiguos (mantener máximo 100 en DOM)
+            function limpiarMensajesAntiguos() {
+                const mensajes = chatMensajes.querySelectorAll('.chat-msg-container');
+                if (mensajes.length > MAX_MENSAJES_DOM) {
+                    const eliminar = mensajes.length - MAX_MENSAJES_DOM;
+                    for (let i = 0; i < eliminar; i++) {
+                        if (mensajes[i]) mensajes[i].remove();
+                    }
+                }
             }
 
             if (chatForm) {
@@ -582,7 +710,11 @@
                     try {
                         const { error } = await supabase.from('comunidad_chat').insert([{ autor: userNickname, mensaje }]);
                         if (error) console.error('Error:', error);
-                        else inputMensaje.value = '';
+                        else {
+                            inputMensaje.value = '';
+                            // Actualizar ultima_actividad en BD
+                            await supabase.from('usuarios_comunidad').update({ ultima_actividad: new Date().toISOString() }).eq('apodo', userNickname);
+                        }
                     } catch (e) { console.error(e); }
                     if (btnEnviar) btnEnviar.disabled = false;
                 });
@@ -592,12 +724,55 @@
                 supabase.channel('public:comunidad_chat').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'comunidad_chat' }, payload => {
                     const nuevoMsg = payload.new;
                     if (chatMensajes.querySelector('div[style*="margin-top"]')) chatMensajes.innerHTML = '';
+                    
                     const fecha = new Date(nuevoMsg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                    const div = document.createElement('div');
-                    div.style.cssText = 'background:rgba(255,255,255,0.03);padding:10px 14px;border-radius:8px;border:1px solid var(--border-color);';
-                    div.innerHTML = '<div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:0.8rem;"><span style="color:var(--accent-color);font-weight:bold;">'+escaparHTML(nuevoMsg.autor||'Anónimo')+'</span><span style="color:var(--text-muted);">'+fecha+'</span></div><div style="color:var(--text-main);font-size:0.95rem;word-break:break-word;">'+escaparHTML(nuevoMsg.mensaje||'')+'</div>';
-                    chatMensajes.appendChild(div);
+                    const msgId = nuevoMsg.id || Date.now() + Math.random();
+                    
+                    const container = document.createElement('div');
+                    container.className = 'chat-msg-container';
+                    container.style.cssText = 'position:relative;background:rgba(255,255,255,0.03);padding:10px 14px;border-radius:8px;border:1px solid var(--border-color);cursor:pointer;';
+                    
+                    // Mostrar reacciones al hover
+                    container.onmouseenter = function() {
+                        const reaccionesEl = this.querySelector('.chat-msg-reacciones');
+                        if (reaccionesEl) {
+                            reaccionesEl.style.opacity = '1';
+                            reaccionesEl.style.transform = 'translateY(0)';
+                        }
+                    };
+                    container.onmouseleave = function() {
+                        const reaccionesEl = this.querySelector('.chat-msg-reacciones');
+                        if (reaccionesEl) {
+                            reaccionesEl.style.opacity = '0';
+                            reaccionesEl.style.transform = 'translateY(10px)';
+                        }
+                    };
+
+                    const headerDiv = document.createElement('div');
+                    headerDiv.style.cssText = 'display:flex;justify-content:space-between;margin-bottom:4px;font-size:0.8rem;';
+                    headerDiv.innerHTML = '<span style="color:var(--accent-color);font-weight:bold;">'+escaparHTML(nuevoMsg.autor||'Anónimo')+'</span><span style="color:var(--text-muted);">'+fecha+'</span>';
+
+                    const mensajeDiv = document.createElement('div');
+                    mensajeDiv.style.cssText = 'color:var(--text-main);font-size:0.95rem;word-break:break-word;';
+                    mensajeDiv.textContent = nuevoMsg.mensaje || '';
+
+                    container.appendChild(headerDiv);
+                    container.appendChild(mensajeDiv);
+                    
+                    // Badge de contador de reacciones
+                    const badge = crearBadgeReacciones(msgId);
+                    container.appendChild(badge);
+                    
+                    // Reacciones rápidas (hover)
+                    const reaccionesEl = crearReaccionesRapidas(msgId);
+                    reaccionesEl.dataset.msgId = msgId;
+                    container.appendChild(reaccionesEl);
+
+                    chatMensajes.appendChild(container);
                     chatMensajes.scrollTop = chatMensajes.scrollHeight;
+                    
+                    // Limpiar mensajes antiguos si supera el límite
+                    limpiarMensajesAntiguos();
                 }).subscribe();
             }
 
