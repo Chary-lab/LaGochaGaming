@@ -655,48 +655,30 @@
                 if (!userId) { userId = Math.random().toString(36).substr(2, 9); localStorage.setItem('comunidad_user_id', userId); }
 
                 const nickParaTrack = userNickname || savedApodo;
-                console.log('Iniciando presencia:', { userId, nickParaTrack, userNickname, savedApodo });
+                let trackHecho = false; // Evitar tracks duplicados
 
                 const canalPresencia = supabase.channel('presence:comunidad')
                     .on('presence', { event: 'sync' }, () => {
                         const estado = canalPresencia.presenceState();
-                        console.log('Sync recibido:', estado);
                         renderizarListaUsuarios(estado);
-                    })
-                    .on('presence', { event: 'join' }, ({ key, presence }) => {
-                        console.log('Usuario joined:', key, presence);
-                    })
-                    .on('presence', { event: 'leave' }, ({ key, presence }) => {
-                        console.log('Usuario left:', key, presence);
                     });
 
                 canalPresencia.subscribe((state) => {
-                    console.log('Estado de suscripción:', state);
-                    if (state === 'SUBSCRIBED' && nickParaTrack) {
-                        console.log('Haciendo track:', { user_id: userId, nickname: nickParaTrack });
+                    if (state === 'SUBSCRIBED' && nickParaTrack && !trackHecho) {
+                        trackHecho = true;
                         canalPresencia.track({ user_id: userId, nickname: nickParaTrack });
                     }
                 });
 
-                // Fallback: forzar track después de 2 segundos
-                setTimeout(() => {
-                    if (nickParaTrack && canalPresencia) {
-                        console.log('Fallback: forzando track');
-                        canalPresencia.track({ user_id: userId, nickname: nickParaTrack });
-                    }
-                }, 2000);
-
-                // KeepAlive
+                // KeepAlive cada 60 segundos
                 const keepAliveInterval = setInterval(() => {
                     if (nickParaTrack && canalPresencia) {
-                        console.log('KeepAlive: track');
                         canalPresencia.track({ user_id: userId, nickname: nickParaTrack });
                     }
-                }, 30000);
+                }, 60000);
 
                 window._trackPresence = (nick) => {
-                    if (canalPresencia) {
-                        console.log('Re-track:', nick);
+                    if (canalPresencia && trackHecho) {
                         canalPresencia.track({ user_id: userId, nickname: nick || userNickname });
                     }
                 };
