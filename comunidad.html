@@ -192,6 +192,12 @@
 </head>
 <body>
 
+    <!-- ALERTA VISUAL DE STREAM EN VIVO -->
+    <div id="stream-alert" class="stream-alert-overlay">
+        <i class="fa-solid fa-tower-broadcast"></i>
+        <span id="stream-alert-text">¡LA GOCHA ESTÁ EN DIRECTO! 🎉</span>
+    </div>
+
     <!-- NAVBAR -->
     <nav class="navbar">
         <div class="logo">LAGOCHA<span>GAMING</span></div>
@@ -630,6 +636,9 @@
                     const viewers = data.livestream ? data.livestream.viewer_count : 0;
                     const viewersEl = document.getElementById('viewers-count');
                     const viewersNumEl = document.getElementById('viewers-num');
+                    const navbar = document.querySelector('.navbar');
+                    const alertOverlay = document.getElementById('stream-alert');
+
                     if (estadoDot && estadoTexto) {
                         if (enVivo) {
                             estadoDot.style.backgroundColor = '#53fc18';
@@ -641,6 +650,24 @@
                             if (viewersEl) viewersEl.style.display = 'none';
                         }
                     }
+
+                    // Activar/desactivar navbar glow
+                    if (navbar) {
+                        if (enVivo) {
+                            navbar.classList.add('live-glow');
+                        } else {
+                            navbar.classList.remove('live-glow');
+                        }
+                    }
+
+                    // Mostrar overlay de alerta si es la primera vez que detecta live
+                    if (alertOverlay && ultimaEstadoEnVivo === false && enVivo) {
+                        alertOverlay.classList.add('visible', 'live');
+                        setTimeout(() => {
+                            alertOverlay.classList.remove('visible');
+                        }, 5000);
+                    }
+
                     if (ultimaEstadoEnVivo === false && enVivo && typeof mostrarToast === 'function') { mostrarToast('¡La Gocha está en directo! 🎉', false); }
                     ultimaEstadoEnVivo = enVivo;
                 } catch (err) {

@@ -44,7 +44,13 @@
 </head>
 <body>
 
-<nav class="navbar">
+    <!-- ALERTA VISUAL DE STREAM EN VIVO -->
+    <div id="stream-alert" class="stream-alert-overlay">
+        <i class="fa-solid fa-tower-broadcast"></i>
+        <span id="stream-alert-text">¡LA GOCHA ESTÁ EN DIRECTO! 🎉</span>
+    </div>
+
+    <nav class="navbar">
         <div class="logo">LAGOCHA<span>GAMING</span></div>
         <div class="nav-links">
             <a href="./#inicio">Inicio</a>
@@ -204,19 +210,25 @@
         </div>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="main.js"></script>
     <script>
         let paginaActualMuro = 0;
         const LIMITE_POR_PAGINA = 12;
         let adminAutenticado = false;
+        let ultimaEstadoEnVivoIndex = null;
 
-        document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', async () => {
             const { data: { session } } = await supabase.auth.getSession();
             if (session) {
                 adminAutenticado = true;
                 document.body.classList.add('admin-mode-active');
             }
+
+            // Verificar estado del stream al iniciar
+            verificarEstadoStreamIndex();
+            // Polling cada 30 segundos
+            setInterval(verificarEstadoStreamIndex, 30000);
 
             cargarMensajes(true);
 
@@ -225,6 +237,38 @@
                 enviarMensaje();
             });
         });
+
+        async function verificarEstadoStreamIndex() {
+            try {
+                const response = await fetch('https://kick.com/api/v2/channels/lagochagaming');
+                if (!response.ok) throw new Error('Error');
+                const data = await response.json();
+                const enVivo = data.livestream && data.livestream.is_live === true;
+
+                const navbar = document.querySelector('.navbar');
+                const alertOverlay = document.getElementById('stream-alert');
+
+                if (enVivo) {
+                    // Activar navbar glow
+                    if (navbar) navbar.classList.add('live-glow');
+
+                    // Mostrar overlay de alerta si es la primera vez que detecta live
+                    if (alertOverlay && ultimaEstadoEnVivoIndex === false) {
+                        alertOverlay.classList.add('visible', 'live');
+                        setTimeout(() => {
+                            alertOverlay.classList.remove('visible');
+                        }, 5000);
+                    }
+                } else {
+                    // Desactivar navbar glow
+                    if (navbar) navbar.classList.remove('live-glow');
+                }
+
+                ultimaEstadoEnVivoIndex = enVivo;
+            } catch (err) {
+                console.error('Error verificando estado:', err);
+            }
+        }
 
         async function cargarMensajes(reiniciar = false) {
             if (reiniciar) {
