@@ -453,26 +453,41 @@
 
             async function registrarUsuario(apodo, pin) {
                 try {
-                    const { data, error } = await supabase.from('usuarios_comunidad').insert([{ apodo, pin, puntos: 0 }]);
+                    const { data, error } = await supabase.from('usuarios_comunidad').insert([{ apodo, pin, puntos: 0, rango: 'semilla' }]);
                     return { success: !error, error: error?.message };
                 } catch (e) { return { success: false, error: e.message }; }
             }
 
             async function verificarLogin(apodo, pin) {
                 try {
-                    const { data, error } = await supabase.from('usuarios_comunidad').select('id, puntos, session_token').eq('apodo', apodo).eq('pin', pin).single();
+                    const { data, error } = await supabase.from('usuarios_comunidad').select('id, puntos, rango, session_token').eq('apodo', apodo).eq('pin', pin).single();
                     if (error || !data) return { success: false, user: null };
                     return { success: true, user: data };
                 } catch (e) { return { success: false, user: null }; }
             }
 
-            function guardarSesion(apodo, token, puntos) {
+            function guardarSesion(apodo, token, puntos, rango) {
                 localStorage.setItem(STORAGE_KEY_NICK, apodo);
                 localStorage.setItem(STORAGE_KEY_TOKEN, token || btoa(Date.now().toString()));
                 if (userProfilePanel && userInfoDisplay && userPointsDisplay) {
                     userProfilePanel.style.display = 'block';
                     userInfoDisplay.textContent = '👤 ' + apodo;
                     userPointsDisplay.textContent = '💎 Puntos: ' + (puntos || 0);
+                    // Mostrar badge de rango en el perfil (incluyendo semilla)
+                    const existingBadge = document.getElementById('user-rango-badge');
+                    if (existingBadge) existingBadge.remove();
+                    const rangoBadge = document.createElement('div');
+                    rangoBadge.id = 'user-rango-badge';
+                    const rangoLower = (rango || 'semilla').toLowerCase();
+                    const emojiMap = {
+                        'semilla': '🌱', 'gota': '💧', 'flor': '🌸', 
+                        'estrella': '⭐', 'leyenda': '👑'
+                    };
+                    const emoji = emojiMap[rangoLower] || '🌱';
+                    rangoBadge.className = `rango-badge rango-${rangoLower}`;
+                    rangoBadge.style.cssText = 'display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:12px;font-size:0.75rem;font-weight:700;margin-top:6px;';
+                    rangoBadge.innerHTML = `<span>${emoji}</span><span>${rangoLower.charAt(0).toUpperCase() + rangoLower.slice(1)}</span>`;
+                    userPointsDisplay.parentNode.insertBefore(rangoBadge, userPointsDisplay.nextSibling);
                 }
                 if (inputAutor) {
                     inputAutor.value = apodo;
@@ -497,9 +512,9 @@
                 const savedToken = localStorage.getItem(STORAGE_KEY_TOKEN);
                 if (!savedApodo || !savedToken) return false;
                 try {
-                    const { data, error } = await supabase.from('usuarios_comunidad').select('id, puntos, session_token').eq('apodo', savedApodo).single();
+                    const { data, error } = await supabase.from('usuarios_comunidad').select('id, puntos, rango, session_token').eq('apodo', savedApodo).single();
                     if (!error && data && data.session_token === savedToken) {
-                        guardarSesion(savedApodo, savedToken, data.puntos);
+                        guardarSesion(savedApodo, savedToken, data.puntos, data.rango);
                         return true;
                     }
                 } catch (e) {}
@@ -528,7 +543,7 @@
                     }
                     const reg = await registrarUsuario(nick, pin);
                     if (reg.success) {
-                        guardarSesion(nick, null, 0);
+                        guardarSesion(nick, null, 0, 'semilla');
                         hideNicknameModal();
                         return;
                     }
@@ -539,7 +554,7 @@
                 // Modo login: intentar autenticar
                 const verif = await verificarLogin(nick, pin);
                 if (verif.success) {
-                    guardarSesion(nick, verif.user.session_token, verif.user.puntos);
+                    guardarSesion(nick, verif.user.session_token, verif.user.puntos, verif.user.rango);
                     hideNicknameModal();
                     return;
                 }
@@ -999,16 +1014,14 @@ if (chatForm) {
                     
                     // Obtener badge de rango desde el mapa cargado
                     let badgeHTML = '';
-                    const rango = rangosMap[datos.nickname];
-                    if (rango && rango !== 'semilla') {
-                        const rangoLower = rango.toLowerCase();
-                        const emojiMap = {
-                            'semilla': '🌱', 'gota': '💧', 'flor': '🌸', 
-                            'estrella': '⭐', 'leyenda': '👑'
-                        };
-                        const emoji = emojiMap[rangoLower] || '🌱';
-                        badgeHTML = `<span class="rango-badge rango-${rangoLower}"><span>${emoji}</span><span>${rangoLower.charAt(0).toUpperCase() + rangoLower.slice(1)}</span></span>`;
-                    }
+                    const rango = rangosMap[datos.nickname] || 'semilla';
+                    const rangoLower = rango.toLowerCase();
+                    const emojiMap = {
+                        'semilla': '🌱', 'gota': '💧', 'flor': '🌸', 
+                        'estrella': '⭐', 'leyenda': '👑'
+                    };
+                    const emoji = emojiMap[rangoLower] || '🌱';
+                    badgeHTML = `<span class="rango-badge rango-${rangoLower}"><span>${emoji}</span><span>${rangoLower.charAt(0).toUpperCase() + rangoLower.slice(1)}</span></span>`;
                     
                     html += `<div class="user-item"><div class="user-icon">${initial}</div><div class="user-name">${nickSafe}${badgeHTML}</div></div>`;
                 }
@@ -1131,17 +1144,16 @@ if (chatForm) {
                     data.forEach((user, index) => {
                         const medalla = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`;
                         
-                        // Agregar badge de rango si existe
+                        // Agregar badge de rango (siempre se muestra, incluso semilla)
                         let rangoBadge = '';
-                        if (user.rango && user.rango !== 'semilla') {
-                            const rango = user.rango.toLowerCase();
-                            const emojiMap = {
-                                'semilla': '🌱', 'gota': '💧', 'flor': '🌸', 
-                                'estrella': '⭐', 'leyenda': '👑'
-                            };
-                            const emoji = emojiMap[rango] || '🌱';
-                            rangoBadge = `<span class="rango-badge rango-${rango}" style="margin-left:6px;"><span>${emoji}</span><span>${rango.charAt(0).toUpperCase() + rango.slice(1)}</span></span>`;
-                        }
+                        const rango = user.rango || 'semilla';
+                        const rangoLower = rango.toLowerCase();
+                        const emojiMap = {
+                            'semilla': '🌱', 'gota': '💧', 'flor': '🌸', 
+                            'estrella': '⭐', 'leyenda': '👑'
+                        };
+                        const emoji = emojiMap[rangoLower] || '🌱';
+                        rangoBadge = `<span class="rango-badge rango-${rangoLower}" style="margin-left:6px;"><span>${emoji}</span><span>${rangoLower.charAt(0).toUpperCase() + rangoLower.slice(1)}</span></span>`;
                         
                         html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 4px;border-bottom:1px solid var(--border-color);${index === 0 ? 'background:rgba(255,215,0,0.1);' : ''}">
                             <span style="font-size:0.9rem;font-weight:bold;">${medalla} ${escaparHTML(user.apodo)}${rangoBadge}</span>
@@ -1178,21 +1190,22 @@ if (chatForm) {
                     supabase.from('usuarios_comunidad').select('puntos, rango').eq('apodo', savedApodo).single().then(({ data }) => {
                         if (data && userPointsDisplay) {
                             userPointsDisplay.textContent = '💎 Puntos: ' + data.puntos;
-                            // Mostrar badge de rango en el perfil
+                            // Mostrar badge de rango en el perfil (incluyendo semilla)
+                            const existingBadge = document.getElementById('user-rango-badge');
+                            if (existingBadge) existingBadge.remove();
                             const rangoBadge = document.createElement('div');
                             rangoBadge.id = 'user-rango-badge';
-                            if (data.rango && data.rango !== 'semilla') {
-                                const rango = data.rango.toLowerCase();
-                                const emojiMap = {
-                                    'semilla': '🌱', 'gota': '💧', 'flor': '🌸', 
-                                    'estrella': '⭐', 'leyenda': '👑'
-                                };
-                                const emoji = emojiMap[rango] || '🌱';
-                                rangoBadge.className = `rango-badge rango-${rango}`;
-                                rangoBadge.style.cssText = 'display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:12px;font-size:0.75rem;font-weight:700;margin-top:6px;';
-                                rangoBadge.innerHTML = `<span>${emoji}</span><span>${rango.charAt(0).toUpperCase() + rango.slice(1)}</span>`;
-                                userPointsDisplay.parentNode.insertBefore(rangoBadge, userPointsDisplay.nextSibling);
-                            }
+                            const rango = data.rango || 'semilla';
+                            const rangoLower = rango.toLowerCase();
+                            const emojiMap = {
+                                'semilla': '🌱', 'gota': '💧', 'flor': '🌸', 
+                                'estrella': '⭐', 'leyenda': '👑'
+                            };
+                            const emoji = emojiMap[rangoLower] || '🌱';
+                            rangoBadge.className = `rango-badge rango-${rangoLower}`;
+                            rangoBadge.style.cssText = 'display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:12px;font-size:0.75rem;font-weight:700;margin-top:6px;';
+                            rangoBadge.innerHTML = `<span>${emoji}</span><span>${rangoLower.charAt(0).toUpperCase() + rangoLower.slice(1)}</span>`;
+                            userPointsDisplay.parentNode.insertBefore(rangoBadge, userPointsDisplay.nextSibling);
                         }
                     });
                 }
@@ -1227,15 +1240,16 @@ if (chatForm) {
                             }
                             // Actualizar badge de rango si está visible
                             const rangoBadge = document.getElementById('user-rango-badge');
-                            if (rangoBadge && data.rango) {
-                                const rango = data.rango.toLowerCase();
+                            if (rangoBadge) {
+                                const rango = data.rango || 'semilla';
+                                const rangoLower = rango.toLowerCase();
                                 const emojiMap = {
                                     'semilla': '🌱', 'gota': '💧', 'flor': '🌸', 
                                     'estrella': '⭐', 'leyenda': '👑'
                                 };
-                                const emoji = emojiMap[rango] || '🌱';
-                                rangoBadge.className = `rango-badge rango-${rango}`;
-                                rangoBadge.innerHTML = `<span>${emoji}</span><span>${rango.charAt(0).toUpperCase() + rango.slice(1)}</span>`;
+                                const emoji = emojiMap[rangoLower] || '🌱';
+                                rangoBadge.className = `rango-badge rango-${rangoLower}`;
+                                rangoBadge.innerHTML = `<span>${emoji}</span><span>${rangoLower.charAt(0).toUpperCase() + rangoLower.slice(1)}</span>`;
                             }
                         }
                     } catch (e) { console.error('Error al sumar puntos:', e); }
