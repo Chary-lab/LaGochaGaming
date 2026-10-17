@@ -558,30 +558,157 @@
             const REACCIONES = ['❤️', '😂', '🔥', '😮', '👍'];
             const MAX_MENSAJES_DOM = 100;
             const REACCIONES_STORAGE_KEY = 'gochi_chat_reacciones';
+            const MI_REACCION_STORAGE_KEY = 'gochi_chat_mi_reaccion';
             const STREAK_STORAGE_KEY = 'gochi_chat_streak';
             const STREAK_TIMEOUT_MS = 300000; // 5 minutos para mantener racha
 
-            // Obtener reacciones guardadas del localStorage
-            function obtenerReaccionesGuardadas() {
+            // Estructura: { [msgId]: { [emoji]: [nickname, ...] } }
+            function obtenerTodasReacciones() {
                 try {
                     return JSON.parse(localStorage.getItem(REACCIONES_STORAGE_KEY) || '{}');
                 } catch (e) { return {}; }
             }
 
-            // Guardar reacción en localStorage
-            function guardarReaccion(msgId, reaccion) {
-                const reacciones = obtenerReaccionesGuardadas();
-                if (!reacciones[msgId]) reacciones[msgId] = [];
-                if (!reacciones[msgId].includes(reaccion)) {
-                    reacciones[msgId].push(reaccion);
-                    localStorage.setItem(REACCIONES_STORAGE_KEY, JSON.stringify(reacciones));
-                }
+            function guardarTodasReacciones(data) {
+                try {
+                    localStorage.setItem(REACCIONES_STORAGE_KEY, JSON.stringify(data));
+                } catch (e) {}
             }
 
-            // Contar reacciones de un mensaje
-            function contarReacciones(msgId) {
-                const reacciones = obtenerReaccionesGuardadas();
-                return (reacciones[msgId] || []).length;
+            // Estructura: { [msgId]: emoji }  (solo 1 reacción por usuario por mensaje)
+            function obtenerMiReaccion(msgId) {
+                try {
+                    const data = JSON.parse(localStorage.getItem(MI_REACCION_STORAGE_KEY) || '{}');
+                    return data[msgId] || null;
+                } catch (e) { return null; }
+            }
+
+            function guardarMiReaccion(msgId, emoji) {
+                try {
+                    const data = JSON.parse(localStorage.getItem(MI_REACCION_STORAGE_KEY) || '{}');
+                    if (emoji === null) { delete data[msgId]; }
+                    else { data[msgId] = emoji; }
+                    localStorage.setItem(MI_REACCION_STORAGE_KEY, JSON.stringify(data));
+                } catch (e) {}
+            }
+
+            // Cambiar/establecer la reacción del usuario para un mensaje (solo 1 por usuario).
+            // Si hace click en el mismo emoji que ya tiene, se quita (toggle off).
+            function establecerReaccionUsuario(msgId, emoji) {
+                if (!userNickname) return;
+                const reacciones = obtenerTodasReacciones();
+                const miReaccionActual = obtenerMiReaccion(msgId);
+
+                // Quitar del emoji anterior si existe
+                if (miReaccionActual && reacciones[msgId] && reacciones[msgId][miReaccionActual]) {
+                    reacciones[msgId][miReaccionActual] = (reacciones[msgId][miReaccionActual] || []).filter(n => n !== userNickname);
+                    if (reacciones[msgId][miReaccionActual].length === 0) delete reacciones[msgId][miReaccionActual];
+                }
+
+                // Toggle off: mismo emoji que ya tenía -> se quita la reacción
+                if (miReaccionActual === emoji) {
+                    guardarMiReaccion(msgId, null);
+                    guardarTodasReacciones(reacciones);
+                    actualizarUIReacciones(msgId);
+                    return;
+                }
+
+                // Asignar nuevo emoji
+                if (!reacciones[msgId]) reacciones[msgId] = {};
+                if (!reacciones[msgId][emoji]) reacciones[msgId][emoji] = [];
+                if (!reacciones[msgId][emoji].includes(userNickname)) {
+                    reacciones[msgId][emoji].push(userNickname);
+                }
+
+                guardarMiReaccion(msgId, emoji);
+                guardarTodasReacciones(reacciones);
+                actualizarUIReacciones(msgId);
+            }
+
+            // Contar cuántos usuarios reaccionaron con un emoji específico en un mensaje
+            function contarReaccionesEmoji(msgId, emoji) {
+                const reacciones = obtenerTodasReacciones();
+                return (reacciones[msgId] && reacciones[msgId][emoji]) ? reacciones[msgId][emoji].length : 0;
+            }
+
+            // Total de reacciones de un mensaje (todas las personas, todos los emojis)
+            function contarTotalReacciones(msgId) {
+                const reacciones = obtenerTodasReacciones();
+                if (!reacciones[msgId]) return 0;
+                return Object.values(reacciones[msgId]).reduce((acc, arr) => acc + (arr || []).length, 0);
+            }
+
+            // Tooltip global: mostrar quiénes reaccionaron con un emoji
+            let tooltipReaccionEl = null;
+            function mostrarTooltipReaccion(target, msgId, emoji) {
+                const reacciones = obtenerTodasReacciones();
+                const usuarios = (reacciones[msgId] && reacciones[msgId][emoji]) ? reacciones[msgId][emoji] : [];
+                if (!usuarios || usuarios.length === 0) return;
+
+                if (!tooltipReaccionEl) {
+                    tooltipReaccionEl = document.createElement('div');
+                    tooltipReaccionEl.className = 'reaccion-tooltip';
+                    document.body.appendChild(tooltipReaccionEl);
+                }
+
+                const lista = usuarios.map(n => `<span class="tooltip-usuario">${escaparHTML(n)}</span>`).join('');
+                tooltipReaccionEl.innerHTML = `<div class="tooltip-titulo">${emoji} <span style="font-weight:normal;">(${usuarios.length})</span></div><div class="tooltip-lista">${lista}</div>`;
+
+                const rect = target.getBoundingClientRect();
+                const tw = tooltipReaccionEl.offsetWidth || 160;
+                let left = rect.left + rect.width / 2 - tw / 2;
+                if (left < 8) left = 8;
+                tooltipReaccionEl.style.left = left + 'px';
+                tooltipReaccionEl.style.top = (rect.top - (tooltipReaccionEl.offsetHeight || 40) - 8) + 'px';
+                tooltipReaccionEl.classList.add('visible');
+            }
+
+            function ocultarTooltipReaccion() {
+                if (tooltipReaccionEl) tooltipReaccionEl.classList.remove('visible');
+            }
+
+            // Actualizar la UI de reacciones de un mensaje específico sin re-renderizar todo
+            function actualizarUIReacciones(msgId) {
+                const container = document.querySelector(`.chat-msg-container[data-msgid="${msgId}"]`);
+                if (!container) return;
+
+                // Actualizar badges visibles (icono + contador por tipo)
+                const badgesContainer = container.querySelector('.reacciones-badges');
+                if (badgesContainer) {
+                    badgesContainer.innerHTML = '';
+                    let hay = false;
+                    REACCIONES.forEach(emoji => {
+                        const count = contarReaccionesEmoji(msgId, emoji);
+                        if (count > 0) {
+                            hay = true;
+                            const badge = document.createElement('span');
+                            badge.className = 'reaccion-badge' + (obtenerMiReaccion(msgId) === emoji ? ' mia' : '');
+                            badge.dataset.emoji = emoji;
+                            badge.innerHTML = `<span class="emoji">${emoji}</span><span class="count">${count}</span>`;
+                            badge.onmouseenter = (e) => mostrarTooltipReaccion(e.currentTarget, msgId, emoji);
+                            badge.onmouseleave = ocultarTooltipReaccion;
+                            badgesContainer.appendChild(badge);
+                        }
+                    });
+                    badgesContainer.style.display = hay ? 'flex' : 'none';
+                }
+
+                // Actualizar panel rápido de reacciones (marcar el mío como activo)
+                const panel = container.querySelector('.chat-msg-reacciones');
+                if (panel) {
+                    panel.querySelectorAll('.btn-reaccion-chat').forEach(btn => {
+                        const emoji = btn.textContent.trim();
+                        if (obtenerMiReaccion(msgId) === emoji) {
+                            btn.classList.add('mia');
+                            btn.style.background = 'var(--accent-color)';
+                            btn.style.color = '#000';
+                        } else {
+                            btn.classList.remove('mia');
+                            btn.style.background = 'transparent';
+                            btn.style.color = '';
+                        }
+                    });
+                }
             }
 
             // Sistema de racha de mensajes
@@ -625,54 +752,57 @@
                 return streakData.count;
             }
 
-            // Crear HTML de reacciones rápidas (hover)
+            // Crear panel rápido de reacciones (hover sobre mensaje)
             function crearReaccionesRapidas(msgId) {
                 const container = document.createElement('div');
                 container.className = 'chat-msg-reacciones';
-                container.style.cssText = 'position:absolute;bottom:-10px;left:0;display:flex;gap:4px;background:var(--card-bg);border:1px solid var(--accent-color);border-radius:20px;padding:4px 8px;box-shadow:var(--glow);z-index:10;opacity:0;transform:translateY(10px);transition:opacity 0.2s,transform 0.2s;';
-                
+                container.dataset.msgId = msgId;
+
                 REACCIONES.forEach(reaccion => {
                     const btn = document.createElement('button');
                     btn.className = 'btn-reaccion-chat';
                     btn.textContent = reaccion;
-                    btn.style.cssText = 'background:transparent;border:none;cursor:pointer;font-size:1rem;padding:4px 6px;border-radius:50%;transition:transform 0.2s,background 0.2s;width:28px;height:28px;display:flex;align-items:center;justify-content:center;';
+                    btn.title = reaccion;
+                    btn.style.cssText = 'background:transparent;border:none;cursor:pointer;font-size:1rem;padding:4px 6px;border-radius:50%;transition:transform 0.2s,background 0.2s,color 0.2s;width:28px;height:28px;display:flex;align-items:center;justify-content:center;';
                     btn.onmouseenter = function() { this.style.transform = 'scale(1.2)'; this.style.background = 'var(--card-bg-subtle)'; };
-                    btn.onmouseleave = function() { this.style.transform = 'scale(1)'; this.style.background = 'transparent'; };
+                    btn.onmouseleave = function() {
+                        this.style.transform = 'scale(1)';
+                        if (obtenerMiReaccion(msgId) !== reaccion) this.style.background = 'transparent';
+                    };
                     btn.onclick = (e) => {
                         e.stopPropagation();
-                        guardarReaccion(msgId, reaccion);
-                        actualizarContadorReacciones(msgId);
-                        container.style.opacity = '0';
-                        container.style.transform = 'translateY(10px)';
+                        if (!userNickname) {
+                            mostrarToast('Inicia sesión para reaccionar', true);
+                            return;
+                        }
+                        establecerReaccionUsuario(msgId, reaccion);
                     };
                     container.appendChild(btn);
                 });
                 return container;
             }
 
-            // Actualizar contador de reacciones
-            function actualizarContadorReacciones(msgId) {
-                const badge = document.getElementById(`reacciones-badge-${msgId}`);
-                if (badge) {
-                    const count = contarReacciones(msgId);
+            // Crear badges de reacciones visibles debajo del mensaje (icono + contador por tipo)
+            function crearBadgesReacciones(msgId) {
+                const container = document.createElement('div');
+                container.className = 'reacciones-badges';
+                container.style.display = 'none';
+                let hay = false;
+                REACCIONES.forEach(emoji => {
+                    const count = contarReaccionesEmoji(msgId, emoji);
                     if (count > 0) {
-                        badge.textContent = count;
-                        badge.style.display = 'inline-flex';
-                    } else {
-                        badge.style.display = 'none';
+                        hay = true;
+                        const badge = document.createElement('span');
+                        badge.className = 'reaccion-badge' + (obtenerMiReaccion(msgId) === emoji ? ' mia' : '');
+                        badge.dataset.emoji = emoji;
+                        badge.innerHTML = `<span class="emoji">${emoji}</span><span class="count">${count}</span>`;
+                        badge.onmouseenter = (e) => mostrarTooltipReaccion(e.currentTarget, msgId, emoji);
+                        badge.onmouseleave = ocultarTooltipReaccion;
+                        container.appendChild(badge);
                     }
-                }
-            }
-
-            // Crear badge de contador de reacciones
-            function crearBadgeReacciones(msgId) {
-                const count = contarReacciones(msgId);
-                const badge = document.createElement('span');
-                badge.id = `reacciones-badge-${msgId}`;
-                badge.className = 'reacciones-count';
-                badge.textContent = count;
-                badge.style.cssText = 'position:absolute;bottom:-8px;right:-8px;background:var(--accent-color);color:#000;font-size:0.65rem;font-weight:700;border-radius:10px;padding:1px 6px;min-width:18px;text-align:center;box-shadow:0 0 6px rgba(255,102,178,0.5);' + (count > 0 ? '' : 'display:none;');
-                return badge;
+                });
+                if (hay) container.style.display = 'flex';
+                return container;
             }
 
             function renderizarMensajes(mensajes) {
@@ -687,6 +817,7 @@
                     
                     const container = document.createElement('div');
                     container.className = 'chat-msg-container';
+                    container.dataset.msgId = msgId;
                     container.style.cssText = 'position:relative;background:rgba(255,255,255,0.03);padding:10px 14px;border-radius:8px;border:1px solid var(--border-color);cursor:pointer;';
                     
                     // Mostrar reacciones al hover
@@ -716,13 +847,12 @@
                     container.appendChild(headerDiv);
                     container.appendChild(mensajeDiv);
                     
-                    // Badge de contador de reacciones
-                    const badge = crearBadgeReacciones(msgId);
-                    container.appendChild(badge);
+                    // Badges de reacciones visibles (icono + contador por tipo)
+                    const badges = crearBadgesReacciones(msgId);
+                    container.appendChild(badges);
                     
                     // Reacciones rápidas (hover)
                     const reaccionesEl = crearReaccionesRapidas(msgId);
-                    reaccionesEl.dataset.msgId = msgId;
                     container.appendChild(reaccionesEl);
 
                     chatMensajes.appendChild(container);
@@ -777,6 +907,7 @@ if (chatForm) {
                     
                     const container = document.createElement('div');
                     container.className = 'chat-msg-container';
+                    container.dataset.msgId = msgId;
                     container.style.cssText = 'position:relative;background:rgba(255,255,255,0.03);padding:10px 14px;border-radius:8px;border:1px solid var(--border-color);cursor:pointer;';
                     
                     // Mostrar reacciones al hover
@@ -806,13 +937,12 @@ if (chatForm) {
                     container.appendChild(headerDiv);
                     container.appendChild(mensajeDiv);
                     
-                    // Badge de contador de reacciones
-                    const badge = crearBadgeReacciones(msgId);
-                    container.appendChild(badge);
+                    // Badges de reacciones visibles (icono + contador por tipo)
+                    const badges = crearBadgesReacciones(msgId);
+                    container.appendChild(badges);
                     
                     // Reacciones rápidas (hover)
                     const reaccionesEl = crearReaccionesRapidas(msgId);
-                    reaccionesEl.dataset.msgId = msgId;
                     container.appendChild(reaccionesEl);
 
                     chatMensajes.appendChild(container);
