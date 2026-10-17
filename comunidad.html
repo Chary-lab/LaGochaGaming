@@ -697,28 +697,38 @@
                 }
             }
 
-            // Inicializar
+// Inicializar
             cargarMensajesChat();
             iniciarRealtimeChat();
             cargarLeaderboard();
             setInterval(cargarLeaderboard, 60000); // Actualizar ranking cada minuto
-            
-            // Verificar sesión guardada y restaurar UI inmediatamente
-            validarSesionGuardada().then(logueado => {
-                const chatLoginForm = document.getElementById('chat-form');
-                const chatLoginArea = document.getElementById('chat-login-area');
-                
-                if (logueado) {
-                    // Mostrar formulario de chat
-                    if (chatLoginForm) chatLoginForm.style.display = 'flex';
-                    if (chatLoginArea) chatLoginArea.style.display = 'none';
-                } else {
-                    // Ocultar formulario, mostrar botón login
-                    if (chatLoginForm) chatLoginForm.style.display = 'none';
-                    if (chatLoginArea) chatLoginArea.style.display = 'flex';
+
+            // Restaurar UI de chat y perfil SINCRÓNICAMENTE si hay sesión guardada
+            const chatLoginForm = document.getElementById('chat-form');
+            const chatLoginArea = document.getElementById('chat-login-area');
+
+            if (savedApodo && savedToken) {
+                // Mostrar chat y perfil inmediatamente (sin esperar validación)
+                if (chatLoginForm) chatLoginForm.style.display = 'flex';
+                if (chatLoginArea) chatLoginArea.style.display = 'none';
+
+                // Mostrar panel de perfil
+                if (userProfilePanel && userInfoDisplay && userPointsDisplay) {
+                    userProfilePanel.style.display = 'block';
+                    userInfoDisplay.textContent = '👤 ' + savedApodo;
+                    // Cargar puntos actuales
+                    supabase.from('usuarios_comunidad').select('puntos').eq('apodo', savedApodo).single().then(({ data }) => {
+                        if (data && userPointsDisplay) {
+                            userPointsDisplay.textContent = '💎 Puntos: ' + data.puntos;
+                        }
+                    });
                 }
-            });
-            
+            } else {
+                // Mostrar solo área de login
+                if (chatLoginForm) chatLoginForm.style.display = 'none';
+                if (chatLoginArea) chatLoginArea.style.display = 'flex';
+            }
+
             verificarEstadoStream();
             setInterval(verificarEstadoStream, 30000);
             iniciarPresenciaUsuarios();
