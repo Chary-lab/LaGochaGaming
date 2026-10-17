@@ -647,14 +647,20 @@
                     const estado = canalPresencia.presenceState();
                     renderizarListaUsuarios(estado);
                 }).subscribe((state) => {
-                    if (state === 'SUBSCRIBED' && userNickname) {
-                        canalPresencia.track({ user_id: userId, nickname: userNickname });
+                    if (state === 'SUBSCRIBED') {
+                        // Enviar presencia inmediatamente si hay usuario logueado
+                        if (userNickname) {
+                            canalPresencia.track({ user_id: userId, nickname: userNickname });
+                        } else if (savedApodo) {
+                            // Si hay sesión guardada pero userNickname no está definido aún
+                            canalPresencia.track({ user_id: userId, nickname: savedApodo });
+                        }
                     }
                 });
                 // Exponer función para re-track tras login (usuario se registra después de cargar)
                 window._trackPresence = (nick) => {
-                    if (userNickname && canalPresencia) {
-                        canalPresencia.track({ user_id: userId, nickname: nick });
+                    if (canalPresencia) {
+                        canalPresencia.track({ user_id: userId, nickname: nick || userNickname });
                     }
                 };
                 return () => supabase.removeChannel(canalPresencia);
@@ -731,7 +737,14 @@
 
             verificarEstadoStream();
             setInterval(verificarEstadoStream, 30000);
-            iniciarPresenciaUsuarios();
+            const presenciaChannel = iniciarPresenciaUsuarios();
+            
+            // Forzar track inmediato si hay usuario logueado
+            if (savedApodo && typeof window._trackPresence === 'function') {
+                setTimeout(() => {
+                    window._trackPresence(savedApodo);
+                }, 500);
+            }
 
             // Puntos automáticos: +1 punto cada 5 minutos (300,000 ms)
             setInterval(async () => {
