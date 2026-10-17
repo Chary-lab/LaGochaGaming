@@ -760,7 +760,7 @@ if (chatForm) {
                             // Actualizar streak de mensajes
                             actualizarStreak();
                             // Actualizar ultima_actividad en BD
-                            await supabase.from('users_comunidad').update({ ultima_actividad: new Date().toISOString() }).eq('apodo', userNickname);
+                            await supabase.from('usuarios_comunidad').update({ ultima_actividad: new Date().toISOString() }).eq('apodo', userNickname);
                         }
                     } catch (e) { console.error(e); }
                     if (btnEnviar) btnEnviar.disabled = false;
@@ -1040,7 +1040,7 @@ if (chatForm) {
                 if (chatLoginForm) chatLoginForm.style.display = 'flex';
                 if (chatLoginArea) chatLoginArea.style.display = 'none';
 
-// Mostrar panel de perfil
+                // Mostrar panel de perfil
                 if (userProfilePanel && userInfoDisplay && userPointsDisplay) {
                     userProfilePanel.style.display = 'block';
                     userInfoDisplay.textContent = '👤 ' + savedApodo;
@@ -1091,7 +1091,7 @@ if (chatForm) {
                         const { error } = await supabase.rpc('incrementar_puntos', { apodo_param: currentNick });
                         if (!error) {
                             // Actualizar UI de puntos y rango
-                            const { data } = await supabase.from('users_comunidad').select('puntos, rango').eq('apodo', currentNick).single();
+                            const { data } = await supabase.from('usuarios_comunidad').select('puntos, rango').eq('apodo', currentNick).single();
                             if (data && userPointsDisplay) {
                                 userPointsDisplay.textContent = '💎 Puntos: ' + data.puntos;
                             }
