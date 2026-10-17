@@ -214,13 +214,23 @@
 
     <!-- CONTENIDO PRINCIPAL COMUNIDAD -->
     <main class="comunidad-layout">
-        <!-- COLUMNA IZQUIERDA: USUARIOS EN LÍNEA -->
+        <!-- COLUMNA IZQUIERDA: USUARIOS EN LÍNEA + LEADERBOARD -->
         <section id="online-users" class="online-users-column">
             <h3 style="color: var(--accent-color); margin-bottom: 8px;">
                 <i class="fa-solid fa-users"></i> Usuarios en línea
             </h3>
             <div id="online-users-list" style="text-align:center; color:var(--text-muted); padding:20px;">
                 Cargando usuarios...
+            </div>
+
+            <!-- LEADERBOARD PÚBLICO DE PUNTOS -->
+            <div style="margin-top: 20px;">
+                <h3 style="color: var(--accent-color); margin-bottom: 10px; font-size: 1rem;">
+                    <i class="fa-solid fa-trophy"></i> Top Comunidad
+                </h3>
+                <div id="leaderboard-list" style="max-height: 300px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; background: var(--card-bg-subtle);">
+                    <div style="text-align:center; color:var(--text-muted); padding:20px;">Cargando ranking...</div>
+                </div>
             </div>
         </section>
 
@@ -238,7 +248,15 @@
                 </div>
             </div>
 
-            <form id="chat-form" class="chat-input-area">
+            <!-- ÁREA DE CHAT: Login/Registro cuando no hay sesión, Formulario cuando hay sesión -->
+            <div id="chat-login-area" class="chat-input-area" style="display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 20px; text-align: center;">
+                <div style="color: var(--text-muted); font-size: 0.9rem;">Inicia sesión para participar en el chat</div>
+                <button id="btn-login-chat" class="btn-primary" onclick="showNicknameModal()" style="width: 100%; max-width: 300px; padding: 12px 24px; font-size: 1rem;">
+                    <i class="fa-solid fa-user-plus"></i> Iniciar Sesión / Registrarse
+                </button>
+            </div>
+
+            <form id="chat-form" class="chat-input-area" style="display: none;">
                 <input type="text" id="chat-autor" placeholder="Tu apodo" maxlength="30" required style="width: 130px;">
                 <input type="text" id="chat-mensaje" placeholder="Escribe un mensaje..." maxlength="300" required style="flex: 1;">
                 <button type="submit" class="btn-primary" style="padding: 10px 20px; border: none; cursor: pointer;">Enviar</button>
@@ -409,6 +427,16 @@
                     inputAutor.value = apodo;
                     inputAutor.readOnly = true;
                 }
+                userNickname = apodo;
+                // Re-track presencia con el nuevo nickname
+                if (typeof window._trackPresence === 'function') {
+                    window._trackPresence(apodo);
+                }
+                // Mostrar formulario de chat, ocultar área de login
+                const chatLoginForm = document.getElementById('chat-form');
+                const chatLoginArea = document.getElementById('chat-login-area');
+                if (chatLoginForm) chatLoginForm.style.display = 'flex';
+                if (chatLoginArea) chatLoginArea.style.display = 'none';
                 const btnEnviar = chatForm ? chatForm.querySelector('button[type="submit"]') : null;
                 if (btnEnviar) btnEnviar.disabled = false;
             }
@@ -567,6 +595,12 @@
                         canalPresencia.track({ user_id: userId, nickname: userNickname });
                     }
                 });
+                // Exponer función para re-track tras login (usuario se registra después de cargar)
+                window._trackPresence = (nick) => {
+                    if (userNickname && canalPresencia) {
+                        canalPresencia.track({ user_id: userId, nickname: nick });
+                    }
+                };
                 return () => supabase.removeChannel(canalPresencia);
             }
 
@@ -576,10 +610,56 @@
             nicknameModalInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') enviarNickConPIN(); });
             nicknameModalPin.addEventListener('keypress', (e) => { if (e.key === 'Enter') enviarNickConPIN(); });
 
+            // Cargar leaderboard público
+            async function cargarLeaderboard() {
+                const leaderboardEl = document.getElementById('leaderboard-list');
+                if (!leaderboardEl) return;
+                try {
+                    const { data, error } = await supabase
+                        .from('usuarios_comunidad')
+                        .select('apodo, puntos')
+                        .order('puntos', { ascending: false })
+                        .limit(10);
+                    
+                    if (error || !data || data.length === 0) {
+                        leaderboardEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:20px;">Sin participantes aún</div>';
+                        return;
+                    }
+                    
+                    let html = '';
+                    data.forEach((user, index) => {
+                        const medalla = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`;
+                        html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 4px;border-bottom:1px solid var(--border-color);${index === 0 ? 'background:rgba(255,215,0,0.1);' : ''}">
+                            <span style="font-size:0.9rem;font-weight:bold;">${medalla} ${escaparHTML(user.apodo)}</span>
+                            <span style="color:var(--accent-color);font-size:0.85rem;">${user.puntos} pts</span>
+                        </div>`;
+                    });
+                    leaderboardEl.innerHTML = html;
+                } catch (e) {
+                    console.error('Error leaderboard:', e);
+                    leaderboardEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:20px;">Error al cargar ranking</div>';
+                }
+            }
+
             // Inicializar
             cargarMensajesChat();
             iniciarRealtimeChat();
-            validarSesionGuardada().then(logueado => { if (!logueado) showNicknameModal(); });
+            cargarLeaderboard();
+            setInterval(cargarLeaderboard, 60000); // Actualizar ranking cada minuto
+            
+            // Verificar si hay sesión guardada
+            validarSesionGuardada().then(logueado => {
+                if (logueado) {
+                    // Mostrar formulario de chat
+                    if (chatForm) chatForm.style.display = 'flex';
+                    document.getElementById('chat-login-area').style.display = 'none';
+                } else {
+                    // Ocultar formulario, mostrar botón login
+                    if (chatForm) chatForm.style.display = 'none';
+                    document.getElementById('chat-login-area').style.display = 'flex';
+                }
+            });
+            
             verificarEstadoStream();
             setInterval(verificarEstadoStream, 30000);
             iniciarPresenciaUsuarios();
@@ -609,13 +689,10 @@
             if (panel) panel.style.display = 'none';
             const input = document.getElementById('chat-autor');
             if (input) { input.value = ''; input.readOnly = false; }
-            const btn = document.querySelector('#chat-form button[type="submit"]');
-            if (btn) btn.disabled = true;
-            const modalInput = document.getElementById('nickname-modal-input');
-            const modalPin = document.getElementById('nickname-modal-pin');
-            if (modalInput) modalInput.value = '';
-            if (modalPin) modalPin.value = '';
-            document.getElementById('nickname-modal').style.display = 'flex';
+            const chatLoginForm = document.getElementById('chat-form');
+            const chatLoginArea = document.getElementById('chat-login-area');
+            if (chatLoginForm) chatLoginForm.style.display = 'none';
+            if (chatLoginArea) chatLoginArea.style.display = 'flex';
         }
     </script>
 </body>
