@@ -687,7 +687,7 @@
                 } catch (e) {}
             }
 
-            // Establecer/quitar reacción del usuario en un mensaje (Supabase + localStorage)
+            // Establecer/quitar reacción del usuario en un mensaje (Supabase + localStorage con fallback)
             async function establecerReaccionUsuario(msgId, emoji) {
                 const msgIdStr = String(msgId);
                 console.log('[REACCIÓN] Intento:', { msgId: msgIdStr, emoji, userNickname });
@@ -701,10 +701,17 @@
                     const cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
                     if (!cache[msgIdStr]) cache[msgIdStr] = {};
 
+                    let supabaseOk = false;
+
                     // Si hace click en su propia reacción -> quitarla
                     if (miReaccionActual === emoji) {
-                        await supabase.from('comunidad_chat_reacciones')
-                            .delete().eq('message_id', msgIdStr).eq('usuario', userNickname).eq('emoji', emoji);
+                        try {
+                            await supabase.from('comunidad_chat_reacciones')
+                                .delete().eq('message_id', msgIdStr).eq('usuario', userNickname).eq('emoji', emoji);
+                            supabaseOk = true;
+                        } catch (supabaseErr) {
+                            console.warn('[REACCIÓN] Supabase delete falló (¿tabla ausente?), usando solo localStorage:', supabaseErr.message);
+                        }
                         // Actualizar cache local: quitar al usuario de la lista de esa reacción
                         if (cache[msgIdStr][emoji]) {
                             cache[msgIdStr][emoji] = cache[msgIdStr][emoji].filter(u => u !== userNickname);
@@ -718,8 +725,13 @@
 
                     // Si tiene otra reacción, quitarla primero
                     if (miReaccionActual && miReaccionActual !== emoji) {
-                        await supabase.from('comunidad_chat_reacciones')
-                            .delete().eq('message_id', msgIdStr).eq('usuario', userNickname).eq('emoji', miReaccionActual);
+                        try {
+                            await supabase.from('comunidad_chat_reacciones')
+                                .delete().eq('message_id', msgIdStr).eq('usuario', userNickname).eq('emoji', miReaccionActual);
+                            supabaseOk = true;
+                        } catch (supabaseErr) {
+                            console.warn('[REACCIÓN] Supabase delete falló (¿tabla ausente?), usando solo localStorage:', supabaseErr.message);
+                        }
                         // Actualizar cache local: quitar al usuario de la lista de la reacción anterior
                         if (cache[msgIdStr][miReaccionActual]) {
                             cache[msgIdStr][miReaccionActual] = cache[msgIdStr][miReaccionActual].filter(u => u !== userNickname);
@@ -728,13 +740,18 @@
                     }
 
                     // Insertar nueva reacción
-                    await supabase.from('comunidad_chat_reacciones')
-                        .delete().eq('message_id', msgIdStr).eq('usuario', userNickname).eq('emoji', emoji);
-                    const { error } = await supabase.from('comunidad_chat_reacciones')
-                        .insert([{ message_id: msgIdStr, emoji, usuario: userNickname }]);
+                    try {
+                        await supabase.from('comunidad_chat_reacciones')
+                            .delete().eq('message_id', msgIdStr).eq('usuario', userNickname).eq('emoji', emoji);
+                        const { error } = await supabase.from('comunidad_chat_reacciones')
+                            .insert([{ message_id: msgIdStr, emoji, usuario: userNickname }]);
+                        if (error) throw error;
+                        supabaseOk = true;
+                    } catch (supabaseErr) {
+                        console.warn('[REACCIÓN] Supabase insert falló (¿tabla ausente?), usando solo localStorage:', supabaseErr.message);
+                    }
 
-                    if (error) throw error;
-                    console.log('[REACCIÓN] Éxito:', { msgId: msgIdStr, emoji, usuario: userNickname });
+                    console.log('[REACCIÓN] Éxito (localStorage + ' + (supabaseOk ? 'Supabase' : 'solo localStorage') + '):', { msgId: msgIdStr, emoji, usuario: userNickname });
                     // Actualizar cache local: agregar el usuario a la lista de la nueva reacción
                     if (!cache[msgIdStr][emoji]) cache[msgIdStr][emoji] = [];
                     if (!cache[msgIdStr][emoji].includes(userNickname)) {
@@ -743,6 +760,9 @@
                     guardarMiReaccionLocal(msgIdStr, emoji);
                     localStorage.setItem('gochi_chat_reacciones_cache', JSON.stringify(cache));
                     actualizarUIReacciones(msgIdStr);
+                    if (!supabaseOk) {
+                        mostrarToast('Reacción guardada (solo esta sesión). Configura la tabla comunidad_chat_reacciones en Supabase para persistencia.', false);
+                    }
                 } catch (e) {
                     console.error('Error al reaccionar:', e);
                     mostrarToast('No se pudo reaccionar: ' + (e.message || 'error desconocido'), true);
@@ -839,13 +859,13 @@
                         } else {
                             let mejorCount = 0;
                             REACCIONES.forEach(emoji => {
-                                const usuarios = msgCache[emoji] || [];
-                                if (uszadores.length > mejorCount) {
-                                    mejorCount = usuarios.length;
-                                    emojiAMostrar = emoji;
-                                    countAMostrar = usuarios.length;
-                                }
-                            });
+                                 const usuarios = msgCache[emoji] || [];
+                                 if (usuarios.length > mejorCount) {
+                                     mejorCount = usuarios.length;
+                                     emojiAMostrar = emoji;
+                                     countAMostrar = usuarios.length;
+                                 }
+                             });
                         }
 
                         if (emojiAMostrar && countAMostrar > 0) {
@@ -990,6 +1010,8 @@
                             burbuja.style.opacity = '1';
                             burbuja.style.pointerEvents = 'auto';
                         }
+                        const esquina = this.querySelector('.msg-reaccion-esquina');
+                        if (esquina) esquina.style.display = 'flex';
                     };
                     container.onmouseleave = function() {
                         const burbuja = this.querySelector('.chat-msg-burbuja');
@@ -997,6 +1019,8 @@
                             burbuja.style.opacity = '0';
                             burbuja.style.pointerEvents = 'none';
                         }
+                        const msgId = this.dataset.msgId;
+                        if (msgId) actualizarUIReacciones(msgId);
                         ocultarTooltipReaccion();
                     };
 
@@ -1042,7 +1066,18 @@
                         .from('comunidad_chat_reacciones')
                         .select('message_id, emoji, usuario')
                         .in('message_id', ids);
-                    if (error) return;
+                    if (error) {
+                        console.warn('[REACCIÓN] Supabase reacciones falló (¿tabla ausente?), usando cache localStorage:', error.message);
+                        // Usar cache local existente para actualizar UI
+                        const cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
+                        mensajes.forEach(m => {
+                            const msgId = m.id;
+                            if (msgId && cache[msgId]) {
+                                actualizarUIReacciones(msgId);
+                            }
+                        });
+                        return;
+                    }
                     const cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
                     const miCache = JSON.parse(localStorage.getItem('gochi_chat_mi_reaccion_v2') || '{}');
                     data.forEach(r => {
@@ -1126,6 +1161,8 @@ if (chatForm) {
                             burbuja.style.opacity = '1';
                             burbuja.style.pointerEvents = 'auto';
                         }
+                        const esquina = this.querySelector('.msg-reaccion-esquina');
+                        if (esquina) esquina.style.display = 'flex';
                     };
                     container.onmouseleave = function() {
                         const burbuja = this.querySelector('.chat-msg-burbuja');
@@ -1133,6 +1170,8 @@ if (chatForm) {
                             burbuja.style.opacity = '0';
                             burbuja.style.pointerEvents = 'none';
                         }
+                        const msgId = this.dataset.msgId;
+                        if (msgId) actualizarUIReacciones(msgId);
                         ocultarTooltipReaccion();
                     };
 
@@ -1171,46 +1210,50 @@ if (chatForm) {
                 }).subscribe();
 
                 // Escuchar reacciones en tiempo real
-                canalReacciones = supabase.channel('public:comunidad_chat_reacciones')
-                    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'comunidad_chat_reacciones' }, payload => {
-                        const r = payload.new;
-                        const msgId = r.message_id;
-                        const cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
-                        if (!cache[msgId]) cache[msgId] = {};
-                        if (!cache[msgId][r.emoji]) cache[msgId][r.emoji] = [];
-                        if (!cache[msgId][r.emoji].includes(r.usuario)) {
-                            cache[msgId][r.emoji].push(r.usuario);
-                        }
-                        localStorage.setItem('gochi_chat_reacciones_cache', JSON.stringify(cache));
+                try {
+                    canalReacciones = supabase.channel('public:comunidad_chat_reacciones')
+                        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'comunidad_chat_reacciones' }, payload => {
+                            const r = payload.new;
+                            const msgId = r.message_id;
+                            const cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
+                            if (!cache[msgId]) cache[msgId] = {};
+                            if (!cache[msgId][r.emoji]) cache[msgId][r.emoji] = [];
+                            if (!cache[msgId][r.emoji].includes(r.usuario)) {
+                                cache[msgId][r.emoji].push(r.usuario);
+                            }
+                            localStorage.setItem('gochi_chat_reacciones_cache', JSON.stringify(cache));
 
-                        // Si soy yo quien reaccionó, guardar en mi reaccion
-                        if (userNickname && r.usuario === userNickname) {
-                            const miCache = JSON.parse(localStorage.getItem('gochi_chat_mi_reaccion_v2') || '{}');
-                            miCache[msgId] = r.emoji;
-                            localStorage.setItem('gochi_chat_mi_reaccion_v2', JSON.stringify(miCache));
-                        }
+                            // Si soy yo quien reaccionó, guardar en mi reaccion
+                            if (userNickname && r.usuario === userNickname) {
+                                const miCache = JSON.parse(localStorage.getItem('gochi_chat_mi_reaccion_v2') || '{}');
+                                miCache[msgId] = r.emoji;
+                                localStorage.setItem('gochi_chat_mi_reaccion_v2', JSON.stringify(miCache));
+                            }
 
-                        actualizarUIReacciones(msgId);
-                    })
-                    .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'comunidad_chat_reacciones' }, payload => {
-                        const r = payload.old;
-                        const msgId = r.message_id;
-                        const cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
-                        if (cache[msgId] && cache[msgId][r.emoji]) {
-                            cache[msgId][r.emoji] = cache[msgId][r.emoji].filter(u => u !== r.usuario);
-                            if (cache[msgId][r.emoji].length === 0) delete cache[msgId][r.emoji];
-                        }
-                        localStorage.setItem('gochi_chat_reacciones_cache', JSON.stringify(cache));
+                            actualizarUIReacciones(msgId);
+                        })
+                        .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'comunidad_chat_reacciones' }, payload => {
+                            const r = payload.old;
+                            const msgId = r.message_id;
+                            const cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
+                            if (cache[msgId] && cache[msgId][r.emoji]) {
+                                cache[msgId][r.emoji] = cache[msgId][r.emoji].filter(u => u !== r.usuario);
+                                if (cache[msgId][r.emoji].length === 0) delete cache[msgId][r.emoji];
+                            }
+                            localStorage.setItem('gochi_chat_reacciones_cache', JSON.stringify(cache));
 
-                        if (userNickname && r.usuario === userNickname) {
-                            const miCache = JSON.parse(localStorage.getItem('gochi_chat_mi_reaccion_v2') || '{}');
-                            if (miCache[msgId] === r.emoji) delete miCache[msgId];
-                            localStorage.setItem('gochi_chat_mi_reaccion_v2', JSON.stringify(miCache));
-                        }
+                            if (userNickname && r.usuario === userNickname) {
+                                const miCache = JSON.parse(localStorage.getItem('gochi_chat_mi_reaccion_v2') || '{}');
+                                if (miCache[msgId] === r.emoji) delete miCache[msgId];
+                                localStorage.setItem('gochi_chat_mi_reaccion_v2', JSON.stringify(miCache));
+                            }
 
-                        actualizarUIReacciones(msgId);
-                    })
-                    .subscribe();
+                            actualizarUIReacciones(msgId);
+                        })
+                        .subscribe();
+                } catch (e) {
+                    console.warn('[REACCIÓN] Canal de reacciones no disponible (¿tabla comunidad_chat_reacciones ausente?):', e.message);
+                }
             }
 
             async function renderizarListaUsuarios(estadoPresencia) {
