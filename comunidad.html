@@ -627,40 +627,43 @@
 
             // Establecer/quitar reacción del usuario en un mensaje (Supabase + localStorage)
             async function establecerReaccionUsuario(msgId, emoji) {
+                const msgIdStr = String(msgId);
+                console.log('[REACCIÓN] Intento:', { msgId: msgIdStr, emoji, userNickname });
                 if (!userNickname) {
                     mostrarToast('Inicia sesión para reaccionar', true);
                     return;
                 }
                 try {
-                    const miReaccionActual = obtenerMiReaccionLocal(msgId);
+                    const miReaccionActual = obtenerMiReaccionLocal(msgIdStr);
 
                     // Si hace click en su propia reacción -> quitarla
                     if (miReaccionActual === emoji) {
                         await supabase.from('comunidad_chat_reacciones')
-                            .delete().eq('message_id', msgId).eq('usuario', userNickname).eq('emoji', emoji);
-                        guardarMiReaccionLocal(msgId, null);
-                        actualizarUIReacciones(msgId);
+                            .delete().eq('message_id', msgIdStr).eq('usuario', userNickname).eq('emoji', emoji);
+                        guardarMiReaccionLocal(msgIdStr, null);
+                        actualizarUIReacciones(msgIdStr);
                         return;
                     }
 
                     // Si tiene otra reacción, quitarla primero
                     if (miReaccionActual && miReaccionActual !== emoji) {
                         await supabase.from('comunidad_chat_reacciones')
-                            .delete().eq('message_id', msgId).eq('usuario', userNickname).eq('emoji', miReaccionActual);
+                            .delete().eq('message_id', msgIdStr).eq('usuario', userNickname).eq('emoji', miReaccionActual);
                     }
 
-                    // Insertar nueva reacción (upsert-like: borrar e insertar para evitar duplicados)
+                    // Insertar nueva reacción
                     await supabase.from('comunidad_chat_reacciones')
-                        .delete().eq('message_id', msgId).eq('usuario', userNickname).eq('emoji', emoji);
+                        .delete().eq('message_id', msgIdStr).eq('usuario', userNickname).eq('emoji', emoji);
                     const { error } = await supabase.from('comunidad_chat_reacciones')
-                        .insert([{ message_id: msgId, emoji, usuario: userNickname }]);
+                        .insert([{ message_id: msgIdStr, emoji, usuario: userNickname }]);
 
                     if (error) throw error;
-                    guardarMiReaccionLocal(msgId, emoji);
-                    actualizarUIReacciones(msgId);
+                    console.log('[REACCIÓN] Éxito:', { msgId: msgIdStr, emoji, usuario: userNickname });
+                    guardarMiReaccionLocal(msgIdStr, emoji);
+                    actualizarUIReacciones(msgIdStr);
                 } catch (e) {
                     console.error('Error al reaccionar:', e);
-                    mostrarToast('No se pudo reaccionar', true);
+                    mostrarToast('No se pudo reaccionar: ' + (e.message || 'error desconocido'), true);
                 }
             }
 
@@ -733,16 +736,17 @@
                 const badgesContainer = container.querySelector('.reacciones-badges');
                 if (!badgesContainer) return;
 
+                const msgIdStr = String(msgId);
                 // Leer cache local para mostrar inmediatamente
                 try {
                     const cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
-                    const msgCache = cache[msgId] || {};
+                    const msgCache = cache[msgIdStr] || {};
 
                     badgesContainer.innerHTML = '';
                     REACCIONES.forEach(emoji => {
                         const usuarios = msgCache[emoji] || [];
                         const count = usuarios.length;
-                        const mia = obtenerMiReaccionLocal(msgId) === emoji;
+                        const mia = obtenerMiReaccionLocal(msgIdStr) === emoji;
 
                         const badge = document.createElement('span');
                         badge.className = 'reaccion-badge' + (mia ? ' mia' : '');
@@ -750,10 +754,10 @@
                         badge.innerHTML = `<span class="emoji">${emoji}</span><span class="count">${count}</span>`;
                         badge.onclick = (e) => {
                             e.stopPropagation();
-                            establecerReaccionUsuario(msgId, emoji);
+                            establecerReaccionUsuario(msgIdStr, emoji);
                         };
                         badge.onmouseenter = (e) => {
-                            if (count > 0) mostrarTooltipReaccion(e.currentTarget, msgId, emoji, usuarios);
+                            if (count > 0) mostrarTooltipReaccion(e.currentTarget, msgIdStr, emoji, usuarios);
                         };
                         badge.onmouseleave = ocultarTooltipReaccion;
                         badgesContainer.appendChild(badge);
@@ -763,6 +767,7 @@
 
             // Crear panel burbuja de reacción (aparece al hacer hover sobre el mensaje)
             function crearBurbujaReacciones(msgId) {
+                const msgIdStr = String(msgId);
                 const container = document.createElement('div');
                 container.className = 'chat-msg-burbuja';
                 container.style.cssText = 'position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:6px;background:var(--card-bg);border:1px solid var(--border-color);border-radius:24px;padding:6px 10px;box-shadow:var(--glow);z-index:10;opacity:0;pointer-events:none;transition:opacity 0.2s,transform 0.2s;';
@@ -776,11 +781,11 @@
                     btn.onmouseenter = function() { this.style.transform = 'scale(1.25)'; this.style.background = 'var(--card-bg-subtle)'; };
                     btn.onmouseleave = function() {
                         this.style.transform = 'scale(1)';
-                        if (obtenerMiReaccionLocal(msgId) !== emoji) this.style.background = 'transparent';
+                        if (obtenerMiReaccionLocal(msgIdStr) !== emoji) this.style.background = 'transparent';
                     };
                     btn.onclick = (e) => {
                         e.stopPropagation();
-                        establecerReaccionUsuario(msgId, emoji);
+                        establecerReaccionUsuario(msgIdStr, emoji);
                     };
                     container.appendChild(btn);
                 });
