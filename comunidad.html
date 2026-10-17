@@ -297,7 +297,41 @@
                     <div id="user-points-display" style="font-size: 0.85rem; color: var(--accent-color); margin-bottom: 10px;"></div>
                     <button onclick="cerrarSesion()" class="btn-primary" style="background:#ff4d4d; font-size: 0.75rem; padding: 6px 12px; border:none; cursor:pointer; width: 100%;">Cerrar Sesión</button>
                 </div>
-            </div>
+
+                <!-- CUADRO DE RANGOS Y PUNTOS -->
+                <div class="sidebar-card">
+                    <h3 style="color: var(--accent-color); margin-bottom: 12px;"><i class="fa-solid fa-crown"></i> Rangos y Puntos</h3>
+                    <div class="cuadro-rangos">
+                        <div class="rango-fila">
+                            <span class="rango-icono">🌱</span>
+                            <span class="rango-nombre">Semilla</span>
+                            <span class="rango-puntos">0 - 49 pts</span>
+                        </div>
+                        <div class="rango-fila">
+                            <span class="rango-icono">💧</span>
+                            <span class="rango-nombre">Gota</span>
+                            <span class="rango-puntos">50 - 199 pts</span>
+                        </div>
+                        <div class="rango-fila">
+                            <span class="rango-icono">🌸</span>
+                            <span class="rango-nombre">Flor</span>
+                            <span class="rango-puntos">200 - 499 pts</span>
+                        </div>
+                        <div class="rango-fila">
+                            <span class="rango-icono">⭐</span>
+                            <span class="rango-nombre">Estrella</span>
+                            <span class="rango-puntos">500 - 999 pts</span>
+                        </div>
+                        <div class="rango-fila rango-leyenda">
+                            <span class="rango-icono">👑</span>
+                            <span class="rango-nombre">Leyenda</span>
+                            <span class="rango-puntos">1000+ pts</span>
+                        </div>
+                    </div>
+                    <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 10px; line-height: 1.4;">
+                        Ganas <strong>1 punto cada 5 minutos</strong> conectado en el chat. El rango se actualiza automáticamente al sumar puntos.
+                    </p>
+                </div>
 
             <div class="sidebar-card">
                 <h3 style="color: var(--accent-color); margin-bottom: 10px;"><i class="fa-solid fa-shield-halved"></i> Reglas del Chat</h3>
@@ -569,89 +603,104 @@
                 } catch (e) { console.error(e); }
             }
 
-            // Reacciones disponibles para el chat (tipo WhatsApp: siempre visibles)
+            // Reacciones del chat (tiempo real vía Supabase + panel burbuja al hover)
             const REACCIONES = ['❤️', '😂', '🔥', '😮', '👍'];
             const MAX_MENSAJES_DOM = 100;
-            const REACCIONES_STORAGE_KEY = 'gochi_chat_reacciones';
-            const MI_REACCION_STORAGE_KEY = 'gochi_chat_mi_reaccion';
             const STREAK_STORAGE_KEY = 'gochi_chat_streak';
-            const STREAK_TIMEOUT_MS = 300000; // 5 minutos para mantener racha
+            const STREAK_TIMEOUT_MS = 300000;
 
-            // Estructura: { [msgId]: { [emoji]: [nickname, ...] } }
-            function obtenerTodasReacciones() {
+            // Canal de realtime para reacciones
+            let canalReacciones = null;
+
+            // Obtener reacciones de un mensaje desde localStorage (fallback inicial)
+            function obtenerReaccionesLocal(msgId) {
                 try {
-                    return JSON.parse(localStorage.getItem(REACCIONES_STORAGE_KEY) || '{}');
+                    return JSON.parse(localStorage.getItem('gochi_chat_reacciones_v2') || '{}');
                 } catch (e) { return {}; }
             }
 
-            function guardarTodasReacciones(data) {
+            function guardarReaccionesLocal(data) {
                 try {
-                    localStorage.setItem(REACCIONES_STORAGE_KEY, JSON.stringify(data));
+                    localStorage.setItem('gochi_chat_reacciones_v2', JSON.stringify(data));
                 } catch (e) {}
             }
 
-            // Estructura: { [msgId]: emoji }  (solo 1 reacción por usuario por mensaje)
-            function obtenerMiReaccion(msgId) {
+            // Establecer/quitar reacción del usuario en un mensaje (Supabase + localStorage)
+            async function establecerReaccionUsuario(msgId, emoji) {
+                if (!userNickname) {
+                    mostrarToast('Inicia sesión para reaccionar', true);
+                    return;
+                }
                 try {
-                    const data = JSON.parse(localStorage.getItem(MI_REACCION_STORAGE_KEY) || '{}');
+                    const miReaccionActual = obtenerMiReaccionLocal(msgId);
+
+                    // Si hace click en su propia reacción -> quitarla
+                    if (miReaccionActual === emoji) {
+                        await supabase.from('comunidad_chat_reacciones')
+                            .delete().eq('message_id', msgId).eq('usuario', userNickname).eq('emoji', emoji);
+                        guardarMiReaccionLocal(msgId, null);
+                        actualizarUIReacciones(msgId);
+                        return;
+                    }
+
+                    // Si tiene otra reacción, quitarla primero
+                    if (miReaccionActual && miReaccionActual !== emoji) {
+                        await supabase.from('comunidad_chat_reacciones')
+                            .delete().eq('message_id', msgId).eq('usuario', userNickname).eq('emoji', miReaccionActual);
+                    }
+
+                    // Insertar nueva reacción (upsert-like: borrar e insertar para evitar duplicados)
+                    await supabase.from('comunidad_chat_reacciones')
+                        .delete().eq('message_id', msgId).eq('usuario', userNickname).eq('emoji', emoji);
+                    const { error } = await supabase.from('comunidad_chat_reacciones')
+                        .insert([{ message_id: msgId, emoji, usuario: userNickname }]);
+
+                    if (error) throw error;
+                    guardarMiReaccionLocal(msgId, emoji);
+                    actualizarUIReacciones(msgId);
+                } catch (e) {
+                    console.error('Error al reaccionar:', e);
+                    mostrarToast('No se pudo reaccionar', true);
+                }
+            }
+
+            // Estructura local: { [msgId]: emoji }
+            function obtenerMiReaccionLocal(msgId) {
+                try {
+                    const data = JSON.parse(localStorage.getItem('gochi_chat_mi_reaccion_v2') || '{}');
                     return data[msgId] || null;
                 } catch (e) { return null; }
             }
 
-            function guardarMiReaccion(msgId, emoji) {
+            function guardarMiReaccionLocal(msgId, emoji) {
                 try {
-                    const data = JSON.parse(localStorage.getItem(MI_REACCION_STORAGE_KEY) || '{}');
+                    const data = JSON.parse(localStorage.getItem('gochi_chat_mi_reaccion_v2') || '{}');
                     if (emoji === null) { delete data[msgId]; }
                     else { data[msgId] = emoji; }
-                    localStorage.setItem(MI_REACCION_STORAGE_KEY, JSON.stringify(data));
+                    localStorage.setItem('gochi_chat_mi_reaccion_v2', JSON.stringify(data));
                 } catch (e) {}
             }
 
-            // Estilo WhatsApp: 1 solo emoji por usuario por mensaje.
-            // Click en tu propia reacción -> se quita (toggle off).
-            // Click en otro emoji -> se reemplaza la anterior.
-            function establecerReaccionUsuario(msgId, emoji) {
-                if (!userNickname) return;
-                const reacciones = obtenerTodasReacciones();
-                const miReaccionActual = obtenerMiReaccion(msgId);
-
-                // Quitar del emoji anterior si existe
-                if (miReaccionActual && reacciones[msgId] && reacciones[msgId][miReaccionActual]) {
-                    reacciones[msgId][miReaccionActual] = (reacciones[msgId][miReaccionActual] || []).filter(n => n !== userNickname);
-                    if (reacciones[msgId][miReaccionActual].length === 0) delete reacciones[msgId][miReaccionActual];
-                }
-
-                // Toggle off: mismo emoji que ya tenía -> se quita
-                if (miReaccionActual === emoji) {
-                    guardarMiReaccion(msgId, null);
-                    guardarTodasReacciones(reacciones);
-                    actualizarUIReacciones(msgId);
-                    return;
-                }
-
-                // Asignar nuevo emoji
-                if (!reacciones[msgId]) reacciones[msgId] = {};
-                if (!reacciones[msgId][emoji]) reacciones[msgId][emoji] = [];
-                if (!reacciones[msgId][emoji].includes(userNickname)) {
-                    reacciones[msgId][emoji].push(userNickname);
-                }
-
-                guardarMiReaccion(msgId, emoji);
-                guardarTodasReacciones(reacciones);
-                actualizarUIReacciones(msgId);
-            }
-
-            // Contar cuántos usuarios reaccionaron con un emoji específico en un mensaje
+            // Contar cuántos usuarios reaccionaron con un emoji (desde localStorage cache)
             function contarReaccionesEmoji(msgId, emoji) {
-                const reacciones = obtenerTodasReacciones();
-                return (reacciones[msgId] && reacciones[msgId][emoji]) ? reacciones[msgId][emoji].length : 0;
+                try {
+                    const data = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
+                    return (data[msgId] && data[msgId][emoji]) ? data[msgId][emoji].length : 0;
+                } catch (e) { return 0; }
             }
 
-            // Tooltip global: mostrar quiénes reaccionaron con un emoji
+            function guardarCacheReacciones(msgId, emoji, usuarios) {
+                try {
+                    const data = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
+                    if (!data[msgId]) data[msgId] = {};
+                    data[msgId][emoji] = usuarios;
+                    localStorage.setItem('gochi_chat_reacciones_cache', JSON.stringify(data));
+                } catch (e) {}
+            }
+
+            // Tooltip: quiénes reaccionaron con un emoji
             let tooltipReaccionEl = null;
-            function mostrarTooltipReaccion(target, msgId, emoji) {
-                const reacciones = obtenerTodasReacciones();
-                const usuarios = (reacciones[msgId] && reacciones[msgId][emoji]) ? reacciones[msgId][emoji] : [];
+            function mostrarTooltipReaccion(target, msgId, emoji, usuarios) {
                 if (!usuarios || usuarios.length === 0) return;
 
                 if (!tooltipReaccionEl) {
@@ -676,7 +725,7 @@
                 if (tooltipReaccionEl) tooltipReaccionEl.classList.remove('visible');
             }
 
-            // Actualizar badges de un mensaje concreto sin re-renderizar todo
+            // Actualizar badges de un mensaje concreto
             function actualizarUIReacciones(msgId) {
                 const container = document.querySelector(`.chat-msg-container[data-msgid="${msgId}"]`);
                 if (!container) return;
@@ -684,57 +733,65 @@
                 const badgesContainer = container.querySelector('.reacciones-badges');
                 if (!badgesContainer) return;
 
-                badgesContainer.innerHTML = '';
-                REACCIONES.forEach(emoji => {
-                    const count = contarReaccionesEmoji(msgId, emoji);
-                    const mia = obtenerMiReaccion(msgId) === emoji;
+                // Leer cache local para mostrar inmediatamente
+                try {
+                    const cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
+                    const msgCache = cache[msgId] || {};
 
-                    const badge = document.createElement('span');
-                    badge.className = 'reaccion-badge' + (mia ? ' mia' : '');
-                    badge.dataset.emoji = emoji;
-                    badge.innerHTML = `<span class="emoji">${emoji}</span><span class="count">${count}</span>`;
-                    badge.onclick = (e) => {
-                        e.stopPropagation();
-                        if (!userNickname) {
-                            mostrarToast('Inicia sesión para reaccionar', true);
-                            return;
-                        }
-                        establecerReaccionUsuario(msgId, emoji);
-                    };
-                    badge.onmouseenter = (e) => {
-                        if (count > 0) mostrarTooltipReaccion(e.currentTarget, msgId, emoji);
-                    };
-                    badge.onmouseleave = ocultarTooltipReaccion;
-                    badgesContainer.appendChild(badge);
-                });
+                    badgesContainer.innerHTML = '';
+                    REACCIONES.forEach(emoji => {
+                        const usuarios = msgCache[emoji] || [];
+                        const count = usuarios.length;
+                        const mia = obtenerMiReaccionLocal(msgId) === emoji;
+
+                        const badge = document.createElement('span');
+                        badge.className = 'reaccion-badge' + (mia ? ' mia' : '');
+                        badge.dataset.emoji = emoji;
+                        badge.innerHTML = `<span class="emoji">${emoji}</span><span class="count">${count}</span>`;
+                        badge.onclick = (e) => {
+                            e.stopPropagation();
+                            establecerReaccionUsuario(msgId, emoji);
+                        };
+                        badge.onmouseenter = (e) => {
+                            if (count > 0) mostrarTooltipReaccion(e.currentTarget, msgId, emoji, usuarios);
+                        };
+                        badge.onmouseleave = ocultarTooltipReaccion;
+                        badgesContainer.appendChild(badge);
+                    });
+                } catch (e) {}
             }
 
-            // Crear badges de reacción tipo WhatsApp: siempre visibles debajo del mensaje
+            // Crear panel burbuja de reacción (aparece al hacer hover sobre el mensaje)
+            function crearBurbujaReacciones(msgId) {
+                const container = document.createElement('div');
+                container.className = 'chat-msg-burbuja';
+                container.style.cssText = 'position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:6px;background:var(--card-bg);border:1px solid var(--border-color);border-radius:24px;padding:6px 10px;box-shadow:var(--glow);z-index:10;opacity:0;pointer-events:none;transition:opacity 0.2s,transform 0.2s;';
+
+                REACCIONES.forEach(emoji => {
+                    const btn = document.createElement('button');
+                    btn.className = 'btn-burbuja';
+                    btn.textContent = emoji;
+                    btn.title = emoji;
+                    btn.style.cssText = 'background:transparent;border:none;cursor:pointer;font-size:1.15rem;padding:6px;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;transition:transform 0.15s,background 0.15s;';
+                    btn.onmouseenter = function() { this.style.transform = 'scale(1.25)'; this.style.background = 'var(--card-bg-subtle)'; };
+                    btn.onmouseleave = function() {
+                        this.style.transform = 'scale(1)';
+                        if (obtenerMiReaccionLocal(msgId) !== emoji) this.style.background = 'transparent';
+                    };
+                    btn.onclick = (e) => {
+                        e.stopPropagation();
+                        establecerReaccionUsuario(msgId, emoji);
+                    };
+                    container.appendChild(btn);
+                });
+                return container;
+            }
+
+            // Crear badges visibles debajo del mensaje (se muestran cuando hay reacciones)
             function crearBadgesReacciones(msgId) {
                 const container = document.createElement('div');
                 container.className = 'reacciones-badges';
-                REACCIONES.forEach(emoji => {
-                    const count = contarReaccionesEmoji(msgId, emoji);
-                    const mia = obtenerMiReaccion(msgId) === emoji;
-
-                    const badge = document.createElement('span');
-                    badge.className = 'reaccion-badge' + (mia ? ' mia' : '');
-                    badge.dataset.emoji = emoji;
-                    badge.innerHTML = `<span class="emoji">${emoji}</span><span class="count">${count}</span>`;
-                    badge.onclick = (e) => {
-                        e.stopPropagation();
-                        if (!userNickname) {
-                            mostrarToast('Inicia sesión para reaccionar', true);
-                            return;
-                        }
-                        establecerReaccionUsuario(msgId, emoji);
-                    };
-                    badge.onmouseenter = (e) => {
-                        if (count > 0) mostrarTooltipReaccion(e.currentTarget, msgId, emoji);
-                    };
-                    badge.onmouseleave = ocultarTooltipReaccion;
-                    container.appendChild(badge);
-                });
+                container.style.display = 'none';
                 return container;
             }
 
@@ -794,20 +851,21 @@
                     container.dataset.msgId = msgId;
                     container.style.cssText = 'position:relative;background:rgba(255,255,255,0.03);padding:10px 14px;border-radius:8px;border:1px solid var(--border-color);cursor:pointer;';
                     
-                    // Mostrar reacciones al hover
+                    // Mostrar burbuja de reacciones al hover
                     container.onmouseenter = function() {
-                        const reaccionesEl = this.querySelector('.chat-msg-reacciones');
-                        if (reaccionesEl) {
-                            reaccionesEl.style.opacity = '1';
-                            reaccionesEl.style.transform = 'translateY(0)';
+                        const burbuja = this.querySelector('.chat-msg-burbuja');
+                        if (burbuja) {
+                            burbuja.style.opacity = '1';
+                            burbuja.style.pointerEvents = 'auto';
                         }
                     };
                     container.onmouseleave = function() {
-                        const reaccionesEl = this.querySelector('.chat-msg-reacciones');
-                        if (reaccionesEl) {
-                            reaccionesEl.style.opacity = '0';
-                            reaccionesEl.style.transform = 'translateY(10px)';
+                        const burbuja = this.querySelector('.chat-msg-burbuja');
+                        if (burbuja) {
+                            burbuja.style.opacity = '0';
+                            burbuja.style.pointerEvents = 'none';
                         }
+                        ocultarTooltipReaccion();
                     };
 
                     const headerDiv = document.createElement('div');
@@ -821,13 +879,55 @@
                     container.appendChild(headerDiv);
                     container.appendChild(mensajeDiv);
                     
-                    // Badges de reacciones visibles (icono + contador por tipo)
+                    // Badges de reacciones (ocultos por defecto, se actualizan vía realtime)
                     const badges = crearBadgesReacciones(msgId);
                     container.appendChild(badges);
+                    
+                    // Burbuja de reacciones al hover
+                    const burbuja = crearBurbujaReacciones(msgId);
+                    container.appendChild(burbuja);
 
                     chatMensajes.appendChild(container);
                 });
+                // Cargar reacciones de Supabase para estos mensajes
+                cargarReaccionesDeSupabase(mensajes);
                 chatMensajes.scrollTop = chatMensajes.scrollHeight;
+            }
+
+            // Cargar reacciones de Supabase para una lista de mensajes
+            async function cargarReaccionesDeSupabase(mensajes) {
+                if (!mensajes || mensajes.length === 0) return;
+                try {
+                    const ids = mensajes.map(m => m.id).filter(Boolean);
+                    if (ids.length === 0) return;
+                    const { data, error } = await supabase
+                        .from('comunidad_chat_reacciones')
+                        .select('message_id, emoji, usuario')
+                        .in('message_id', ids);
+                    if (error) return;
+                    const cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
+                    const miCache = JSON.parse(localStorage.getItem('gochi_chat_mi_reaccion_v2') || '{}');
+                    data.forEach(r => {
+                        if (!cache[r.message_id]) cache[r.message_id] = {};
+                        if (!cache[r.message_id][r.emoji]) cache[r.message_id][r.emoji] = [];
+                        if (!cache[r.message_id][r.emoji].includes(r.usuario)) {
+                            cache[r.message_id][r.emoji].push(r.usuario);
+                        }
+                        // Si el usuario logueado es quien reaccionó, guardarlo en mi reaccion
+                        if (userNickname && r.usuario === userNickname) {
+                            miCache[r.message_id] = r.emoji;
+                        }
+                    });
+                    localStorage.setItem('gochi_chat_reacciones_cache', JSON.stringify(cache));
+                    localStorage.setItem('gochi_chat_mi_reaccion_v2', JSON.stringify(miCache));
+                    // Actualizar UI de los mensajes ya renderizados
+                    mensajes.forEach(m => {
+                        const msgId = m.id;
+                        if (msgId && cache[msgId]) {
+                            actualizarUIReacciones(msgId);
+                        }
+                    });
+                } catch (e) { console.error('Error cargando reacciones:', e); }
             }
 
             // Limpiar mensajes antiguos (mantener máximo 100 en DOM)
@@ -868,6 +968,7 @@ if (chatForm) {
             }
 
             function iniciarRealtimeChat() {
+                // Escuchar nuevos mensajes del chat
                 supabase.channel('public:comunidad_chat').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'comunidad_chat' }, payload => {
                     const nuevoMsg = payload.new;
                     if (chatMensajes.querySelector('div[style*="margin-top"]')) chatMensajes.innerHTML = '';
@@ -880,20 +981,21 @@ if (chatForm) {
                     container.dataset.msgId = msgId;
                     container.style.cssText = 'position:relative;background:rgba(255,255,255,0.03);padding:10px 14px;border-radius:8px;border:1px solid var(--border-color);cursor:pointer;';
                     
-                    // Mostrar reacciones al hover
+                    // Mostrar burbuja de reacciones al hover
                     container.onmouseenter = function() {
-                        const reaccionesEl = this.querySelector('.chat-msg-reacciones');
-                        if (reaccionesEl) {
-                            reaccionesEl.style.opacity = '1';
-                            reaccionesEl.style.transform = 'translateY(0)';
+                        const burbuja = this.querySelector('.chat-msg-burbuja');
+                        if (burbuja) {
+                            burbuja.style.opacity = '1';
+                            burbuja.style.pointerEvents = 'auto';
                         }
                     };
                     container.onmouseleave = function() {
-                        const reaccionesEl = this.querySelector('.chat-msg-reacciones');
-                        if (reaccionesEl) {
-                            reaccionesEl.style.opacity = '0';
-                            reaccionesEl.style.transform = 'translateY(10px)';
+                        const burbuja = this.querySelector('.chat-msg-burbuja');
+                        if (burbuja) {
+                            burbuja.style.opacity = '0';
+                            burbuja.style.pointerEvents = 'none';
                         }
+                        ocultarTooltipReaccion();
                     };
 
                     const headerDiv = document.createElement('div');
@@ -907,16 +1009,63 @@ if (chatForm) {
                     container.appendChild(headerDiv);
                     container.appendChild(mensajeDiv);
                     
-                    // Badges de reacciones visibles (icono + contador por tipo)
                     const badges = crearBadgesReacciones(msgId);
                     container.appendChild(badges);
+                    
+                    const burbuja = crearBurbujaReacciones(msgId);
+                    container.appendChild(burbuja);
 
                     chatMensajes.appendChild(container);
                     chatMensajes.scrollTop = chatMensajes.scrollHeight;
                     
+                    // Cargar reacciones de Supabase para este mensaje nuevo
+                    cargarReaccionesDeSupabase([nuevoMsg]);
+                    
                     // Limpiar mensajes antiguos si supera el límite
                     limpiarMensajesAntiguos();
                 }).subscribe();
+
+                // Escuchar reacciones en tiempo real
+                canalReacciones = supabase.channel('public:comunidad_chat_reacciones')
+                    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'comunidad_chat_reacciones' }, payload => {
+                        const r = payload.new;
+                        const msgId = r.message_id;
+                        const cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
+                        if (!cache[msgId]) cache[msgId] = {};
+                        if (!cache[msgId][r.emoji]) cache[msgId][r.emoji] = [];
+                        if (!cache[msgId][r.emoji].includes(r.usuario)) {
+                            cache[msgId][r.emoji].push(r.usuario);
+                        }
+                        localStorage.setItem('gochi_chat_reacciones_cache', JSON.stringify(cache));
+
+                        // Si soy yo quien reaccionó, guardar en mi reaccion
+                        if (userNickname && r.usuario === userNickname) {
+                            const miCache = JSON.parse(localStorage.getItem('gochi_chat_mi_reaccion_v2') || '{}');
+                            miCache[msgId] = r.emoji;
+                            localStorage.setItem('gochi_chat_mi_reaccion_v2', JSON.stringify(miCache));
+                        }
+
+                        actualizarUIReacciones(msgId);
+                    })
+                    .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'comunidad_chat_reacciones' }, payload => {
+                        const r = payload.old;
+                        const msgId = r.message_id;
+                        const cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
+                        if (cache[msgId] && cache[msgId][r.emoji]) {
+                            cache[msgId][r.emoji] = cache[msgId][r.emoji].filter(u => u !== r.usuario);
+                            if (cache[msgId][r.emoji].length === 0) delete cache[msgId][r.emoji];
+                        }
+                        localStorage.setItem('gochi_chat_reacciones_cache', JSON.stringify(cache));
+
+                        if (userNickname && r.usuario === userNickname) {
+                            const miCache = JSON.parse(localStorage.getItem('gochi_chat_mi_reaccion_v2') || '{}');
+                            if (miCache[msgId] === r.emoji) delete miCache[msgId];
+                            localStorage.setItem('gochi_chat_mi_reaccion_v2', JSON.stringify(miCache));
+                        }
+
+                        actualizarUIReacciones(msgId);
+                    })
+                    .subscribe();
             }
 
             async function renderizarListaUsuarios(estadoPresencia) {
@@ -963,7 +1112,7 @@ if (chatForm) {
                     const nickSafe = (datos.nickname || 'Anónimo').toString().replace(/[&<>"\']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
                     const initial = nickSafe.charAt(0).toUpperCase();
                     
-                    // Obtener badge de rango desde el mapa cargado
+                    // Solo icono de rango (sin texto)
                     let badgeHTML = '';
                     const rango = rangosMap[datos.nickname] || 'semilla';
                     const rangoLower = rango.toLowerCase();
@@ -972,7 +1121,7 @@ if (chatForm) {
                         'estrella': '⭐', 'leyenda': '👑'
                     };
                     const emoji = emojiMap[rangoLower] || '🌱';
-                    badgeHTML = `<span class="rango-badge rango-${rangoLower}"><span>${emoji}</span><span>${rangoLower.charAt(0).toUpperCase() + rangoLower.slice(1)}</span></span>`;
+                    badgeHTML = `<span class="rango-badge rango-solo-icono rango-${rangoLower}" title="${rangoLower.charAt(0).toUpperCase() + rangoLower.slice(1)}">${emoji}</span>`;
                     
                     html += `<div class="user-item"><div class="user-icon">${initial}</div><div class="user-name">${nickSafe}${badgeHTML}</div></div>`;
                 }
