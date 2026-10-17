@@ -243,12 +243,12 @@
         <div class="sidebar-comunidad">
             <div class="sidebar-card">
                 <h3 style="color: var(--accent-color); margin-bottom: 10px;"><i class="fa-solid fa-tower-broadcast"></i> Estado del Canal</h3>
-                <div id="usuarios-online" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 6px;">
-                    Usuarios en línea: <span id="contador-usuarios">0</span>
-                </div>
                 <div id="canal-estado" style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
                     <span id="estado-dot" style="display: inline-block; width: 10px; height: 10px; background: #ff4d4d; border-radius: 50%;"></span>
                     <span id="estado-texto">Comprobando estado...</span>
+                </div>
+                <div id="viewers-count" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px; display: none;">
+                    <i class="fa-solid fa-eye"></i> <span id="viewers-num">0</span> espectadores
                 </div>
                 <a href="./#stream" class="btn-primary" style="display: block; text-align: center; margin-top: 15px; text-decoration: none;">Ir al Directo</a>
             </div>
@@ -372,14 +372,14 @@
                     userId = Math.random().toString(36).substr(2, 9);
                     localStorage.setItem(STORAGE_KEY_USERID, userId);
                 }
+                // No abrir modal al cargar la página; permitir acceso libre
                 if (userNickname) {
                     if (inputAutor) {
                         inputAutor.value = userNickname;
                         inputAutor.readOnly = true;
                     }
-                } else {
-                    showNicknameModal();
                 }
+                // Botón de envío deshabilitado hasta que se establezca el apodo
                 const btnEnviar = chatForm.querySelector('button[type="submit"]');
                 if (btnEnviar) btnEnviar.disabled = !userNickname;
             }
@@ -441,10 +441,16 @@
                         return;
                     }
 
-                    const autor = inputAutor.value.trim();
+                    let autor = inputAutor.value.trim();
                     const mensaje = inputMensaje.value.trim();
 
-                    if (!autor || !mensaje) return;
+                    if (!mensaje) return;
+
+                    // Si no hay apodo guardado, abrir modal y bloquear envío
+                    if (!autor) {
+                        showNicknameModal();
+                        return;
+                    }
 
                     ultimoEnvio = ahora;
                     const btnEnviar = chatForm.querySelector('button[type="submit"]');
@@ -526,13 +532,22 @@
                     if (!response.ok) throw new Error('Error al obtener estado del stream');
                     const data = await response.json();
                     const enVivo = data.livestream && data.livestream.is_live === true;
+                    const viewers = data.livestream ? data.livestream.viewer_count : 0;
+                    const viewersEl = document.getElementById('viewers-count');
+                    const viewersNumEl = document.getElementById('viewers-num');
+                    
                     if (estadoDot && estadoTexto) {
                         if (enVivo) {
                             estadoDot.style.backgroundColor = '#53fc18';
                             estadoTexto.textContent = 'EN VIVO AHORA';
+                            if (viewersEl && viewersNumEl) {
+                                viewersEl.style.display = 'block';
+                                viewersNumEl.textContent = viewers.toLocaleString();
+                            }
                         } else {
                             estadoDot.style.backgroundColor = '#ff4d4d';
                             estadoTexto.textContent = 'Offline';
+                            if (viewersEl) viewersEl.style.display = 'none';
                         }
                     }
                     if (ultimaEstadoEnVivo === false && enVivo && typeof mostrarToast === 'function') {
@@ -545,6 +560,8 @@
                         estadoDot.style.backgroundColor = '#ff4d4d';
                         estadoTexto.textContent = 'Error';
                     }
+                    const viewersEl = document.getElementById('viewers-count');
+                    if (viewersEl) viewersEl.style.display = 'none';
                 }
             }
 
