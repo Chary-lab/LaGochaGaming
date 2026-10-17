@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -697,12 +697,21 @@
                 }
                 try {
                     const miReaccionActual = obtenerMiReaccionLocal(msgIdStr);
+                    // Obtener cache local para actualizar inmediatamente la UI
+                    const cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
+                    if (!cache[msgIdStr]) cache[msgIdStr] = {};
 
                     // Si hace click en su propia reacción -> quitarla
                     if (miReaccionActual === emoji) {
                         await supabase.from('comunidad_chat_reacciones')
                             .delete().eq('message_id', msgIdStr).eq('usuario', userNickname).eq('emoji', emoji);
+                        // Actualizar cache local: quitar al usuario de la lista de esa reacción
+                        if (cache[msgIdStr][emoji]) {
+                            cache[msgIdStr][emoji] = cache[msgIdStr][emoji].filter(u => u !== userNickname);
+                            if (cache[msgIdStr][emoji].length === 0) delete cache[msgIdStr][emoji];
+                        }
                         guardarMiReaccionLocal(msgIdStr, null);
+                        localStorage.setItem('gochi_chat_reacciones_cache', JSON.stringify(cache));
                         actualizarUIReacciones(msgIdStr);
                         return;
                     }
@@ -711,6 +720,11 @@
                     if (miReaccionActual && miReaccionActual !== emoji) {
                         await supabase.from('comunidad_chat_reacciones')
                             .delete().eq('message_id', msgIdStr).eq('usuario', userNickname).eq('emoji', miReaccionActual);
+                        // Actualizar cache local: quitar al usuario de la lista de la reacción anterior
+                        if (cache[msgIdStr][miReaccionActual]) {
+                            cache[msgIdStr][miReaccionActual] = cache[msgIdStr][miReaccionActual].filter(u => u !== userNickname);
+                            if (cache[msgIdStr][miReaccionActual].length === 0) delete cache[msgIdStr][miReaccionActual];
+                        }
                     }
 
                     // Insertar nueva reacción
@@ -721,7 +735,13 @@
 
                     if (error) throw error;
                     console.log('[REACCIÓN] Éxito:', { msgId: msgIdStr, emoji, usuario: userNickname });
+                    // Actualizar cache local: agregar el usuario a la lista de la nueva reacción
+                    if (!cache[msgIdStr][emoji]) cache[msgIdStr][emoji] = [];
+                    if (!cache[msgIdStr][emoji].includes(userNickname)) {
+                        cache[msgIdStr][emoji].push(userNickname);
+                    }
                     guardarMiReaccionLocal(msgIdStr, emoji);
+                    localStorage.setItem('gochi_chat_reacciones_cache', JSON.stringify(cache));
                     actualizarUIReacciones(msgIdStr);
                 } catch (e) {
                     console.error('Error al reaccionar:', e);
@@ -806,25 +826,43 @@
 
                     // Actualizar icono en esquina del mensaje (tipo WhatsApp/Messenger)
                     if (esquina) {
-                        // Buscar la reacción con más votos, o la del usuario actual
-                        let mejorEmoji = null;
-                        let mejorCount = 0;
-                        REACCIONES.forEach(emoji => {
-                            const usuarios = msgCache[emoji] || [];
-                            if (usuarios.length > mejorCount) {
-                                mejorCount = usuarios.length;
-                                mejorEmoji = emoji;
-                            }
-                        });
+                        // Prioridad 1: reacciÃ³n del usuario actual, 2: la mÃ¡s popular
+                        const miReaccion = obtenerMiReaccionLocal(msgIdStr);
+                        let emojiAMostrar = null;
+                        let countAMostrar = 0;
+                        let esMia = false;
 
-                        if (mejorEmoji && mejorCount > 0) {
-                            const mia = obtenerMiReaccionLocal(msgIdStr) === mejorEmoji;
-                            esquina.style.display = 'flex';
-                            esquina.innerHTML = `<span class="esquina-emoji">${mejorEmoji}</span><span class="esquina-count">${mejorCount}</span>`;
-                            esquina.className = 'msg-reaccion-esquina' + (mia ? ' mia' : '');
-                            esquina.title = mejorCount + ' reacción' + (mejorCount > 1 ? 'es' : '') + ' con ' + mejorEmoji;
+                        if (miReaccion && msgCache[miReaccion] && msgCache[miReaccion].length > 0) {
+                            emojiAMostrar = miReaccion;
+                            countAMostrar = msgCache[miReaccion].length;
+                            esMia = true;
                         } else {
-                            esquina.style.display = 'none';
+                            let mejorCount = 0;
+                            REACCIONES.forEach(emoji => {
+                                const usuarios = msgCache[emoji] || [];
+                                if (uszadores.length > mejorCount) {
+                                    mejorCount = usuarios.length;
+                                    emojiAMostrar = emoji;
+                                    countAMostrar = usuarios.length;
+                                }
+                            });
+                        }
+
+                        if (emojiAMostrar && countAMostrar > 0) {
+                            esquina.style.display = "flex";
+                            esquina.innerHTML = `<span class="esquina-emoji">${emojiAMostrar}</span><span class="esquina-count">${countAMostrar}</span>`;
+                            esquina.className = "msg-reaccion-esquina" + (esMia ? " mia" : "");
+                            // Hacer clickeable para cambiar/quitar reacciÃ³n
+                            esquina.onclick = (e) => {
+                                e.stopPropagation();
+                                if (userNickname) {
+                                    establecerReaccionUsuario(msgIdStr, emojiAMostrar);
+                                }
+                            };
+                            esquina.title = countAMostrar + " reacciÃ³n" + (countAMostrar > 1 ? "es" : "") + " con " + emojiAMostrar + (esMia ? " (clic para quitar)" : " (clic para reaccionar)");
+                        } else {
+                            esquina.style.display = "none";
+                            esquina.onclick = null;
                         }
                     }
 
