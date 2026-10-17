@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
     
     <style>
-         .comunidad-layout {
+.comunidad-layout {
              display: grid;
              grid-template-columns: 240px 1fr 320px;
              gap: 20px;
@@ -198,6 +198,58 @@
             color: var(--text-muted);
             cursor: pointer;
         }
+
+        /* Badge de reacción en esquina del mensaje (tipo WhatsApp/Messenger) */
+        .msg-reaccion-esquina {
+            position: absolute;
+            bottom: 6px;
+            right: 8px;
+            display: none;
+            align-items: center;
+            gap: 3px;
+            background: var(--card-bg-subtle);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2px 8px 2px 6px;
+            font-size: 0.75rem;
+            pointer-events: auto;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            z-index: 5;
+        }
+
+        .msg-reaccion-esquina:hover {
+            transform: scale(1.08);
+            border-color: var(--accent-color);
+            box-shadow: 0 3px 12px rgba(255, 102, 178, 0.3);
+        }
+
+        .msg-reaccion-esquina.mia {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        .msg-reaccion-esquina.mia .esquina-emoji {
+            filter: brightness(1.1);
+        }
+
+        .esquina-emoji {
+            font-size: 0.95rem;
+            line-height: 1;
+        }
+
+        .esquina-count {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            min-width: 12px;
+            text-align: center;
+        }
+
+        .msg-reaccion-esquina.mia .esquina-count {
+            color: rgba(0,0,0,0.7);
+        }
     </style>
 </head>
 <body>
@@ -258,12 +310,13 @@
             </div>
 
             <div id="chat-mensajes" class="chat-messages">
+                <!-- Los mensajes se cargarán dinámicamente aquí -->
                 <div style="text-align: center; color: var(--text-muted); margin-top: 40px;">
                     Cargando mensajes de la comunidad...
                 </div>
             </div>
 
-            <!-- ÁREA DE CHAT -->
+            <!-- ÁREA DE CHAT: Login/Registro cuando no hay sesión, Formulario cuando hay sesión -->
             <div id="chat-login-area" class="chat-input-area" style="display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 20px; text-align: center;">
                 <div style="color: var(--text-muted); font-size: 0.9rem;">Inicia sesión o regístrate para participar en el chat</div>
                 <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
@@ -281,6 +334,7 @@
                 <input type="text" id="chat-autor" placeholder="Tu apodo" maxlength="30" required style="width: 130px;">
                 <input type="text" id="chat-mensaje" placeholder="Escribe un mensaje..." maxlength="300" required style="flex: 1;">
                 <button type="submit" class="btn-primary" style="padding: 10px 20px; border: none; cursor: pointer;">Enviar</button>
+                <!-- Badge de racha de mensajes -->
                 <span id="streak-badge-chat" class="streak-badge" style="display: none; position: absolute; top: -25px; right: 10px; white-space: nowrap;"></span>
             </form>
         </div>
@@ -298,6 +352,7 @@
                 </div>
                 <a href="./#stream" class="btn-primary" style="display: block; text-align: center; margin-top: 15px; text-decoration: none;">Ir al Directo</a>
                 
+                <!-- PANEL DE USUARIO LOGUEADO -->
                 <div id="user-profile-panel" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border-color); display: none;">
                     <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px;">Tu Perfil:</div>
                     <div id="user-info-display" style="font-size: 0.95rem; color: var(--text-main); font-weight: bold; margin-bottom: 8px;"></div>
@@ -305,6 +360,7 @@
                     <button onclick="cerrarSesion()" class="btn-primary" style="background:#ff4d4d; font-size: 0.75rem; padding: 6px 12px; border:none; cursor:pointer; width: 100%;">Cerrar Sesión</button>
                 </div>
 
+                <!-- CUADRO DE RANGOS Y PUNTOS -->
                 <div class="sidebar-card">
                     <h3 style="color: var(--accent-color); margin-bottom: 12px;"><i class="fa-solid fa-crown"></i> Rangos y Puntos</h3>
                     <div class="cuadro-rangos">
@@ -335,19 +391,44 @@
                         </div>
                     </div>
                     <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 10px; line-height: 1.4;">
-                        Ganas <strong>1 punto cada 5 minutos</strong> conectado en el chat.
+                        Ganas <strong>1 punto cada 5 minutos</strong> conectado en el chat. El rango se actualiza automáticamente al sumar puntos.
                     </p>
                 </div>
 
-                <div class="sidebar-card">
-                    <h3 style="color: var(--accent-color); margin-bottom: 10px;"><i class="fa-solid fa-shield-halved"></i> Reglas del Chat</h3>
-                    <ul style="font-size: 0.88rem; color: var(--text-muted); padding-left: 18px; display: flex; flex-direction: column; gap: 8px;">
-                        <li>Respeto ante todo con la comunidad.</li>
-                        <li>No hacer spam ni flood de mensajes.</li>
-                        <li>No compartir enlaces sospechosos ni info personal.</li>
-                        <li>Todo es humor, pásatela bien y ríete mucho.</li>
-                    </ul>
+            <div class="sidebar-card">
+                <h3 style="color: var(--accent-color); margin-bottom: 10px;"><i class="fa-solid fa-shield-halved"></i> Reglas del Chat</h3>
+                <ul style="font-size: 0.88rem; color: var(--text-muted); padding-left: 18px; display: flex; flex-direction: column; gap: 8px;">
+                    <li>Respeto ante todo con la comunidad.</li>
+                    <li>No hacer spam ni flood de mensajes.</li>
+                    <li>No compartir enlaces sospechosos ni info personal.</li>
+                    <li>Todo es humor, pásatela bien y ríete mucho.</li>
+                </ul>
+            </div>
+
+            <!-- CANJE DE PUNTOS (PRÓXIMAMENTE) -->
+            <div class="sidebar-card" style="border-color: var(--accent-color);">
+                <h3 style="color: var(--accent-color); margin-bottom: 10px;"><i class="fa-solid fa-gift"></i> Tienda de Puntos <span style="font-size:0.7rem;background:var(--accent-color);color:#000;padding:2px 6px;border-radius:4px;margin-left:8px;">PRÓXIMAMENTE</span></h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px;">
+                    Estamos preparando recompensas exclusivas para canjear tus puntos ganados por participar en la comunidad.
+                </p>
+                <div style="background: var(--card-bg-subtle); border-radius: 8px; padding: 12px; text-align: center; border: 1px dashed var(--accent-color);">
+                    <i class="fa-solid fa-lock" style="font-size: 1.5rem; color: var(--accent-color); margin-bottom: 8px;"></i>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Sección en desarrollo. ¡Sigue sumando puntos!</p>
                 </div>
+            </div>
+
+            <!-- CÓMO FUNCIONAN LOS PUNTOS Y LA PÁGINA -->
+            <div class="sidebar-card">
+                <h3 style="color: var(--accent-color); margin-bottom: 10px;"><i class="fa-solid fa-circle-info"></i> ¿Cómo funciona?</h3>
+                <ul style="font-size: 0.82rem; color: var(--text-muted); padding-left: 18px; display: flex; flex-direction: column; gap: 6px; line-height: 1.5;">
+                    <li><strong>💎 Puntos:</strong> Ganas 1 punto cada 5 minutos estando conectado en el chat.</li>
+                    <li><strong>🔒 PIN de 4 dígitos:</strong> Protege tu cuenta y progreso. Nadie puede robar tus puntos sin tu PIN.</li>
+                    <li><strong>💬 Chat en vivo:</strong> Habla con la comunidad en tiempo real. Los mensajes se sincronizan al instante.</li>
+                    <li><strong>👥 Usuarios en línea:</strong> Lista a la izquierda con avatares de iniciales. Verás quién está conectado.</li>
+                    <li><strong>📺 Estado del stream:</strong> El círculo verde = EN VIVO, rojo = Offline. Verás los viewers actuales.</li>
+                    <li><strong>🔔 Notificaciones:</strong> Si el stream empieza, salta un aviso aunque estés en otra pestaña.</li>
+                    <li><strong>🎁 Futuro:</strong> Podrás canjear puntos por premios, roles y acceso a sorteos exclusivos.</li>
+                </ul>
             </div>
         </div>
     </main>
@@ -385,7 +466,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="main.js"></script>
     <script>
-        let _modalModo = 'login';
+        // Funciones globales para los botones de login/registro (llamadas desde HTML)
+        let _modalModo = 'login'; // 'login' o 'registro'
 
         function abrirModalLogin() {
             _modalModo = 'login';
@@ -437,8 +519,9 @@
             let userToken = null;
             let userId = null;
 
-            const savedApodo = localStorage.getItem(STORAGE_KEY_NICK);
-            const savedToken = localStorage.getItem(STORAGE_KEY_TOKEN);
+            // CARGA SÍNCRONA DEL APODO DESDE LOCALSTORAGE AL INICIAR
+            const savedApodo = localStorage.getItem('comunidad_nickname');
+            const savedToken = localStorage.getItem('comunidad_session_token');
             if (savedApodo) {
                 userNickname = savedApodo;
                 userToken = savedToken;
@@ -486,12 +569,16 @@
                     userProfilePanel.style.display = 'block';
                     userInfoDisplay.textContent = '👤 ' + apodo;
                     userPointsDisplay.textContent = '💎 Puntos: ' + (puntos || 0);
+                    // Mostrar badge de rango en el perfil (incluyendo semilla)
                     const existingBadge = document.getElementById('user-rango-badge');
                     if (existingBadge) existingBadge.remove();
                     const rangoBadge = document.createElement('div');
                     rangoBadge.id = 'user-rango-badge';
                     const rangoLower = (rango || 'semilla').toLowerCase();
-                    const emojiMap = { 'semilla': '🌱', 'gota': '💧', 'flor': '🌸', 'estrella': '⭐', 'leyenda': '👑' };
+                    const emojiMap = {
+                        'semilla': '🌱', 'gota': '💧', 'flor': '🌸', 
+                        'estrella': '⭐', 'leyenda': '👑'
+                    };
                     const emoji = emojiMap[rangoLower] || '🌱';
                     rangoBadge.className = `rango-badge rango-${rangoLower}`;
                     rangoBadge.style.cssText = 'display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:12px;font-size:0.75rem;font-weight:700;margin-top:6px;';
@@ -503,13 +590,31 @@
                     inputAutor.readOnly = true;
                 }
                 userNickname = apodo;
+                // Re-track presencia con el nuevo nickname
                 if (typeof window._trackPresence === 'function') {
                     window._trackPresence(apodo);
                 }
+                // Mostrar formulario de chat, ocultar área de login
                 const chatLoginForm = document.getElementById('chat-form');
                 const chatLoginArea = document.getElementById('chat-login-area');
                 if (chatLoginForm) chatLoginForm.style.display = 'flex';
                 if (chatLoginArea) chatLoginArea.style.display = 'none';
+                const btnEnviar = chatForm ? chatForm.querySelector('button[type="submit"]') : null;
+                if (btnEnviar) btnEnviar.disabled = false;
+            }
+
+            async function validarSesionGuardada() {
+                const savedApodo = localStorage.getItem(STORAGE_KEY_NICK);
+                const savedToken = localStorage.getItem(STORAGE_KEY_TOKEN);
+                if (!savedApodo || !savedToken) return false;
+                try {
+                    const { data, error } = await supabase.from('usuarios_comunidad').select('id, puntos, rango, session_token').eq('apodo', savedApodo).single();
+                    if (!error && data && data.session_token === savedToken) {
+                        guardarSesion(savedApodo, savedToken, data.puntos, data.rango);
+                        return true;
+                    }
+                } catch (e) {}
+                return false;
             }
 
             async function enviarNickConPIN() {
@@ -525,6 +630,7 @@
                     return;
                 }
 
+                // Si estamos en modo registro, forzamos crear cuenta nueva
                 if (_modalModo === 'registro') {
                     const verif = await verificarLogin(nick, pin);
                     if (verif.success) {
@@ -541,6 +647,7 @@
                     return;
                 }
 
+                // Modo login: intentar autenticar
                 const verif = await verificarLogin(nick, pin);
                 if (verif.success) {
                     guardarSesion(nick, verif.user.session_token, verif.user.puntos, verif.user.rango);
@@ -558,12 +665,71 @@
                 } catch (e) { console.error(e); }
             }
 
-            // --- SISTEMA DE REACCIONES EN TIEMPO REAL ---
+            // Reacciones del chat (tiempo real vía Supabase + panel burbuja al hover)
             const REACCIONES = ['❤️', '😂', '🔥', '😮', '👍'];
             const MAX_MENSAJES_DOM = 100;
             const STREAK_STORAGE_KEY = 'gochi_chat_streak';
             const STREAK_TIMEOUT_MS = 300000;
 
+            // Canal de realtime para reacciones
+            let canalReacciones = null;
+
+            // Obtener reacciones de un mensaje desde localStorage (fallback inicial)
+            function obtenerReaccionesLocal(msgId) {
+                try {
+                    return JSON.parse(localStorage.getItem('gochi_chat_reacciones_v2') || '{}');
+                } catch (e) { return {}; }
+            }
+
+            function guardarReaccionesLocal(data) {
+                try {
+                    localStorage.setItem('gochi_chat_reacciones_v2', JSON.stringify(data));
+                } catch (e) {}
+            }
+
+            // Establecer/quitar reacción del usuario en un mensaje (Supabase + localStorage)
+            async function establecerReaccionUsuario(msgId, emoji) {
+                const msgIdStr = String(msgId);
+                console.log('[REACCIÓN] Intento:', { msgId: msgIdStr, emoji, userNickname });
+                if (!userNickname) {
+                    mostrarToast('Inicia sesión para reaccionar', true);
+                    return;
+                }
+                try {
+                    const miReaccionActual = obtenerMiReaccionLocal(msgIdStr);
+
+                    // Si hace click en su propia reacción -> quitarla
+                    if (miReaccionActual === emoji) {
+                        await supabase.from('comunidad_chat_reacciones')
+                            .delete().eq('message_id', msgIdStr).eq('usuario', userNickname).eq('emoji', emoji);
+                        guardarMiReaccionLocal(msgIdStr, null);
+                        actualizarUIReacciones(msgIdStr);
+                        return;
+                    }
+
+                    // Si tiene otra reacción, quitarla primero
+                    if (miReaccionActual && miReaccionActual !== emoji) {
+                        await supabase.from('comunidad_chat_reacciones')
+                            .delete().eq('message_id', msgIdStr).eq('usuario', userNickname).eq('emoji', miReaccionActual);
+                    }
+
+                    // Insertar nueva reacción
+                    await supabase.from('comunidad_chat_reacciones')
+                        .delete().eq('message_id', msgIdStr).eq('usuario', userNickname).eq('emoji', emoji);
+                    const { error } = await supabase.from('comunidad_chat_reacciones')
+                        .insert([{ message_id: msgIdStr, emoji, usuario: userNickname }]);
+
+                    if (error) throw error;
+                    console.log('[REACCIÓN] Éxito:', { msgId: msgIdStr, emoji, usuario: userNickname });
+                    guardarMiReaccionLocal(msgIdStr, emoji);
+                    actualizarUIReacciones(msgIdStr);
+                } catch (e) {
+                    console.error('Error al reaccionar:', e);
+                    mostrarToast('No se pudo reaccionar: ' + (e.message || 'error desconocido'), true);
+                }
+            }
+
+            // Estructura local: { [msgId]: emoji }
             function obtenerMiReaccionLocal(msgId) {
                 try {
                     const data = JSON.parse(localStorage.getItem('gochi_chat_mi_reaccion_v2') || '{}');
@@ -574,49 +740,30 @@
             function guardarMiReaccionLocal(msgId, emoji) {
                 try {
                     const data = JSON.parse(localStorage.getItem('gochi_chat_mi_reaccion_v2') || '{}');
-                    if (emoji === null) delete data[msgId];
-                    else data[msgId] = emoji;
+                    if (emoji === null) { delete data[msgId]; }
+                    else { data[msgId] = emoji; }
                     localStorage.setItem('gochi_chat_mi_reaccion_v2', JSON.stringify(data));
                 } catch (e) {}
             }
 
-            async function establecerReaccionUsuario(msgId, emoji) {
-                const msgIdStr = String(msgId);
-                if (!userNickname) {
-                    mostrarToast('Inicia sesión para reaccionar', true);
-                    return;
-                }
+            // Contar cuántos usuarios reaccionaron con un emoji (desde localStorage cache)
+            function contarReaccionesEmoji(msgId, emoji) {
                 try {
-                    const miReaccionActual = obtenerMiReaccionLocal(msgIdStr);
-
-                    if (miReaccionActual === emoji) {
-                        await supabase.from('comunidad_chat_reacciones')
-                            .delete().eq('message_id', msgIdStr).eq('usuario', userNickname).eq('emoji', emoji);
-                        guardarMiReaccionLocal(msgIdStr, null);
-                        actualizarUIReacciones(msgIdStr);
-                        return;
-                    }
-
-                    if (miReaccionActual && miReaccionActual !== emoji) {
-                        await supabase.from('comunidad_chat_reacciones')
-                            .delete().eq('message_id', msgIdStr).eq('usuario', userNickname).eq('emoji', miReaccionActual);
-                    }
-
-                    await supabase.from('comunidad_chat_reacciones')
-                        .delete().eq('message_id', msgIdStr).eq('usuario', userNickname).eq('emoji', emoji);
-                    
-                    const { error } = await supabase.from('comunidad_chat_reacciones')
-                        .insert([{ message_id: msgIdStr, emoji, usuario: userNickname }]);
-
-                    if (error) throw error;
-                    guardarMiReaccionLocal(msgIdStr, emoji);
-                    actualizarUIReacciones(msgIdStr);
-                } catch (e) {
-                    console.error('Error al reaccionar:', e);
-                    mostrarToast('No se pudo reaccionar.', true);
-                }
+                    const data = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
+                    return (data[msgId] && data[msgId][emoji]) ? data[msgId][emoji].length : 0;
+                } catch (e) { return 0; }
             }
 
+            function guardarCacheReacciones(msgId, emoji, usuarios) {
+                try {
+                    const data = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
+                    if (!data[msgId]) data[msgId] = {};
+                    data[msgId][emoji] = usuarios;
+                    localStorage.setItem('gochi_chat_reacciones_cache', JSON.stringify(data));
+                } catch (e) {}
+            }
+
+            // Tooltip: quiénes reaccionaron con un emoji
             let tooltipReaccionEl = null;
             function mostrarTooltipReaccion(target, msgId, emoji, usuarios) {
                 if (!usuarios || usuarios.length === 0) return;
@@ -643,28 +790,33 @@
                 if (tooltipReaccionEl) tooltipReaccionEl.classList.remove('visible');
             }
 
+            // Actualizar badges de un mensaje concreto
             function actualizarUIReacciones(msgId) {
                 const container = document.querySelector(`.chat-msg-container[data-msgid="${msgId}"]`);
                 if (!container) return;
 
+                const badgesContainer = container.querySelector('.reacciones-badges');
                 const esquina = container.querySelector('.msg-reaccion-esquina');
-                const msgIdStr = String(msgId);
 
+                const msgIdStr = String(msgId);
+                // Leer cache local para mostrar inmediatamente
                 try {
                     const cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
                     const msgCache = cache[msgIdStr] || {};
 
-                    let mejorEmoji = null;
-                    let mejorCount = 0;
-                    REACCIONES.forEach(emoji => {
-                        const usuarios = msgCache[emoji] || [];
-                        if (usuarios.length > mejorCount) {
-                            mejorCount = usuarios.length;
-                            mejorEmoji = emoji;
-                        }
-                    });
-
+                    // Actualizar icono en esquina del mensaje (tipo WhatsApp/Messenger)
                     if (esquina) {
+                        // Buscar la reacción con más votos, o la del usuario actual
+                        let mejorEmoji = null;
+                        let mejorCount = 0;
+                        REACCIONES.forEach(emoji => {
+                            const usuarios = msgCache[emoji] || [];
+                            if (usuarios.length > mejorCount) {
+                                mejorCount = usuarios.length;
+                                mejorEmoji = emoji;
+                            }
+                        });
+
                         if (mejorEmoji && mejorCount > 0) {
                             const mia = obtenerMiReaccionLocal(msgIdStr) === mejorEmoji;
                             esquina.style.display = 'flex';
@@ -675,19 +827,51 @@
                             esquina.style.display = 'none';
                         }
                     }
-                } catch (e) { console.error('Error al actualizar reacciones UI:', e); }
+
+                    // Actualizar badges visibles debajo del mensaje (si existen)
+                    if (badgesContainer) {
+                        badgesContainer.innerHTML = '';
+                        REACCIONES.forEach(emoji => {
+                            const usuarios = msgCache[emoji] || [];
+                            const count = usuarios.length;
+                            const mia = obtenerMiReaccionLocal(msgIdStr) === emoji;
+
+                            const badge = document.createElement('span');
+                            badge.className = 'reaccion-badge' + (mia ? ' mia' : '');
+                            badge.dataset.emoji = emoji;
+                            badge.innerHTML = `<span class="emoji">${emoji}</span><span class="count">${count}</span>`;
+                            badge.onclick = (e) => {
+                                e.stopPropagation();
+                                establecerReaccionUsuario(msgIdStr, emoji);
+                            };
+                            badge.onmouseenter = (e) => {
+                                if (count > 0) mostrarTooltipReaccion(e.currentTarget, msgIdStr, emoji, usuarios);
+                            };
+                            badge.onmouseleave = ocultarTooltipReaccion;
+                            badgesContainer.appendChild(badge);
+                        });
+                    }
+                } catch (e) {}
             }
 
+            // Crear panel burbuja de reacción (aparece al hacer hover sobre el mensaje)
             function crearBurbujaReacciones(msgId) {
                 const msgIdStr = String(msgId);
                 const container = document.createElement('div');
                 container.className = 'chat-msg-burbuja';
+                container.style.cssText = 'position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:6px;background:var(--card-bg);border:1px solid var(--border-color);border-radius:24px;padding:6px 10px;box-shadow:var(--glow);z-index:10;opacity:0;pointer-events:none;transition:opacity 0.2s,transform 0.2s;';
 
                 REACCIONES.forEach(emoji => {
                     const btn = document.createElement('button');
                     btn.className = 'btn-burbuja';
                     btn.textContent = emoji;
                     btn.title = emoji;
+                    btn.style.cssText = 'background:transparent;border:none;cursor:pointer;font-size:1.15rem;padding:6px;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;transition:transform 0.15s,background 0.15s;';
+                    btn.onmouseenter = function() { this.style.transform = 'scale(1.25)'; this.style.background = 'var(--card-bg-subtle)'; };
+                    btn.onmouseleave = function() {
+                        this.style.transform = 'scale(1)';
+                        if (obtenerMiReaccionLocal(msgIdStr) !== emoji) this.style.background = 'transparent';
+                    };
                     btn.onclick = (e) => {
                         e.stopPropagation();
                         establecerReaccionUsuario(msgIdStr, emoji);
@@ -695,6 +879,55 @@
                     container.appendChild(btn);
                 });
                 return container;
+            }
+
+            // Crear badges visibles debajo del mensaje (se muestran cuando hay reacciones)
+            function crearBadgesReacciones(msgId) {
+                const container = document.createElement('div');
+                container.className = 'reacciones-badges';
+                container.style.display = 'none';
+                return container;
+            }
+
+            // Sistema de racha de mensajes
+            function obtenerStreakData() {
+                try {
+                    const data = localStorage.getItem(STREAK_STORAGE_KEY);
+                    if (data) return JSON.parse(data);
+                } catch (e) {}
+                return { count: 0, lastMessageTime: 0 };
+            }
+
+            function guardarStreakData(data) {
+                localStorage.setItem(STREAK_STORAGE_KEY, JSON.stringify(data));
+            }
+
+            function actualizarStreak() {
+                const streakData = obtenerStreakData();
+                const ahora = Date.now();
+
+                // Si pasaron más de 5 minutos desde el último mensaje, reiniciar racha
+                if (ahora - streakData.lastMessageTime > STREAK_TIMEOUT_MS) {
+                    streakData.count = 1;
+                } else {
+                    streakData.count += 1;
+                }
+
+                streakData.lastMessageTime = ahora;
+                guardarStreakData(streakData);
+
+                // Actualizar UI
+                const streakBadge = document.getElementById('streak-badge-chat');
+                if (streakBadge) {
+                    if (streakData.count > 1) {
+                        streakBadge.style.display = 'inline-flex';
+                        streakBadge.innerHTML = `🔥 Racha: ${streakData.count}`;
+                    } else {
+                        streakBadge.style.display = 'none';
+                    }
+                }
+
+                return streakData.count;
             }
 
             function renderizarMensajes(mensajes) {
@@ -709,7 +942,25 @@
                     
                     const container = document.createElement('div');
                     container.className = 'chat-msg-container';
-                    container.dataset.msgid = msgId;
+                    container.dataset.msgId = msgId;
+                    container.style.cssText = 'position:relative;background:rgba(255,255,255,0.03);padding:10px 14px;border-radius:8px;border:1px solid var(--border-color);cursor:pointer;';
+                    
+                    // Mostrar burbuja de reacciones al hover
+                    container.onmouseenter = function() {
+                        const burbuja = this.querySelector('.chat-msg-burbuja');
+                        if (burbuja) {
+                            burbuja.style.opacity = '1';
+                            burbuja.style.pointerEvents = 'auto';
+                        }
+                    };
+                    container.onmouseleave = function() {
+                        const burbuja = this.querySelector('.chat-msg-burbuja');
+                        if (burbuja) {
+                            burbuja.style.opacity = '0';
+                            burbuja.style.pointerEvents = 'none';
+                        }
+                        ocultarTooltipReaccion();
+                    };
 
                     const headerDiv = document.createElement('div');
                     headerDiv.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;font-size:0.8rem;';
@@ -722,22 +973,28 @@
                     container.appendChild(headerDiv);
                     container.appendChild(mensajeDiv);
                     
+                    // Icono de reacción en esquina (tipo WhatsApp/Messenger)
                     const reaccionEsquina = document.createElement('div');
                     reaccionEsquina.className = 'msg-reaccion-esquina';
                     reaccionEsquina.style.display = 'none';
+                    reaccionEsquina.innerHTML = '<span class="esquina-emoji">❤️</span><span class="esquina-count">1</span>';
                     reaccionEsquina.onclick = (e) => { e.stopPropagation(); };
+                    reaccionEsquina.onmouseenter = (e) => { e.stopPropagation(); };
+                    reaccionEsquina.onmouseleave = (e) => { e.stopPropagation(); };
                     container.appendChild(reaccionEsquina);
                     
+                    // Burbuja de reacciones al hover
                     const burbuja = crearBurbujaReacciones(msgId);
                     container.appendChild(burbuja);
 
                     chatMensajes.appendChild(container);
                 });
-
+                // Cargar reacciones de Supabase para estos mensajes
                 cargarReaccionesDeSupabase(mensajes);
                 chatMensajes.scrollTop = chatMensajes.scrollHeight;
             }
 
+            // Cargar reacciones de Supabase para una lista de mensajes
             async function cargarReaccionesDeSupabase(mensajes) {
                 if (!mensajes || mensajes.length === 0) return;
                 try {
@@ -748,32 +1005,43 @@
                         .select('message_id, emoji, usuario')
                         .in('message_id', ids);
                     if (error) return;
-
                     const cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
                     const miCache = JSON.parse(localStorage.getItem('gochi_chat_mi_reaccion_v2') || '{}');
-
                     data.forEach(r => {
-                        const mId = String(r.message_id);
-                        if (!cache[mId]) cache[mId] = {};
-                        if (!cache[mId][r.emoji]) cache[mId][r.emoji] = [];
-                        if (!cache[mId][r.emoji].includes(r.usuario)) {
-                            cache[mId][r.emoji].push(r.usuario);
+                        if (!cache[r.message_id]) cache[r.message_id] = {};
+                        if (!cache[r.message_id][r.emoji]) cache[r.message_id][r.emoji] = [];
+                        if (!cache[r.message_id][r.emoji].includes(r.usuario)) {
+                            cache[r.message_id][r.emoji].push(r.usuario);
                         }
+                        // Si el usuario logueado es quien reaccionó, guardarlo en mi reaccion
                         if (userNickname && r.usuario === userNickname) {
-                            miCache[mId] = r.emoji;
+                            miCache[r.message_id] = r.emoji;
                         }
                     });
-
                     localStorage.setItem('gochi_chat_reacciones_cache', JSON.stringify(cache));
                     localStorage.setItem('gochi_chat_mi_reaccion_v2', JSON.stringify(miCache));
-
+                    // Actualizar UI de los mensajes ya renderizados
                     mensajes.forEach(m => {
-                        if (m.id) actualizarUIReacciones(m.id);
+                        const msgId = m.id;
+                        if (msgId && cache[msgId]) {
+                            actualizarUIReacciones(msgId);
+                        }
                     });
                 } catch (e) { console.error('Error cargando reacciones:', e); }
             }
 
-            if (chatForm) {
+            // Limpiar mensajes antiguos (mantener máximo 100 en DOM)
+            function limpiarMensajesAntiguos() {
+                const mensajes = chatMensajes.querySelectorAll('.chat-msg-container');
+                if (mensajes.length > MAX_MENSAJES_DOM) {
+                    const eliminar = mensajes.length - MAX_MENSAJES_DOM;
+                    for (let i = 0; i < eliminar; i++) {
+                        if (mensajes[i]) mensajes[i].remove();
+                    }
+                }
+            }
+
+if (chatForm) {
                 chatForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
                     const ahora = Date.now();
@@ -782,18 +1050,25 @@
                     const mensaje = inputMensaje.value.trim();
                     if (!mensaje) return;
                     ultimoEnvio = ahora;
-
+                    const btnEnviar = chatForm.querySelector('button[type="submit"]');
+                    if (btnEnviar) btnEnviar.disabled = true;
                     try {
                         const { error } = await supabase.from('comunidad_chat').insert([{ autor: userNickname, mensaje }]);
-                        if (!error) {
+                        if (error) console.error('Error:', error);
+                        else {
                             inputMensaje.value = '';
+                            // Actualizar streak de mensajes
+                            actualizarStreak();
+                            // Actualizar ultima_actividad en BD
                             await supabase.from('usuarios_comunidad').update({ ultima_actividad: new Date().toISOString() }).eq('apodo', userNickname);
                         }
                     } catch (e) { console.error(e); }
+                    if (btnEnviar) btnEnviar.disabled = false;
                 });
             }
 
             function iniciarRealtimeChat() {
+                // Escuchar nuevos mensajes del chat
                 supabase.channel('public:comunidad_chat').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'comunidad_chat' }, payload => {
                     const nuevoMsg = payload.new;
                     if (chatMensajes.querySelector('div[style*="margin-top"]')) chatMensajes.innerHTML = '';
@@ -803,7 +1078,25 @@
                     
                     const container = document.createElement('div');
                     container.className = 'chat-msg-container';
-                    container.dataset.msgid = msgId;
+                    container.dataset.msgId = msgId;
+                    container.style.cssText = 'position:relative;background:rgba(255,255,255,0.03);padding:10px 14px;border-radius:8px;border:1px solid var(--border-color);cursor:pointer;';
+                    
+                    // Mostrar burbuja de reacciones al hover
+                    container.onmouseenter = function() {
+                        const burbuja = this.querySelector('.chat-msg-burbuja');
+                        if (burbuja) {
+                            burbuja.style.opacity = '1';
+                            burbuja.style.pointerEvents = 'auto';
+                        }
+                    };
+                    container.onmouseleave = function() {
+                        const burbuja = this.querySelector('.chat-msg-burbuja');
+                        if (burbuja) {
+                            burbuja.style.opacity = '0';
+                            burbuja.style.pointerEvents = 'none';
+                        }
+                        ocultarTooltipReaccion();
+                    };
 
                     const headerDiv = document.createElement('div');
                     headerDiv.style.cssText = 'display:flex;justify-content:space-between;margin-bottom:4px;font-size:0.8rem;';
@@ -815,27 +1108,35 @@
 
                     container.appendChild(headerDiv);
                     container.appendChild(mensajeDiv);
-
+                    
+                    // Icono de reacción en esquina (tipo WhatsApp/Messenger)
                     const reaccionEsquina = document.createElement('div');
                     reaccionEsquina.className = 'msg-reaccion-esquina';
                     reaccionEsquina.style.display = 'none';
+                    reaccionEsquina.innerHTML = '<span class="esquina-emoji">❤️</span><span class="esquina-count">1</span>';
                     reaccionEsquina.onclick = (e) => { e.stopPropagation(); };
+                    reaccionEsquina.onmouseenter = (e) => { e.stopPropagation(); };
+                    reaccionEsquina.onmouseleave = (e) => { e.stopPropagation(); };
                     container.appendChild(reaccionEsquina);
-
+                    
                     const burbuja = crearBurbujaReacciones(msgId);
                     container.appendChild(burbuja);
 
                     chatMensajes.appendChild(container);
                     chatMensajes.scrollTop = chatMensajes.scrollHeight;
                     
+                    // Cargar reacciones de Supabase para este mensaje nuevo
                     cargarReaccionesDeSupabase([nuevoMsg]);
+                    
+                    // Limpiar mensajes antiguos si supera el límite
+                    limpiarMensajesAntiguos();
                 }).subscribe();
 
-                // REALTIME DE REACCIONES DE SUPABASE
-                supabase.channel('public:comunidad_chat_reacciones')
+                // Escuchar reacciones en tiempo real
+                canalReacciones = supabase.channel('public:comunidad_chat_reacciones')
                     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'comunidad_chat_reacciones' }, payload => {
                         const r = payload.new;
-                        const msgId = String(r.message_id);
+                        const msgId = r.message_id;
                         const cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
                         if (!cache[msgId]) cache[msgId] = {};
                         if (!cache[msgId][r.emoji]) cache[msgId][r.emoji] = [];
@@ -844,6 +1145,7 @@
                         }
                         localStorage.setItem('gochi_chat_reacciones_cache', JSON.stringify(cache));
 
+                        // Si soy yo quien reaccionó, guardar en mi reaccion
                         if (userNickname && r.usuario === userNickname) {
                             const miCache = JSON.parse(localStorage.getItem('gochi_chat_mi_reaccion_v2') || '{}');
                             miCache[msgId] = r.emoji;
@@ -854,7 +1156,7 @@
                     })
                     .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'comunidad_chat_reacciones' }, payload => {
                         const r = payload.old;
-                        const msgId = String(r.message_id);
+                        const msgId = r.message_id;
                         const cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
                         if (cache[msgId] && cache[msgId][r.emoji]) {
                             cache[msgId][r.emoji] = cache[msgId][r.emoji].filter(u => u !== r.usuario);
@@ -873,25 +1175,306 @@
                     .subscribe();
             }
 
+            async function renderizarListaUsuarios(estadoPresencia) {
+                if (!onlineUsersListEl) return;
+
+                // Si el estado está vacío y nunca hemos recibido presencia, mantener "Cargando usuarios..."
+                if (!estadoPresencia || Object.keys(estadoPresencia).length === 0) {
+                    if (onlineUsersListEl.dataset.loaded !== 'true') {
+                        onlineUsersListEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:20px;">Cargando usuarios...</div>';
+                        return;
+                    }
+                    // Ya habíamos recibido presencia y ahora está vacío = nadie en línea
+                    onlineUsersListEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:20px;">Nadie en línea</div>';
+                    return;
+                }
+
+                // Marcar como que ya recibimos presencia al menos una vez
+                onlineUsersListEl.dataset.loaded = 'true';
+                let html = '';
+                
+                // Cargar rangos de todos los usuarios de una sola vez
+                const nicknames = Object.values(estadoPresencia).map(arr => (arr[0] || {}).nickname).filter(Boolean);
+                let rangosMap = {};
+                
+                if (nicknames.length > 0) {
+                    try {
+                        const { data: usuariosData } = await supabase
+                            .from('usuarios_comunidad')
+                            .select('apodo, rango')
+                            .in('apodo', nicknames);
+                        
+                        if (usuariosData) {
+                            usuariosData.forEach(u => {
+                                rangosMap[u.apodo] = u.rango;
+                            });
+                        }
+                    } catch (e) {
+                        console.error('Error cargando rangos:', e);
+                    }
+                }
+                
+                for (const [key, presenceArray] of Object.entries(estadoPresencia)) {
+                    const datos = presenceArray[0] || {};
+                    const nickSafe = (datos.nickname || 'Anónimo').toString().replace(/[&<>"\']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+                    const initial = nickSafe.charAt(0).toUpperCase();
+                    
+                    // Solo icono de rango (sin texto)
+                    let badgeHTML = '';
+                    const rango = rangosMap[datos.nickname] || 'semilla';
+                    const rangoLower = rango.toLowerCase();
+                    const emojiMap = {
+                        'semilla': '🌱', 'gota': '💧', 'flor': '🌸', 
+                        'estrella': '⭐', 'leyenda': '👑'
+                    };
+                    const emoji = emojiMap[rangoLower] || '🌱';
+                    badgeHTML = `<span class="rango-badge rango-solo-icono rango-${rangoLower}" title="${rangoLower.charAt(0).toUpperCase() + rangoLower.slice(1)}">${emoji}</span>`;
+                    
+                    html += `<div class="user-item"><div class="user-icon">${initial}</div><div class="user-name">${nickSafe}${badgeHTML}</div></div>`;
+                }
+                onlineUsersListEl.innerHTML = html;
+            }
+
+            async function verificarEstadoStream() {
+                try {
+                    const response = await fetch('https://kick.com/api/v2/channels/lagochagaming');
+                    if (!response.ok) throw new Error('Error al obtener estado del stream');
+                    const data = await response.json();
+                    const enVivo = data.livestream && data.livestream.is_live === true;
+                    const viewers = data.livestream ? data.livestream.viewer_count : 0;
+                    const viewersEl = document.getElementById('viewers-count');
+                    const viewersNumEl = document.getElementById('viewers-num');
+                    const navbar = document.querySelector('.navbar');
+                    const alertOverlay = document.getElementById('stream-alert');
+
+                    if (estadoDot && estadoTexto) {
+                        if (enVivo) {
+                            estadoDot.style.backgroundColor = '#53fc18';
+                            estadoTexto.textContent = 'EN VIVO AHORA';
+                            if (viewersEl && viewersNumEl) { viewersEl.style.display = 'block'; viewersNumEl.textContent = viewers.toLocaleString(); }
+                        } else {
+                            estadoDot.style.backgroundColor = '#ff4d4d';
+                            estadoTexto.textContent = 'Offline';
+                            if (viewersEl) viewersEl.style.display = 'none';
+                        }
+                    }
+
+                    // Activar/desactivar navbar glow
+                    if (navbar) {
+                        if (enVivo) {
+                            navbar.classList.add('live-glow');
+                        } else {
+                            navbar.classList.remove('live-glow');
+                        }
+                    }
+
+                    // Mostrar overlay de alerta si es la primera vez que detecta live
+                    if (alertOverlay && ultimaEstadoEnVivo === false && enVivo) {
+                        alertOverlay.classList.add('visible', 'live');
+                        setTimeout(() => {
+                            alertOverlay.classList.remove('visible');
+                        }, 5000);
+                    }
+
+                    if (ultimaEstadoEnVivo === false && enVivo && typeof mostrarToast === 'function') { mostrarToast('¡La Gocha está en directo! 🎉', false); }
+                    ultimaEstadoEnVivo = enVivo;
+                } catch (err) {
+                    console.error('Error verificando estado del stream:', err);
+                    if (estadoDot && estadoTexto) { estadoDot.style.backgroundColor = '#ff4d4d'; estadoTexto.textContent = 'Error'; }
+                    const viewersEl = document.getElementById('viewers-count');
+                    if (viewersEl) viewersEl.style.display = 'none';
+                }
+            }
+
+            function iniciarPresenciaUsuarios() {
+                if (!userId) { userId = Math.random().toString(36).substr(2, 9); localStorage.setItem('comunidad_user_id', userId); }
+
+                const nickParaTrack = userNickname || savedApodo;
+                let trackHecho = false; // Evitar tracks duplicados
+
+                const canalPresencia = supabase.channel('presence:comunidad')
+                    .on('presence', { event: 'sync' }, () => {
+                        const estado = canalPresencia.presenceState();
+                        renderizarListaUsuarios(estado);
+                    });
+
+                canalPresencia.subscribe((state) => {
+                    if (state === 'SUBSCRIBED' && nickParaTrack && !trackHecho) {
+                        trackHecho = true;
+                        canalPresencia.track({ user_id: userId, nickname: nickParaTrack });
+                    }
+                });
+
+                // KeepAlive cada 60 segundos
+                const keepAliveInterval = setInterval(() => {
+                    if (nickParaTrack && canalPresencia) {
+                        canalPresencia.track({ user_id: userId, nickname: nickParaTrack });
+                    }
+                }, 60000);
+
+                window._trackPresence = (nick) => {
+                    if (canalPresencia && trackHecho) {
+                        canalPresencia.track({ user_id: userId, nickname: nick || userNickname });
+                    }
+                };
+                window._presenceKeepAlive = keepAliveInterval;
+
+                return () => {
+                    if (window._presenceKeepAlive) clearInterval(window._presenceKeepAlive);
+                    supabase.removeChannel(canalPresencia);
+                };
+            }
+
+            // Event listeners
             nicknameModalSetBtn.addEventListener('click', enviarNickConPIN);
             nicknameModalCloseBtn.addEventListener('click', hideNicknameModal);
+            nicknameModalInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') enviarNickConPIN(); });
+            nicknameModalPin.addEventListener('keypress', (e) => { if (e.key === 'Enter') enviarNickConPIN(); });
 
+// Cargar leaderboard público
+            async function cargarLeaderboard() {
+                const leaderboardEl = document.getElementById('leaderboard-list');
+                if (!leaderboardEl) return;
+                try {
+                    const { data, error } = await supabase
+                        .from('usuarios_comunidad')
+                        .select('apodo, puntos, rango')
+                        .order('puntos', { ascending: false })
+                        .limit(10);
+
+                    if (error || !data || data.length === 0) {
+                        leaderboardEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:20px;">Sin participantes aún</div>';
+                        return;
+                    }
+
+                    let html = '';
+                    data.forEach((user, index) => {
+                        const medalla = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`;
+                        
+                        // Agregar badge de rango (siempre se muestra, incluso semilla)
+                        let rangoBadge = '';
+                        const rango = user.rango || 'semilla';
+                        const rangoLower = rango.toLowerCase();
+                        const emojiMap = {
+                            'semilla': '🌱', 'gota': '💧', 'flor': '🌸', 
+                            'estrella': '⭐', 'leyenda': '👑'
+                        };
+                        const emoji = emojiMap[rangoLower] || '🌱';
+                        rangoBadge = `<span class="rango-badge rango-${rangoLower}" style="margin-left:6px;"><span>${emoji}</span><span>${rangoLower.charAt(0).toUpperCase() + rangoLower.slice(1)}</span></span>`;
+                        
+                        html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 4px;border-bottom:1px solid var(--border-color);${index === 0 ? 'background:rgba(255,215,0,0.1);' : ''}">
+                            <span style="font-size:0.9rem;font-weight:bold;">${medalla} ${escaparHTML(user.apodo)}${rangoBadge}</span>
+                            <span style="color:var(--accent-color);font-size:0.85rem;">${user.puntos} pts</span>
+                        </div>`;
+                    });
+                    leaderboardEl.innerHTML = html;
+                } catch (e) {
+                    console.error('Error leaderboard:', e);
+                    leaderboardEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:20px;">Error al cargar ranking</div>';
+                }
+            }
+
+// Inicializar
             cargarMensajesChat();
             iniciarRealtimeChat();
+            cargarLeaderboard();
+            setInterval(cargarLeaderboard, 60000); // Actualizar ranking cada minuto
+
+            // Restaurar UI de chat y perfil SINCRÓNICAMENTE si hay sesión guardada
+            const chatLoginForm = document.getElementById('chat-form');
+            const chatLoginArea = document.getElementById('chat-login-area');
 
             if (savedApodo && savedToken) {
-                if (chatForm) chatForm.style.display = 'flex';
+                // Mostrar chat y perfil inmediatamente (sin esperar validación)
+                if (chatLoginForm) chatLoginForm.style.display = 'flex';
                 if (chatLoginArea) chatLoginArea.style.display = 'none';
+
+                // Mostrar panel de perfil
+                if (userProfilePanel && userInfoDisplay && userPointsDisplay) {
+                    userProfilePanel.style.display = 'block';
+                    userInfoDisplay.textContent = '👤 ' + savedApodo;
+                    // Cargar puntos y rango actuales
+                    supabase.from('usuarios_comunidad').select('puntos, rango').eq('apodo', savedApodo).single().then(({ data }) => {
+                        if (data && userPointsDisplay) {
+                            userPointsDisplay.textContent = '💎 Puntos: ' + data.puntos;
+                            // Mostrar badge de rango en el perfil (incluyendo semilla)
+                            const existingBadge = document.getElementById('user-rango-badge');
+                            if (existingBadge) existingBadge.remove();
+                            const rangoBadge = document.createElement('div');
+                            rangoBadge.id = 'user-rango-badge';
+                            const rango = data.rango || 'semilla';
+                            const rangoLower = rango.toLowerCase();
+                            const emojiMap = {
+                                'semilla': '🌱', 'gota': '💧', 'flor': '🌸', 
+                                'estrella': '⭐', 'leyenda': '👑'
+                            };
+                            const emoji = emojiMap[rangoLower] || '🌱';
+                            rangoBadge.className = `rango-badge rango-${rangoLower}`;
+                            rangoBadge.style.cssText = 'display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:12px;font-size:0.75rem;font-weight:700;margin-top:6px;';
+                            rangoBadge.innerHTML = `<span>${emoji}</span><span>${rangoLower.charAt(0).toUpperCase() + rangoLower.slice(1)}</span>`;
+                            userPointsDisplay.parentNode.insertBefore(rangoBadge, userPointsDisplay.nextSibling);
+                        }
+                    });
+                }
             } else {
-                if (chatForm) chatForm.style.display = 'none';
+                // Mostrar solo área de login
+                if (chatLoginForm) chatLoginForm.style.display = 'none';
                 if (chatLoginArea) chatLoginArea.style.display = 'flex';
             }
+
+            verificarEstadoStream();
+            setInterval(verificarEstadoStream, 30000);
+            const presenciaChannel = iniciarPresenciaUsuarios();
+            
+            // Forzar track inmediato si hay usuario logueado
+            if (savedApodo && typeof window._trackPresence === 'function') {
+                setTimeout(() => {
+                    window._trackPresence(savedApodo);
+                }, 500);
+            }
+
+// Puntos automáticos: +1 punto cada 5 minutos (300,000 ms)
+            setInterval(async () => {
+                const currentNick = localStorage.getItem(STORAGE_KEY_NICK);
+                if (currentNick) {
+                    try {
+                        const { error } = await supabase.rpc('incrementar_puntos', { apodo_param: currentNick });
+                        if (!error) {
+                            // Actualizar UI de puntos y rango
+                            const { data } = await supabase.from('usuarios_comunidad').select('puntos, rango').eq('apodo', currentNick).single();
+                            if (data && userPointsDisplay) {
+                                userPointsDisplay.textContent = '💎 Puntos: ' + data.puntos;
+                            }
+                            // Actualizar badge de rango si está visible
+                            const rangoBadge = document.getElementById('user-rango-badge');
+                            if (rangoBadge) {
+                                const rango = data.rango || 'semilla';
+                                const rangoLower = rango.toLowerCase();
+                                const emojiMap = {
+                                    'semilla': '🌱', 'gota': '💧', 'flor': '🌸', 
+                                    'estrella': '⭐', 'leyenda': '👑'
+                                };
+                                const emoji = emojiMap[rangoLower] || '🌱';
+                                rangoBadge.className = `rango-badge rango-${rangoLower}`;
+                                rangoBadge.innerHTML = `<span>${emoji}</span><span>${rangoLower.charAt(0).toUpperCase() + rangoLower.slice(1)}</span>`;
+                            }
+                        }
+                    } catch (e) { console.error('Error al sumar puntos:', e); }
+                }
+            }, 300000); // 5 minutos
         });
 
         function cerrarSesion() {
             localStorage.removeItem('comunidad_nickname');
             localStorage.removeItem('comunidad_session_token');
-            location.reload();
+            const panel = document.getElementById('user-profile-panel');
+            if (panel) panel.style.display = 'none';
+            const input = document.getElementById('chat-autor');
+            if (input) { input.value = ''; input.readOnly = false; }
+            const chatLoginForm = document.getElementById('chat-form');
+            const chatLoginArea = document.getElementById('chat-login-area');
+            if (chatLoginForm) chatLoginForm.style.display = 'none';
+            if (chatLoginArea) chatLoginArea.style.display = 'flex';
         }
     </script>
 </body>
