@@ -597,10 +597,20 @@
 
             function renderizarListaUsuarios(estadoPresencia) {
                 if (!onlineUsersListEl) return;
+
+                // Si el estado está vacío y nunca hemos recibido presencia, mantener "Cargando usuarios..."
                 if (!estadoPresencia || Object.keys(estadoPresencia).length === 0) {
+                    if (onlineUsersListEl.dataset.loaded !== 'true') {
+                        onlineUsersListEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:20px;">Cargando usuarios...</div>';
+                        return;
+                    }
+                    // Ya habíamos recibido presencia y ahora está vacío = nadie en línea
                     onlineUsersListEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:20px;">Nadie en línea</div>';
                     return;
                 }
+
+                // Marcar como que ya recibimos presencia al menos una vez
+                onlineUsersListEl.dataset.loaded = 'true';
                 let html = '';
                 for (const [key, { presence }] of Object.entries(estadoPresencia)) {
                     const datos = presence[0] || {};
@@ -643,20 +653,29 @@
 
             function iniciarPresenciaUsuarios() {
                 if (!userId) { userId = Math.random().toString(36).substr(2, 9); localStorage.setItem('comunidad_user_id', userId); }
-                const canalPresencia = supabase.channel('presence:comunidad').on('presence', { event: 'sync' }, () => {
-                    const estado = canalPresencia.presenceState();
-                    renderizarListaUsuarios(estado);
-                }).subscribe((state) => {
-                    if (state === 'SUBSCRIBED') {
-                        // Enviar presencia inmediatamente si hay usuario logueado
-                        if (userNickname) {
-                            canalPresencia.track({ user_id: userId, nickname: userNickname });
-                        } else if (savedApodo) {
-                            // Si hay sesión guardada pero userNickname no está definido aún
-                            canalPresencia.track({ user_id: userId, nickname: savedApodo });
-                        }
+                
+                // Determinar el nickname a usar ANTES de suscribir
+                const nickParaTrack = userNickname || savedApodo;
+                
+                const canalPresencia = supabase.channel('presence:comunidad')
+                    .on('presence', { event: 'sync' }, () => {
+                        const estado = canalPresencia.presenceState();
+                        renderizarListaUsuarios(estado);
+                    });
+                
+                // Hacer track INMEDIATAMENTE después de crear el canal (antes de subscribe)
+                // Esto evita la race condition donde el primer sync llega vacío
+                if (nickParaTrack) {
+                    canalPresencia.track({ user_id: userId, nickname: nickParaTrack });
+                }
+                
+                canalPresencia.subscribe((state) => {
+                    if (state === 'SUBSCRIBED' && nickParaTrack) {
+                        // Re-track por si acaso al confirmar suscripción
+                        canalPresencia.track({ user_id: userId, nickname: nickParaTrack });
                     }
                 });
+                
                 // Exponer función para re-track tras login (usuario se registra después de cargar)
                 window._trackPresence = (nick) => {
                     if (canalPresencia) {
