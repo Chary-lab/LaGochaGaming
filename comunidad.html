@@ -655,43 +655,51 @@
                 if (!userId) { userId = Math.random().toString(36).substr(2, 9); localStorage.setItem('comunidad_user_id', userId); }
 
                 const nickParaTrack = userNickname || savedApodo;
+                console.log('Iniciando presencia:', { userId, nickParaTrack, userNickname, savedApodo });
 
                 const canalPresencia = supabase.channel('presence:comunidad')
                     .on('presence', { event: 'sync' }, () => {
                         const estado = canalPresencia.presenceState();
+                        console.log('Sync recibido:', estado);
                         renderizarListaUsuarios(estado);
+                    })
+                    .on('presence', { event: 'join' }, ({ key, presence }) => {
+                        console.log('Usuario joined:', key, presence);
+                    })
+                    .on('presence', { event: 'leave' }, ({ key, presence }) => {
+                        console.log('Usuario left:', key, presence);
                     });
 
                 canalPresencia.subscribe((state) => {
+                    console.log('Estado de suscripción:', state);
                     if (state === 'SUBSCRIBED' && nickParaTrack) {
-                        // Track SOLO después de estar suscrito
+                        console.log('Haciendo track:', { user_id: userId, nickname: nickParaTrack });
                         canalPresencia.track({ user_id: userId, nickname: nickParaTrack });
-
-                        // Fallback: forzar re-track si no llega sync en 3 segundos
-                        setTimeout(() => {
-                            const estado = canalPresencia.presenceState();
-                            if (!estado || Object.keys(estado).length === 0) {
-                                canalPresencia.track({ user_id: userId, nickname: nickParaTrack });
-                            }
-                        }, 3000);
                     }
                 });
 
-                // KeepAlive: mantener presencia cada 30 segundos
+                // Fallback: forzar track después de 2 segundos
+                setTimeout(() => {
+                    if (nickParaTrack && canalPresencia) {
+                        console.log('Fallback: forzando track');
+                        canalPresencia.track({ user_id: userId, nickname: nickParaTrack });
+                    }
+                }, 2000);
+
+                // KeepAlive
                 const keepAliveInterval = setInterval(() => {
                     if (nickParaTrack && canalPresencia) {
+                        console.log('KeepAlive: track');
                         canalPresencia.track({ user_id: userId, nickname: nickParaTrack });
                     }
                 }, 30000);
 
-                // Exponer función para re-track tras login
                 window._trackPresence = (nick) => {
                     if (canalPresencia) {
+                        console.log('Re-track:', nick);
                         canalPresencia.track({ user_id: userId, nickname: nick || userNickname });
                     }
                 };
-
-                // Guardar referencia para limpiar keepAlive al cerrar
                 window._presenceKeepAlive = keepAliveInterval;
 
                 return () => {
