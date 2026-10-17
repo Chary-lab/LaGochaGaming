@@ -612,8 +612,8 @@
                 // Marcar como que ya recibimos presencia al menos una vez
                 onlineUsersListEl.dataset.loaded = 'true';
                 let html = '';
-                for (const [key, { presence }] of Object.entries(estadoPresencia)) {
-                    const datos = presence[0] || {};
+                for (const [key, presenceArray] of Object.entries(estadoPresencia)) {
+                    const datos = presenceArray[0] || {};
                     const nickSafe = (datos.nickname || 'Anónimo').toString().replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
                     const initial = nickSafe.charAt(0).toUpperCase();
                     html += '<div class="user-item"><div class="user-icon">'+initial+'</div><div class="user-name">'+nickSafe+'</div></div>';
