@@ -268,10 +268,12 @@
                 <p style="font-size: 0.8rem; color: var(--text-muted); margin: 5px 0 0 0;">Ambos requieren un apodo y un PIN de 4 dígitos para proteger tu cuenta y puntos.</p>
             </div>
 
-            <form id="chat-form" class="chat-input-area" style="display: none;">
+            <form id="chat-form" class="chat-input-area" style="display: none; position: relative;">
                 <input type="text" id="chat-autor" placeholder="Tu apodo" maxlength="30" required style="width: 130px;">
                 <input type="text" id="chat-mensaje" placeholder="Escribe un mensaje..." maxlength="300" required style="flex: 1;">
                 <button type="submit" class="btn-primary" style="padding: 10px 20px; border: none; cursor: pointer;">Enviar</button>
+                <!-- Badge de racha de mensajes -->
+                <span id="streak-badge-chat" class="streak-badge" style="display: none; position: absolute; top: -25px; right: 10px; white-space: nowrap;"></span>
             </form>
         </div>
 
@@ -556,6 +558,8 @@
             const REACCIONES = ['❤️', '😂', '🔥', '😮', '👍'];
             const MAX_MENSAJES_DOM = 100;
             const REACCIONES_STORAGE_KEY = 'gochi_chat_reacciones';
+            const STREAK_STORAGE_KEY = 'gochi_chat_streak';
+            const STREAK_TIMEOUT_MS = 300000; // 5 minutos para mantener racha
 
             // Obtener reacciones guardadas del localStorage
             function obtenerReaccionesGuardadas() {
@@ -578,6 +582,47 @@
             function contarReacciones(msgId) {
                 const reacciones = obtenerReaccionesGuardadas();
                 return (reacciones[msgId] || []).length;
+            }
+
+            // Sistema de racha de mensajes
+            function obtenerStreakData() {
+                try {
+                    const data = localStorage.getItem(STREAK_STORAGE_KEY);
+                    if (data) return JSON.parse(data);
+                } catch (e) {}
+                return { count: 0, lastMessageTime: 0 };
+            }
+
+            function guardarStreakData(data) {
+                localStorage.setItem(STREAK_STORAGE_KEY, JSON.stringify(data));
+            }
+
+            function actualizarStreak() {
+                const streakData = obtenerStreakData();
+                const ahora = Date.now();
+                
+                // Si pasaron más de 5 minutos desde el último mensaje, reiniciar racha
+                if (ahora - streakData.lastMessageTime > STREAK_TIMEOUT_MS) {
+                    streakData.count = 1;
+                } else {
+                    streakData.count += 1;
+                }
+                
+                streakData.lastMessageTime = ahora;
+                guardarStreakData(streakData);
+                
+                // Actualizar UI
+                const streakBadge = document.getElementById('streak-badge-chat');
+                if (streakBadge) {
+                    if (streakData.count > 1) {
+                        streakBadge.style.display = 'inline-flex';
+                        streakBadge.innerHTML = `🔥 Racha: ${streakData.count}`;
+                    } else {
+                        streakBadge.style.display = 'none';
+                    }
+                }
+                
+                return streakData.count;
             }
 
             // Crear HTML de reacciones rápidas (hover)
@@ -696,7 +741,7 @@
                 }
             }
 
-            if (chatForm) {
+if (chatForm) {
                 chatForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
                     const ahora = Date.now();
@@ -712,8 +757,10 @@
                         if (error) console.error('Error:', error);
                         else {
                             inputMensaje.value = '';
+                            // Actualizar streak de mensajes
+                            actualizarStreak();
                             // Actualizar ultima_actividad en BD
-                            await supabase.from('usuarios_comunidad').update({ ultima_actividad: new Date().toISOString() }).eq('apodo', userNickname);
+                            await supabase.from('users_comunidad').update({ ultima_actividad: new Date().toISOString() }).eq('apodo', userNickname);
                         }
                     } catch (e) { console.error(e); }
                     if (btnEnviar) btnEnviar.disabled = false;
