@@ -16,19 +16,29 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
     
     <style>
-        .comunidad-layout {
-            display: grid;
-            grid-template-columns: 260px 1fr 350px;
-            gap: 20px;
-            max-width: 1200px;
-            margin: 100px auto 40px auto;
-            padding: 0 20px;
-        }
-        @media (max-width: 900px) {
-            .comunidad-layout {
-                grid-template-columns: 1fr;
-            }
-        }
+.comunidad-layout {
+             display: grid;
+             grid-template-columns: 240px 1fr 320px;
+             gap: 20px;
+             max-width: 1400px;
+             margin: 100px auto 40px auto;
+             padding: 0 20px;
+         }
+         @media (max-width: 1100px) {
+             .comunidad-layout {
+                 grid-template-columns: 1fr;
+                 gap: 15px;
+             }
+             .online-users-column, .sidebar-comunidad {
+                 width: 100%;
+                 min-width: 0;
+             }
+         }
+         @media (max-width: 900px) {
+             .comunidad-layout {
+                 grid-template-columns: 1fr;
+             }
+         }
         .online-users-column {
             width: 260px;
             min-width: 220px;
@@ -187,6 +197,58 @@
             font-size: 1.5rem;
             color: var(--text-muted);
             cursor: pointer;
+        }
+
+        /* Badge de reacción en esquina del mensaje (tipo WhatsApp/Messenger) */
+        .msg-reaccion-esquina {
+            position: absolute;
+            bottom: 6px;
+            right: 8px;
+            display: none;
+            align-items: center;
+            gap: 3px;
+            background: var(--card-bg-subtle);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2px 8px 2px 6px;
+            font-size: 0.75rem;
+            pointer-events: auto;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            z-index: 5;
+        }
+
+        .msg-reaccion-esquina:hover {
+            transform: scale(1.08);
+            border-color: var(--accent-color);
+            box-shadow: 0 3px 12px rgba(255, 102, 178, 0.3);
+        }
+
+        .msg-reaccion-esquina.mia {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        .msg-reaccion-esquina.mia .esquina-emoji {
+            filter: brightness(1.1);
+        }
+
+        .esquina-emoji {
+            font-size: 0.95rem;
+            line-height: 1;
+        }
+
+        .esquina-count {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            min-width: 12px;
+            text-align: center;
+        }
+
+        .msg-reaccion-esquina.mia .esquina-count {
+            color: rgba(0,0,0,0.7);
         }
     </style>
 </head>
@@ -734,7 +796,7 @@
                 if (!container) return;
 
                 const badgesContainer = container.querySelector('.reacciones-badges');
-                if (!badgesContainer) return;
+                const esquina = container.querySelector('.msg-reaccion-esquina');
 
                 const msgIdStr = String(msgId);
                 // Leer cache local para mostrar inmediatamente
@@ -742,26 +804,53 @@
                     const cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
                     const msgCache = cache[msgIdStr] || {};
 
-                    badgesContainer.innerHTML = '';
-                    REACCIONES.forEach(emoji => {
-                        const usuarios = msgCache[emoji] || [];
-                        const count = usuarios.length;
-                        const mia = obtenerMiReaccionLocal(msgIdStr) === emoji;
+                    // Actualizar icono en esquina del mensaje (tipo WhatsApp/Messenger)
+                    if (esquina) {
+                        // Buscar la reacción con más votos, o la del usuario actual
+                        let mejorEmoji = null;
+                        let mejorCount = 0;
+                        REACCIONES.forEach(emoji => {
+                            const usuarios = msgCache[emoji] || [];
+                            if (usuarios.length > mejorCount) {
+                                mejorCount = usuarios.length;
+                                mejorEmoji = emoji;
+                            }
+                        });
 
-                        const badge = document.createElement('span');
-                        badge.className = 'reaccion-badge' + (mia ? ' mia' : '');
-                        badge.dataset.emoji = emoji;
-                        badge.innerHTML = `<span class="emoji">${emoji}</span><span class="count">${count}</span>`;
-                        badge.onclick = (e) => {
-                            e.stopPropagation();
-                            establecerReaccionUsuario(msgIdStr, emoji);
-                        };
-                        badge.onmouseenter = (e) => {
-                            if (count > 0) mostrarTooltipReaccion(e.currentTarget, msgIdStr, emoji, usuarios);
-                        };
-                        badge.onmouseleave = ocultarTooltipReaccion;
-                        badgesContainer.appendChild(badge);
-                    });
+                        if (mejorEmoji && mejorCount > 0) {
+                            const mia = obtenerMiReaccionLocal(msgIdStr) === mejorEmoji;
+                            esquina.style.display = 'flex';
+                            esquina.innerHTML = `<span class="esquina-emoji">${mejorEmoji}</span><span class="esquina-count">${mejorCount}</span>`;
+                            esquina.className = 'msg-reaccion-esquina' + (mia ? ' mia' : '');
+                            esquina.title = mejorCount + ' reacción' + (mejorCount > 1 ? 'es' : '') + ' con ' + mejorEmoji;
+                        } else {
+                            esquina.style.display = 'none';
+                        }
+                    }
+
+                    // Actualizar badges visibles debajo del mensaje (si existen)
+                    if (badgesContainer) {
+                        badgesContainer.innerHTML = '';
+                        REACCIONES.forEach(emoji => {
+                            const usuarios = msgCache[emoji] || [];
+                            const count = usuarios.length;
+                            const mia = obtenerMiReaccionLocal(msgIdStr) === emoji;
+
+                            const badge = document.createElement('span');
+                            badge.className = 'reaccion-badge' + (mia ? ' mia' : '');
+                            badge.dataset.emoji = emoji;
+                            badge.innerHTML = `<span class="emoji">${emoji}</span><span class="count">${count}</span>`;
+                            badge.onclick = (e) => {
+                                e.stopPropagation();
+                                establecerReaccionUsuario(msgIdStr, emoji);
+                            };
+                            badge.onmouseenter = (e) => {
+                                if (count > 0) mostrarTooltipReaccion(e.currentTarget, msgIdStr, emoji, usuarios);
+                            };
+                            badge.onmouseleave = ocultarTooltipReaccion;
+                            badgesContainer.appendChild(badge);
+                        });
+                    }
                 } catch (e) {}
             }
 
@@ -874,7 +963,7 @@
                     };
 
                     const headerDiv = document.createElement('div');
-                    headerDiv.style.cssText = 'display:flex;justify-content:space-between;margin-bottom:4px;font-size:0.8rem;';
+                    headerDiv.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;font-size:0.8rem;';
                     headerDiv.innerHTML = '<span style="color:var(--accent-color);font-weight:bold;">'+escaparHTML(msg.autor||'Anónimo')+'</span><span style="color:var(--text-muted);">'+fecha+'</span>';
 
                     const mensajeDiv = document.createElement('div');
@@ -884,9 +973,15 @@
                     container.appendChild(headerDiv);
                     container.appendChild(mensajeDiv);
                     
-                    // Badges de reacciones (ocultos por defecto, se actualizan vía realtime)
-                    const badges = crearBadgesReacciones(msgId);
-                    container.appendChild(badges);
+                    // Icono de reacción en esquina (tipo WhatsApp/Messenger)
+                    const reaccionEsquina = document.createElement('div');
+                    reaccionEsquina.className = 'msg-reaccion-esquina';
+                    reaccionEsquina.style.display = 'none';
+                    reaccionEsquina.innerHTML = '<span class="esquina-emoji">❤️</span><span class="esquina-count">1</span>';
+                    reaccionEsquina.onclick = (e) => { e.stopPropagation(); };
+                    reaccionEsquina.onmouseenter = (e) => { e.stopPropagation(); };
+                    reaccionEsquina.onmouseleave = (e) => { e.stopPropagation(); };
+                    container.appendChild(reaccionEsquina);
                     
                     // Burbuja de reacciones al hover
                     const burbuja = crearBurbujaReacciones(msgId);
@@ -1014,8 +1109,15 @@ if (chatForm) {
                     container.appendChild(headerDiv);
                     container.appendChild(mensajeDiv);
                     
-                    const badges = crearBadgesReacciones(msgId);
-                    container.appendChild(badges);
+                    // Icono de reacción en esquina (tipo WhatsApp/Messenger)
+                    const reaccionEsquina = document.createElement('div');
+                    reaccionEsquina.className = 'msg-reaccion-esquina';
+                    reaccionEsquina.style.display = 'none';
+                    reaccionEsquina.innerHTML = '<span class="esquina-emoji">❤️</span><span class="esquina-count">1</span>';
+                    reaccionEsquina.onclick = (e) => { e.stopPropagation(); };
+                    reaccionEsquina.onmouseenter = (e) => { e.stopPropagation(); };
+                    reaccionEsquina.onmouseleave = (e) => { e.stopPropagation(); };
+                    container.appendChild(reaccionEsquina);
                     
                     const burbuja = crearBurbujaReacciones(msgId);
                     container.appendChild(burbuja);
