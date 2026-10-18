@@ -11,65 +11,60 @@ var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // === GESTIÓN GLOBAL DE TEMA (INDEPENDIENTE DE LOGIN) ===
 (function () {
-    let themeObserver = null;
-    let currentAppliedTheme = null;
+    const STORAGE_KEY = 'theme';
+    const CLASS_LIGHT = 'light-mode';
+    const BTN_ID = 'theme-toggle';
+
+    function getIcon(theme) {
+        return theme === 'light' ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
+    }
 
     function applyTheme(theme) {
-        currentAppliedTheme = theme;
         if (theme === 'light') {
-            document.body.classList.add('light-mode');
+            document.body.classList.add(CLASS_LIGHT);
         } else {
-            document.body.classList.remove('light-mode');
+            document.body.classList.remove(CLASS_LIGHT);
         }
-
-        const themeBtn = document.getElementById('theme-toggle');
-        if (themeBtn) {
-            themeBtn.innerHTML = theme === 'light' ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
+        const btn = document.getElementById(BTN_ID);
+        if (btn) {
+            btn.innerHTML = getIcon(theme);
         }
     }
 
     function toggleTheme() {
-        const isLight = document.body.classList.contains('light-mode');
+        const isLight = document.body.classList.contains(CLASS_LIGHT);
         const newTheme = isLight ? 'dark' : 'light';
-        localStorage.setItem('theme', newTheme);
+        localStorage.setItem(STORAGE_KEY, newTheme);
         applyTheme(newTheme);
     }
 
     window.initTheme = function initTheme() {
-        const savedTheme = localStorage.getItem('theme');
-        let currentTheme = savedTheme;
-
-        if (!currentTheme) {
-            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
-                currentTheme = 'light';
-            } else {
-                currentTheme = 'dark';
-            }
+        const saved = localStorage.getItem(STORAGE_KEY);
+        let theme = saved;
+        if (!theme) {
+            theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches
+                ? 'light' : 'dark';
         }
+        applyTheme(theme);
 
-        applyTheme(currentTheme);
-
-        const themeBtn = document.getElementById('theme-toggle');
-        if (themeBtn) {
-            themeBtn.onclick = null;
-            themeBtn.removeEventListener('click', toggleTheme);
-            themeBtn.addEventListener('click', toggleTheme);
+        const btn = document.getElementById(BTN_ID);
+        if (btn) {
+            btn.onclick = null;
+            btn.removeEventListener('click', toggleTheme);
+            btn.addEventListener('click', toggleTheme);
         }
     };
 
-    // Auto-inicializar tan pronto como sea posible (independiente de DOMContentLoaded)
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', window.initTheme, { once: true });
+        document.addEventListener('DOMContentLoaded', initTheme, { once: true });
     } else {
-        window.initTheme();
+        initTheme();
     }
 })();
 
 document.addEventListener('DOMContentLoaded', () => {
     insertarComponentesUIGlobales();
     inicializarMenuMovil();
-    
-    // Verificar sesión de usuario de comunidad en todas las páginas
     verificarSesionGlobal();
 });
 
@@ -143,12 +138,18 @@ function cerrarConfirmModal() {
     if (modal) modal.style.display = 'none';
 }
 
-window.cerrarSesionAdminGlobal = function cerrarSesionAdminGlobal() {
+window.cerrarSesionAdminGlobal = async function cerrarSesionAdminGlobal() {
+    try {
+        await supabase.auth.signOut();
+    } catch (e) {}
+
     localStorage.removeItem('comunidad_nickname');
     localStorage.removeItem('comunidad_session_token');
     localStorage.removeItem('comunidad_user_id');
     localStorage.removeItem('gochi_registrado_user');
+
     document.body.classList.remove('admin-mode-active');
+
     const panelPendientes = document.getElementById('panelPendientes');
     if (panelPendientes) panelPendientes.style.display = 'none';
     const btnLogout = document.getElementById('btn-logout-galeria');
@@ -160,6 +161,7 @@ window.cerrarSesionAdminGlobal = function cerrarSesionAdminGlobal() {
         btnToggle.innerHTML = '<i class="fa-solid fa-lock"></i> Modo Moderación';
         btnToggle.classList.remove('active');
     }
+
     window.location.reload();
 };
 
