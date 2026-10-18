@@ -25,13 +25,13 @@ window.inyectarMenuGlobal = function inyectarMenuGlobal() {
     const apodo = localStorage.getItem('comunidad_nickname');
     const temaClaro = localStorage.getItem('gochi_tema') === 'light';
     const usuarioHTML = apodo
-        ? `<span id="nav-user-info" style="display:inline-flex; align-items:center; gap:10px; color:var(--text-main); font-size:0.9rem; font-weight:600; margin-left:auto;">
+        ? `<span id="nav-user-info" style="display:inline-flex; align-items:center; gap:8px; color:var(--text-main); font-size:0.9rem; font-weight:600;">
                 <i class="fa-solid fa-user" style="color:var(--accent-color);"></i>
                 <span id="nav-username">${apodo}</span>
                 <button onclick="cerrarSesion()" class="btn-logout-nav" title="Cerrar Sesión"><i class="fa-solid fa-right-from-bracket"></i> Salir</button>
             </span>`
         : '';
-    const temaBtnHTML = `<button id="btn-toggle-tema" class="btn-tema-nav" title="Cambiar tema" style="background:transparent; border:none; color:var(--text-main); cursor:pointer; margin-left:10px; font-size:1.1rem;">${temaClaro ? '🌙 Oscuro' : '☀️ Claro'}</button>`;
+    const temaBtnHTML = `<button id="btn-toggle-tema" class="btn-tema-nav" title="Cambiar tema" style="background:transparent; border:none; color:var(--text-main); cursor:pointer; font-size:1.1rem;">${temaClaro ? '🌙 Oscuro' : '☀️ Claro'}</button>`;
 
     header.innerHTML = `
         <nav class="navbar">
