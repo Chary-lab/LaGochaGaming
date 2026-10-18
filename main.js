@@ -1,4 +1,4 @@
-// --- LÓGICA GLOBAL COMPARTIDA (URLs, Supabase y Notificaciones) ---
+// --- LÓGICA GLOBAL COMPARTIDA (URLs, Supabase, Menú y Tema) ---
 
 if (window.location.pathname.endsWith('/index.html')) {
     const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname.replace('/index.html', '/') + window.location.search + window.location.hash;
@@ -9,14 +9,99 @@ const SUPABASE_URL = 'https://cydiyaacnyydprgffmkq.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN5ZGl5YWFjbnl5ZHByZ2ZmbWtxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE3NjY1ODQsImV4cCI6MjEwNzM0MjU4NH0.fkipcX7Lx4lhGSa0zTDQ9BDNN3jiGTksB2hMlHH1bAs';
 var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-document.addEventListener('DOMContentLoaded', () => {
-    insertarComponentesUIGlobales();
-    inicializarMenuMovil();
-    verificarSesionGlobal();
-    actualizarUsuarioNavComunidad();
-});
+// === INYECCIÓN DINÁMICA DEL MENÚ DE NAVEGACIÓN ===
 
-// === COMPONENTES UI GLOBALES (toast, confirm modal, menú móvil, sesión) ===
+window.inyectarMenuGlobal = function inyectarMenuGlobal() {
+    const header = document.getElementById('global-header');
+    if (!header) return;
+
+    const path = window.location.pathname;
+    const enCine = path.includes('cine');
+    const enSorteo = path.includes('sorteo');
+    const enGaleria = path.includes('galeria');
+    const enComunidad = path.includes('comunidad');
+    const enInicio = path.endsWith('/') || path.includes('index.html');
+
+    const apodo = localStorage.getItem('comunidad_nickname');
+    const temaClaro = localStorage.getItem('gochi_tema') === 'light';
+    const usuarioHTML = apodo
+        ? `<span id="nav-user-info" style="display:inline-flex; align-items:center; gap:10px; color:var(--text-main); font-size:0.9rem; font-weight:600; margin-left:auto;">
+                <i class="fa-solid fa-user" style="color:var(--accent-color);"></i>
+                <span id="nav-username">${apodo}</span>
+                <button onclick="cerrarSesion()" class="btn-logout-nav" title="Cerrar Sesión"><i class="fa-solid fa-right-from-bracket"></i> Salir</button>
+            </span>`
+        : '';
+    const temaBtnHTML = `<button id="btn-toggle-tema" class="btn-tema-nav" title="Cambiar tema" style="background:transparent; border:none; color:var(--text-main); cursor:pointer; margin-left:10px; font-size:1.1rem;">${temaClaro ? '🌙 Oscuro' : '☀️ Claro'}</button>`;
+
+    header.innerHTML = `
+        <nav class="navbar">
+            <div class="logo">LAGOCHA<span>GAMING</span></div>
+            <div class="nav-links">
+                <a href="./" class="${enInicio ? 'nav-active' : ''}">Inicio</a>
+                <a href="./#stream" class="">Directo</a>
+                <a href="./#clips" class="">Clips</a>
+                <a href="cine" class="${enCine ? 'nav-active' : ''}">🍿 GochiWatch</a>
+                <a href="sorteo" class="${enSorteo ? 'nav-active' : ''}">🎁 Sorteo</a>
+                <a href="galeria" class="${enGaleria ? 'nav-active' : ''}">📸 Galería</a>
+                <a href="comunidad" class="${enComunidad ? 'nav-active' : ''}">💬 Comunidad</a>
+            </div>
+            <div class="auth-buttons" id="auth-buttons">
+                ${temaBtnHTML}
+                ${usuarioHTML}
+            </div>
+        </nav>
+    `;
+};
+
+// === MODO CLARO / OSCURO ===
+
+window.initTema = function initTema() {
+    const temaGuardado = localStorage.getItem('gochi_tema');
+    if (temaGuardado === 'light') {
+        document.body.classList.add('light-mode');
+    }
+
+    const btn = document.getElementById('btn-toggle-tema');
+    if (btn) {
+        btn.textContent = temaGuardado === 'light' ? '🌙 Oscuro' : '☀️ Claro';
+        btn.onclick = toggleTema;
+    }
+};
+
+window.toggleTema = function toggleTema() {
+    const esClaro = document.body.classList.toggle('light-mode');
+    localStorage.setItem('gochi_tema', esClaro ? 'light' : 'dark');
+    const btn = document.getElementById('btn-toggle-tema');
+    if (btn) btn.textContent = esClaro ? '🌙 Oscuro' : '☀️ Claro';
+};
+
+// === SESIÓN DE COMUNIDAD ===
+
+window.cerrarSesion = function cerrarSesion() {
+    localStorage.removeItem('comunidad_nickname');
+    localStorage.removeItem('comunidad_session_token');
+    localStorage.removeItem('comunidad_user_id');
+    localStorage.removeItem('gochi_registrado_user');
+    localStorage.removeItem('gochi_user_likes');
+
+    mostrarToast('Sesión cerrada correctamente');
+    setTimeout(() => { window.location.reload(); }, 800);
+};
+
+window.actualizarUsuarioNavComunidad = function actualizarUsuarioNavComunidad() {
+    inyectarMenuGlobal();
+};
+
+window.validarSesionStreamer = async function validarSesionStreamer() {
+    try {
+        const { data: { session } } = await supabase.auth.getSession();
+        return !!session;
+    } catch (e) {
+        return false;
+    }
+};
+
+// === COMPONENTES UI GLOBALES (toast, confirm modal, menú móvil) ===
 
 window.insertarComponentesUIGlobales = function insertarComponentesUIGlobales() {
     if (!document.getElementById('gochi-toast')) {
@@ -84,43 +169,9 @@ window.mostrarConfirmacionModal = function mostrarConfirmacionModal({ titulo, me
 function cerrarConfirmModal() {
     const modal = document.getElementById('gochi-confirm-modal');
     if (modal) modal.style.display = 'none';
-}
-
-window.cerrarSesionAdminGlobal = async function cerrarSesionAdminGlobal() {
-    try {
-        await supabase.auth.signOut();
-    } catch (e) {}
-
-    localStorage.removeItem('comunidad_nickname');
-    localStorage.removeItem('comunidad_session_token');
-    localStorage.removeItem('comunidad_user_id');
-    localStorage.removeItem('gochi_registrado_user');
-
-    document.body.classList.remove('admin-mode-active');
-
-    const panelPendientes = document.getElementById('panelPendientes');
-    if (panelPendientes) panelPendientes.style.display = 'none';
-    const btnLogout = document.getElementById('btn-logout-galeria');
-    if (btnLogout) btnLogout.style.display = 'none';
-    const adminPanel = document.getElementById('streamerAdminPanel');
-    if (adminPanel) adminPanel.style.display = 'none';
-    const btnToggle = document.getElementById('btn-toggle-admin');
-    if (btnToggle) {
-        btnToggle.innerHTML = '<i class="fa-solid fa-lock"></i> Modo Moderación';
-        btnToggle.classList.remove('active');
-    }
-
-    window.location.reload();
 };
 
-window.validarSesionStreamer = async function validarSesionStreamer() {
-    try {
-        const { data: { session } } = await supabase.auth.getSession();
-        return !!session;
-    } catch (e) {
-        return false;
-    }
-};
+// === MENÚ MÓVIL ===
 
 window.inicializarMenuMovil = function inicializarMenuMovil() {
     const btn = document.querySelector('.mobile-menu-toggle-btn');
@@ -133,29 +184,15 @@ window.inicializarMenuMovil = function inicializarMenuMovil() {
 };
 
 window.verificarSesionGlobal = function verificarSesionGlobal() {
-    // La sesión de comunidad se gestiona por página (comunidad_nickname en localStorage),
-    // independiente del login de Supabase. Reservado para comprobaciones globales futuras.
+    // La sesión de comunidad se gestiona por página (comunidad_nickname en localStorage).
 };
 
-window.actualizarUsuarioNavComunidad = function actualizarUsuarioNavComunidad() {
-    const apodo = localStorage.getItem('comunidad_nickname');
-    const navUserInfo = document.getElementById('nav-user-info');
-    const navUsername = document.getElementById('nav-username');
-    if (!navUserInfo || !navUsername) return;
-    if (apodo) {
-        navUsername.textContent = apodo;
-        navUserInfo.style.display = 'inline-flex';
-    } else {
-        navUserInfo.style.display = 'none';
-    }
-};
+// === INICIALIZACIÓN ===
 
-window.cerrarSesion = function cerrarSesion() {
-    localStorage.removeItem('comunidad_nickname');
-    localStorage.removeItem('comunidad_session_token');
-    localStorage.removeItem('comunidad_user_id');
-    localStorage.removeItem('gochi_registrado_user');
-    actualizarUsuarioNavComunidad();
-    mostrarToast('Sesión cerrada correctamente');
-    window.location.reload();
-};
+document.addEventListener('DOMContentLoaded', () => {
+    insertarComponentesUIGlobales();
+    inyectarMenuGlobal();
+    initTema();
+    inicializarMenuMovil();
+    verificarSesionGlobal();
+});
