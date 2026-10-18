@@ -78,14 +78,42 @@ window.toggleTema = function toggleTema() {
 // === SESIÓN DE COMUNIDAD ===
 
 window.cerrarSesion = function cerrarSesion() {
+    // Solo cierra sesión de comunidad (usuarios_comunidad), no toca Supabase Auth (admin independiente)
     localStorage.removeItem('comunidad_nickname');
     localStorage.removeItem('comunidad_session_token');
     localStorage.removeItem('comunidad_user_id');
     localStorage.removeItem('gochi_registrado_user');
     localStorage.removeItem('gochi_user_likes');
 
-    mostrarToast('Sesión cerrada correctamente');
+    mostrarToast('Sesión de comunidad cerrada');
     setTimeout(() => { window.location.reload(); }, 800);
+};
+
+window.cerrarSesionAdminGlobal = async function cerrarSesionAdminGlobal() {
+    try {
+        await supabase.auth.signOut();
+    } catch (e) {}
+
+    localStorage.removeItem('comunidad_nickname');
+    localStorage.removeItem('comunidad_session_token');
+    localStorage.removeItem('comunidad_user_id');
+    localStorage.removeItem('gochi_registrado_user');
+
+    document.body.classList.remove('admin-mode-active');
+
+    const panelPendientes = document.getElementById('panelPendientes');
+    if (panelPendientes) panelPendientes.style.display = 'none';
+    const btnLogout = document.getElementById('btn-logout-galeria');
+    if (btnLogout) btnLogout.style.display = 'none';
+    const adminPanel = document.getElementById('streamerAdminPanel');
+    if (adminPanel) adminPanel.style.display = 'none';
+    const btnToggle = document.getElementById('btn-toggle-admin');
+    if (btnToggle) {
+        btnToggle.innerHTML = '<i class="fa-solid fa-lock"></i> Modo Moderación';
+        btnToggle.classList.remove('active');
+    }
+
+    window.location.reload();
 };
 
 window.actualizarUsuarioNavComunidad = function actualizarUsuarioNavComunidad() {
