@@ -904,9 +904,11 @@
                         this.style.transform = 'scale(1)';
                         if (obtenerMiReaccionLocal(msgIdStr) !== emoji) this.style.background = 'transparent';
                     };
-                    btn.onclick = (e) => {
+                    btn.onclick = async (e) => {
+                        e.preventDefault();
                         e.stopPropagation();
-                        establecerReaccionUsuario(msgIdStr, emoji);
+                        await establecerReaccionUsuario(msgIdStr, emoji);
+                        actualizarUIReacciones(msgIdStr);
                     };
                     container.appendChild(btn);
                 });
@@ -974,7 +976,7 @@
                     
                     const container = document.createElement('div');
                     container.className = 'chat-msg-container';
-                    container.dataset.msgId = msgId;
+                    container.dataset.msgid = msgId;
                     container.style.cssText = 'position:relative;background:rgba(255,255,255,0.03);padding:10px 14px;border-radius:8px;border:1px solid var(--border-color);cursor:pointer;';
                     
                     // Mostrar burbuja de reacciones al hover
@@ -1126,7 +1128,7 @@ if (chatForm) {
                     
                     const container = document.createElement('div');
                     container.className = 'chat-msg-container';
-                    container.dataset.msgId = msgId;
+                    container.dataset.msgid = msgId;
                     container.style.cssText = 'position:relative;background:rgba(255,255,255,0.03);padding:10px 14px;border-radius:8px;border:1px solid var(--border-color);cursor:pointer;';
                     
                     // Mostrar burbuja de reacciones al hover
