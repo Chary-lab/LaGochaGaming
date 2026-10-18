@@ -1,4 +1,4 @@
-// --- LÓGICA GLOBAL COMPARTIDA (Tema, URLs, Supabase y Notificaciones) ---
+// --- LÓGICA GLOBAL COMPARTIDA (URLs, Supabase y Notificaciones) ---
 
 if (window.location.pathname.endsWith('/index.html')) {
     const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname.replace('/index.html', '/') + window.location.search + window.location.hash;
@@ -8,59 +8,6 @@ if (window.location.pathname.endsWith('/index.html')) {
 const SUPABASE_URL = 'https://cydiyaacnyydprgffmkq.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN5ZGl5YWFjbnl5ZHByZ2ZmbWtxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE3NjY1ODQsImV4cCI6MjEwNzM0MjU4NH0.fkipcX7Lx4lhGSa0zTDQ9BDNN3jiGTksB2hMlHH1bAs';
 var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-// === GESTIÓN GLOBAL DE TEMA (INDEPENDIENTE DE LOGIN) ===
-(function () {
-    const STORAGE_KEY = 'theme';
-    const CLASS_LIGHT = 'light-mode';
-    const BTN_ID = 'theme-toggle';
-
-    function getIcon(theme) {
-        return theme === 'light' ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
-    }
-
-    function applyTheme(theme) {
-        if (theme === 'light') {
-            document.body.classList.add(CLASS_LIGHT);
-        } else {
-            document.body.classList.remove(CLASS_LIGHT);
-        }
-        const btn = document.getElementById(BTN_ID);
-        if (btn) {
-            btn.innerHTML = getIcon(theme);
-        }
-    }
-
-    function toggleTheme() {
-        const isLight = document.body.classList.contains(CLASS_LIGHT);
-        const newTheme = isLight ? 'dark' : 'light';
-        localStorage.setItem(STORAGE_KEY, newTheme);
-        applyTheme(newTheme);
-    }
-
-    window.initTheme = function initTheme() {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        let theme = saved;
-        if (!theme) {
-            theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches
-                ? 'light' : 'dark';
-        }
-        applyTheme(theme);
-
-        const btn = document.getElementById(BTN_ID);
-        if (btn) {
-            btn.onclick = null;
-            btn.removeEventListener('click', toggleTheme);
-            btn.addEventListener('click', toggleTheme);
-        }
-    };
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initTheme, { once: true });
-    } else {
-        initTheme();
-    }
-})();
 
 document.addEventListener('DOMContentLoaded', () => {
     insertarComponentesUIGlobales();
