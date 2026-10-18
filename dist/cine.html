@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <link rel="icon" type="image/x-icon" href="img/favicon.ico">
+    <link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="img/android-chrome-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="img/android-chrome-512x512.png">
+    <meta name="theme-color" content="#ffffff">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GochiWatch (Cine) | LaGochaGaming</title>
+    <meta property="og:title" content="GochiWatch (Cine) | LaGochaGaming">
+    <meta property="og:description" content="Disfruta de películas y videos en comunidad con La Gocha.">
+    <meta property="og:image" content="img/3.jpg">
+    <meta property="og:type" content="website">
+    <link rel="stylesheet" href="style.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" crossorigin="anonymous" />
+    <style>
+        .cine-layout {
+            max-width: 1600px;
+            margin: 85px auto 40px;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 20px;
+            align-items: start;
+        }
+
+        .cine-main-screen {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .video-player-box {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: #000;
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--glow);
+        }
+
+        .video-player-box video, .video-player-box iframe.yt-player {
+            width: 100%;
+            height: 100%;
+            border: none;
+            object-fit: contain;
+        }
+
+        .streamer-overlay-cam {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 280px;
+            aspect-ratio: 16/9;
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid var(--accent-color);
+            box-shadow: var(--glow);
+            z-index: 10;
+        }
+        .streamer-overlay-cam iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .cine-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .chat-box-cine {
+            height: 520px;
+            background: var(--card-bg);
+            border-radius: 14px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            box-shadow: var(--glow);
+        }
+        .chat-box-cine iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .streamer-admin-panel {
+            background: var(--card-bg);
+            border: 2px solid var(--accent-color);
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: var(--glow);
+            display: none;
+        }
+        .streamer-admin-panel h3 {
+            color: var(--accent-color);
+            font-size: 1rem;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-transform: uppercase;
+        }
+
+        .cine-controls-bar {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            box-shadow: var(--glow);
+        }
+
+        .btn-streamer-login {
+            background: var(--card-bg-subtle);
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-streamer-login.active {
+            background: var(--accent-color);
+            color: #fff;
+            border-color: var(--accent-color);
+            box-shadow: var(--glow);
+        }
+
+        @media (max-width: 1100px) {
+            .cine-layout { grid-template-columns: 1fr; }
+            .chat-box-cine { height: 400px; }
+            .streamer-overlay-cam { width: 180px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVEGACIÓN PRINCIPAL -->
+    <div id="navbar-root"></div>
+    <script src="partials/navbar.js"></script>
+
+    <div class="cine-layout">
+        <div class="cine-main-screen">
+            <!-- BARRA DE TÍTULO Y BOTÓN DE PANEL -->
+            <div class="cine-controls-bar">
+                <h1 style="font-size: 1.3rem;"><i class="fa-solid fa-film" style="color: var(--accent-color);"></i> GochiWatch - Cine en Directo</h1>
+                <button id="btn-toggle-streamer" class="btn-streamer-login" onclick="toggleModoStreamerCine()">
+                    <i class="fa-solid fa-lock"></i> Panel Streamer
+                </button>
+            </div>
+
+            <!-- PANEL DE CONTROL DEL STREAMER (SOLO ADMINS) -->
+            <div id="streamerAdminPanel" class="streamer-admin-panel">
+                <h3><i class="fa-solid fa-sliders"></i> Panel Maestro de Reproducción</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">
+                    Pega cualquier enlace (<strong>Google Drive</strong>, <strong>YouTube</strong> o <strong>.mp4 directos</strong>).
+                </p>
+                <div style="display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap;">
+                    <input type="text" id="inputVideoUrl" placeholder="Pega aquí el enlace de Drive, YouTube o .mp4..." style="flex: 1; min-width: 250px; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg-subtle); color: var(--text-main); outline: none;">
+                    <button onclick="actualizarUrlPelicula()" class="btn-primary" style="padding: 10px 20px; border: none; cursor: pointer;">Cargar Video</button>
+                    <button onclick="cerrarReproductorTotal()" class="btn-primary" style="background: #ff4d4d; padding: 10px 20px; border: none; cursor: pointer;">🛑 Apagar</button>
+                    <button onclick="cerrarSesionAdminGlobal()" class="btn-primary" style="background: #c0392b; padding: 10px 20px; border: none; cursor: pointer;"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión</button>
+                </div>
+                <div>
+                    <span style="font-size: 0.85rem; color: #53fc18; font-weight: bold;" id="statusSyncText">🟢 Sincronización activa</span>
+                </div>
+            </div>
+
+            <!-- CONTENEDOR DE REPRODUCCIÓN Y CÁMARA DE KICK -->
+            <div class="video-player-box" id="videoBoxContainer">
+                <!-- Reproductor HTML5 para MP4 / Google Drive -->
+                <video id="cineVideoPlayer" controls controlslist="nodownload" style="display: none;">
+                    <source id="cineVideoSource" src="" type="video/mp4">
+                    Tu navegador no soporta reproducción.
+                </video>
+
+                <!-- Reproductor IFrame para YouTube -->
+                <div id="ytPlayerContainer" style="display: none; width:100%; height:100%;"></div>
+
+                <!-- Overlay con la cámara/stream en directo de La Gocha -->
+                <div class="streamer-overlay-cam">
+                    <iframe src="https://player.kick.com/lagochagaming?autoplay=true&muted=false" frameborder="0" scrolling="no" allowfullscreen="true" title="Transmisión en directo" loading="lazy"></iframe>
+                </div>
+            </div>
+        </div>
+
+        <!-- BARRA LATERAL (CHAT DE KICK) -->
+        <div class="cine-sidebar">
+            <div class="chat-box-cine">
+                <iframe src="https://kick.com/popout/lagochagaming/chat" frameborder="0" scrolling="no" title="Chat de Kick" loading="lazy"></iframe>
+            </div>
+            <div class="sidebar-info" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 18px; text-align: center;">
+                <h3 style="color: var(--accent-color); font-size: 0.9rem; margin-bottom: 8px; text-transform: uppercase;">ℹ️ ¿Cómo funciona?</h3>
+                <p style="color: var(--text-muted); font-size: 0.82rem; line-height: 1.5;">
+                    La Gocha transmite su reacción en directo mientras disfrutan de la película o videos totalmente sincronizados en tiempo real.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE LOGIN PARA STREAMER -->
+    <div id="modal-pin-cine" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5,7,10,0.85); backdrop-filter: blur(5px); z-index: 10000; justify-content: center; align-items: center;">
+        <div style="background: var(--card-bg); border: 1px solid var(--accent-color); padding: 30px; border-radius: 16px; box-shadow: var(--glow); text-align: center; max-width: 380px; width: 90%;">
+            <h3 style="color: var(--accent-color); margin-bottom: 15px; font-size: 1.2rem;">🔒 ACCESO STREAMER CINE</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Ingresa tus datos para controlar la reproducción:</p>
+            
+            <input type="email" id="streamer-cine-email" placeholder="Correo electrónico" style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg-subtle); color: var(--text-main); font-size: 0.95rem; margin-bottom: 10px; outline: none;">
+            <input type="password" id="streamer-cine-password" placeholder="Contraseña" style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg-subtle); color: var(--text-main); font-size: 0.95rem; margin-bottom: 10px; outline: none;">
+            
+            <div id="feedback-cine-pin" style="margin-bottom:15px; color: #ff4d4d; font-size: 0.85rem; font-weight: bold;"></div>
+            
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button onclick="iniciarSesionStreamerCine()" class="btn-primary" style="border: none; cursor: pointer;">Entrar</button>
+                <button onclick="cerrarModalCinePin()" class="btn-primary" style="background: var(--text-muted); color: #fff; border: none; cursor: pointer;">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS EXTERNOS -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="main.min.js"></script>
+
+    <!-- LÓGICA DE JAVASCRIPT DEL CINE -->
+    <script>
+        let streamerCineAutenticado = false;
+        const mp4Player = document.getElementById('cineVideoPlayer');
+        const ytContainer = document.getElementById('ytPlayerContainer');
+        let ytPlayer = null;
+        let esYouTube = false;
+        let actualizandoLocalmente = false;
+        let urlActual = '';
+
+        function procesarUrlEntrante(url) {
+            if (!url) return '';
+            url = url.trim();
+
+            if (url.includes('drive.google.com') || url.includes('googleusercontent.com')) {
+                let driveId = null;
+                const matchDrive = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+                if (matchDrive && matchDrive[1]) {
+                    driveId = matchDrive[1];
+                } else {
+                    const urlParams = new URLSearchParams(url.split('?')[1]);
+                    if (urlParams.has('id')) {
+                        driveId = urlParams.get('id');
+                    }
+                }
+
+                if (driveId) {
+                    return `https://lh3.googleusercontent.com/d/${driveId}`;
+                }
+            }
+
+            return url;
+        }
+
+        function extraerYouTubeId(url) {
+            if (!url) return null;
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
+
+        function onYouTubeIframeAPIReady() {}
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                streamerCineAutenticado = true;
+                activarModoStreamerUI();
+            }
+
+            await cargarEstadoCine();
+
+            try {
+                supabase
+                    .channel('realtime_cine_sync')
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'sync_cine' }, (payload) => {
+                        sincronizarReproductorRemoto(payload.new);
+                    })
+                    .subscribe();
+            } catch(e) { console.log('Modo local activo'); }
+
+            mp4Player.addEventListener('play', () => { if (streamerCineAutenticado && !actualizandoLocalmente && !esYouTube) enviarComandoSync('play', mp4Player.currentTime); });
+            mp4Player.addEventListener('pause', () => { if (streamerCineAutenticado && !actualizandoLocalmente && !esYouTube) enviarComandoSync('pause', mp4Player.currentTime); });
+            mp4Player.addEventListener('seeked', () => { if (streamerCineAutenticado && !actualizandoLocalmente && !esYouTube) enviarComandoSync('seek', mp4Player.currentTime); });
+
+            document.getElementById('streamer-cine-password')?.addEventListener('keypress', (e) => { if (e.key === 'Enter') iniciarSesionStreamerCine(); });
+        });
+
+        async function cargarEstadoCine() {
+            try {
+                const { data, error } = await supabase.from('sync_cine').select('*').eq('id', 1).single();
+                if (!error && data) {
+                    sincronizarReproductorRemoto(data);
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        async function actualizarUrlPelicula() {
+            if (!(await validarSesionStreamer())) {
+                mostrarToast('Tu sesión ha expirado.', true);
+                streamerCineAutenticado = false;
+                toggleModoStreamerCine();
+                return;
+            }
+
+            let rawUrl = document.getElementById('inputVideoUrl').value.trim();
+            if (!rawUrl) {
+                mostrarToast('Ingresa un enlace válido.', true);
+                return;
+            }
+
+            const processedUrl = procesarUrlEntrante(rawUrl);
+
+            try {
+                const { error } = await supabase.from('sync_cine').upsert({
+                    id: 1,
+                    video_url: processedUrl,
+                    estado: 'pause',
+                    tiempo: 0,
+                    updated_at: new Date().toISOString()
+                });
+                if (error) throw error;
+                mostrarToast('¡Video cargado y sincronizado con éxito!');
+            } catch(e) { mostrarToast('Error al actualizar el video.', true); }
+        }
+
+        async function cerrarReproductorTotal() {
+            if (!(await validarSesionStreamer())) {
+                mostrarToast('Tu sesión ha expirado.', true);
+                return;
+            }
+
+            if (mp4Player) {
+                mp4Player.pause();
+                mp4Player.currentTime = 0;
+                mp4Player.style.display = 'none';
+            }
+            if (ytPlayer && typeof ytPlayer.destroy === 'function') {
+                ytPlayer.destroy();
+                ytPlayer = null;
+            }
+            if (ytContainer) {
+                ytContainer.style.display = 'none';
+                ytContainer.innerHTML = '';
+            }
+
+            try {
+                await supabase.from('sync_cine').upsert({
+                    id: 1,
+                    video_url: '',
+                    estado: 'pause',
+                    tiempo: 0,
+                    updated_at: new Date().toISOString()
+                });
+                mostrarToast('Reproductor cerrado para todos.');
+            } catch(e) { mostrarToast('Error al apagar el reproductor.', true); }
+        }
+
+        async function enviarComandoSync(estado, tiempo) {
+            if (!(await validarSesionStreamer())) return;
+
+            try {
+                await supabase.from('sync_cine').upsert({
+                    id: 1,
+                    estado: estado,
+                    tiempo: tiempo,
+                    updated_at: new Date().toISOString()
+                });
+            } catch(e) { console.error(e); }
+        }
+
+        function sincronizarReproductorRemoto(data) {
+            if (!data || !data.video_url) {
+                if (mp4Player) {
+                    mp4Player.pause();
+                    mp4Player.currentTime = 0;
+                    mp4Player.style.display = 'none';
+                }
+                if (ytPlayer && typeof ytPlayer.destroy === 'function') {
+                    ytPlayer.destroy();
+                    ytPlayer = null;
+                }
+                if (ytContainer) {
+                    ytContainer.style.display = 'none';
+                    ytContainer.innerHTML = '';
+                }
+                return;
+            }
+
+            const finalUrl = procesarUrlEntrante(data.video_url);
+            const ytId = extraerYouTubeId(finalUrl);
+
+            if (ytId) {
+                esYouTube = true;
+                mp4Player.style.display = 'none';
+                mp4Player.pause();
+                ytContainer.style.display = 'block';
+
+                if (!ytPlayer || urlActual !== finalUrl) {
+                    urlActual = finalUrl;
+                    ytContainer.innerHTML = '<div id="ytPlayerTarget"></div>';
+                    ytPlayer = new YT.Player('ytPlayerTarget', {
+                        height: '100%',
+                        width: '100%',
+                        videoId: ytId,
+                        playerVars: { 'autoplay': 0, 'controls': streamerCineAutenticado ? 1 : 0 },
+                        events: {
+                            'onReady': (event) => {
+                                event.target.seekTo(data.tiempo, true);
+                                if (data.estado === 'play') event.target.playVideo();
+                            },
+                            'onStateChange': (event) => {
+                                if (streamerCineAutenticado && !actualizandoLocalmente) {
+                                    if (event.data === YT.PlayerState.PLAYING) enviarComandoSync('play', ytPlayer.getCurrentTime());
+                                    if (event.data === YT.PlayerState.PAUSED) enviarComandoSync('pause', ytPlayer.getCurrentTime());
+                                }
+                            }
+                        }
+                    });
+                } else if (ytPlayer && ytPlayer.seekTo) {
+                    actualizandoLocalmente = true;
+                    if (Math.abs(ytPlayer.getCurrentTime() - data.tiempo) > 2) {
+                        ytPlayer.seekTo(data.tiempo, true);
+                    }
+                    if (data.estado === 'play') ytPlayer.playVideo();
+                    else if (data.estado === 'pause') ytPlayer.pauseVideo();
+                    actualizandoLocalmente = false;
+                }
+            } else {
+                esYouTube = false;
+                ytContainer.style.display = 'none';
+                if (ytPlayer && ytPlayer.stopVideo) ytPlayer.stopVideo();
+                mp4Player.style.display = 'block';
+
+                const source = document.getElementById('cineVideoSource');
+                if (source.src !== finalUrl) {
+                    source.src = finalUrl;
+                    mp4Player.load();
+                }
+
+                actualizandoLocalmente = true;
+                if (Math.abs(mp4Player.currentTime - data.tiempo) > 1.5) {
+                    mp4Player.currentTime = data.tiempo;
+                }
+
+                if (data.estado === 'play' && mp4Player.paused) {
+                    mp4Player.play().catch(() => {});
+                } else if (data.estado === 'pause' && !mp4Player.paused) {
+                    mp4Player.pause();
+                }
+                actualizandoLocalmente = false;
+            }
+        }
+
+        function toggleModoStreamerCine() {
+            const adminPanel = document.getElementById('streamerAdminPanel');
+            const btn = document.getElementById('btn-toggle-streamer');
+
+            if (!streamerCineAutenticado) {
+                document.getElementById('modal-pin-cine').style.display = 'flex';
+                document.getElementById('streamer-cine-email').focus();
+            } else {
+                if (adminPanel.style.display === 'none' || adminPanel.style.display === '') {
+                    adminPanel.style.display = 'block';
+                    btn.innerHTML = '<i class="fa-solid fa-lock-open"></i> Ocultar Panel';
+                    btn.classList.add('active');
+                } else {
+                    adminPanel.style.display = 'none';
+                    btn.innerHTML = '<i class="fa-solid fa-lock"></i> Panel Streamer';
+                    btn.classList.remove('active');
+                }
+            }
+        }
+
+        function cerrarModalCinePin() {
+            document.getElementById('modal-pin-cine').style.display = 'none';
+            document.getElementById('streamer-cine-email').value = '';
+            document.getElementById('streamer-cine-password').value = '';
+            document.getElementById('feedback-cine-pin').innerText = '';
+        }
+
+        async function iniciarSesionStreamerCine() {
+            const email = document.getElementById('streamer-cine-email').value.trim();
+            const password = document.getElementById('streamer-cine-password').value.trim();
+            const feedback = document.getElementById('feedback-cine-pin');
+
+            const { error } = await supabase.auth.signInWithPassword({ email, password });
+            if (error) {
+                feedback.innerText = '❌ Credenciales incorrectas';
+                return;
+            }
+
+            streamerCineAutenticado = true;
+            cerrarModalCinePin();
+            activarModoStreamerUI();
+            mostrarToast('¡Sesión iniciada con éxito!');
+        }
+
+        function activarModoStreamerUI() {
+            document.getElementById('streamerAdminPanel').style.display = 'block';
+            const btn = document.getElementById('btn-toggle-streamer');
+            btn.innerHTML = '<i class="fa-solid fa-lock-open"></i> Ocultar Panel';
+            btn.classList.add('active');
+        }
+    </script>
+
+    <!-- FOOTER -->
+    <footer class="main-footer">
+        <div class="footer-container">
+            <div class="footer-social-icons">
+                <a href="https://kick.com/lagochagaming" target="_blank" class="social-icon kick-icon" title="Kick">K</a>
+                
+                <a href="https://discord.com/invite/svrteKBbeh" target="_blank" class="social-icon" title="Discord"><i class="fab fa-discord"></i></a>
+                <a href="https://www.youtube.com/@lagochagaming" target="_blank" class="social-icon" title="YouTube"><i class="fab fa-youtube"></i></a>
+            </div>
+            <p class="footer-copyright">&copy; 2026 LAGOCHAGAMING - ALL RIGHTS RESERVED</p>
+        </div>
+    </footer>
+</body>
+</html>

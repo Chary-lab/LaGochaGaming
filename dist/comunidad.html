@@ -1,0 +1,1658 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LaGochaGaming | Comunidad y Chat</title>
+    
+    <!-- Open Graph / Redes Sociales -->
+    <meta property="og:title" content="LaGochaGaming | Comunidad">
+    <meta property="og:description" content="Únete al chat de la comunidad, comparte con otros fans y entérate de todo mientras no hay stream.">
+    <meta property="og:image" content="img/3.jpg">
+    <meta property="og:type" content="website">
+
+    <link rel="icon" type="image/x-icon" href="img/favicon.ico">
+    <link rel="stylesheet" href="style.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
+    <style>
+.comunidad-layout {
+            display: grid;
+            grid-template-columns: minmax(220px, 260px) minmax(0, 1fr) minmax(260px, 320px);
+            gap: 20px;
+            max-width: 1400px;
+            margin: 85px auto 40px auto;
+            padding: 0 20px;
+            align-items: start;
+        }
+.online-users-column {
+            width: 100%;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-box-container {
+            width: 100%;
+            min-width: 0;
+        }
+        .sidebar-comunidad {
+            width: 100%;
+            min-width: 0;
+            background: var(--card-bg, #1a1a1a);
+            border: 1px solid var(--border-color, #333);
+            border-radius: 12px;
+            padding: 12px;
+        }
+        .tab-header {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            flex: 1;
+            min-width: 80px;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color, #333);
+            background: var(--card-bg-subtle, rgba(255,255,255,0.03));
+            color: var(--text-muted, #aaa);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        .tab-btn:hover {
+            border-color: var(--accent-color);
+            color: var(--text-main);
+        }
+        .tab-btn.active {
+            background: var(--accent-color, #ff66b2);
+            color: #000;
+            border-color: var(--accent-color, #ff66b2);
+        }
+        .tab-content {
+            animation: fadeInTab 0.2s ease;
+        }
+        @keyframes fadeInTab {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @media (max-width: 1024px) {
+            .comunidad-layout {
+                grid-template-columns: minmax(200px, 240px) minmax(0, 1fr);
+                gap: 16px;
+            }
+            .sidebar-comunidad {
+                grid-column: 1 / -1;
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+                gap: 16px;
+            }
+        }
+        @media (max-width: 768px) {
+            .comunidad-layout {
+                grid-template-columns: 1fr;
+                gap: 14px;
+                padding: 0 12px;
+                margin: 16px auto 32px auto;
+            }
+            /* Orden jerárquico en móvil: chat primero, usuarios segundo, sidebar tercero */
+            .chat-box-container { order: 1; }
+            .online-users-column { order: 2; }
+            .sidebar-comunidad { order: 3; grid-column: auto; display: flex; flex-direction: column; gap: 14px; }
+            .chat-box-container {
+                height: 70vh;
+                min-height: 420px;
+                max-height: 600px;
+            }
+            .chat-messages {
+                padding: 12px;
+                gap: 8px;
+            }
+            .chat-input-area {
+                padding: 10px;
+                gap: 8px;
+                flex-wrap: wrap;
+            }
+            .chat-input-area input, .chat-input-area textarea {
+                font-size: 16px; /* evita zoom en iOS */
+                padding: 12px;
+                min-height: 44px;
+            }
+            .chat-input-area button {
+                min-height: 44px;
+                padding: 10px 16px;
+            }
+            #online-users-list {
+                max-height: 240px;
+            }
+            #leaderboard-list {
+                max-height: 240px;
+            }
+        }
+        @media (max-width: 480px) {
+            .comunidad-layout {
+                padding: 0 8px;
+            }
+            .chat-box-container {
+                height: 60vh;
+                min-height: 360px;
+            }
+        }
+        #online-users-list {
+            flex: 1;
+            min-height: 100px;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+            background: var(--card-bg-subtle);
+        }
+        #online-users-list .user-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 4px;
+            margin: 4px 0;
+            border-radius: 6px;
+            background: rgba(255,255,255,0.02);
+        }
+        #online-users-list .user-item:hover {
+            background: rgba(255,255,255,0.04);
+        }
+        #online-users-list .user-icon {
+            width: 28px;
+            height: 28px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: #fff;
+            font-weight: bold;
+        }
+        #online-users-list .user-name {
+            font-size: 0.9rem;
+            color: var(--text-main);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 150px;
+        }
+        .chat-box-container {
+            background: var(--card-bg, #1a1a1a);
+            border: 1px solid var(--border-color, #333);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            height: 600px;
+            max-height: calc(100vh - 120px);
+            overflow: hidden;
+        }
+        .chat-header {
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid var(--border-color, #333);
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .chat-input-area {
+            padding: 15px;
+            border-top: 1px solid var(--border-color, #333);
+            background: rgba(255, 255, 255, 0.02);
+            display: flex;
+            gap: 10px;
+        }
+        .chat-input-area input, .chat-input-area textarea {
+            background: var(--bg-main, #111);
+            border: 1px solid var(--border-color, #333);
+            color: var(--text-main, #fff);
+            padding: 10px;
+            border-radius: 8px;
+            outline: none;
+        }
+        .chat-messages::-webkit-scrollbar,
+        #online-users-list::-webkit-scrollbar,
+        #leaderboard-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        .chat-messages::-webkit-scrollbar-thumb,
+        #online-users-list::-webkit-scrollbar-thumb,
+        #leaderboard-list::-webkit-scrollbar-thumb {
+            background: var(--border-color, #333);
+            border-radius: 4px;
+        }
+        .chat-messages::-webkit-scrollbar-track,
+        #online-users-list::-webkit-scrollbar-track,
+        #leaderboard-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .sidebar-card {
+            background: var(--card-bg, #1a1a1a);
+            border: 1px solid var(--border-color, #333);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        /* Nickname Modal Styles */
+        #nickname-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        #nickname-modal-content {
+            background: var(--card-bg);
+            color: var(--text-main);
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            position: relative;
+        }
+        #nickname-modal-content h3 {
+            margin-top: 0;
+        }
+        #nickname-modal-input, #nickname-modal-pin {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--bg-main);
+            color: var(--text-main);
+            box-sizing: border-box;
+        }
+        #nickname-modal-pin {
+            text-align: center;
+            letter-spacing: 5px;
+            font-size: 1.2rem;
+        }
+        #nickname-modal-btn {
+            background: var(--accent-color);
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        #nickname-modal-btn:hover {
+            filter: brightness(1.15);
+        }
+        #nickname-modal-close {
+            position: absolute;
+            top: 10px; right: 10px;
+            background: transparent;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        /* Badge de reacción en esquina del mensaje (tipo WhatsApp/Messenger) */
+        .msg-reaccion-esquina {
+            position: absolute;
+            bottom: 6px;
+            right: 8px;
+            display: none;
+            align-items: center;
+            gap: 3px;
+            background: var(--card-bg-subtle);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2px 8px 2px 6px;
+            font-size: 0.75rem;
+            pointer-events: auto;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            z-index: 5;
+        }
+
+        .msg-reaccion-esquina:hover {
+            transform: scale(1.08);
+            border-color: var(--accent-color);
+            box-shadow: 0 3px 12px rgba(255, 102, 178, 0.3);
+        }
+
+        .msg-reaccion-esquina.mia {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        .msg-reaccion-esquina.mia .esquina-emoji {
+            filter: brightness(1.1);
+        }
+
+        .esquina-emoji {
+            font-size: 0.95rem;
+            line-height: 1;
+        }
+
+        .esquina-count {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            min-width: 12px;
+            text-align: center;
+        }
+
+        .msg-reaccion-esquina.mia .esquina-count {
+            color: rgba(0,0,0,0.7);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ALERTA VISUAL DE STREAM EN VIVO -->
+    <div id="stream-alert" class="stream-alert-overlay">
+        <i class="fa-solid fa-tower-broadcast"></i>
+        <span id="stream-alert-text">¡LA GOCHA ESTÁ EN DIRECTO! 🎉</span>
+    </div>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="logo">LAGOCHA<span>GAMING</span></div>
+        <div class="nav-links">
+            <a href="./">Inicio</a>
+            <a href="./#stream">Directo</a>
+            <a href="./#clips">Clips</a>
+            <a href="cine" style="color: var(--accent-color);">🍿 GochiWatch</a>
+            <a href="sorteo" style="color: var(--accent-color);">🎁 Sorteo</a>
+            <a href="galeria" style="color: var(--accent-color);">📸 Galería</a>
+            <a href="comunidad" style="color: var(--accent-color); font-weight: bold;">💬 Comunidad</a>
+        </div>
+        <div class="auth-buttons" id="auth-buttons">
+            <span id="nav-user-info" style="display:none; align-items:center; gap:8px; color:var(--text-main); font-size:0.9rem; font-weight:600;">
+                <i class="fa-solid fa-user" style="color:var(--accent-color);"></i>
+                <span id="nav-username"></span>
+                <button onclick="cerrarSesion()" class="btn-logout-nav" title="Cerrar Sesión" style="background:transparent; border:none; color:#ff4d4d; cursor:pointer; margin-left:8px;"><i class="fa-solid fa-right-from-bracket"></i> Salir</button>
+            </span>
+        </div>
+    </nav>
+
+    <!-- CONTENIDO PRINCIPAL COMUNIDAD -->
+    <main class="comunidad-layout">
+        <!-- COLUMNA IZQUIERDA: USUARIOS EN LÍNEA + LEADERBOARD -->
+        <section id="online-users" class="online-users-column">
+            <h3 style="color: var(--accent-color); margin-bottom: 8px;">
+                <i class="fa-solid fa-users"></i> Usuarios en línea
+            </h3>
+            <div id="online-users-list">
+                Cargando usuarios...
+            </div>
+
+            <!-- LEADERBOARD PÚBLICO DE PUNTOS -->
+            <div style="margin-top: 20px;">
+                <h3 style="color: var(--accent-color); margin-bottom: 10px; font-size: 1rem;">
+                    <i class="fa-solid fa-trophy"></i> Top Comunidad
+                </h3>
+                <div id="leaderboard-list" style="max-height: 300px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; background: var(--card-bg-subtle);">
+                    <div style="text-align:center; color:var(--text-muted); padding:20px;">Cargando ranking...</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- COLUMNA CENTRO: CHAT EN VIVO -->
+        <div class="chat-box-container">
+            <div class="chat-header">
+                <i class="fa-solid fa-comments" style="color: var(--accent-color);"></i>
+                <span>Chat Comunitario (Offline / Online)</span>
+            </div>
+
+            <div id="chat-mensajes" class="chat-messages">
+                <!-- Los mensajes se cargarán dinámicamente aquí -->
+                <div style="text-align: center; color: var(--text-muted); margin-top: 40px;">
+                    Cargando mensajes de la comunidad...
+                </div>
+            </div>
+
+            <!-- ÁREA DE CHAT: Login/Registro cuando no hay sesión, Formulario cuando hay sesión -->
+            <div id="chat-login-area" class="chat-input-area" style="display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 20px; text-align: center;">
+                <div style="color: var(--text-muted); font-size: 0.9rem;">Inicia sesión o regístrate para participar en el chat</div>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
+                    <button id="btn-login-chat" class="btn-primary" onclick="abrirModalLogin()" style="flex: 1; min-width: 140px; padding: 12px 18px; font-size: 0.95rem;">
+                        <i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión
+                    </button>
+                    <button id="btn-registro-chat" class="btn-primary" onclick="abrirModalRegistro()" style="flex: 1; min-width: 140px; padding: 12px 18px; font-size: 0.95rem; background: var(--accent-color);">
+                        <i class="fa-solid fa-user-plus"></i> Registrarse
+                    </button>
+                </div>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 5px 0 0 0;">Ambos requieren un apodo y un PIN de 4 dígitos para proteger tu cuenta y puntos.</p>
+            </div>
+
+            <form id="chat-form" class="chat-input-area" style="display: none; position: relative;">
+                <input type="text" id="chat-autor" placeholder="Tu apodo" maxlength="30" required style="width: 130px;">
+                <input type="text" id="chat-mensaje" placeholder="Escribe un mensaje..." maxlength="300" required style="flex: 1;">
+                <button type="submit" class="btn-primary" style="padding: 10px 20px; border: none; cursor: pointer;">Enviar</button>
+                <!-- Badge de racha de mensajes -->
+                <span id="streak-badge-chat" class="streak-badge" style="display: none; position: absolute; top: -25px; right: 10px; white-space: nowrap;"></span>
+            </form>
+        </div>
+
+        <!-- COLUMNA DERECHA: SIDEBAR DE ESTADO Y REGLAS (TABS) -->
+        <div class="sidebar-card">
+            <div class="tab-header" style="display: flex; gap: 8px; margin-bottom: 15px;">
+                <button class="tab-btn active" onclick="cambiarTabComunidad('canal')">Canal</button>
+                <button class="tab-btn" onclick="cambiarTabComunidad('rangos')">Rangos</button>
+                <button class="tab-btn" onclick="cambiarTabComunidad('info')">Info & Reglas</button>
+            </div>
+
+            <div id="tab-canal" class="tab-content active">
+                <div class="estado-canal-box">
+                    <h4 style="color: var(--accent-color); margin-bottom: 10px;"><i class="fa-solid fa-tower-broadcast"></i> Estado del Canal</h4>
+                    <div id="canal-estado" style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                        <span id="estado-dot" style="display: inline-block; width: 10px; height: 10px; background: #ff4d4d; border-radius: 50%;"></span>
+                        <span id="estado-texto">Comprobando estado...</span>
+                    </div>
+                    <div id="viewers-count" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px; display: none;">
+                        <i class="fa-solid fa-eye"></i> <span id="viewers-num">0</span> espectadores
+                    </div>
+                    <a href="./#stream" class="btn-primary" style="display: block; text-align: center; margin-top: 15px; text-decoration: none;">Ir al Directo</a>
+                </div>
+                <div id="user-profile-panel" style="margin-top: 15px; padding: 14px; border-top: 1px solid rgba(255,255,255,0.1); background: var(--card-bg-subtle, rgba(255,255,255,0.03)); border-radius: 10px; display: none;">
+                    <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: 700;">
+                        <i class="fa-solid fa-user-circle" style="color: var(--accent-color);"></i> Tu Perfil
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <div style="display: flex; align-items: center; gap: 6px; font-weight: 700; color: var(--text-main);">
+                            <i class="fa-solid fa-user" style="color: var(--accent-color);"></i>
+                            <span id="user-info-display">MCCHARY</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 6px; color: var(--accent-color); font-weight: 600;">
+                            <i class="fa-solid fa-gem"></i>
+                            <span id="user-points-display">0 pts</span>
+                        </div>
+                        <span id="user-rango-badge" style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; background: var(--card-bg-subtle); border: 1px solid var(--border-color); width: fit-content; margin-top: 2px;">🌱 SEMILLA</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-rangos" class="tab-content" style="display:none;">
+                <h4 style="color: var(--accent-color); margin-bottom: 12px;"><i class="fa-solid fa-crown"></i> Rangos y Puntos</h4>
+                <div class="cuadro-rangos">
+                    <div class="rango-fila"><span class="rango-icono">🌱</span><span class="rango-nombre">Semilla</span><span class="rango-puntos">0 - 49 pts</span></div>
+                    <div class="rango-fila"><span class="rango-icono">💧</span><span class="rango-nombre">Gota</span><span class="rango-puntos">50 - 199 pts</span></div>
+                    <div class="rango-fila"><span class="rango-icono">🌸</span><span class="rango-nombre">Flor</span><span class="rango-puntos">200 - 499 pts</span></div>
+                    <div class="rango-fila"><span class="rango-icono">⭐</span><span class="rango-nombre">Estrella</span><span class="rango-puntos">500 - 999 pts</span></div>
+                    <div class="rango-fila rango-leyenda"><span class="rango-icono">👑</span><span class="rango-nombre">Leyenda</span><span class="rango-puntos">1000+ pts</span></div>
+                </div>
+                <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 10px; line-height: 1.4;">Ganas <strong>1 punto cada 5 minutos</strong> conectado en el chat. El rango se actualiza automáticamente al sumar puntos.</p>
+            </div>
+
+            <div id="tab-info" class="tab-content" style="display:none;">
+                <h4 style="color: var(--accent-color); margin-bottom: 10px;"><i class="fa-solid fa-shield-halved"></i> Reglas del Chat</h4>
+                <ul style="font-size: 0.88rem; color: var(--text-muted); padding-left: 18px; display: flex; flex-direction: column; gap: 8px;">
+                    <li>Respeto ante todo con la comunidad.</li>
+                    <li>No hacer spam ni flood de mensajes.</li>
+                    <li>No compartir enlaces sospechosos ni info personal.</li>
+                    <li>Todo es humor, pásatela bien y ríete mucho.</li>
+                </ul>
+                <div style="border-color: var(--accent-color); margin-top:12px;">
+                    <h4 style="color: var(--accent-color); margin-bottom: 10px;"><i class="fa-solid fa-gift"></i> Tienda de Puntos <span style="font-size:0.7rem;background:var(--accent-color);color:#000;padding:2px 6px;border-radius:4px;margin-left:8px;">PRÓXIMAMENTE</span></h4>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px;">Estamos preparando recompensas exclusivas para canjear tus puntos ganados por participar en la comunidad.</p>
+                </div>
+                <div style="margin-top:12px;">
+                    <h4 style="color: var(--accent-color); margin-bottom: 10px;"><i class="fa-solid fa-circle-info"></i> ¿Cómo funciona?</h4>
+                    <ul style="font-size: 0.82rem; color: var(--text-muted); padding-left: 18px; display: flex; flex-direction: column; gap: 6px; line-height: 1.5;">
+                        <li><strong>💎 Puntos:</strong> Ganas 1 punto cada 5 minutos estando conectado en el chat.</li>
+                        <li><strong>🔒 PIN de 4 dígitos:</strong> Protege tu cuenta y progreso. Nadie puede robar tus puntos sin tu PIN.</li>
+                        <li><strong>💬 Chat en vivo:</strong> Habla con la comunidad en tiempo real. Los mensajes se sincronizan al instante.</li>
+                        <li><strong>👥 Usuarios en línea:</strong> Lista a la izquierda con avatares de iniciales. Verás quién está conectado.</li>
+                        <li><strong>📺 Estado del stream:</strong> El círculo verde = EN VIVO, rojo = Offline. Verás los viewers actuales.</li>
+                        <li><strong>🔔 Notificaciones:</strong> Si el stream empieza, salta un aviso aunque estés en otra pestaña.</li>
+                        <li><strong>🎁 Futuro:</strong> Podrás canjear puntos por premios, roles y acceso a sorteos exclusivos.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="main-footer">
+        <div class="footer-container">
+            <div class="footer-social-icons">
+                <a href="https://kick.com/lagochagaming" target="_blank" class="social-icon kick-icon" title="Kick">K</a>
+                
+    <a href="https://www.tiktok.com/@lagochagaming11" target="_blank" class="social-icon" title="TikTok"><i class="fab fa-tiktok"></i></a>
+            <a href="https://www.instagram.com/oscurostefany" target="_blank" class="social-icon" title="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="https://discord.com/invite/svrteKBbeh" target="_blank" class="social-icon" title="Discord"><i class="fab fa-discord"></i></a>
+                <a href="https://www.youtube.com/@lagochagaming" target="_blank" class="social-icon" title="YouTube"><i class="fab fa-youtube"></i></a>
+            </div>
+            <p class="footer-copyright">&copy; 2026 LAGOCHAGAMING - ALL RIGHTS RESERVED</p>
+        </div>
+    </footer>
+
+    <!-- Nickname Modal -->
+    <div id="nickname-modal">
+        <div id="nickname-modal-content">
+            <button id="nickname-modal-close" aria-label="Close">&times;</button>
+            <h3 id="modal-titulo-accion">¡Bienvenido a la Comunidad!</h3>
+            <p id="modal-subtitulo-accion" style="font-size:0.9rem;color:var(--text-muted);">Ingresa tu apodo y tu PIN de 4 dígitos.</p>
+            <input type="text" id="nickname-modal-input" placeholder="Tu apodo" maxlength="20">
+            <input type="password" id="nickname-modal-pin" placeholder="PIN (4 dígitos)" maxlength="4" pattern="[0-9]*" inputmode="numeric">
+            <div>
+                <button id="nickname-modal-set-btn" class="btn-primary" style="width:100%;margin-top:10px;">Entrar</button>
+            </div>
+            <p id="nickname-modal-error" style="color:#ff4d4d; margin-top:10px; display:none;font-size:0.85rem;"></p>
+        </div>
+    </div>
+
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="main.min.js"></script>
+    <script>
+        // Funciones globales para los botones de login/registro (llamadas desde HTML)
+        let _modalModo = 'login'; // 'login' o 'registro'
+
+        function abrirModalLogin() {
+            _modalModo = 'login';
+            document.getElementById('modal-titulo-accion').textContent = 'Iniciar Sesión';
+            document.getElementById('modal-subtitulo-accion').textContent = 'Ingresa tu apodo y PIN de 4 dígitos para acceder a tu cuenta.';
+            document.getElementById('nickname-modal-input').value = '';
+            document.getElementById('nickname-modal-pin').value = '';
+            document.getElementById('nickname-modal-error').style.display = 'none';
+            document.getElementById('nickname-modal').style.display = 'flex';
+            document.getElementById('nickname-modal-input').focus();
+        }
+
+        function abrirModalRegistro() {
+            _modalModo = 'registro';
+            document.getElementById('modal-titulo-accion').textContent = 'Registrarse en la Comunidad';
+            document.getElementById('modal-subtitulo-accion').textContent = 'Crea un nuevo perfil con apodo y PIN de 4 dígitos.';
+            document.getElementById('nickname-modal-input').value = '';
+            document.getElementById('nickname-modal-pin').value = '';
+            document.getElementById('nickname-modal-error').style.display = 'none';
+            document.getElementById('nickname-modal').style.display = 'flex';
+            document.getElementById('nickname-modal-input').focus();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const chatForm = document.getElementById('chat-form');
+            const chatMensajes = document.getElementById('chat-mensajes');
+            const inputAutor = document.getElementById('chat-autor');
+            const inputMensaje = document.getElementById('chat-mensaje');
+            const estadoDot = document.getElementById('estado-dot');
+            const estadoTexto = document.getElementById('estado-texto');
+            const onlineUsersListEl = document.getElementById('online-users-list');
+            const userProfilePanel = document.getElementById('user-profile-panel');
+            const userInfoDisplay = document.getElementById('user-info-display');
+            const userPointsDisplay = document.getElementById('user-points-display');
+            
+            const nicknameModal = document.getElementById('nickname-modal');
+            const nicknameModalInput = document.getElementById('nickname-modal-input');
+            const nicknameModalPin = document.getElementById('nickname-modal-pin');
+            const nicknameModalSetBtn = document.getElementById('nickname-modal-set-btn');
+            const nicknameModalCloseBtn = document.getElementById('nickname-modal-close');
+            const nicknameModalError = document.getElementById('nickname-modal-error');
+
+            const STORAGE_KEY_NICK = 'comunidad_nickname';
+            const STORAGE_KEY_TOKEN = 'comunidad_session_token';
+
+            let ultimoEnvio = 0;
+            let ultimaEstadoEnVivo = null;
+            let chatInicializado = false;
+            let userNickname = null;
+            let userToken = null;
+            let userId = null;
+
+            // CARGA SÍNCRONA DEL APODO DESDE LOCALSTORAGE AL INICIAR
+            const savedApodo = localStorage.getItem('comunidad_nickname');
+            const savedToken = localStorage.getItem('comunidad_session_token');
+            if (savedApodo) {
+                userNickname = savedApodo;
+                userToken = savedToken;
+                const savedUid = localStorage.getItem('comunidad_user_id');
+                if (savedUid) userId = parseInt(savedUid, 10);
+                if (inputAutor) {
+                    inputAutor.value = savedApodo;
+                    inputAutor.readOnly = true;
+                }
+            }
+
+            function escaparHTML(str) {
+                return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'}[tag] || tag));
+            }
+
+            function showNicknameModal() {
+                nicknameModal.style.display = 'flex';
+                nicknameModalInput.value = '';
+                nicknameModalPin.value = '';
+                nicknameModalError.style.display = 'none';
+                nicknameModalInput.focus();
+            }
+
+            function hideNicknameModal() {
+                nicknameModal.style.display = 'none';
+            }
+
+            async function registrarUsuario(apodo, pin) {
+                try {
+                    const { data, error } = await supabase.from('usuarios_comunidad').insert([{ apodo, pin, puntos: 0, rango: 'semilla' }]).select().single();
+                    return { success: !error, error: error?.message, user: data };
+                } catch (e) { return { success: false, error: e.message }; }
+            }
+
+            async function verificarLogin(apodo, pin) {
+                try {
+                    const { data, error } = await supabase.from('usuarios_comunidad').select('id, puntos, rango, session_token').eq('apodo', apodo).eq('pin', pin).single();
+                    if (error || !data) return { success: false, user: null };
+                    return { success: true, user: data };
+                } catch (e) { return { success: false, user: null }; }
+            }
+
+            function guardarSesion(apodo, token, puntos, rango, id) {
+                if (id) userId = id;
+                localStorage.setItem(STORAGE_KEY_NICK, apodo);
+                if (id) localStorage.setItem('comunidad_user_id', String(id));
+                localStorage.setItem(STORAGE_KEY_TOKEN, token || btoa(Date.now().toString()));
+                if (id) localStorage.setItem('comunidad_user_id', String(id));
+                if (userProfilePanel && userInfoDisplay && userPointsDisplay) {
+                    userProfilePanel.style.display = 'block';
+                    const emojiMap = { 'semilla': '🌱', 'gota': '💧', 'flor': '🌸', 'estrella': '⭐', 'leyenda': '👑' };
+                    const rangoLower = (rango || 'semilla').toLowerCase();
+                    const emoji = emojiMap[rangoLower] || '🌱';
+                    const rangoNombre = rangoLower.charAt(0).toUpperCase() + rangoLower.slice(1);
+                    const userInfoEl = document.getElementById('user-info-display');
+                    const userPointsEl = document.getElementById('user-points-display');
+                    const userRangoEl = document.getElementById('user-rango-badge');
+                    if (userInfoEl) userInfoEl.textContent = apodo;
+                    if (userPointsEl) userPointsEl.textContent = (puntos || 0) + ' pts';
+                    if (userRangoEl) userRangoEl.textContent = emoji + ' ' + rangoNombre.toUpperCase();
+                    // Navbar user info
+                    const navUserInfo = document.getElementById('nav-user-info');
+                    const navUsername = document.getElementById('nav-username');
+                    if (navUserInfo && navUsername) { navUsername.textContent = apodo; navUserInfo.style.display = 'inline-flex'; }
+                }
+                if (inputAutor) {
+                    inputAutor.value = apodo;
+                    inputAutor.readOnly = true;
+                }
+                userNickname = apodo;
+                // Re-track presencia con el nuevo nickname
+                if (typeof window._trackPresence === 'function') {
+                    window._trackPresence(apodo);
+                }
+                // Mostrar formulario de chat, ocultar área de login
+                const chatLoginForm = document.getElementById('chat-form');
+                const chatLoginArea = document.getElementById('chat-login-area');
+                if (chatLoginForm) chatLoginForm.style.display = 'flex';
+                if (chatLoginArea) chatLoginArea.style.display = 'none';
+                const btnEnviar = chatForm ? chatForm.querySelector('button[type="submit"]') : null;
+                if (btnEnviar) btnEnviar.disabled = false;
+            }
+
+            async function validarSesionGuardada() {
+                const savedApodo = localStorage.getItem(STORAGE_KEY_NICK);
+                const savedToken = localStorage.getItem(STORAGE_KEY_TOKEN);
+                if (!savedApodo || !savedToken) return false;
+                try {
+                    const { data, error } = await supabase.from('usuarios_comunidad').select('id, puntos, rango, session_token').eq('apodo', savedApodo).single();
+                    if (!error && data && data.session_token === savedToken) {
+                        guardarSesion(savedApodo, savedToken, data.puntos, data.rango, data.id);
+                        return true;
+                    }
+                } catch (e) {}
+                return false;
+            }
+
+            async function enviarNickConPIN() {
+                const nick = nicknameModalInput.value.trim();
+                const pin = nicknameModalPin.value.trim();
+                if (nicknameModalError) nicknameModalError.style.display = 'none';
+                if (!nick || nick.length > 20) {
+                    if (nicknameModalError) { nicknameModalError.textContent = 'Apodo inválido (1-20 caracteres).'; nicknameModalError.style.display = 'block'; }
+                    return;
+                }
+                if (!pin || pin.length !== 4 || !/^\d{4}$/.test(pin)) {
+                    if (nicknameModalError) { nicknameModalError.textContent = 'PIN inválido (debe ser 4 dígitos).'; nicknameModalError.style.display = 'block'; }
+                    return;
+                }
+
+                // Si estamos en modo registro, forzamos crear cuenta nueva
+                if (_modalModo === 'registro') {
+                    const verif = await verificarLogin(nick, pin);
+                    if (verif.success) {
+                        if (nicknameModalError) { nicknameModalError.textContent = 'Este usuario ya existe. Usa "Iniciar Sesión" si es tu cuenta.'; nicknameModalError.style.display = 'block'; }
+                        return;
+                    }
+                    const reg = await registrarUsuario(nick, pin);
+                    if (reg.success) {
+                        guardarSesion(nick, reg.user?.session_token || null, 0, 'semilla', reg.user?.id || null);
+                        hideNicknameModal();
+                        return;
+                    }
+                    if (nicknameModalError) { nicknameModalError.textContent = 'Error: ' + (reg.error || 'No se pudo crear la cuenta.'); nicknameModalError.style.display = 'block'; }
+                    return;
+                }
+
+                // Modo login: intentar autenticar
+                const verif = await verificarLogin(nick, pin);
+                if (verif.success) {
+                    guardarSesion(nick, verif.user.session_token, verif.user.puntos, verif.user.rango, verif.user.id);
+                    hideNicknameModal();
+                    return;
+                }
+                if (nicknameModalError) { nicknameModalError.textContent = 'Credenciales incorrectas. Verifica tu apodo y PIN.'; nicknameModalError.style.display = 'block'; }
+            }
+
+            async function cargarMensajesChat() {
+                try {
+                    const { data, error } = await supabase.from('comunidad_chat').select('*').order('created_at', { ascending: true }).limit(50);
+                    if (error) { chatMensajes.innerHTML = '<div style="text-align:center;color:#ff4d4d;padding:40px;">Error al cargar el chat.</div>'; return; }
+                    renderizarMensajes(data);
+                } catch (e) { console.error(e); }
+            }
+
+            // Reacciones del chat (tiempo real vía Supabase + panel burbuja al hover)
+            const REACCIONES = ['👍', '❤️', '😂', '🔥', '😀', '🙏'];
+            const MAX_MENSAJES_DOM = 100;
+            const STREAK_STORAGE_KEY = 'gochi_chat_streak';
+            const STREAK_TIMEOUT_MS = 300000;
+
+            // Canal de realtime para reacciones
+            let canalReacciones = null;
+
+            // Obtener reacciones de un mensaje desde localStorage (fallback inicial)
+            function obtenerReaccionesLocal(msgId) {
+                try {
+                    return JSON.parse(localStorage.getItem('gochi_chat_reacciones_v2') || '{}');
+                } catch (e) { return {}; }
+            }
+
+            function guardarReaccionesLocal(data) {
+                try {
+                    localStorage.setItem('gochi_chat_reacciones_v2', JSON.stringify(data));
+                } catch (e) {}
+            }
+
+// Toggle de reacción: same emoji -> delete, different emoji -> upsert
+            function obtenerMiReaccionLocal(msgId) {
+                try {
+                    const data = JSON.parse(localStorage.getItem('gochi_chat_mi_reaccion_v2') || '{}');
+                    return data[msgId] || null;
+                } catch (e) { return null; }
+            }
+
+            function guardarMiReaccionLocal(msgId, emoji) {
+                try {
+                    const data = JSON.parse(localStorage.getItem('gochi_chat_mi_reaccion_v2') || '{}');
+                    if (emoji === null) { delete data[msgId]; }
+                    else { data[msgId] = emoji; }
+                    localStorage.setItem('gochi_chat_mi_reaccion_v2', JSON.stringify(data));
+                } catch (e) {}
+            }
+
+            // Toggle de reacción: same emoji -> delete, different emoji -> upsert
+            async function establecerReaccionUsuario(msgId, emoji) {
+                const msgIdStr = String(msgId);
+                if (!userNickname || !userId || isNaN(Number(userId))) {
+                    mostrarToast('Inicia sesion para reaccionar', true);
+                    return;
+                }
+
+                const miReaccionActual = obtenerMiReaccionLocal(msgIdStr);
+
+                // Toggle: si es la misma reaccion, eliminarla
+                if (miReaccionActual === emoji) {
+                    try {
+                        await supabase.from('message_reactions')
+                            .delete()
+                            .eq('message_id', msgIdStr)
+                            .eq('user_id', userId);
+                    } catch (e) {
+                        console.warn('[REACCIÓN] Error eliminando reacción:', e.message);
+                    }
+                    // Limpiar cache local
+                    const cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
+                    if (cache[msgIdStr]) {
+                        Object.keys(cache[msgIdStr]).forEach(emo => {
+                            if (cache[msgIdStr][emo]) {
+                                cache[msgIdStr][emo] = cache[msgIdStr][emo].filter(u => u !== userNickname);
+                                if (cache[msgIdStr][emo].length === 0) delete cache[msgIdStr][emo];
+                            }
+                        });
+                        if (Object.keys(cache[msgIdStr]).length === 0) delete cache[msgIdStr];
+                        localStorage.setItem('gochi_chat_reacciones_cache', JSON.stringify(cache));
+                    }
+                    guardarMiReaccionLocal(msgIdStr, null);
+                    actualizarUIReacciones(msgIdStr);
+                    return;
+                }
+
+                // Usar upsert: la restricción única (message_id, usuario) hace que
+                // si ya existe un registro con message_id+usuario, lo actualice con el nuevo emoji
+                try {
+                    const { error } = await supabase.from('message_reactions')
+                            .upsert(
+                                { message_id: msgIdStr, emoji, user_id: userId, apodo: userNickname },
+                                { onConflict: 'message_id,user_id' }
+                            );
+                    if (error) throw error;
+                } catch (e) {
+                    console.warn('[REACCIÓN] Error upsert reacción:', e.message);
+                }
+
+                // Actualizar cache local
+                const cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
+                if (!cache[msgIdStr]) cache[msgIdStr] = {};
+                // Quitar al usuario de la reacción anterior si la tenía
+                if (miReaccionActual && cache[msgIdStr][miReaccionActual]) {
+                    cache[msgIdStr][miReaccionActual] = cache[msgIdStr][miReaccionActual].filter(u => u !== userNickname);
+                    if (cache[msgIdStr][miReaccionActual].length === 0) delete cache[msgIdStr][miReaccionActual];
+                }
+                // Agregar a la nueva reacción
+                if (!cache[msgIdStr][emoji]) cache[msgIdStr][emoji] = [];
+                if (!cache[msgIdStr][emoji].includes(userNickname)) {
+                    cache[msgIdStr][emoji].push(userNickname);
+                }
+                localStorage.setItem('gochi_chat_reacciones_cache', JSON.stringify(cache));
+                guardarMiReaccionLocal(msgIdStr, emoji);
+                actualizarUIReacciones(msgIdStr);
+            }
+
+            // Tooltip: quiénes reaccionaron con un emoji
+            let tooltipReaccionEl = null;
+            function mostrarTooltipReaccion(target, msgId, emoji, usuarios) {
+                if (!usuarios || usuarios.length === 0) return;
+
+                if (!tooltipReaccionEl) {
+                    tooltipReaccionEl = document.createElement('div');
+                    tooltipReaccionEl.className = 'reaccion-tooltip';
+                    document.body.appendChild(tooltipReaccionEl);
+                }
+
+                const lista = usuarios.map(n => `<span class="tooltip-usuario">${escaparHTML(n)}</span>`).join('');
+                tooltipReaccionEl.innerHTML = `<div class="tooltip-titulo">${emoji} <span style="font-weight:normal;">(${usuarios.length})</span></div><div class="tooltip-lista">${lista}</div>`;
+
+                const rect = target.getBoundingClientRect();
+                const tw = tooltipReaccionEl.offsetWidth || 160;
+                let left = rect.left + rect.width / 2 - tw / 2;
+                if (left < 8) left = 8;
+                tooltipReaccionEl.style.left = left + 'px';
+                tooltipReaccionEl.style.top = (rect.top - (tooltipReaccionEl.offsetHeight || 40) - 8) + 'px';
+                tooltipReaccionEl.classList.add('visible');
+            }
+
+            function ocultarTooltipReaccion() {
+                if (tooltipReaccionEl) tooltipReaccionEl.classList.remove('visible');
+            }
+
+            // Actualizar badges de un mensaje concreto
+            function actualizarUIReacciones(msgId) {
+                const container = document.querySelector(`.chat-msg-container[data-msgid="${msgId}"]`);
+                if (!container) return;
+
+                const badgesContainer = container.querySelector('.reacciones-badges');
+                const esquina = container.querySelector('.msg-reaccion-esquina');
+
+                const msgIdStr = String(msgId);
+                // Leer cache local para mostrar inmediatamente
+                try {
+                    const cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
+                    const msgCache = cache[msgIdStr] || {};
+
+                    // Actualizar icono en esquina del mensaje (tipo WhatsApp/Messenger)
+                    if (esquina) {
+                        // Prioridad 1: reacciÃ³n del usuario actual, 2: la mÃ¡s popular
+                        const miReaccion = obtenerMiReaccionLocal(msgIdStr);
+                        let emojiAMostrar = null;
+                        let countAMostrar = 0;
+                        let esMia = false;
+
+                        if (miReaccion && msgCache[miReaccion] && msgCache[miReaccion].length > 0) {
+                            emojiAMostrar = miReaccion;
+                            countAMostrar = msgCache[miReaccion].length;
+                            esMia = true;
+                        } else {
+                            let mejorCount = 0;
+                            REACCIONES.forEach(emoji => {
+                                 const usuarios = msgCache[emoji] || [];
+                                 if (usuarios.length > mejorCount) {
+                                     mejorCount = usuarios.length;
+                                     emojiAMostrar = emoji;
+                                     countAMostrar = usuarios.length;
+                                 }
+                             });
+                        }
+
+                        if (emojiAMostrar && countAMostrar > 0) {
+                            esquina.style.display = "flex";
+                            esquina.innerHTML = `<span class="esquina-emoji">${emojiAMostrar}</span><span class="esquina-count">${countAMostrar}</span>`;
+                            esquina.className = "msg-reaccion-esquina" + (esMia ? " mia" : "");
+                            // Hacer clickeable para cambiar/quitar reacciÃ³n
+                            esquina.onclick = (e) => {
+                                e.stopPropagation();
+                                if (userNickname) {
+                                    establecerReaccionUsuario(msgIdStr, emojiAMostrar);
+                                }
+                            };
+                            esquina.title = countAMostrar + " reacciÃ³n" + (countAMostrar > 1 ? "es" : "") + " con " + emojiAMostrar + (esMia ? " (clic para quitar)" : " (clic para reaccionar)");
+                        } else {
+                            esquina.style.display = "none";
+                            esquina.onclick = null;
+                        }
+                    }
+
+                    // Actualizar badges visibles debajo del mensaje (si existen)
+                    if (badgesContainer) {
+                        badgesContainer.innerHTML = '';
+                        REACCIONES.forEach(emoji => {
+                            const usuarios = msgCache[emoji] || [];
+                            const count = usuarios.length;
+                            const mia = obtenerMiReaccionLocal(msgIdStr) === emoji;
+
+                            const badge = document.createElement('span');
+                            badge.className = 'reaccion-badge' + (mia ? ' mia' : '');
+                            badge.dataset.emoji = emoji;
+                            badge.innerHTML = `<span class="emoji">${emoji}</span><span class="count">${count}</span>`;
+                            badge.onclick = (e) => {
+                                e.stopPropagation();
+                                establecerReaccionUsuario(msgIdStr, emoji);
+                            };
+                            badge.onmouseenter = (e) => {
+                                if (count > 0) mostrarTooltipReaccion(e.currentTarget, msgIdStr, emoji, usuarios);
+                            };
+                            badge.onmouseleave = ocultarTooltipReaccion;
+                            badgesContainer.appendChild(badge);
+                        });
+                    }
+                } catch (e) {}
+            }
+
+            // Crear panel burbuja de reacción (aparece al hacer hover sobre el mensaje)
+            function crearBurbujaReacciones(msgId) {
+                const msgIdStr = String(msgId);
+                const container = document.createElement('div');
+                container.className = 'chat-msg-burbuja';
+                container.style.cssText = 'position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:6px;background:var(--card-bg);border:1px solid var(--border-color);border-radius:24px;padding:6px 10px;box-shadow:var(--glow);z-index:10;opacity:0;pointer-events:none;transition:opacity 0.2s,transform 0.2s;';
+
+                REACCIONES.forEach(emoji => {
+                    const btn = document.createElement('button');
+                    btn.className = 'btn-burbuja';
+                    btn.textContent = emoji;
+                    btn.title = emoji;
+                    btn.style.cssText = 'background:transparent;border:none;cursor:pointer;font-size:1.15rem;padding:6px;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;transition:transform 0.15s,background 0.15s;';
+                    btn.onmouseenter = function() { this.style.transform = 'scale(1.25)'; this.style.background = 'var(--card-bg-subtle)'; };
+                    btn.onmouseleave = function() {
+                        this.style.transform = 'scale(1)';
+                        if (obtenerMiReaccionLocal(msgIdStr) !== emoji) this.style.background = 'transparent';
+                    };
+                    btn.onclick = async (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        await establecerReaccionUsuario(msgIdStr, emoji);
+                        actualizarUIReacciones(msgIdStr);
+                    };
+                    container.appendChild(btn);
+                });
+                return container;
+            }
+
+            // Crear badges visibles debajo del mensaje (se muestran cuando hay reacciones)
+            function crearBadgesReacciones(msgId) {
+                const container = document.createElement('div');
+                container.className = 'reacciones-badges';
+                container.style.display = 'none';
+                return container;
+            }
+
+            // Sistema de racha de mensajes
+            function obtenerStreakData() {
+                try {
+                    const data = localStorage.getItem(STREAK_STORAGE_KEY);
+                    if (data) return JSON.parse(data);
+                } catch (e) {}
+                return { count: 0, lastMessageTime: 0 };
+            }
+
+            function guardarStreakData(data) {
+                localStorage.setItem(STREAK_STORAGE_KEY, JSON.stringify(data));
+            }
+
+            function actualizarStreak() {
+                const streakData = obtenerStreakData();
+                const ahora = Date.now();
+
+                // Si pasaron más de 5 minutos desde el último mensaje, reiniciar racha
+                if (ahora - streakData.lastMessageTime > STREAK_TIMEOUT_MS) {
+                    streakData.count = 1;
+                } else {
+                    streakData.count += 1;
+                }
+
+                streakData.lastMessageTime = ahora;
+                guardarStreakData(streakData);
+
+                // Actualizar UI
+                const streakBadge = document.getElementById('streak-badge-chat');
+                if (streakBadge) {
+                    if (streakData.count > 1) {
+                        streakBadge.style.display = 'inline-flex';
+                        streakBadge.innerHTML = `🔥 Racha: ${streakData.count}`;
+                    } else {
+                        streakBadge.style.display = 'none';
+                    }
+                }
+
+                return streakData.count;
+            }
+
+            function renderizarMensajes(mensajes) {
+                if (!mensajes || mensajes.length === 0) {
+                    chatMensajes.innerHTML = '<div style="text-align:center;color:var(--text-muted);margin-top:40px;">¡Sé el primero en escribir!</div>';
+                    return;
+                }
+                chatMensajes.innerHTML = '';
+                mensajes.forEach(msg => {
+                    const fecha = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    const msgId = msg.id || Date.now() + Math.random();
+                    
+                    const container = document.createElement('div');
+                    container.className = 'chat-msg-container';
+                    container.dataset.msgid = msgId;
+                    container.style.cssText = 'position:relative;background:rgba(255,255,255,0.03);padding:10px 14px;border-radius:8px;border:1px solid var(--border-color);cursor:pointer;';
+                    
+                    // Mostrar burbuja de reacciones al hover
+                    container.onmouseenter = function() {
+                        const burbuja = this.querySelector('.chat-msg-burbuja');
+                        if (burbuja) {
+                            burbuja.style.opacity = '1';
+                            burbuja.style.pointerEvents = 'auto';
+                        }
+                        const esquina = this.querySelector('.msg-reaccion-esquina');
+                        // no forzar display; actualizarUIReacciones controla la visibilidad
+                    };
+                    container.onmouseleave = function() {
+                        const burbuja = this.querySelector('.chat-msg-burbuja');
+                        if (burbuja) {
+                            burbuja.style.opacity = '0';
+                            burbuja.style.pointerEvents = 'none';
+                        }
+                        const msgId = this.dataset.msgid;
+                        if (msgId) actualizarUIReacciones(msgId);
+                        ocultarTooltipReaccion();
+                    };
+
+                    const headerDiv = document.createElement('div');
+                    headerDiv.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;font-size:0.8rem;';
+                    headerDiv.innerHTML = '<span style="color:var(--accent-color);font-weight:bold;">'+escaparHTML(msg.autor||'Anónimo')+'</span><span style="color:var(--text-muted);">'+fecha+'</span>';
+
+                    const mensajeDiv = document.createElement('div');
+                    mensajeDiv.style.cssText = 'color:var(--text-main);font-size:0.95rem;word-break:break-word;';
+                    mensajeDiv.textContent = msg.mensaje || '';
+
+                    container.appendChild(headerDiv);
+                    container.appendChild(mensajeDiv);
+                    
+                    // Icono de reacción en esquina (tipo WhatsApp/Messenger)
+                    const reaccionEsquina = document.createElement('div');
+                    reaccionEsquina.className = 'msg-reaccion-esquina';
+                    reaccionEsquina.style.display = 'none';
+                    reaccionEsquina.innerHTML = '';
+                    reaccionEsquina.onclick = (e) => { e.stopPropagation(); };
+                    reaccionEsquina.onmouseenter = (e) => { e.stopPropagation(); };
+                    reaccionEsquina.onmouseleave = (e) => { e.stopPropagation(); };
+                    container.appendChild(reaccionEsquina);
+                    
+                    // Burbuja de reacciones al hover
+                    const burbuja = crearBurbujaReacciones(msgId);
+                    container.appendChild(burbuja);
+
+                    chatMensajes.appendChild(container);
+                });
+                // Cargar reacciones de Supabase para estos mensajes
+                cargarReaccionesDeSupabase(mensajes);
+                chatMensajes.scrollTop = chatMensajes.scrollHeight;
+                chatInicializado = true;
+            }
+
+            // Cargar reacciones de Supabase para una lista de mensajes
+            async function cargarReaccionesDeSupabase(mensajes) {
+                if (!mensajes || mensajes.length === 0) return;
+                try {
+                    const ids = mensajes.map(m => m.id).filter(Boolean);
+                    if (ids.length === 0) return;
+                    const { data, error } = await supabase
+                        .from('message_reactions')
+                        .select('message_id, emoji, user_id, apodo')
+                        .in('message_id', ids);
+                    if (error) {
+                        console.warn('[REACCIÓN] Supabase reacciones falló (¿tabla ausente?), usando cache localStorage:', error.message);
+                        // Usar cache local existente para actualizar UI
+                        const cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
+                        mensajes.forEach(m => {
+                            const msgId = m.id;
+                            if (msgId && cache[msgId]) {
+                                actualizarUIReacciones(msgId);
+                            }
+                        });
+                        return;
+                    }
+                    const cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
+                    const miCache = JSON.parse(localStorage.getItem('gochi_chat_mi_reaccion_v2') || '{}');
+                    data.forEach(r => {
+                        if (!cache[r.message_id]) cache[r.message_id] = {};
+                        if (!cache[r.message_id][r.emoji]) cache[r.message_id][r.emoji] = [];
+                        const nombre = r.apodo || r.user_id;
+                        if (!cache[r.message_id][r.emoji].includes(nombre)) {
+                            cache[r.message_id][r.emoji].push(nombre);
+                        }
+                        // Si el usuario logueado es quien reaccionó, guardarlo en mi reaccion
+                        if (userId && r.user_id === userId) {
+                            miCache[r.message_id] = r.emoji;
+                        }
+                    });
+                    localStorage.setItem('gochi_chat_reacciones_cache', JSON.stringify(cache));
+                    localStorage.setItem('gochi_chat_mi_reaccion_v2', JSON.stringify(miCache));
+                    // Actualizar UI de los mensajes ya renderizados
+                    mensajes.forEach(m => {
+                        const msgId = m.id;
+                        if (msgId && cache[msgId]) {
+                            actualizarUIReacciones(msgId);
+                        }
+                    });
+                } catch (e) { console.error('Error cargando reacciones:', e); }
+            }
+
+            // Limpiar mensajes antiguos (mantener máximo 100 en DOM)
+            function limpiarMensajesAntiguos() {
+                const mensajes = chatMensajes.querySelectorAll('.chat-msg-container');
+                if (mensajes.length > MAX_MENSAJES_DOM) {
+                    const eliminar = mensajes.length - MAX_MENSAJES_DOM;
+                    for (let i = 0; i < eliminar; i++) {
+                        if (mensajes[i]) mensajes[i].remove();
+                    }
+                }
+            }
+
+if (chatForm) {
+                chatForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const ahora = Date.now();
+                    if (ahora - ultimoEnvio < 2500) return;
+                    if (!userNickname) return;
+                    const mensaje = inputMensaje.value.trim();
+                    if (!mensaje) return;
+                    ultimoEnvio = ahora;
+                    const btnEnviar = chatForm.querySelector('button[type="submit"]');
+                    if (btnEnviar) btnEnviar.disabled = true;
+                    try {
+                        const { error } = await supabase.from('comunidad_chat').insert([{ autor: userNickname, mensaje }]);
+                        if (error) console.error('Error:', error);
+                        else {
+                            inputMensaje.value = '';
+                            // Actualizar streak de mensajes
+                            actualizarStreak();
+                            // Actualizar ultima_actividad en BD
+                            await supabase.from('usuarios_comunidad').update({ ultima_actividad: new Date().toISOString() }).eq('apodo', userNickname);
+                        }
+                    } catch (e) { console.error(e); }
+                    if (btnEnviar) btnEnviar.disabled = false;
+                });
+            }
+
+            function iniciarRealtimeChat() {
+                // Escuchar nuevos mensajes del chat
+                supabase.channel('public:comunidad_chat').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'comunidad_chat' }, payload => {
+                    const nuevoMsg = payload.new;
+                    if (!chatInicializado || chatMensajes.querySelector('div[style*="margin-top"]')) {
+                        chatMensajes.innerHTML = '';
+                        chatInicializado = true;
+                    }
+                    
+                    const fecha = new Date(nuevoMsg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    const msgId = nuevoMsg.id || Date.now() + Math.random();
+                    
+                    const container = document.createElement('div');
+                    container.className = 'chat-msg-container';
+                    container.dataset.msgid = msgId;
+                    container.style.cssText = 'position:relative;background:rgba(255,255,255,0.03);padding:10px 14px;border-radius:8px;border:1px solid var(--border-color);cursor:pointer;';
+                    
+                    // Mostrar burbuja de reacciones al hover
+                    container.onmouseenter = function() {
+                        const burbuja = this.querySelector('.chat-msg-burbuja');
+                        if (burbuja) {
+                            burbuja.style.opacity = '1';
+                            burbuja.style.pointerEvents = 'auto';
+                        }
+                        const esquina = this.querySelector('.msg-reaccion-esquina');
+                        // no forzar display; actualizarUIReacciones controla la visibilidad
+                    };
+                    container.onmouseleave = function() {
+                        const burbuja = this.querySelector('.chat-msg-burbuja');
+                        if (burbuja) {
+                            burbuja.style.opacity = '0';
+                            burbuja.style.pointerEvents = 'none';
+                        }
+                        const msgId = this.dataset.msgid;
+                        if (msgId) actualizarUIReacciones(msgId);
+                        ocultarTooltipReaccion();
+                    };
+
+                    const headerDiv = document.createElement('div');
+                    headerDiv.style.cssText = 'display:flex;justify-content:space-between;margin-bottom:4px;font-size:0.8rem;';
+                    headerDiv.innerHTML = '<span style="color:var(--accent-color);font-weight:bold;">'+escaparHTML(nuevoMsg.autor||'Anónimo')+'</span><span style="color:var(--text-muted);">'+fecha+'</span>';
+
+                    const mensajeDiv = document.createElement('div');
+                    mensajeDiv.style.cssText = 'color:var(--text-main);font-size:0.95rem;word-break:break-word;';
+                    mensajeDiv.textContent = nuevoMsg.mensaje || '';
+
+                    container.appendChild(headerDiv);
+                    container.appendChild(mensajeDiv);
+                    
+                    // Icono de reacción en esquina (tipo WhatsApp/Messenger)
+                    const reaccionEsquina = document.createElement('div');
+                    reaccionEsquina.className = 'msg-reaccion-esquina';
+                    reaccionEsquina.style.display = 'none';
+                    reaccionEsquina.innerHTML = '';
+                    reaccionEsquina.onclick = (e) => { e.stopPropagation(); };
+                    reaccionEsquina.onmouseenter = (e) => { e.stopPropagation(); };
+                    reaccionEsquina.onmouseleave = (e) => { e.stopPropagation(); };
+                    container.appendChild(reaccionEsquina);
+                    
+                    const burbuja = crearBurbujaReacciones(msgId);
+                    container.appendChild(burbuja);
+
+                    chatMensajes.appendChild(container);
+                    chatMensajes.scrollTop = chatMensajes.scrollHeight;
+                    
+                    // Cargar reacciones de Supabase para este mensaje nuevo
+                    cargarReaccionesDeSupabase([nuevoMsg]);
+                    
+                    // Limpiar mensajes antiguos si supera el límite
+                    limpiarMensajesAntiguos();
+                }).subscribe();
+
+                // Escuchar reacciones en tiempo real
+                try {
+                    canalReacciones = supabase.channel('public:message_reactions')
+                        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'message_reactions' }, payload => {
+                            const r = payload.new;
+                            const cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
+                            if (!cache[r.message_id]) cache[r.message_id] = {};
+                            if (!cache[r.message_id][r.emoji]) cache[r.message_id][r.emoji] = [];
+                            const nombre = r.apodo || r.user_id;
+                            if (!cache[r.message_id][r.emoji].includes(nombre)) {
+                                cache[r.message_id][r.emoji].push(nombre);
+                            }
+                            localStorage.setItem('gochi_chat_reacciones_cache', JSON.stringify(cache));
+                            if (userId && r.user_id === userId) {
+                                const miCache = JSON.parse(localStorage.getItem('gochi_chat_mi_reaccion_v2') || '{}');
+                                miCache[r.message_id] = r.emoji;
+                                localStorage.setItem('gochi_chat_mi_reaccion_v2', JSON.stringify(miCache));
+                            }
+                            actualizarUIReacciones(r.message_id);
+                        })
+                        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'message_reactions' }, payload => {
+                            const old = payload.old;
+                            const r = payload.new;
+                            const cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
+                            // quitar del emoji anterior
+                            if (cache[old.message_id]?.[old.emoji]) {
+                                const oldNombre = old.apodo || old.user_id;
+                                cache[old.message_id][old.emoji] = cache[old.message_id][old.emoji].filter(u => u !== oldNombre);
+                                if (cache[old.message_id][old.emoji].length === 0) delete cache[old.message_id][old.emoji];
+                            }
+                            // agregar al nuevo
+                            if (!cache[r.message_id]) cache[r.message_id] = {};
+                            if (!cache[r.message_id][r.emoji]) cache[r.message_id][r.emoji] = [];
+                            const nombre = r.apodo || r.user_id;
+                            if (!cache[r.message_id][r.emoji].includes(nombre)) {
+                                cache[r.message_id][r.emoji].push(nombre);
+                            }
+                            localStorage.setItem('gochi_chat_reacciones_cache', JSON.stringify(cache));
+                            if (userId && r.user_id === userId) {
+                                const miCache = JSON.parse(localStorage.getItem('gochi_chat_mi_reaccion_v2') || '{}');
+                                miCache[r.message_id] = r.emoji;
+                                localStorage.setItem('gochi_chat_mi_reaccion_v2', JSON.stringify(miCache));
+                            }
+                            actualizarUIReacciones(r.message_id);
+                        })
+                        .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'message_reactions' }, payload => {
+                            const r = payload.old;
+                            const cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
+                            const nombre = r.apodo || r.user_id;
+                            if (cache[r.message_id]?.[r.emoji]) {
+                                cache[r.message_id][r.emoji] = cache[r.message_id][r.emoji].filter(u => u !== nombre);
+                                if (cache[r.message_id][r.emoji].length === 0) delete cache[r.message_id][r.emoji];
+                                if (Object.keys(cache[r.message_id]).length === 0) delete cache[r.message_id];
+                                localStorage.setItem('gochi_chat_reacciones_cache', JSON.stringify(cache));
+                            }
+                            if (userId && r.user_id === userId) {
+                                const miCache = JSON.parse(localStorage.getItem('gochi_chat_mi_reaccion_v2') || '{}');
+                                if (miCache[r.message_id] === r.emoji) delete miCache[r.message_id];
+                                localStorage.setItem('gochi_chat_mi_reaccion_v2', JSON.stringify(miCache));
+                            }
+                            actualizarUIReacciones(r.message_id);
+                        })
+                        .subscribe();
+                } catch (e) {
+                    console.warn('[REACCIÓN] Canal de reacciones no disponible:', e.message);
+                }
+            }
+
+            async function renderizarListaUsuarios(estadoPresencia) {
+                if (!onlineUsersListEl) return;
+
+                // Si el estado está vacío y nunca hemos recibido presencia, mantener "Cargando usuarios..."
+                if (!estadoPresencia || Object.keys(estadoPresencia).length === 0) {
+                    if (onlineUsersListEl.dataset.loaded !== 'true') {
+                        onlineUsersListEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:20px;">Cargando usuarios...</div>';
+                        return;
+                    }
+                    // Ya habíamos recibido presencia y ahora está vacío = nadie en línea
+                    onlineUsersListEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:20px;">Nadie en línea</div>';
+                    return;
+                }
+
+                // Marcar como que ya recibimos presencia al menos una vez
+                onlineUsersListEl.dataset.loaded = 'true';
+                let html = '';
+                
+                // Cargar rangos de todos los usuarios de una sola vez
+                const nicknames = Object.values(estadoPresencia).map(arr => (arr[0] || {}).nickname).filter(Boolean);
+                let rangosMap = {};
+                
+                if (nicknames.length > 0) {
+                    try {
+                        const { data: usuariosData } = await supabase
+                            .from('usuarios_comunidad')
+                            .select('apodo, rango')
+                            .in('apodo', nicknames);
+                        
+                        if (usuariosData) {
+                            usuariosData.forEach(u => {
+                                rangosMap[u.apodo] = u.rango;
+                            });
+                        }
+                    } catch (e) {
+                        console.error('Error cargando rangos:', e);
+                    }
+                }
+                
+                for (const [key, presenceArray] of Object.entries(estadoPresencia)) {
+                    const datos = presenceArray[0] || {};
+                    const nickSafe = (datos.nickname || 'Anónimo').toString().replace(/[&<>"\']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+                    const initial = nickSafe.charAt(0).toUpperCase();
+                    
+                    // Solo icono de rango (sin texto)
+                    let badgeHTML = '';
+                    const rango = rangosMap[datos.nickname] || 'semilla';
+                    const rangoLower = rango.toLowerCase();
+                    const emojiMap = {
+                        'semilla': '🌱', 'gota': '💧', 'flor': '🌸', 
+                        'estrella': '⭐', 'leyenda': '👑'
+                    };
+                    const emoji = emojiMap[rangoLower] || '🌱';
+                    badgeHTML = `<span class="rango-badge rango-solo-icono rango-${rangoLower}" title="${rangoLower.charAt(0).toUpperCase() + rangoLower.slice(1)}">${emoji}</span>`;
+                    
+                    html += `<div class="user-item"><div class="user-icon">${initial}</div><div class="user-name">${nickSafe}${badgeHTML}</div></div>`;
+                }
+                onlineUsersListEl.innerHTML = html;
+            }
+
+            async function verificarEstadoStream() {
+                try {
+                    const response = await fetch('https://kick.com/api/v2/channels/lagochagaming');
+                    if (!response.ok) throw new Error('Error al obtener estado del stream');
+                    const data = await response.json();
+                    const enVivo = data.livestream && data.livestream.is_live === true;
+                    const viewers = data.livestream ? data.livestream.viewer_count : 0;
+                    const viewersEl = document.getElementById('viewers-count');
+                    const viewersNumEl = document.getElementById('viewers-num');
+                    const navbar = document.querySelector('.navbar');
+                    const alertOverlay = document.getElementById('stream-alert');
+
+                    if (estadoDot && estadoTexto) {
+                        if (enVivo) {
+                            estadoDot.style.backgroundColor = '#53fc18';
+                            estadoTexto.textContent = 'EN VIVO AHORA';
+                            if (viewersEl && viewersNumEl) { viewersEl.style.display = 'block'; viewersNumEl.textContent = viewers.toLocaleString(); }
+                        } else {
+                            estadoDot.style.backgroundColor = '#ff4d4d';
+                            estadoTexto.textContent = 'Offline';
+                            if (viewersEl) viewersEl.style.display = 'none';
+                        }
+                    }
+
+                    // Activar/desactivar navbar glow
+                    if (navbar) {
+                        if (enVivo) {
+                            navbar.classList.add('live-glow');
+                        } else {
+                            navbar.classList.remove('live-glow');
+                        }
+                    }
+
+                    // Mostrar overlay de alerta si es la primera vez que detecta live
+                    if (alertOverlay && ultimaEstadoEnVivo === false && enVivo) {
+                        alertOverlay.classList.add('visible', 'live');
+                        setTimeout(() => {
+                            alertOverlay.classList.remove('visible');
+                        }, 5000);
+                    }
+
+                    if (ultimaEstadoEnVivo === false && enVivo && typeof mostrarToast === 'function') { mostrarToast('¡La Gocha está en directo! 🎉', false); }
+                    ultimaEstadoEnVivo = enVivo;
+                } catch (err) {
+                    console.error('Error verificando estado del stream:', err);
+                    if (estadoDot && estadoTexto) { estadoDot.style.backgroundColor = '#ff4d4d'; estadoTexto.textContent = 'Error'; }
+                    const viewersEl = document.getElementById('viewers-count');
+                    if (viewersEl) viewersEl.style.display = 'none';
+                }
+            }
+
+            function iniciarPresenciaUsuarios() {
+                const presenceId = userId || (Math.random().toString(36).substr(2, 9));
+                if (!userId) localStorage.setItem('comunidad_user_id', presenceId);
+
+                const nickParaTrack = userNickname || savedApodo;
+                let trackHecho = false; // Evitar tracks duplicados
+
+                const canalPresencia = supabase.channel('presence:comunidad')
+                    .on('presence', { event: 'sync' }, () => {
+                        const estado = canalPresencia.presenceState();
+                        renderizarListaUsuarios(estado);
+                    });
+
+                canalPresencia.subscribe((state) => {
+                    if (state === 'SUBSCRIBED' && nickParaTrack && !trackHecho) {
+                        trackHecho = true;
+                        canalPresencia.track({ user_id: presenceId, nickname: nickParaTrack });
+                    }
+                });
+
+                // KeepAlive cada 60 segundos
+                const keepAliveInterval = setInterval(() => {
+                    if (nickParaTrack && canalPresencia) {
+                        canalPresencia.track({ user_id: presenceId, nickname: nickParaTrack });
+                    }
+                }, 60000);
+
+                window._trackPresence = (nick) => {
+                    if (canalPresencia && trackHecho) {
+                        canalPresencia.track({ user_id: presenceId, nickname: nick || userNickname });
+                    }
+                };
+                window._presenceKeepAlive = keepAliveInterval;
+
+                return () => {
+                    if (window._presenceKeepAlive) clearInterval(window._presenceKeepAlive);
+                    supabase.removeChannel(canalPresencia);
+                };
+            }
+
+            // Event listeners
+            nicknameModalSetBtn.addEventListener('click', enviarNickConPIN);
+            nicknameModalCloseBtn.addEventListener('click', hideNicknameModal);
+            nicknameModalInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') enviarNickConPIN(); });
+            nicknameModalPin.addEventListener('keypress', (e) => { if (e.key === 'Enter') enviarNickConPIN(); });
+
+// Cargar leaderboard público
+            async function cargarLeaderboard() {
+                const leaderboardEl = document.getElementById('leaderboard-list');
+                if (!leaderboardEl) return;
+                try {
+                    const { data, error } = await supabase
+                        .from('usuarios_comunidad')
+                        .select('apodo, puntos, rango')
+                        .order('puntos', { ascending: false })
+                        .limit(10);
+
+                    if (error || !data || data.length === 0) {
+                        leaderboardEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:20px;">Sin participantes aún</div>';
+                        return;
+                    }
+
+                    let html = '';
+                    data.forEach((user, index) => {
+                        const medalla = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`;
+                        
+                        // Agregar badge de rango (siempre se muestra, incluso semilla)
+                        let rangoBadge = '';
+                        const rango = user.rango || 'semilla';
+                        const rangoLower = rango.toLowerCase();
+                        const emojiMap = {
+                            'semilla': '🌱', 'gota': '💧', 'flor': '🌸', 
+                            'estrella': '⭐', 'leyenda': '👑'
+                        };
+                        const emoji = emojiMap[rangoLower] || '🌱';
+                        rangoBadge = `<span class="rango-badge rango-${rangoLower}" style="margin-left:6px;"><span>${emoji}</span><span>${rangoLower.charAt(0).toUpperCase() + rangoLower.slice(1)}</span></span>`;
+                        
+                        html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 4px;border-bottom:1px solid var(--border-color);${index === 0 ? 'background:rgba(255,215,0,0.1);' : ''}">
+                            <span style="font-size:0.9rem;font-weight:bold;">${medalla} ${escaparHTML(user.apodo)}${rangoBadge}</span>
+                            <span style="color:var(--accent-color);font-size:0.85rem;">${user.puntos} pts</span>
+                        </div>`;
+                    });
+                    leaderboardEl.innerHTML = html;
+                } catch (e) {
+                    console.error('Error leaderboard:', e);
+                    leaderboardEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:20px;">Error al cargar ranking</div>';
+                }
+            }
+
+// Inicializar
+            cargarMensajesChat();
+            iniciarRealtimeChat();
+            cargarLeaderboard();
+            setInterval(cargarLeaderboard, 60000); // Actualizar ranking cada minuto
+
+            // Restaurar UI de chat y perfil SINCRÓNICAMENTE si hay sesión guardada
+            const chatLoginForm = document.getElementById('chat-form');
+            const chatLoginArea = document.getElementById('chat-login-area');
+
+            if (savedApodo && savedToken) {
+                // Mostrar chat y perfil inmediatamente (sin esperar validación)
+                if (chatLoginForm) chatLoginForm.style.display = 'flex';
+                if (chatLoginArea) chatLoginArea.style.display = 'none';
+
+                // Mostrar panel de perfil
+                if (userProfilePanel && userInfoDisplay && userPointsDisplay) {
+                    userProfilePanel.style.display = 'block';
+                    userInfoDisplay.textContent = savedApodo;
+                    const navUserInfo = document.getElementById('nav-user-info');
+                    const navUsername = document.getElementById('nav-username');
+                    if (navUserInfo && navUsername) { navUsername.textContent = savedApodo; navUserInfo.style.display = 'inline-flex'; }
+                    // Cargar puntos y rango actuales
+                    supabase.from('usuarios_comunidad').select('puntos, rango').eq('apodo', savedApodo).single().then(({ data }) => {
+                        if (data && userPointsDisplay) {
+                            userPointsDisplay.textContent = data.puntos + ' pts';
+                            const userRangoEl = document.getElementById('user-rango-badge');
+                            const rango = data.rango || 'semilla';
+                            const rangoLower = rango.toLowerCase();
+                            const emojiMap = { 'semilla': '🌱', 'gota': '💧', 'flor': '🌸', 'estrella': '⭐', 'leyenda': '👑' };
+                            const emoji = emojiMap[rangoLower] || '🌱';
+                            const rangoNombre = rangoLower.charAt(0).toUpperCase() + rangoLower.slice(1);
+                            if (userRangoEl) userRangoEl.textContent = emoji + ' ' + rangoNombre;
+                        }
+                    });
+                }
+            } else {
+                // Mostrar solo área de login
+                if (chatLoginForm) chatLoginForm.style.display = 'none';
+                if (chatLoginArea) chatLoginArea.style.display = 'flex';
+            }
+
+            verificarEstadoStream();
+            setInterval(verificarEstadoStream, 30000);
+            const presenciaChannel = iniciarPresenciaUsuarios();
+            
+            // Forzar track inmediato si hay usuario logueado
+            if (savedApodo && typeof window._trackPresence === 'function') {
+                setTimeout(() => {
+                    window._trackPresence(savedApodo);
+                }, 500);
+            }
+
+// Puntos automáticos: +1 punto cada 5 minutos (300,000 ms)
+            setInterval(async () => {
+                const currentNick = localStorage.getItem(STORAGE_KEY_NICK);
+                if (currentNick) {
+                    try {
+                        const { error } = await supabase.rpc('incrementar_puntos', { apodo_param: currentNick });
+                        if (!error) {
+                            // Actualizar UI de puntos y rango
+                            const { data } = await supabase.from('usuarios_comunidad').select('puntos, rango').eq('apodo', currentNick).single();
+                            if (data && userPointsDisplay) {
+                                userPointsDisplay.textContent = '💎 Puntos: ' + data.puntos;
+                            }
+                            // Actualizar badge de rango si está visible
+                            const rangoBadge = document.getElementById('user-rango-badge');
+                            if (rangoBadge) {
+                                const rango = data.rango || 'semilla';
+                                const rangoLower = rango.toLowerCase();
+                                const emojiMap = {
+                                    'semilla': '🌱', 'gota': '💧', 'flor': '🌸', 
+                                    'estrella': '⭐', 'leyenda': '👑'
+                                };
+                                const emoji = emojiMap[rangoLower] || '🌱';
+                                rangoBadge.className = `rango-badge rango-${rangoLower}`;
+                                rangoBadge.innerHTML = `<span>${emoji}</span><span>${rangoLower.charAt(0).toUpperCase() + rangoLower.slice(1)}</span>`;
+                            }
+                        }
+                    } catch (e) { console.error('Error al sumar puntos:', e); }
+                }
+            }, 300000); // 5 minutos
+        });
+
+        function cerrarSesion() {
+            localStorage.removeItem('comunidad_nickname');
+            localStorage.removeItem('comunidad_session_token');
+            const panel = document.getElementById('user-profile-panel');
+            if (panel) panel.style.display = 'none';
+            const input = document.getElementById('chat-autor');
+            if (input) { input.value = ''; input.readOnly = false; }
+            const chatLoginForm = document.getElementById('chat-form');
+            const chatLoginArea = document.getElementById('chat-login-area');
+            if (chatLoginForm) chatLoginForm.style.display = 'none';
+            const navUserInfo = document.getElementById('nav-user-info');
+            if (navUserInfo) navUserInfo.style.display = 'none';
+        }
+        window.cambiarTabComunidad = function(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.textContent.trim().toLowerCase().startsWith(tab === 'info' ? 'info' : tab)));
+            document.querySelectorAll('.tab-content').forEach(p => {
+                p.style.display = (p.id === 'tab-' + tab) ? 'block' : 'none';
+                p.classList.toggle('active', p.id === 'tab-' + tab);
+            });
+        };
+    </script>
+</body>
+</html>

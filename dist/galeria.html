@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <link rel="icon" type="image/x-icon" href="img/favicon.ico">
+    <link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="img/android-chrome-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="img/android-chrome-512x512.png">
+    <meta name="theme-color" content="#ffffff">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galería | LaGochaGaming</title>
+    <meta property="og:title" content="Galería | LaGochaGaming">
+    <meta property="og:description" content="Explora las mejores fotos y momentos de La Gocha.">
+    <meta property="og:image" content="img/3.jpg">
+    <meta property="og:type" content="website">
+    <link rel="stylesheet" href="style.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        .admin-controls-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .btn-admin-mode {
+            background: var(--card-bg-subtle);
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-admin-mode.active {
+            background: var(--accent-color);
+            color: #fff;
+            border-color: var(--accent-color);
+            box-shadow: var(--glow);
+        }
+
+        .panel-pendientes {
+            background: var(--card-bg);
+            border: 2px dashed #f39c12;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 0 15px rgba(243, 156, 18, 0.2);
+            display: none;
+        }
+        .panel-pendientes h3 {
+            color: #f39c12;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-aprobar {
+            background: #2ecc71;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        .btn-aprobar:hover { filter: brightness(1.15); }
+
+        .btn-rechazar {
+            background: #ff4d4d;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        .btn-rechazar:hover { filter: brightness(1.15); }
+
+        .btn-eliminar-publica {
+            background: #ff4d4d;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: none;
+            align-items: center;
+            gap: 4px;
+        }
+        .admin-mode-active .btn-eliminar-publica {
+            display: inline-flex;
+        }
+
+        .msg-subida-exito {
+            color: #53fc18;
+            font-weight: bold;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+        .msg-subida-error {
+            color: #ff4d4d;
+            font-weight: bold;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
+        /* --- PESTAÑAS DE FILTRO --- */
+        .filter-tabs-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 10px;
+        }
+
+        .tab-filter-btn {
+            background: var(--card-bg-subtle);
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tab-filter-btn:hover {
+            color: var(--text-main);
+            border-color: var(--accent-color);
+        }
+
+        .tab-filter-btn.active {
+            background: var(--accent-color);
+            color: #fff;
+            border-color: var(--accent-color);
+            box-shadow: var(--glow);
+        }
+
+        /* --- INSIGNIAS Y BADGES FLOTANTES EN LAS TARJETAS --- */
+        .gallery-card {
+            position: relative;
+        }
+
+        .badge-tag {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-top1 {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #000;
+            border: 1px solid #fff;
+        }
+
+        .badge-top3 {
+            background: linear-gradient(135deg, #ff66b2, #9b59b6);
+            color: #fff;
+            border: 1px solid var(--accent-color);
+        }
+
+        .badge-nuevo {
+            background: #53fc18;
+            color: #000;
+            border: 1px solid #000;
+            right: 12px;
+            left: auto;
+        }
+    </style>
+</head>
+<body>
+    
+    <div id="navbar-root"></div>
+    <script src="partials/navbar.js"></script>
+
+    <div class="content-section" style="margin-top: 85px;">
+        <div class="admin-controls-panel">
+            <h1>Mi Galería</h1>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <button id="btn-toggle-admin" class="btn-admin-mode" onclick="toggleModoAdmin()">
+                    <i class="fa-solid fa-lock"></i> Modo Moderación
+                </button>
+                <button id="btn-logout-galeria" class="btn-admin-mode" onclick="cerrarSesionAdminGlobal()" style="display: none; background: #c0392b; color: #fff;">
+                    <i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión Admin
+                </button>
+            </div>
+        </div>
+
+        <!-- PANEL DE MODERACIÓN -->
+        <div id="panelPendientes" class="panel-pendientes">
+            <h3><i class="fa-solid fa-clock-rotate-left"></i> Imágenes Pendientes por Aprobar (<span id="cantPendientes">0</span>)</h3>
+            <div class="gallery-grid" id="gridPendientes"></div>
+        </div>
+
+        <!-- SUBIDA DE IMÁGENES -->
+        <div class="upload-container" id="uploadContainer">
+            <div style="margin-bottom: 15px;">
+                <input type="text" id="imageTitleInput" placeholder="Escribe un título para tu imagen..." maxlength="40" style="width: 100%; max-width: 400px; padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg-subtle); color: var(--text-main); font-size: 0.95rem; outline: none;">
+            </div>
+
+            <input type="file" id="uploadInput" class="upload-input" accept="image/*">
+            <label for="uploadInput" class="upload-label">
+                <i class="fas fa-upload"></i> Seleccionar Imagen
+            </label>
+            <p style="margin-top: 15px; color: var(--text-muted); font-size: 0.9rem;">Formatos: JPG, PNG, GIF. Tamaño máximo: 5MB por imagen.</p>
+            <div id="uploadFeedback"></div>
+        </div>
+
+        <!-- FILTROS Y PESTAÑAS POPULARES / RECIENTES -->
+        <div class="filter-tabs-container">
+            <h2 style="font-size: 1.2rem; margin: 0; color: var(--text-muted);">📸 Galería Pública</h2>
+            <div class="filter-tabs">
+                <button id="tab-populares" class="tab-filter-btn active" onclick="cambiarFiltroGaleria('populares')">
+                    <i class="fa-solid fa-fire"></i> Más Populares
+                </button>
+                <button id="tab-recientes" class="tab-filter-btn" onclick="cambiarFiltroGaleria('recientes')">
+                    <i class="fa-solid fa-sparkles"></i> Más Recientes
+                </button>
+            </div>
+        </div>
+
+        <div class="gallery-grid" id="galleryGrid"></div>
+    </div>
+
+    <!-- MODAL DE INICIO DE SESIÓN ADMIN -->
+    <div id="modal-pin" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5,7,10,0.85); backdrop-filter: blur(5px); z-index: 10000; justify-content: center; align-items: center;">
+        <div style="background: var(--card-bg); border: 1px solid var(--accent-color); padding: 30px; border-radius: 16px; box-shadow: var(--glow); text-align: center; max-width: 380px; width: 90%;">
+            <h3 style="color: var(--accent-color); margin-bottom: 15px; font-size: 1.2rem;">🔒 MODERACIÓN DE GALERÍA</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Ingresa tus datos de acceso:</p>
+            
+            <input type="email" id="admin-email" placeholder="Correo electrónico" style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg-subtle); color: var(--text-main); font-size: 0.95rem; margin-bottom: 10px; outline: none;">
+            
+            <input type="password" id="admin-password" placeholder="Contraseña" style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg-subtle); color: var(--text-main); font-size: 0.95rem; margin-bottom: 10px; outline: none;">
+            
+            <div id="feedback-pin" style="margin-bottom:15px; color: #ff4d4d; font-size: 0.85rem; font-weight: bold;"></div>
+            
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button onclick="iniciarSesionAdmin()" class="btn-primary" style="border: none; cursor: pointer;">Entrar</button>
+                <button onclick="cerrarModalPin()" class="btn-primary" style="background: var(--text-muted); color: #fff; border: none; cursor: pointer;">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="main-footer">
+        <div class="footer-container">
+            <div class="footer-social-icons">
+                <a href="https://kick.com/lagochagaming" target="_blank" class="social-icon kick-icon" title="Kick">K</a>
+                
+    <a href="https://www.tiktok.com/@lagochagaming11" target="_blank" class="social-icon" title="TikTok"><i class="fab fa-tiktok"></i></a>
+            <a href="https://www.instagram.com/oscurostefany" target="_blank" class="social-icon" title="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="https://discord.com/invite/svrteKBbeh" target="_blank" class="social-icon" title="Discord"><i class="fab fa-discord"></i></a>
+                <a href="https://www.youtube.com/@lagochagaming" target="_blank" class="social-icon" title="YouTube"><i class="fab fa-youtube"></i></a>
+            </div>
+            <p class="footer-copyright">&copy; 2026 LAGOCHAGAMING - ALL RIGHTS RESERVED</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="main.min.js"></script>
+    <script>
+        let adminAutenticado = false;
+        let filtroActual = 'populares'; // 'populares' o 'recientes'
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            loadApprovedImages();
+            
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                adminAutenticado = true;
+                document.body.classList.add('admin-mode-active');
+                document.getElementById('panelPendientes').style.display = 'block';
+                document.getElementById('btn-logout-galeria').style.display = 'inline-flex';
+                const btn = document.getElementById('btn-toggle-admin');
+                btn.innerHTML = '<i class="fa-solid fa-lock-open"></i> Ocultar Moderación';
+                btn.classList.add('active');
+                loadPendingImages();
+            }
+
+            document.getElementById('admin-password')?.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') iniciarSesionAdmin();
+            });
+        });
+
+        const lightbox = document.createElement('div');
+        lightbox.id = 'lightbox';
+        document.body.appendChild(lightbox);
+
+        // ===================================================
+        // 1. CAMBIAR PESTAÑAS / FILTROS DE LA GALERÍA
+        // ===================================================
+        function cambiarFiltroGaleria(filtro) {
+            filtroActual = filtro;
+            document.getElementById('tab-populares').classList.toggle('active', filtro === 'populares');
+            document.getElementById('tab-recientes').classList.toggle('active', filtro === 'recientes');
+            loadApprovedImages();
+        }
+
+        // ===================================================
+        // 2. CARGAR IMÁGENES APROBADAS (CON ORDENAMIENTO Y BADGES)
+        // ===================================================
+        async function loadApprovedImages() {
+            try {
+                const { data, error } = await supabase
+                    .from('galeria')
+                    .select('id, image_url, title, estado, likes, created_at');
+
+                if (error) {
+                    console.error('Error cargando imágenes:', error);
+                    return;
+                }
+
+                const galleryGrid = document.getElementById('galleryGrid');
+                galleryGrid.innerHTML = '';
+
+                // Filtrar aprobadas o sin estado
+                let imagenesPublicas = data ? data.filter(img => !img.estado || img.estado.toLowerCase() === 'aprobado') : [];
+
+                if (imagenesPublicas.length === 0) {
+                    galleryGrid.innerHTML = '<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center;">No hay imágenes públicas aprobadas aún. ¡Sé el primero en subir una! 📸</p>';
+                    return;
+                }
+
+                // Ordenar según la pestaña seleccionada de manera segura
+                if (filtroActual === 'populares') {
+                    imagenesPublicas.sort((a, b) => (b.likes || 0) - (a.likes || 0));
+                } else {
+                    imagenesPublicas.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+                }
+
+                const maxLikes = Math.max(...imagenesPublicas.map(i => i.likes || 0));
+                const userLikes = JSON.parse(localStorage.getItem('gocha_user_likes') || '[]');
+                const horaAhora = new Date().getTime();
+
+                imagenesPublicas.forEach((image, index) => {
+                    const cantLikes = image.likes || 0;
+                    const idStr = String(image.id);
+                    const isLiked = userLikes.includes(idStr);
+
+                    const fechaFoto = image.created_at ? new Date(image.created_at).getTime() : 0;
+                    const esNueva = fechaFoto > 0 && (horaAhora - fechaFoto) < (48 * 60 * 60 * 1000);
+
+                    let badgeHTML = '';
+                    if (cantLikes > 0 && cantLikes === maxLikes) {
+                        badgeHTML = `<span class="badge-tag badge-top1">👑 TOP 1</span>`;
+                    } else if (index < 3 && cantLikes > 0 && filtroActual === 'populares') {
+                        badgeHTML = `<span class="badge-tag badge-top3">🔥 TOP ${index + 1}</span>`;
+                    }
+
+                    if (esNueva) {
+                        badgeHTML += `<span class="badge-tag badge-nuevo">✨ NUEVO</span>`;
+                    }
+
+                    const galleryCard = document.createElement('div');
+                    galleryCard.className = 'gallery-card';
+                    galleryCard.innerHTML = `
+                        ${badgeHTML}
+                        <img src="${image.image_url}" alt="${image.title || 'Foto Gocha'}" loading="lazy">
+                        <div class="gallery-card-info">
+                            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px;" title="${image.title}">${escapeHtml(image.title || 'Sin título')}</span>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <button class="btn-eliminar-publica" onclick="eliminarImagenPublica('${image.id}')" title="Borrar foto de la galería">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                                <button class="like-btn ${isLiked ? 'liked' : ''}" id="like-btn-${image.id}" onclick="toggleLike('${image.id}', ${cantLikes})">
+                                    <i class="${isLiked ? 'fas' : 'far'} fa-heart"></i>
+                                    <span id="like-count-${image.id}">${cantLikes}</span>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    galleryCard.querySelector('img').addEventListener('click', () => {
+                        lightbox.innerHTML = `<img src="${image.image_url}" alt="${image.title || 'Foto'}">`;
+                        lightbox.style.display = 'flex';
+                    });
+                    galleryGrid.appendChild(galleryCard);
+                });
+
+                if (adminAutenticado) {
+                    document.body.classList.add('admin-mode-active');
+                }
+            } catch (err) { console.error('Error:', err); }
+        }
+
+        // ===================================================
+        // 3. SISTEMA DE LIKES EN TIEMPO REAL
+        // ===================================================
+        async function toggleLike(imageId, currentLikes) {
+            let userLikes = JSON.parse(localStorage.getItem('gocha_user_likes') || '[]');
+            const idStr = String(imageId);
+            const idNumerico = isNaN(imageId) ? imageId : Number(imageId);
+            const isLiked = userLikes.includes(idStr);
+
+            let newLikesCount = currentLikes;
+
+            if (isLiked) {
+                userLikes = userLikes.filter(id => id !== idStr);
+                newLikesCount = Math.max(0, currentLikes - 1);
+            } else {
+                userLikes.push(idStr);
+                newLikesCount = currentLikes + 1;
+            }
+
+            const btn = document.getElementById(`like-btn-${imageId}`);
+            const countSpan = document.getElementById(`like-count-${imageId}`);
+
+            if (btn && countSpan) {
+                countSpan.innerText = newLikesCount;
+                if (!isLiked) {
+                    btn.classList.add('liked');
+                    btn.querySelector('i').className = 'fas fa-heart';
+                } else {
+                    btn.classList.remove('liked');
+                    btn.querySelector('i').className = 'far fa-heart';
+                }
+                btn.setAttribute('onclick', `toggleLike('${imageId}', ${newLikesCount})`);
+            }
+
+            localStorage.setItem('gocha_user_likes', JSON.stringify(userLikes));
+
+            try {
+                await supabase.from('galeria').update({ likes: newLikesCount }).eq('id', idNumerico);
+                if (filtroActual === 'populares') loadApprovedImages();
+            } catch (e) { console.error(e); }
+        }
+
+        lightbox.addEventListener('click', () => { lightbox.style.display = 'none'; });
+
+        // ===================================================
+        // 4. MODERACIÓN Y APROBACIÓN DE FOTOS
+        // ===================================================
+        async function loadPendingImages() {
+            if (!adminAutenticado) return;
+            try {
+                const { data, error } = await supabase.from('galeria').select('id, image_url, title, estado');
+                if (error) return;
+
+                const pendientes = data ? data.filter(img => img.estado && img.estado.toLowerCase() === 'pendiente') : [];
+
+                const gridPendientes = document.getElementById('gridPendientes');
+                const cantSpan = document.getElementById('cantPendientes');
+                gridPendientes.innerHTML = '';
+                cantSpan.innerText = pendientes.length;
+
+                if (pendientes.length === 0) {
+                    gridPendientes.innerHTML = '<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center;">¡No hay fotos pendientes por moderar! 🎉</p>';
+                    return;
+                }
+
+                pendientes.forEach(image => {
+                    const card = document.createElement('div');
+                    card.className = 'gallery-card';
+                    card.style.border = '1px solid #f39c12';
+                    card.innerHTML = `
+                        <img src="${image.image_url}" alt="${image.title}" loading="lazy">
+                        <div class="gallery-card-info" style="flex-direction: column; gap: 8px; align-items: stretch;">
+                            <span style="font-weight: bold; text-align: center;">${escapeHtml(image.title)}</span>
+                            <div style="display: flex; justify-content: space-between; gap: 5px;">
+                                <button class="btn-aprobar" onclick="aprobarImagen('${image.id}')"><i class="fa-solid fa-check"></i> Aprobar</button>
+                                <button class="btn-rechazar" onclick="eliminarImagenPublica('${image.id}')"><i class="fa-solid fa-xmark"></i> Rechazar</button>
+                            </div>
+                        </div>
+                    `;
+                    gridPendientes.appendChild(card);
+                });
+            } catch (err) { console.error('Error:', err); }
+        }
+
+        async function aprobarImagen(id) {
+            if (!(await validarSesionStreamer())) {
+                adminAutenticado = false;
+                toggleModoAdmin();
+                mostrarToast('Tu sesión ha expirado.', true);
+                return;
+            }
+            try {
+                const idNumerico = isNaN(id) ? id : Number(id);
+                const { error } = await supabase.from('galeria').update({ estado: 'aprobado' }).eq('id', idNumerico);
+                if (error) { mostrarToast(`Error: ${error.message}`, true); return; }
+                mostrarToast('¡Imagen aprobada con éxito!');
+                loadPendingImages();
+                loadApprovedImages();
+            } catch (e) { console.error(e); }
+        }
+
+        async function eliminarImagenPublica(id) {
+            if (!(await validarSesionStreamer())) {
+                adminAutenticado = false;
+                toggleModoAdmin();
+                mostrarToast('Tu sesión ha expirado.', true);
+                return;
+            }
+
+            mostrarConfirmacionModal({
+                titulo: '🗑️ Eliminar Imagen',
+                mensaje: '¿Deseas eliminar permanentemente esta imagen?',
+                textoConfirmar: 'Eliminar',
+                enConfirmar: async () => {
+                    try {
+                        const idNumerico = isNaN(id) ? id : Number(id);
+                        const { error } = await supabase.from('galeria').delete().eq('id', idNumerico);
+                        if (error) { mostrarToast(`Error: ${error.message}`, true); return; }
+                        mostrarToast('Imagen eliminada de la galería.');
+                        loadPendingImages();
+                        loadApprovedImages();
+                    } catch (e) { console.error(e); }
+                }
+            });
+        }
+
+        function toggleModoAdmin() {
+            const panel = document.getElementById('panelPendientes');
+            const btn = document.getElementById('btn-toggle-admin');
+            const btnLogout = document.getElementById('btn-logout-galeria');
+
+            if (!adminAutenticado) {
+                document.getElementById('modal-pin').style.display = 'flex';
+                document.getElementById('admin-email').focus();
+            } else {
+                if (panel.style.display === 'none' || panel.style.display === '') {
+                    panel.style.display = 'block';
+                    btnLogout.style.display = 'inline-flex';
+                    btn.innerHTML = '<i class="fa-solid fa-lock-open"></i> Ocultar Moderación';
+                    btn.classList.add('active');
+                } else {
+                    panel.style.display = 'none';
+                    btnLogout.style.display = 'none';
+                    btn.innerHTML = '<i class="fa-solid fa-lock"></i> Modo Moderación';
+                    btn.classList.remove('active');
+                }
+            }
+        }
+
+        function cerrarModalPin() {
+            document.getElementById('modal-pin').style.display = 'none';
+            document.getElementById('admin-email').value = '';
+            document.getElementById('admin-password').value = '';
+            document.getElementById('feedback-pin').innerText = '';
+        }
+
+        async function iniciarSesionAdmin() {
+            const email = document.getElementById('admin-email').value.trim();
+            const password = document.getElementById('admin-password').value.trim();
+            const feedback = document.getElementById('feedback-pin');
+
+            if (!email || !password) {
+                feedback.innerText = 'Rellena todos los campos';
+                return;
+            }
+
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+            if (error) {
+                feedback.innerText = '❌ Credenciales incorrectas';
+                return;
+            }
+
+            adminAutenticado = true;
+            cerrarModalPin();
+            document.body.classList.add('admin-mode-active');
+            document.getElementById('panelPendientes').style.display = 'block';
+            document.getElementById('btn-logout-galeria').style.display = 'inline-flex';
+            const btn = document.getElementById('btn-toggle-admin');
+            btn.innerHTML = '<i class="fa-solid fa-lock-open"></i> Ocultar Moderación';
+            btn.classList.add('active');
+            loadPendingImages();
+            mostrarToast('¡Modo moderación activado!');
+        }
+
+        // ===================================================
+        // 5. SUBIDA DE ARCHIVOS A SUPABASE STORAGE
+        // ===================================================
+        const uploadInput = document.getElementById('uploadInput');
+        const titleInput = document.getElementById('imageTitleInput');
+        const uploadFeedback = document.getElementById('uploadFeedback');
+
+        uploadInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            const customTitle = titleInput.value.trim();
+
+            if (!file) return;
+
+            if (!customTitle) {
+                mostrarToast('Por favor escribe un título para la foto.', true);
+                uploadInput.value = '';
+                return;
+            }
+
+            if (file.size > 5 * 1024 * 1024) {
+                uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ La imagen supera el límite máximo de 5MB.</p>';
+                uploadInput.value = '';
+                return;
+            }
+
+            uploadToSupabase(file, customTitle);
+        });
+
+        async function uploadToSupabase(file, title) {
+            if (file.type.startsWith('image/')) {
+                uploadFeedback.innerHTML = '<p style="color: var(--text-muted); margin-top:10px;">⏳ Subiendo imagen...</p>';
+                const filePath = `gallery_${Date.now()}_${file.name}`;
+                const { error } = await supabase.storage.from('fotos-galeria').upload(filePath, file);
+                
+                if (error) {
+                    uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ Error al subir imagen.</p>';
+                    return;
+                }
+
+                const { data: publicURLData } = supabase.storage.from('fotos-galeria').getPublicUrl(filePath);
+                await saveToSupabaseTable(title, publicURLData.publicUrl);
+                
+                titleInput.value = '';
+                uploadInput.value = '';
+            }
+        }
+
+        async function saveToSupabaseTable(title, publicUrl) {
+            const { error } = await supabase.from('galeria').insert([{ title: title, image_url: publicUrl, estado: 'pendiente', likes: 0 }]);
+            if (!error) {
+                uploadFeedback.innerHTML = '<p class="msg-subida-exito">✅ ¡Imagen enviada! Aparecerá cuando sea aprobada. 💖</p>';
+                setTimeout(() => { uploadFeedback.innerHTML = ''; }, 5000);
+                if (adminAutenticado) loadPendingImages();
+            } else {
+                uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ Error al guardar en base de datos.</p>';
+            }
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

@@ -153,25 +153,8 @@
 <body>
 
     <!-- NAVEGACIÓN PRINCIPAL -->
-    <nav class="navbar">
-        <div class="logo">LAGOCHA<span>GAMING</span></div>
-        <div class="nav-links">
-            <a href="./#inicio">Inicio</a>
-            <a href="./#stream">Directo</a>
-            <a href="./#clips">Clips</a>
-            <a href="cine" style="color: var(--accent-color);">🍿 GochiWatch</a>
-            <a href="sorteo" style="color: var(--accent-color);">🎁 Sorteo</a>
-            <a href="galeria" style="color: var(--accent-color);">📸 Galería</a>
-            <a href="comunidad" style="color: var(--accent-color);">💬 Comunidad</a>
-        </div>
-        <div class="auth-buttons" id="auth-buttons">
-            <span id="nav-user-info" style="display:none; align-items:center; gap:10px; color:var(--text-main); font-size:0.9rem; font-weight:600;">
-                <i class="fa-solid fa-user" style="color:var(--accent-color);"></i>
-                <span id="nav-username"></span>
-                <button onclick="cerrarSesion()" class="btn-logout-nav" title="Cerrar Sesión"><i class="fa-solid fa-right-from-bracket"></i> Salir</button>
-            </span>
-        </div>
-    </nav>
+    <div id="navbar-root"></div>
+    <script src="partials/navbar.js"></script>
 
     <div class="cine-layout">
         <div class="cine-main-screen">
@@ -213,7 +196,7 @@
 
                 <!-- Overlay con la cámara/stream en directo de La Gocha -->
                 <div class="streamer-overlay-cam">
-                    <iframe src="https://player.kick.com/lagochagaming?autoplay=true&muted=false" frameborder="0" scrolling="no" allowfullscreen="true" title="Transmisión en directo"></iframe>
+                    <iframe src="https://player.kick.com/lagochagaming?autoplay=true&muted=false" frameborder="0" scrolling="no" allowfullscreen="true" title="Transmisión en directo" loading="lazy"></iframe>
                 </div>
             </div>
         </div>
@@ -221,7 +204,7 @@
         <!-- BARRA LATERAL (CHAT DE KICK) -->
         <div class="cine-sidebar">
             <div class="chat-box-cine">
-                <iframe src="https://kick.com/popout/lagochagaming/chat" frameborder="0" scrolling="no" title="Chat de Kick"></iframe>
+                <iframe src="https://kick.com/popout/lagochagaming/chat" frameborder="0" scrolling="no" title="Chat de Kick" loading="lazy"></iframe>
             </div>
             <div class="sidebar-info" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 18px; text-align: center;">
                 <h3 style="color: var(--accent-color); font-size: 0.9rem; margin-bottom: 8px; text-transform: uppercase;">ℹ️ ¿Cómo funciona?</h3>
