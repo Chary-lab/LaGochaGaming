@@ -569,6 +569,7 @@
                 localStorage.setItem(STORAGE_KEY_NICK, apodo);
                 if (id) localStorage.setItem('comunidad_user_id', String(id));
                 localStorage.setItem(STORAGE_KEY_TOKEN, token || btoa(Date.now().toString()));
+                if (id) localStorage.setItem('comunidad_user_id', String(id));
                 if (userProfilePanel && userInfoDisplay && userPointsDisplay) {
                     userProfilePanel.style.display = 'block';
                     userInfoDisplay.textContent = '👤 ' + apodo;
@@ -654,7 +655,7 @@
                 // Modo login: intentar autenticar
                 const verif = await verificarLogin(nick, pin);
                 if (verif.success) {
-                    guardarSesion(nick, verif.user.session_token, verif.user.puntos, verif.user.rango);
+                    guardarSesion(nick, verif.user.session_token, verif.user.puntos, verif.user.rango, verif.user.id);
                     hideNicknameModal();
                     return;
                 }
