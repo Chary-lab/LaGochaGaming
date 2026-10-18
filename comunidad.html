@@ -440,15 +440,16 @@
         </div>
 
         <!-- COLUMNA DERECHA: SIDEBAR DE ESTADO Y REGLAS (TABS) -->
-        <div class="sidebar-comunidad">
-            <div class="sidebar-tabs">
-                <button class="sidebar-tab active" data-tab="canal" onclick="cambiarTabComunidad('canal')">Canal</button>
-                <button class="sidebar-tab" data-tab="rangos" onclick="cambiarTabComunidad('rangos')">Rangos</button>
-                <button class="sidebar-tab" data-tab="info" onclick="cambiarTabComunidad('info')">Info & Reglas</button>
+        <div class="sidebar-card">
+            <div class="tab-header" style="display: flex; gap: 8px; margin-bottom: 15px;">
+                <button class="tab-btn active" onclick="cambiarTabComunidad('canal')">Canal</button>
+                <button class="tab-btn" onclick="cambiarTabComunidad('rangos')">Rangos</button>
+                <button class="tab-btn" onclick="cambiarTabComunidad('info')">Info & Reglas</button>
             </div>
-            <div class="sidebar-tab-panel active" data-panel="canal">
-                <div class="sidebar-card">
-                    <h3 style="color: var(--accent-color); margin-bottom: 10px;"><i class="fa-solid fa-tower-broadcast"></i> Estado del Canal</h3>
+
+            <div id="tab-canal" class="tab-content active">
+                <div class="estado-canal-box">
+                    <h4 style="color: var(--accent-color); margin-bottom: 10px;"><i class="fa-solid fa-tower-broadcast"></i> Estado del Canal</h4>
                     <div id="canal-estado" style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
                         <span id="estado-dot" style="display: inline-block; width: 10px; height: 10px; background: #ff4d4d; border-radius: 50%;"></span>
                         <span id="estado-texto">Comprobando estado...</span>
@@ -457,44 +458,42 @@
                         <i class="fa-solid fa-eye"></i> <span id="viewers-num">0</span> espectadores
                     </div>
                     <a href="./#stream" class="btn-primary" style="display: block; text-align: center; margin-top: 15px; text-decoration: none;">Ir al Directo</a>
-                    <div id="user-profile-panel" style="margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border-color); display: none;">
-                        <div id="user-info-display" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:0.9rem; color:var(--text-main); font-weight:600;"></div>
-                    </div>
+                </div>
+                <div id="user-profile-panel" style="margin-top: 15px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); display: none;">
+                    <p style="margin:0; font-size: 0.9rem;">
+                        👤 <strong id="user-info-display">MCCHARY</strong> •
+                        💎 <span id="user-points-display">34 pts</span> •
+                        <span id="user-rango-badge">🌱 SEMILLA</span>
+                    </p>
                 </div>
             </div>
-            <div class="sidebar-tab-panel" data-panel="rangos">
-                <div class="sidebar-card">
-                    <h3 style="color: var(--accent-color); margin-bottom: 12px;"><i class="fa-solid fa-crown"></i> Rangos y Puntos</h3>
-                    <div class="cuadro-rangos">
-                        <div class="rango-fila"><span class="rango-icono">🌱</span><span class="rango-nombre">Semilla</span><span class="rango-puntos">0 - 49 pts</span></div>
-                        <div class="rango-fila"><span class="rango-icono">💧</span><span class="rango-nombre">Gota</span><span class="rango-puntos">50 - 199 pts</span></div>
-                        <div class="rango-fila"><span class="rango-icono">🌸</span><span class="rango-nombre">Flor</span><span class="rango-puntos">200 - 499 pts</span></div>
-                        <div class="rango-fila"><span class="rango-icono">⭐</span><span class="rango-nombre">Estrella</span><span class="rango-puntos">500 - 999 pts</span></div>
-                        <div class="rango-fila rango-leyenda"><span class="rango-icono">👑</span><span class="rango-nombre">Leyenda</span><span class="rango-puntos">1000+ pts</span></div>
-                    </div>
-                    <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 10px; line-height: 1.4;">Ganas <strong>1 punto cada 5 minutos</strong> conectado en el chat. El rango se actualiza automáticamente al sumar puntos.</p>
+
+            <div id="tab-rangos" class="tab-content" style="display:none;">
+                <h4 style="color: var(--accent-color); margin-bottom: 12px;"><i class="fa-solid fa-crown"></i> Rangos y Puntos</h4>
+                <div class="cuadro-rangos">
+                    <div class="rango-fila"><span class="rango-icono">🌱</span><span class="rango-nombre">Semilla</span><span class="rango-puntos">0 - 49 pts</span></div>
+                    <div class="rango-fila"><span class="rango-icono">💧</span><span class="rango-nombre">Gota</span><span class="rango-puntos">50 - 199 pts</span></div>
+                    <div class="rango-fila"><span class="rango-icono">🌸</span><span class="rango-nombre">Flor</span><span class="rango-puntos">200 - 499 pts</span></div>
+                    <div class="rango-fila"><span class="rango-icono">⭐</span><span class="rango-nombre">Estrella</span><span class="rango-puntos">500 - 999 pts</span></div>
+                    <div class="rango-fila rango-leyenda"><span class="rango-icono">👑</span><span class="rango-nombre">Leyenda</span><span class="rango-puntos">1000+ pts</span></div>
                 </div>
+                <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 10px; line-height: 1.4;">Ganas <strong>1 punto cada 5 minutos</strong> conectado en el chat. El rango se actualiza automáticamente al sumar puntos.</p>
             </div>
-            <div class="sidebar-tab-panel" data-panel="info">
-                <div class="sidebar-card">
-                    <h3 style="color: var(--accent-color); margin-bottom: 10px;"><i class="fa-solid fa-shield-halved"></i> Reglas del Chat</h3>
-                    <ul style="font-size: 0.88rem; color: var(--text-muted); padding-left: 18px; display: flex; flex-direction: column; gap: 8px;">
-                        <li>Respeto ante todo con la comunidad.</li>
-                        <li>No hacer spam ni flood de mensajes.</li>
-                        <li>No compartir enlaces sospechosos ni info personal.</li>
-                        <li>Todo es humor, pásatela bien y ríete mucho.</li>
-                    </ul>
-                </div>
-                <div class="sidebar-card" style="border-color: var(--accent-color);">
-                    <h3 style="color: var(--accent-color); margin-bottom: 10px;"><i class="fa-solid fa-gift"></i> Tienda de Puntos <span style="font-size:0.7rem;background:var(--accent-color);color:#000;padding:2px 6px;border-radius:4px;margin-left:8px;">PRÓXIMAMENTE</span></h3>
+
+            <div id="tab-info" class="tab-content" style="display:none;">
+                <h4 style="color: var(--accent-color); margin-bottom: 10px;"><i class="fa-solid fa-shield-halved"></i> Reglas del Chat</h4>
+                <ul style="font-size: 0.88rem; color: var(--text-muted); padding-left: 18px; display: flex; flex-direction: column; gap: 8px;">
+                    <li>Respeto ante todo con la comunidad.</li>
+                    <li>No hacer spam ni flood de mensajes.</li>
+                    <li>No compartir enlaces sospechosos ni info personal.</li>
+                    <li>Todo es humor, pásatela bien y ríete mucho.</li>
+                </ul>
+                <div style="border-color: var(--accent-color); margin-top:12px;">
+                    <h4 style="color: var(--accent-color); margin-bottom: 10px;"><i class="fa-solid fa-gift"></i> Tienda de Puntos <span style="font-size:0.7rem;background:var(--accent-color);color:#000;padding:2px 6px;border-radius:4px;margin-left:8px;">PRÓXIMAMENTE</span></h4>
                     <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px;">Estamos preparando recompensas exclusivas para canjear tus puntos ganados por participar en la comunidad.</p>
-                    <div style="background: var(--card-bg-subtle); border-radius: 8px; padding: 12px; text-align: center; border: 1px dashed var(--accent-color);">
-                        <i class="fa-solid fa-lock" style="font-size: 1.5rem; color: var(--accent-color); margin-bottom: 8px;"></i>
-                        <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Sección en desarrollo. ¡Sigue sumando puntos!</p>
-                    </div>
                 </div>
-                <div class="sidebar-card">
-                    <h3 style="color: var(--accent-color); margin-bottom: 10px;"><i class="fa-solid fa-circle-info"></i> ¿Cómo funciona?</h3>
+                <div style="margin-top:12px;">
+                    <h4 style="color: var(--accent-color); margin-bottom: 10px;"><i class="fa-solid fa-circle-info"></i> ¿Cómo funciona?</h4>
                     <ul style="font-size: 0.82rem; color: var(--text-muted); padding-left: 18px; display: flex; flex-direction: column; gap: 6px; line-height: 1.5;">
                         <li><strong>💎 Puntos:</strong> Ganas 1 punto cada 5 minutos estando conectado en el chat.</li>
                         <li><strong>🔒 PIN de 4 dígitos:</strong> Protege tu cuenta y progreso. Nadie puede robar tus puntos sin tu PIN.</li>
@@ -507,6 +506,7 @@
                 </div>
             </div>
         </div>
+'''
     </main>
 
     <!-- FOOTER -->
@@ -652,7 +652,12 @@
                     const rangoLower = (rango || 'semilla').toLowerCase();
                     const emoji = emojiMap[rangoLower] || '🌱';
                     const rangoNombre = rangoLower.charAt(0).toUpperCase() + rangoLower.slice(1);
-                    userInfoDisplay.innerHTML = `<span>👤 ${apodo}</span><span style="color:var(--text-muted);">•</span><span style="color:var(--accent-color);">💎 ${puntos || 0} pts</span><span style="color:var(--text-muted);">•</span><span class="rango-badge rango-${rangoLower}" style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:12px;font-size:0.75rem;font-weight:700;">${emoji} ${rangoNombre}</span>`;
+                    const userInfoEl = document.getElementById('user-info-display');
+                    const userPointsEl = document.getElementById('user-points-display');
+                    const userRangoEl = document.getElementById('user-rango-badge');
+                    if (userInfoEl) userInfoEl.textContent = apodo;
+                    if (userPointsEl) userPointsEl.textContent = (puntos || 0) + ' pts';
+                    if (userRangoEl) userRangoEl.textContent = emoji + ' ' + rangoNombre.toUpperCase();
                     // Navbar user info
                     const navUserInfo = document.getElementById('nav-user-info');
                     const navUsername = document.getElementById('nav-username');
@@ -1626,8 +1631,11 @@ if (chatForm) {
             if (navUserInfo) navUserInfo.style.display = 'none';
         }
         window.cambiarTabComunidad = function(tab) {
-            document.querySelectorAll('.sidebar-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
-            document.querySelectorAll('.sidebar-tab-panel').forEach(p => p.classList.toggle('active', p.dataset.panel === tab));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.textContent.trim().toLowerCase().startsWith(tab === 'info' ? 'info' : tab)));
+            document.querySelectorAll('.tab-content').forEach(p => {
+                p.style.display = (p.id === 'tab-' + tab) ? 'block' : 'none';
+                p.classList.toggle('active', p.id === 'tab-' + tab);
+            });
         };
     </script>
 </body>
