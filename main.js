@@ -11,24 +11,30 @@ var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 document.addEventListener('DOMContentLoaded', () => {
     // Manejo de Tema Claro/Oscuro
-    const themeBtn = document.getElementById('theme-toggle');
-    let currentTheme = localStorage.getItem('theme');
-    if (!currentTheme) {
-        // Auto-detect system preference
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
-            currentTheme = 'light';
-        } else {
-            currentTheme = 'dark';
-        }
-    }
-    if (currentTheme === 'light') {
-        document.body.classList.add('light-mode');
-        if (themeBtn) themeBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
-    } else {
-        if (themeBtn) themeBtn.innerHTML = '<i class="fa-solid fa-moon"></i>';
-    }
+    window.initTheme = function () {
+        const themeBtn = document.getElementById('theme-toggle');
+        if (!themeBtn) return;
 
-    if (themeBtn) {
+        let currentTheme = localStorage.getItem('theme');
+        if (!currentTheme) {
+            // Auto-detect system preference
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+                currentTheme = 'light';
+            } else {
+                currentTheme = 'dark';
+            }
+        }
+
+        document.body.classList.remove('light-mode');
+        if (currentTheme === 'light') {
+            document.body.classList.add('light-mode');
+            themeBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
+        } else {
+            themeBtn.innerHTML = '<i class="fa-solid fa-moon"></i>';
+        }
+
+        // Remover listener existente si hay para evitar duplicados
+        themeBtn.onclick = null;
         themeBtn.addEventListener('click', () => {
             document.body.classList.toggle('light-mode');
             let theme = 'dark';
@@ -39,8 +45,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 themeBtn.innerHTML = '<i class="fa-solid fa-moon"></i>';
             }
             localStorage.setItem('theme', theme);
-        });
-    }
+        }, { once: false });
+    };
+
+    window.initTheme();
 
     insertarComponentesUIGlobales();
     inicializarMenuMovil();
