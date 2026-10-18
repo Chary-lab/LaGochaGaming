@@ -59,10 +59,10 @@ function verificarSesionGlobal() {
     if (authButtons && !document.getElementById('navbar-user-indicator') && !document.getElementById('nav-user-info')) {
         const container = document.createElement('span');
         container.id = 'navbar-user-indicator';
-        container.style.cssText = 'display: inline-flex; align-items: center; gap: 8px; color: var(--text-main); font-size: 0.9rem; font-weight: 600; margin-right: 8px;';
+        container.style.cssText = 'display: inline-flex; align-items: center; gap: 8px; color: var(--text-main); font-size: 0.9rem; font-weight: 600; margin-left: 12px; margin-right: 8px;';
         container.innerHTML = '<i class="fa-solid fa-user" style="color: var(--accent-color);"></i> ' + apodoGuardado +
-            ' <button onclick="cerrarSesionGlobal()" title="Cerrar Sesión" style="background:transparent; border:none; color:#ff4d4d; cursor:pointer; margin-left:4px;"><i class="fa-solid fa-right-from-bracket"></i></button>';
-        authButtons.insertBefore(container, authButtons.firstChild);
+            ' <button onclick="cerrarSesionGlobal()" title="Cerrar Sesión" style="background:transparent; border:none; color:#ff4d4d; cursor:pointer; margin-left:6px;"><i class="fa-solid fa-right-from-bracket"></i></button>';
+        authButtons.appendChild(container);
     }
 }
 
