@@ -17,33 +17,89 @@
     
     <style>
 .comunidad-layout {
-             display: grid;
-             grid-template-columns: 240px 1fr 320px;
-             gap: 20px;
-             max-width: 1400px;
-             margin: 100px auto 40px auto;
-             padding: 0 20px;
-         }
-         @media (max-width: 1100px) {
-             .comunidad-layout {
-                 grid-template-columns: 1fr;
-                 gap: 15px;
-             }
-             .online-users-column, .sidebar-comunidad {
-                 width: 100%;
-                 min-width: 0;
-             }
-         }
-         @media (max-width: 900px) {
-             .comunidad-layout {
-                 grid-template-columns: 1fr;
-             }
-         }
-        .online-users-column {
-            width: 260px;
-            min-width: 220px;
+            display: grid;
+            grid-template-columns: minmax(220px, 260px) minmax(0, 1fr) minmax(260px, 320px);
+            gap: 20px;
+            max-width: 1400px;
+            margin: 24px auto 40px auto;
+            padding: 0 20px;
+            align-items: start;
+        }
+.online-users-column {
+            width: 100%;
+            min-width: 0;
             display: flex;
             flex-direction: column;
+        }
+        .chat-box-container {
+            width: 100%;
+            min-width: 0;
+        }
+        .sidebar-comunidad {
+            width: 100%;
+            min-width: 0;
+        }
+        @media (max-width: 1024px) {
+            .comunidad-layout {
+                grid-template-columns: minmax(200px, 240px) minmax(0, 1fr);
+                gap: 16px;
+            }
+            .sidebar-comunidad {
+                grid-column: 1 / -1;
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+                gap: 16px;
+            }
+        }
+        @media (max-width: 768px) {
+            .comunidad-layout {
+                grid-template-columns: 1fr;
+                gap: 14px;
+                padding: 0 12px;
+                margin: 16px auto 32px auto;
+            }
+            /* Orden jerárquico en móvil: chat primero, usuarios segundo, sidebar tercero */
+            .chat-box-container { order: 1; }
+            .online-users-column { order: 2; }
+            .sidebar-comunidad { order: 3; grid-column: auto; display: flex; flex-direction: column; gap: 14px; }
+            .chat-box-container {
+                height: 70vh;
+                min-height: 420px;
+                max-height: 600px;
+            }
+            .chat-messages {
+                padding: 12px;
+                gap: 8px;
+            }
+            .chat-input-area {
+                padding: 10px;
+                gap: 8px;
+                flex-wrap: wrap;
+            }
+            .chat-input-area input, .chat-input-area textarea {
+                font-size: 16px; /* evita zoom en iOS */
+                padding: 12px;
+                min-height: 44px;
+            }
+            .chat-input-area button {
+                min-height: 44px;
+                padding: 10px 16px;
+            }
+            #online-users-list {
+                max-height: 240px;
+            }
+            #leaderboard-list {
+                max-height: 240px;
+            }
+        }
+        @media (max-width: 480px) {
+            .comunidad-layout {
+                padding: 0 8px;
+            }
+            .chat-box-container {
+                height: 60vh;
+                min-height: 360px;
+            }
         }
         #online-users-list {
             flex: 1;
@@ -94,6 +150,7 @@
             display: flex;
             flex-direction: column;
             height: 600px;
+            max-height: calc(100vh - 120px);
             overflow: hidden;
         }
         .chat-header {
@@ -128,10 +185,21 @@
             border-radius: 8px;
             outline: none;
         }
-        .sidebar-comunidad {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
+        .chat-messages::-webkit-scrollbar,
+        #online-users-list::-webkit-scrollbar,
+        #leaderboard-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        .chat-messages::-webkit-scrollbar-thumb,
+        #online-users-list::-webkit-scrollbar-thumb,
+        #leaderboard-list::-webkit-scrollbar-thumb {
+            background: var(--border-color, #333);
+            border-radius: 4px;
+        }
+        .chat-messages::-webkit-scrollbar-track,
+        #online-users-list::-webkit-scrollbar-track,
+        #leaderboard-list::-webkit-scrollbar-track {
+            background: transparent;
         }
         .sidebar-card {
             background: var(--card-bg, #1a1a1a);
