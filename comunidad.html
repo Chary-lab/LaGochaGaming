@@ -750,10 +750,10 @@
                 // si ya existe un registro con message_id+usuario, lo actualice con el nuevo emoji
                 try {
                     const { error } = await supabase.from('message_reactions')
-                        .upsert(
-                            { message_id: msgIdStr, emoji, user_id: userId },
-                            { onConflict: 'message_id,usuario' }
-                        );
+                            .upsert(
+                                { message_id: msgIdStr, emoji, user_id: userId, apodo: userNickname },
+                                { onConflict: 'message_id,user_id' }
+                            );
                     if (error) throw error;
                 } catch (e) {
                     console.warn('[REACCIÓN] Error upsert reacción:', e.message);
@@ -1038,7 +1038,7 @@
                     if (ids.length === 0) return;
                     const { data, error } = await supabase
                         .from('message_reactions')
-                        .select('message_id, emoji, user_id')
+                        .select('message_id, emoji, user_id, apodo')
                         .in('message_id', ids);
                     if (error) {
                         console.warn('[REACCIÓN] Supabase reacciones falló (¿tabla ausente?), usando cache localStorage:', error.message);
@@ -1057,8 +1057,9 @@
                     data.forEach(r => {
                         if (!cache[r.message_id]) cache[r.message_id] = {};
                         if (!cache[r.message_id][r.emoji]) cache[r.message_id][r.emoji] = [];
-                        if (!cache[r.message_id][r.emoji].includes(r.user_id)) {
-                            cache[r.message_id][r.emoji].push(r.user_id);
+                        const nombre = r.apodo || r.user_id;
+                        if (!cache[r.message_id][r.emoji].includes(nombre)) {
+                            cache[r.message_id][r.emoji].push(nombre);
                         }
                         // Si el usuario logueado es quien reaccionó, guardarlo en mi reaccion
                         if (userId && r.user_id === userId) {
@@ -1188,45 +1189,66 @@ if (chatForm) {
                     canalReacciones = supabase.channel('public:message_reactions')
                         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'message_reactions' }, payload => {
                             const r = payload.new;
-                            const msgId = r.message_id;
                             const cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
-                            if (!cache[msgId]) cache[msgId] = {};
-                            if (!cache[msgId][r.emoji]) cache[msgId][r.emoji] = [];
-                            if (!cache[msgId][r.emoji].includes(r.user_id)) {
-                                cache[msgId][r.emoji].push(r.user_id);
+                            if (!cache[r.message_id]) cache[r.message_id] = {};
+                            if (!cache[r.message_id][r.emoji]) cache[r.message_id][r.emoji] = [];
+                            const nombre = r.apodo || r.user_id;
+                            if (!cache[r.message_id][r.emoji].includes(nombre)) {
+                                cache[r.message_id][r.emoji].push(nombre);
                             }
                             localStorage.setItem('gochi_chat_reacciones_cache', JSON.stringify(cache));
-
-                            // Si soy yo quien reaccionó, guardar en mi reaccion
                             if (userId && r.user_id === userId) {
                                 const miCache = JSON.parse(localStorage.getItem('gochi_chat_mi_reaccion_v2') || '{}');
-                                miCache[msgId] = r.emoji;
+                                miCache[r.message_id] = r.emoji;
                                 localStorage.setItem('gochi_chat_mi_reaccion_v2', JSON.stringify(miCache));
                             }
-
-                            actualizarUIReacciones(msgId);
+                            actualizarUIReacciones(r.message_id);
+                        })
+                        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'message_reactions' }, payload => {
+                            const old = payload.old;
+                            const r = payload.new;
+                            const cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
+                            // quitar del emoji anterior
+                            if (cache[old.message_id]?.[old.emoji]) {
+                                const oldNombre = old.apodo || old.user_id;
+                                cache[old.message_id][old.emoji] = cache[old.message_id][old.emoji].filter(u => u !== oldNombre);
+                                if (cache[old.message_id][old.emoji].length === 0) delete cache[old.message_id][old.emoji];
+                            }
+                            // agregar al nuevo
+                            if (!cache[r.message_id]) cache[r.message_id] = {};
+                            if (!cache[r.message_id][r.emoji]) cache[r.message_id][r.emoji] = [];
+                            const nombre = r.apodo || r.user_id;
+                            if (!cache[r.message_id][r.emoji].includes(nombre)) {
+                                cache[r.message_id][r.emoji].push(nombre);
+                            }
+                            localStorage.setItem('gochi_chat_reacciones_cache', JSON.stringify(cache));
+                            if (userId && r.user_id === userId) {
+                                const miCache = JSON.parse(localStorage.getItem('gochi_chat_mi_reaccion_v2') || '{}');
+                                miCache[r.message_id] = r.emoji;
+                                localStorage.setItem('gochi_chat_mi_reaccion_v2', JSON.stringify(miCache));
+                            }
+                            actualizarUIReacciones(r.message_id);
                         })
                         .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'message_reactions' }, payload => {
                             const r = payload.old;
-                            const msgId = r.message_id;
                             const cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
-                            if (cache[msgId] && cache[msgId][r.emoji]) {
-                                cache[msgId][r.emoji] = cache[msgId][r.emoji].filter(u => u !== r.user_id);
-                                if (cache[msgId][r.emoji].length === 0) delete cache[msgId][r.emoji];
+                            const nombre = r.apodo || r.user_id;
+                            if (cache[r.message_id]?.[r.emoji]) {
+                                cache[r.message_id][r.emoji] = cache[r.message_id][r.emoji].filter(u => u !== nombre);
+                                if (cache[r.message_id][r.emoji].length === 0) delete cache[r.message_id][r.emoji];
+                                if (Object.keys(cache[r.message_id]).length === 0) delete cache[r.message_id];
+                                localStorage.setItem('gochi_chat_reacciones_cache', JSON.stringify(cache));
                             }
-                            localStorage.setItem('gochi_chat_reacciones_cache', JSON.stringify(cache));
-
                             if (userId && r.user_id === userId) {
                                 const miCache = JSON.parse(localStorage.getItem('gochi_chat_mi_reaccion_v2') || '{}');
-                                if (miCache[msgId] === r.emoji) delete miCache[msgId];
+                                if (miCache[r.message_id] === r.emoji) delete miCache[r.message_id];
                                 localStorage.setItem('gochi_chat_mi_reaccion_v2', JSON.stringify(miCache));
                             }
-
-                            actualizarUIReacciones(msgId);
+                            actualizarUIReacciones(r.message_id);
                         })
                         .subscribe();
                 } catch (e) {
-                    console.warn('[REACCIÓN] Canal de reacciones no disponible (¿tabla message_reactions ausente?):', e.message);
+                    console.warn('[REACCIÓN] Canal de reacciones no disponible:', e.message);
                 }
             }
 
