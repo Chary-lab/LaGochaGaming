@@ -232,10 +232,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             cargarMensajes(true);
 
-            document.getElementById('muro-form').addEventListener('submit', (e) => {
-                e.preventDefault();
-                enviarMensaje();
-            });
+document.getElementById('muro-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            enviarMensaje();
+        });
+
+        // Prefill autor si hay sesión de comunidad
+        const savedApodo = localStorage.getItem('comunidad_nickname');
+        const autorInputInit = document.getElementById('muro-autor');
+        if (savedApodo && autorInputInit) {
+            autorInputInit.value = savedApodo;
+            autorInputInit.readOnly = true;
+        }
         });
 
         async function verificarEstadoStreamIndex() {
@@ -359,7 +367,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     return;
                 }
 
-                document.getElementById('muro-form').reset();
+                document.getElementById('muro-mensaje').value = '';
                 feedback.style.color = '#53fc18';
                 feedback.innerText = '✅ ¡Tu saludo ha sido publicado en el muro! 💖';
                 setTimeout(() => { feedback.innerText = ''; }, 4000);

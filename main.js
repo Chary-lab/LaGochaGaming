@@ -44,19 +44,24 @@ document.addEventListener('DOMContentLoaded', () => {
 function verificarSesionGlobal() {
     const apodoGuardado = localStorage.getItem('comunidad_nickname');
     const tokenGuardado = localStorage.getItem('comunidad_session_token');
-    
     if (!apodoGuardado || !tokenGuardado) return;
-    
-    // Buscar navbar y añadir indicador de usuario si no existe
-    const navbar = document.querySelector('.nav-links');
-    if (navbar && !document.getElementById('navbar-user-indicator')) {
-        const userBadge = document.createElement('a');
-        userBadge.id = 'navbar-user-indicator';
-        userBadge.href = 'comunidad';
-        userBadge.style.cssText = 'color: var(--accent-color); font-weight: bold; display: flex; align-items: center; gap: 6px; font-size: 0.9rem;';
-        userBadge.innerHTML = '<i class="fa-solid fa-user-circle"></i> ' + apodoGuardado;
-        navbar.appendChild(userBadge);
+
+    const authButtons = document.querySelector('.auth-buttons');
+    if (authButtons && !document.getElementById('navbar-user-indicator')) {
+        const container = document.createElement('span');
+        container.id = 'navbar-user-indicator';
+        container.style.cssText = 'display: inline-flex; align-items: center; gap: 8px; color: var(--text-main); font-size: 0.9rem; font-weight: 600; margin-right: 8px;';
+        container.innerHTML = '<i class="fa-solid fa-user" style="color: var(--accent-color);"></i> ' + apodoGuardado +
+            ' <button onclick="cerrarSesionGlobal()" title="Cerrar Sesión" style="background:transparent; border:none; color:#ff4d4d; cursor:pointer; margin-left:4px;"><i class="fa-solid fa-right-from-bracket"></i></button>';
+        authButtons.insertBefore(container, authButtons.firstChild);
     }
+}
+
+function cerrarSesionGlobal() {
+    localStorage.removeItem('comunidad_nickname');
+    localStorage.removeItem('comunidad_session_token');
+    localStorage.removeItem('comunidad_user_id');
+    window.location.reload();
 }
 
 // Toast Notificación Flotante Abajo-Centro
