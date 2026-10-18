@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     insertarComponentesUIGlobales();
     inicializarMenuMovil();
     verificarSesionGlobal();
+    actualizarUsuarioNavComunidad();
 });
 
 // === COMPONENTES UI GLOBALES (toast, confirm modal, menú móvil, sesión) ===
@@ -134,4 +135,27 @@ window.inicializarMenuMovil = function inicializarMenuMovil() {
 window.verificarSesionGlobal = function verificarSesionGlobal() {
     // La sesión de comunidad se gestiona por página (comunidad_nickname en localStorage),
     // independiente del login de Supabase. Reservado para comprobaciones globales futuras.
+};
+
+window.actualizarUsuarioNavComunidad = function actualizarUsuarioNavComunidad() {
+    const apodo = localStorage.getItem('comunidad_nickname');
+    const navUserInfo = document.getElementById('nav-user-info');
+    const navUsername = document.getElementById('nav-username');
+    if (!navUserInfo || !navUsername) return;
+    if (apodo) {
+        navUsername.textContent = apodo;
+        navUserInfo.style.display = 'inline-flex';
+    } else {
+        navUserInfo.style.display = 'none';
+    }
+};
+
+window.cerrarSesion = function cerrarSesion() {
+    localStorage.removeItem('comunidad_nickname');
+    localStorage.removeItem('comunidad_session_token');
+    localStorage.removeItem('comunidad_user_id');
+    localStorage.removeItem('gochi_registrado_user');
+    actualizarUsuarioNavComunidad();
+    mostrarToast('Sesión cerrada correctamente');
+    window.location.reload();
 };
