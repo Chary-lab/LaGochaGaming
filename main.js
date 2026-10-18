@@ -74,7 +74,7 @@ window.inyectarMenuGlobal = function inyectarMenuGlobal() {
                 <button onclick="cerrarSesion()" class="btn-logout-nav" title="Cerrar Sesión"><i class="fa-solid fa-right-from-bracket"></i> Salir</button>
             </span>`
         : '';
-    const temaBtnHTML = `<button id="btn-toggle-tema" class="btn-tema-nav" title="Cambiar tema" style="background:transparent; border:none; color:var(--text-main); cursor:pointer; font-size:1.1rem;">${temaClaro ? '🌙 Oscuro' : '☀️ Claro'}</button>`;
+    const temaBtnHTML = `<button id="btn-toggle-tema" class="btn-tema-nav" title="Cambiar tema" style="background:transparent; border:none; color:var(--text-main); cursor:pointer; font-size:1.15rem; padding:7px 10px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; min-width:38px; height:34px;"><i class="fa-solid ${temaClaro ? 'fa-moon' : 'fa-sun'}" style="font-size:1.15rem;"></i></button>`;
 
     header.innerHTML = `
         <nav class="navbar">
@@ -120,7 +120,8 @@ window.initTema = function initTema() {
 
     const btn = document.getElementById('btn-toggle-tema');
     if (btn) {
-        btn.textContent = temaGuardado === 'light' ? '🌙 Oscuro' : '☀️ Claro';
+        const icono = btn.querySelector('i');
+        if (icono) icono.className = 'fa-solid ' + (temaGuardado === 'light' ? 'fa-moon' : 'fa-sun');
         btn.onclick = toggleTema;
     }
 };
@@ -129,7 +130,10 @@ window.toggleTema = function toggleTema() {
     const esClaro = document.body.classList.toggle('light-mode');
     localStorage.setItem('gochi_tema', esClaro ? 'light' : 'dark');
     const btn = document.getElementById('btn-toggle-tema');
-    if (btn) btn.textContent = esClaro ? '🌙 Oscuro' : '☀️ Claro';
+    if (btn) {
+        const icono = btn.querySelector('i');
+        if (icono) icono.className = 'fa-solid ' + (esClaro ? 'fa-moon' : 'fa-sun');
+    }
 };
 
 // === SESIÓN DE COMUNIDAD ===
