@@ -525,6 +525,8 @@
             if (savedApodo) {
                 userNickname = savedApodo;
                 userToken = savedToken;
+                const savedUid = localStorage.getItem('comunidad_user_id');
+                if (savedUid) userId = parseInt(savedUid, 10);
                 if (inputAutor) {
                     inputAutor.value = savedApodo;
                     inputAutor.readOnly = true;
@@ -549,8 +551,8 @@
 
             async function registrarUsuario(apodo, pin) {
                 try {
-                    const { data, error } = await supabase.from('usuarios_comunidad').insert([{ apodo, pin, puntos: 0, rango: 'semilla' }]);
-                    return { success: !error, error: error?.message };
+                    const { data, error } = await supabase.from('usuarios_comunidad').insert([{ apodo, pin, puntos: 0, rango: 'semilla' }]).select().single();
+                    return { success: !error, error: error?.message, user: data };
                 } catch (e) { return { success: false, error: e.message }; }
             }
 
@@ -562,8 +564,10 @@
                 } catch (e) { return { success: false, user: null }; }
             }
 
-            function guardarSesion(apodo, token, puntos, rango) {
+            function guardarSesion(apodo, token, puntos, rango, id) {
+                if (id) userId = id;
                 localStorage.setItem(STORAGE_KEY_NICK, apodo);
+                if (id) localStorage.setItem('comunidad_user_id', String(id));
                 localStorage.setItem(STORAGE_KEY_TOKEN, token || btoa(Date.now().toString()));
                 if (userProfilePanel && userInfoDisplay && userPointsDisplay) {
                     userProfilePanel.style.display = 'block';
@@ -610,7 +614,7 @@
                 try {
                     const { data, error } = await supabase.from('usuarios_comunidad').select('id, puntos, rango, session_token').eq('apodo', savedApodo).single();
                     if (!error && data && data.session_token === savedToken) {
-                        guardarSesion(savedApodo, savedToken, data.puntos, data.rango);
+                        guardarSesion(savedApodo, savedToken, data.puntos, data.rango, data.id);
                         return true;
                     }
                 } catch (e) {}
@@ -639,7 +643,7 @@
                     }
                     const reg = await registrarUsuario(nick, pin);
                     if (reg.success) {
-                        guardarSesion(nick, null, 0, 'semilla');
+                        guardarSesion(nick, null, 0, 'semilla', null);
                         hideNicknameModal();
                         return;
                     }
@@ -717,10 +721,10 @@
                 // Toggle: si es la misma reaccion, eliminarla
                 if (miReaccionActual === emoji) {
                     try {
-                        await supabase.from('comunidad_chat_reacciones')
+                        await supabase.from('message_reactions')
                             .delete()
                             .eq('message_id', msgIdStr)
-                            .eq('usuario', userNickname);
+                            .eq('user_id', userId);
                     } catch (e) {
                         console.warn('[REACCIÓN] Error eliminando reacción:', e.message);
                     }
@@ -744,9 +748,9 @@
                 // Usar upsert: la restricción única (message_id, usuario) hace que
                 // si ya existe un registro con message_id+usuario, lo actualice con el nuevo emoji
                 try {
-                    const { error } = await supabase.from('comunidad_chat_reacciones')
+                    const { error } = await supabase.from('message_reactions')
                         .upsert(
-                            { message_id: msgIdStr, emoji, usuario: userNickname },
+                            { message_id: msgIdStr, emoji, user_id: userId },
                             { onConflict: 'message_id,usuario' }
                         );
                     if (error) throw error;
@@ -1032,8 +1036,8 @@
                     const ids = mensajes.map(m => m.id).filter(Boolean);
                     if (ids.length === 0) return;
                     const { data, error } = await supabase
-                        .from('comunidad_chat_reacciones')
-                        .select('message_id, emoji, usuario')
+                        .from('message_reactions')
+                        .select('message_id, emoji, user_id')
                         .in('message_id', ids);
                     if (error) {
                         console.warn('[REACCIÓN] Supabase reacciones falló (¿tabla ausente?), usando cache localStorage:', error.message);
@@ -1052,11 +1056,11 @@
                     data.forEach(r => {
                         if (!cache[r.message_id]) cache[r.message_id] = {};
                         if (!cache[r.message_id][r.emoji]) cache[r.message_id][r.emoji] = [];
-                        if (!cache[r.message_id][r.emoji].includes(r.usuario)) {
-                            cache[r.message_id][r.emoji].push(r.usuario);
+                        if (!cache[r.message_id][r.emoji].includes(r.user_id)) {
+                            cache[r.message_id][r.emoji].push(r.user_id);
                         }
                         // Si el usuario logueado es quien reaccionó, guardarlo en mi reaccion
-                        if (userNickname && r.usuario === userNickname) {
+                        if (userId && r.user_id === userId) {
                             miCache[r.message_id] = r.emoji;
                         }
                     });
@@ -1180,20 +1184,20 @@ if (chatForm) {
 
                 // Escuchar reacciones en tiempo real
                 try {
-                    canalReacciones = supabase.channel('public:comunidad_chat_reacciones')
-                        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'comunidad_chat_reacciones' }, payload => {
+                    canalReacciones = supabase.channel('public:message_reactions')
+                        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'message_reactions' }, payload => {
                             const r = payload.new;
                             const msgId = r.message_id;
                             const cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
                             if (!cache[msgId]) cache[msgId] = {};
                             if (!cache[msgId][r.emoji]) cache[msgId][r.emoji] = [];
-                            if (!cache[msgId][r.emoji].includes(r.usuario)) {
-                                cache[msgId][r.emoji].push(r.usuario);
+                            if (!cache[msgId][r.emoji].includes(r.user_id)) {
+                                cache[msgId][r.emoji].push(r.user_id);
                             }
                             localStorage.setItem('gochi_chat_reacciones_cache', JSON.stringify(cache));
 
                             // Si soy yo quien reaccionó, guardar en mi reaccion
-                            if (userNickname && r.usuario === userNickname) {
+                            if (userId && r.user_id === userId) {
                                 const miCache = JSON.parse(localStorage.getItem('gochi_chat_mi_reaccion_v2') || '{}');
                                 miCache[msgId] = r.emoji;
                                 localStorage.setItem('gochi_chat_mi_reaccion_v2', JSON.stringify(miCache));
@@ -1201,17 +1205,17 @@ if (chatForm) {
 
                             actualizarUIReacciones(msgId);
                         })
-                        .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'comunidad_chat_reacciones' }, payload => {
+                        .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'message_reactions' }, payload => {
                             const r = payload.old;
                             const msgId = r.message_id;
                             const cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
                             if (cache[msgId] && cache[msgId][r.emoji]) {
-                                cache[msgId][r.emoji] = cache[msgId][r.emoji].filter(u => u !== r.usuario);
+                                cache[msgId][r.emoji] = cache[msgId][r.emoji].filter(u => u !== r.user_id);
                                 if (cache[msgId][r.emoji].length === 0) delete cache[msgId][r.emoji];
                             }
                             localStorage.setItem('gochi_chat_reacciones_cache', JSON.stringify(cache));
 
-                            if (userNickname && r.usuario === userNickname) {
+                            if (userId && r.user_id === userId) {
                                 const miCache = JSON.parse(localStorage.getItem('gochi_chat_mi_reaccion_v2') || '{}');
                                 if (miCache[msgId] === r.emoji) delete miCache[msgId];
                                 localStorage.setItem('gochi_chat_mi_reaccion_v2', JSON.stringify(miCache));
@@ -1221,7 +1225,7 @@ if (chatForm) {
                         })
                         .subscribe();
                 } catch (e) {
-                    console.warn('[REACCIÓN] Canal de reacciones no disponible (¿tabla comunidad_chat_reacciones ausente?):', e.message);
+                    console.warn('[REACCIÓN] Canal de reacciones no disponible (¿tabla message_reactions ausente?):', e.message);
                 }
             }
 
