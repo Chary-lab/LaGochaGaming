@@ -38,6 +38,10 @@
         .sidebar-comunidad {
             width: 100%;
             min-width: 0;
+            background: var(--card-bg, #1a1a1a);
+            border: 1px solid var(--border-color, #333);
+            border-radius: 12px;
+            padding: 12px;
         }
         .sidebar-tabs {
             display: flex;
@@ -370,9 +374,7 @@
             <span id="nav-user-info" style="display:none; align-items:center; gap:8px; color:var(--text-main); font-size:0.9rem; font-weight:600;">
                 <i class="fa-solid fa-user" style="color:var(--accent-color);"></i>
                 <span id="nav-username"></span>
-                <a href="#" onclick="cerrarSesion(); return false;" style="color:var(--text-muted); font-size:0.8rem; text-decoration:none; margin-left:6px;" title="Cerrar sesión">
-                    <i class="fa-solid fa-right-from-bracket"></i> Salir
-                </a>
+                <button onclick="cerrarSesion()" class="btn-logout-nav" title="Cerrar Sesión" style="background:transparent; border:none; color:#ff4d4d; cursor:pointer; margin-left:8px;"><i class="fa-solid fa-right-from-bracket"></i> Salir</button>
             </span>
             <a href="https://discord.com/invite/svrteKBbeh" target="_blank" class="btn-login">Discord</a>
         </div>
