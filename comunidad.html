@@ -644,7 +644,7 @@
                     }
                     const reg = await registrarUsuario(nick, pin);
                     if (reg.success) {
-                        guardarSesion(nick, null, 0, 'semilla', null);
+                        guardarSesion(nick, reg.user?.session_token || null, 0, 'semilla', reg.user?.id || null);
                         hideNicknameModal();
                         return;
                     }
@@ -712,7 +712,7 @@
             // Toggle de reacción: same emoji -> delete, different emoji -> upsert
             async function establecerReaccionUsuario(msgId, emoji) {
                 const msgIdStr = String(msgId);
-                if (!userNickname) {
+                if (!userNickname || !userId || isNaN(Number(userId))) {
                     mostrarToast('Inicia sesion para reaccionar', true);
                     return;
                 }
@@ -985,7 +985,7 @@
                             burbuja.style.pointerEvents = 'auto';
                         }
                         const esquina = this.querySelector('.msg-reaccion-esquina');
-                        if (esquina) esquina.style.display = 'flex';
+                        // no forzar display; actualizarUIReacciones controla la visibilidad
                     };
                     container.onmouseleave = function() {
                         const burbuja = this.querySelector('.chat-msg-burbuja');
@@ -1013,7 +1013,7 @@
                     const reaccionEsquina = document.createElement('div');
                     reaccionEsquina.className = 'msg-reaccion-esquina';
                     reaccionEsquina.style.display = 'none';
-                    reaccionEsquina.innerHTML = '<span class="esquina-emoji">❤️</span><span class="esquina-count">1</span>';
+                    reaccionEsquina.innerHTML = '';
                     reaccionEsquina.onclick = (e) => { e.stopPropagation(); };
                     reaccionEsquina.onmouseenter = (e) => { e.stopPropagation(); };
                     reaccionEsquina.onmouseleave = (e) => { e.stopPropagation(); };
@@ -1137,7 +1137,7 @@ if (chatForm) {
                             burbuja.style.pointerEvents = 'auto';
                         }
                         const esquina = this.querySelector('.msg-reaccion-esquina');
-                        if (esquina) esquina.style.display = 'flex';
+                        // no forzar display; actualizarUIReacciones controla la visibilidad
                     };
                     container.onmouseleave = function() {
                         const burbuja = this.querySelector('.chat-msg-burbuja');
@@ -1165,7 +1165,7 @@ if (chatForm) {
                     const reaccionEsquina = document.createElement('div');
                     reaccionEsquina.className = 'msg-reaccion-esquina';
                     reaccionEsquina.style.display = 'none';
-                    reaccionEsquina.innerHTML = '<span class="esquina-emoji">❤️</span><span class="esquina-count">1</span>';
+                    reaccionEsquina.innerHTML = '';
                     reaccionEsquina.onclick = (e) => { e.stopPropagation(); };
                     reaccionEsquina.onmouseenter = (e) => { e.stopPropagation(); };
                     reaccionEsquina.onmouseleave = (e) => { e.stopPropagation(); };
@@ -1364,7 +1364,8 @@ if (chatForm) {
             }
 
             function iniciarPresenciaUsuarios() {
-                if (!userId) { userId = Math.random().toString(36).substr(2, 9); localStorage.setItem('comunidad_user_id', userId); }
+                const presenceId = userId || (Math.random().toString(36).substr(2, 9));
+                if (!userId) localStorage.setItem('comunidad_user_id', presenceId);
 
                 const nickParaTrack = userNickname || savedApodo;
                 let trackHecho = false; // Evitar tracks duplicados
@@ -1378,20 +1379,20 @@ if (chatForm) {
                 canalPresencia.subscribe((state) => {
                     if (state === 'SUBSCRIBED' && nickParaTrack && !trackHecho) {
                         trackHecho = true;
-                        canalPresencia.track({ user_id: userId, nickname: nickParaTrack });
+                        canalPresencia.track({ user_id: presenceId, nickname: nickParaTrack });
                     }
                 });
 
                 // KeepAlive cada 60 segundos
                 const keepAliveInterval = setInterval(() => {
                     if (nickParaTrack && canalPresencia) {
-                        canalPresencia.track({ user_id: userId, nickname: nickParaTrack });
+                        canalPresencia.track({ user_id: presenceId, nickname: nickParaTrack });
                     }
                 }, 60000);
 
                 window._trackPresence = (nick) => {
                     if (canalPresencia && trackHecho) {
-                        canalPresencia.track({ user_id: userId, nickname: nick || userNickname });
+                        canalPresencia.track({ user_id: presenceId, nickname: nick || userNickname });
                     }
                 };
                 window._presenceKeepAlive = keepAliveInterval;
