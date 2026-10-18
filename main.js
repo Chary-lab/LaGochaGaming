@@ -12,11 +12,20 @@ var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 document.addEventListener('DOMContentLoaded', () => {
     // Manejo de Tema Claro/Oscuro
     const themeBtn = document.getElementById('theme-toggle');
-    const currentTheme = localStorage.getItem('theme');
-
+    let currentTheme = localStorage.getItem('theme');
+    if (!currentTheme) {
+        // Auto-detect system preference
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+            currentTheme = 'light';
+        } else {
+            currentTheme = 'dark';
+        }
+    }
     if (currentTheme === 'light') {
         document.body.classList.add('light-mode');
         if (themeBtn) themeBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
+    } else {
+        if (themeBtn) themeBtn.innerHTML = '<i class="fa-solid fa-moon"></i>';
     }
 
     if (themeBtn) {
