@@ -194,8 +194,8 @@
         </div>
     </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script src="main.js" defer></script>
     <script>
         let paginaActualMuro = 0;
         const LIMITE_POR_PAGINA = 12;
@@ -209,10 +209,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.body.classList.add('admin-mode-active');
             }
 
-            // Verificar estado del stream al iniciar (solo si pestaña visible)
-            if (document.visibilityState === 'visible') {
-                verificarEstadoStreamIndex();
-            }
+            // Verificar estado del stream al iniciar (diferido para no competir con el primer render)
+            setTimeout(() => {
+                if (document.visibilityState === 'visible') {
+                    verificarEstadoStreamIndex();
+                }
+            }, 500);
             // Polling cada 60s, pausado cuando la pestaña está oculta
             let streamInterval = null;
             let streamAbort = null;
