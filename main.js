@@ -47,7 +47,7 @@ function verificarSesionGlobal() {
     if (!apodoGuardado || !tokenGuardado) return;
 
     const authButtons = document.querySelector('.auth-buttons');
-    if (authButtons && !document.getElementById('navbar-user-indicator')) {
+    if (authButtons && !document.getElementById('navbar-user-indicator') && !document.getElementById('nav-user-info')) {
         const container = document.createElement('span');
         container.id = 'navbar-user-indicator';
         container.style.cssText = 'display: inline-flex; align-items: center; gap: 8px; color: var(--text-main); font-size: 0.9rem; font-weight: 600; margin-right: 8px;';
