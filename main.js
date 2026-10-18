@@ -24,6 +24,49 @@ window.inyectarMenuGlobal = function inyectarMenuGlobal() {
 
     const apodo = localStorage.getItem('comunidad_nickname');
     const temaClaro = localStorage.getItem('gochi_tema') === 'light';
+
+    const navbarExistente = header.querySelector('.navbar');
+
+    const normalizarPath = p => p.replace(/\/index\.html$/, '/');
+
+    if (navbarExistente) {
+        // Navbar ya inyectado: solo actualizar partes dinámicas sin destruir el DOM
+        const links = navbarExistente.querySelectorAll('.nav-links a');
+        links.forEach(link => {
+            const href = link.getAttribute('href');
+            let activo = false;
+            if (href === './' && enInicio) activo = true;
+            if (href === 'cine.html' && enCine) activo = true;
+            if (href === 'sorteo.html' && enSorteo) activo = true;
+            if (href === 'galeria.html' && enGaleria) activo = true;
+            if (href === 'comunidad.html' && enComunidad) activo = true;
+            link.classList.toggle('nav-active', activo);
+        });
+
+        const btnTema = navbarExistente.querySelector('#btn-toggle-tema');
+        if (btnTema) btnTema.textContent = temaClaro ? '🌙 Oscuro' : '☀️ Claro';
+
+        const authButtons = navbarExistente.querySelector('#auth-buttons');
+        const navUserInfo = navbarExistente.querySelector('#nav-user-info');
+        if (apodo && !navUserInfo) {
+            authButtons.insertAdjacentHTML('beforeend', `
+                <span id="nav-user-info" style="display:inline-flex; align-items:center; gap:8px; color:var(--text-main); font-size:0.9rem; font-weight:600;">
+                    <i class="fa-solid fa-user" style="color:var(--accent-color);"></i>
+                    <span id="nav-username">${apodo}</span>
+                    <button onclick="cerrarSesion()" class="btn-logout-nav" title="Cerrar Sesión"><i class="fa-solid fa-right-from-bracket"></i> Salir</button>
+                </span>
+            `);
+        } else if (!apodo && navUserInfo) {
+            navUserInfo.remove();
+        } else if (apodo && navUserInfo) {
+            const usernameSpan = navUserInfo.querySelector('#nav-username');
+            if (usernameSpan) usernameSpan.textContent = apodo;
+        }
+
+        return;
+    }
+
+    // Primera inyección: crear navbar completo
     const usuarioHTML = apodo
         ? `<span id="nav-user-info" style="display:inline-flex; align-items:center; gap:8px; color:var(--text-main); font-size:0.9rem; font-weight:600;">
                 <i class="fa-solid fa-user" style="color:var(--accent-color);"></i>
@@ -40,10 +83,10 @@ window.inyectarMenuGlobal = function inyectarMenuGlobal() {
                 <a href="./" class="${enInicio ? 'nav-active' : ''}">Inicio</a>
                 <a href="./#stream" class="">Directo</a>
                 <a href="./#clips" class="">Clips</a>
-                <a href="cine" class="${enCine ? 'nav-active' : ''}">🍿 GochiWatch</a>
-                <a href="sorteo" class="${enSorteo ? 'nav-active' : ''}">🎁 Sorteo</a>
-                <a href="galeria" class="${enGaleria ? 'nav-active' : ''}">📸 Galería</a>
-                <a href="comunidad" class="${enComunidad ? 'nav-active' : ''}">💬 Comunidad</a>
+                <a href="cine.html" class="${enCine ? 'nav-active' : ''}">🍿 GochiWatch</a>
+                <a href="sorteo.html" class="${enSorteo ? 'nav-active' : ''}">🎁 Sorteo</a>
+                <a href="galeria.html" class="${enGaleria ? 'nav-active' : ''}">📸 Galería</a>
+                <a href="comunidad.html" class="${enComunidad ? 'nav-active' : ''}">💬 Comunidad</a>
             </div>
             <div class="auth-buttons" id="auth-buttons">
                 ${temaBtnHTML}
@@ -51,6 +94,20 @@ window.inyectarMenuGlobal = function inyectarMenuGlobal() {
             </div>
         </nav>
     `;
+
+    // Prevenir navegación/recarga cuando el enlace apunta a la página actual (sin hash)
+    const nav = header.querySelector('.navbar');
+    const navLinks = nav.querySelectorAll('.nav-links a');
+    navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            const href = link.getAttribute('href');
+            if (!href || href.includes('#')) return; // permitir anclas
+            const linkUrl = new URL(href, window.location.origin + window.location.pathname).pathname;
+            if (normalizarPath(linkUrl) === normalizarPath(path)) {
+                e.preventDefault();
+            }
+        });
+    });
 };
 
 // === MODO CLARO / OSCURO ===
