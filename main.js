@@ -55,28 +55,6 @@ var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
             themeBtn.removeEventListener('click', toggleTheme);
             themeBtn.addEventListener('click', toggleTheme);
         }
-
-        // Observar cambios en DOM para reenganchar si el botón se recrea dinámicamente
-        if (!themeObserver && document.body) {
-            themeObserver = new MutationObserver(() => {
-                const btn = document.getElementById('theme-toggle');
-                if (btn) {
-                    if (!btn._themeBound) {
-                        btn.onclick = null;
-                        btn.removeEventListener('click', toggleTheme);
-                        btn.addEventListener('click', toggleTheme);
-                        btn._themeBound = true;
-                    }
-                    const saved = localStorage.getItem('theme') || currentAppliedTheme || currentTheme;
-                    applyTheme(saved);
-                }
-            });
-
-            themeObserver.observe(document.body, {
-                childList: true,
-                subtree: true
-            });
-        }
     };
 
     // Auto-inicializar tan pronto como sea posible (independiente de DOMContentLoaded)

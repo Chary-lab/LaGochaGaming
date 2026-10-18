@@ -612,6 +612,7 @@
 
             let ultimoEnvio = 0;
             let ultimaEstadoEnVivo = null;
+            let chatInicializado = false;
             let userNickname = null;
             let userToken = null;
             let userId = null;
@@ -1124,6 +1125,7 @@
                 // Cargar reacciones de Supabase para estos mensajes
                 cargarReaccionesDeSupabase(mensajes);
                 chatMensajes.scrollTop = chatMensajes.scrollHeight;
+                chatInicializado = true;
             }
 
             // Cargar reacciones de Supabase para una lista de mensajes
@@ -1215,7 +1217,10 @@ if (chatForm) {
                 // Escuchar nuevos mensajes del chat
                 supabase.channel('public:comunidad_chat').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'comunidad_chat' }, payload => {
                     const nuevoMsg = payload.new;
-                    if (chatMensajes.querySelector('div[style*="margin-top"]')) chatMensajes.innerHTML = '';
+                    if (!chatInicializado || chatMensajes.querySelector('div[style*="margin-top"]')) {
+                        chatMensajes.innerHTML = '';
+                        chatInicializado = true;
+                    }
                     
                     const fecha = new Date(nuevoMsg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                     const msgId = nuevoMsg.id || Date.now() + Math.random();
