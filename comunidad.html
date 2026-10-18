@@ -43,29 +43,41 @@
             border-radius: 12px;
             padding: 12px;
         }
-        .sidebar-tabs {
+        .tab-header {
             display: flex;
-            gap: 6px;
-            margin-bottom: 12px;
+            gap: 8px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
         }
-        .sidebar-tab {
+        .tab-btn {
             flex: 1;
-            padding: 8px 10px;
-            border: 1px solid var(--border-color);
-            background: var(--card-bg-subtle);
-            color: var(--text-muted);
+            min-width: 80px;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color, #333);
+            background: var(--card-bg-subtle, rgba(255,255,255,0.03));
+            color: var(--text-muted, #aaa);
             border-radius: 8px;
             cursor: pointer;
             font-size: 0.85rem;
             font-weight: 600;
+            transition: all 0.2s ease;
         }
-        .sidebar-tab.active {
-            background: var(--accent-color);
-            color: #000;
+        .tab-btn:hover {
             border-color: var(--accent-color);
+            color: var(--text-main);
         }
-        .sidebar-tab-panel { display: none; }
-        .sidebar-tab-panel.active { display: block; }
+        .tab-btn.active {
+            background: var(--accent-color, #ff66b2);
+            color: #000;
+            border-color: var(--accent-color, #ff66b2);
+        }
+        .tab-content {
+            animation: fadeInTab 0.2s ease;
+        }
+        @keyframes fadeInTab {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
         @media (max-width: 1024px) {
             .comunidad-layout {
                 grid-template-columns: minmax(200px, 240px) minmax(0, 1fr);
@@ -459,12 +471,21 @@
                     </div>
                     <a href="./#stream" class="btn-primary" style="display: block; text-align: center; margin-top: 15px; text-decoration: none;">Ir al Directo</a>
                 </div>
-                <div id="user-profile-panel" style="margin-top: 15px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); display: none;">
-                    <p style="margin:0; font-size: 0.9rem;">
-                        👤 <strong id="user-info-display">MCCHARY</strong> •
-                        💎 <span id="user-points-display">34 pts</span> •
-                        <span id="user-rango-badge">🌱 SEMILLA</span>
-                    </p>
+                <div id="user-profile-panel" style="margin-top: 15px; padding: 14px; border-top: 1px solid rgba(255,255,255,0.1); background: var(--card-bg-subtle, rgba(255,255,255,0.03)); border-radius: 10px; display: none;">
+                    <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: 700;">
+                        <i class="fa-solid fa-user-circle" style="color: var(--accent-color);"></i> Tu Perfil
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <div style="display: flex; align-items: center; gap: 6px; font-weight: 700; color: var(--text-main);">
+                            <i class="fa-solid fa-user" style="color: var(--accent-color);"></i>
+                            <span id="user-info-display">MCCHARY</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 6px; color: var(--accent-color); font-weight: 600;">
+                            <i class="fa-solid fa-gem"></i>
+                            <span id="user-points-display">0 pts</span>
+                        </div>
+                        <span id="user-rango-badge" style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; background: var(--card-bg-subtle); border: 1px solid var(--border-color); width: fit-content; margin-top: 2px;">🌱 SEMILLA</span>
+                    </div>
                 </div>
             </div>
 
@@ -1545,27 +1566,21 @@ if (chatForm) {
                 // Mostrar panel de perfil
                 if (userProfilePanel && userInfoDisplay && userPointsDisplay) {
                     userProfilePanel.style.display = 'block';
-                    userInfoDisplay.textContent = '👤 ' + savedApodo;
+                    userInfoDisplay.textContent = savedApodo;
+                    const navUserInfo = document.getElementById('nav-user-info');
+                    const navUsername = document.getElementById('nav-username');
+                    if (navUserInfo && navUsername) { navUsername.textContent = savedApodo; navUserInfo.style.display = 'inline-flex'; }
                     // Cargar puntos y rango actuales
                     supabase.from('usuarios_comunidad').select('puntos, rango').eq('apodo', savedApodo).single().then(({ data }) => {
                         if (data && userPointsDisplay) {
-                            userPointsDisplay.textContent = '💎 Puntos: ' + data.puntos;
-                            // Mostrar badge de rango en el perfil (incluyendo semilla)
-                            const existingBadge = document.getElementById('user-rango-badge');
-                            if (existingBadge) existingBadge.remove();
-                            const rangoBadge = document.createElement('div');
-                            rangoBadge.id = 'user-rango-badge';
+                            userPointsDisplay.textContent = data.puntos + ' pts';
+                            const userRangoEl = document.getElementById('user-rango-badge');
                             const rango = data.rango || 'semilla';
                             const rangoLower = rango.toLowerCase();
-                            const emojiMap = {
-                                'semilla': '🌱', 'gota': '💧', 'flor': '🌸', 
-                                'estrella': '⭐', 'leyenda': '👑'
-                            };
+                            const emojiMap = { 'semilla': '🌱', 'gota': '💧', 'flor': '🌸', 'estrella': '⭐', 'leyenda': '👑' };
                             const emoji = emojiMap[rangoLower] || '🌱';
-                            rangoBadge.className = `rango-badge rango-${rangoLower}`;
-                            rangoBadge.style.cssText = 'display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:12px;font-size:0.75rem;font-weight:700;margin-top:6px;';
-                            rangoBadge.innerHTML = `<span>${emoji}</span><span>${rangoLower.charAt(0).toUpperCase() + rangoLower.slice(1)}</span>`;
-                            userPointsDisplay.parentNode.insertBefore(rangoBadge, userPointsDisplay.nextSibling);
+                            const rangoNombre = rangoLower.charAt(0).toUpperCase() + rangoLower.slice(1);
+                            if (userRangoEl) userRangoEl.textContent = emoji + ' ' + rangoNombre;
                         }
                     });
                 }
