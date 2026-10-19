@@ -7,6 +7,13 @@ if (window.location.pathname.endsWith('/index.html')) {
 
 const SUPABASE_URL = 'https://cydiyaacnyydprgffmkq.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN5ZGl5YWFjbnl5ZHByZ2ZmbWtxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE3NjY1ODQsImV4cCI6MjEwNzM0MjU4NH0.fkipcX7Lx4lhGSa0zTDQ9BDNN3jiGTksB2hMlHH1bAs';
+if (window.supabase) {
+    try {
+        window.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    } catch (e) {
+        console.error('Error inicializando Supabase:', e);
+    }
+}
 
 // === MODO CLARO / OSCURO ===
 
