@@ -61,11 +61,6 @@ window.cerrarSesionAdminGlobal = async function cerrarSesionAdminGlobal() {
         } catch (e) {}
     }
 
-    localStorage.removeItem('comunidad_nickname');
-    localStorage.removeItem('comunidad_session_token');
-    localStorage.removeItem('comunidad_user_id');
-    localStorage.removeItem('gochi_registrado_user');
-
     document.body.classList.remove('admin-mode-active');
 
     const panelPendientes = document.getElementById('panelPendientes');
@@ -85,22 +80,18 @@ window.cerrarSesionAdminGlobal = async function cerrarSesionAdminGlobal() {
 
 window.actualizarUsuarioNavComunidad = function actualizarUsuarioNavComunidad() {
     const apodo = localStorage.getItem('comunidad_nickname');
-    const authButtons = document.getElementById('auth-buttons');
     const navUserInfo = document.getElementById('nav-user-info');
 
-    if (apodo && !navUserInfo && authButtons) {
-        authButtons.insertAdjacentHTML('beforeend', `
-            <span id="nav-user-info" style="display:inline-flex; align-items:center; gap:8px; color:var(--text-main); font-size:0.9rem; font-weight:600;">
-                <i class="fa-solid fa-user" style="color:var(--accent-color);"></i>
-                <span id="nav-username">${apodo}</span>
-                <button onclick="cerrarSesion()" class="btn-logout-nav" title="Cerrar Sesión"><i class="fa-solid fa-right-from-bracket"></i> Salir</button>
-            </span>
-        `);
+    if (apodo && navUserInfo) {
+        navUserInfo.style.display = 'inline-flex';
+        navUserInfo.innerHTML = `
+            <i class="fa-solid fa-user" style="color:var(--accent-color);"></i>
+            <span id="nav-username">${apodo}</span>
+            <button onclick="cerrarSesion()" class="btn-logout-nav" title="Cerrar Sesión"><i class="fa-solid fa-right-from-bracket"></i> Salir</button>
+        `;
     } else if (!apodo && navUserInfo) {
-        navUserInfo.remove();
-    } else if (apodo && navUserInfo) {
-        const usernameSpan = navUserInfo.querySelector('#nav-username');
-        if (usernameSpan) usernameSpan.textContent = apodo;
+        navUserInfo.innerHTML = '';
+        navUserInfo.style.display = 'none';
     }
 };
 

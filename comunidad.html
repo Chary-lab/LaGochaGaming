@@ -375,8 +375,9 @@
                 <a href="galeria" class="">📸 Galería</a>
                 <a href="comunidad" class="nav-active">💬 Comunidad</a>
             </div>
-            <div class="auth-buttons" id="auth-buttons">
+            <div class="nav-right">
                 <button id="btn-toggle-tema" class="btn-tema-nav" title="Cambiar tema"><i class="fa-solid fa-sun"></i></button>
+                <div id="nav-user-info"></div>
             </div>
         </nav>
     </header>
@@ -674,10 +675,6 @@
                     if (userInfoEl) userInfoEl.textContent = apodo;
                     if (userPointsEl) userPointsEl.textContent = (puntos || 0) + ' pts';
                     if (userRangoEl) userRangoEl.textContent = emoji + ' ' + rangoNombre.toUpperCase();
-                    // Navbar user info
-                    const navUserInfo = document.getElementById('nav-user-info');
-                    const navUsername = document.getElementById('nav-username');
-                    if (navUserInfo && navUsername) { navUsername.textContent = apodo; navUserInfo.style.display = 'inline-flex'; }
                 }
                 if (inputAutor) {
                     inputAutor.value = apodo;
@@ -695,6 +692,7 @@
                 if (chatLoginArea) chatLoginArea.style.display = 'none';
                 const btnEnviar = chatForm ? chatForm.querySelector('button[type="submit"]') : null;
                 if (btnEnviar) btnEnviar.disabled = false;
+                window.actualizarUsuarioNavComunidad?.();
             }
 
             async function validarSesionGuardada() {
@@ -1631,19 +1629,6 @@ if (chatForm) {
             }, 300000); // 5 minutos
         });
 
-        function cerrarSesion() {
-            localStorage.removeItem('comunidad_nickname');
-            localStorage.removeItem('comunidad_session_token');
-            const panel = document.getElementById('user-profile-panel');
-            if (panel) panel.style.display = 'none';
-            const input = document.getElementById('chat-autor');
-            if (input) { input.value = ''; input.readOnly = false; }
-            const chatLoginForm = document.getElementById('chat-form');
-            const chatLoginArea = document.getElementById('chat-login-area');
-            if (chatLoginForm) chatLoginForm.style.display = 'none';
-            const navUserInfo = document.getElementById('nav-user-info');
-            if (navUserInfo) navUserInfo.style.display = 'none';
-        }
         window.cambiarTabComunidad = function(tab) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.textContent.trim().toLowerCase().startsWith(tab === 'info' ? 'info' : tab)));
             document.querySelectorAll('.tab-content').forEach(p => {
