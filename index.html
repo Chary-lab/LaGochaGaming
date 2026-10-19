@@ -331,7 +331,7 @@ document.getElementById('muro-form').addEventListener('submit', (e) => {
                 }
                 grid.innerHTML = '';
                 clips.slice(0, 6).forEach(clip => {
-                    const thumb = clip.thumbnail || 'img/3.jpg';
+                    const thumb = clip.thumbnail_url || 'img/3.jpg';
                     const url = 'https://kick.com/lagochagaming/clips/' + clip.id;
                     const title = clip.title || 'Clip de La Gocha';
                     const card = document.createElement('div');

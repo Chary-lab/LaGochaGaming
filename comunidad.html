@@ -469,7 +469,6 @@
                     <div id="canal-info" style="font-size:0.8rem;color:var(--text-muted);margin-top:6px;display:none;"></div>
                     <div id="canal-offline" style="text-align:center;padding:20px;color:var(--text-muted);display:none;">
                         <img src="img/3.jpg" alt="Canal offline" style="width:100%;height:160px;object-fit:cover;border-radius:8px;border:1px solid var(--border-color);">
-                        <div style="margin-top:8px;">La Gocha está offline</div>
                     </div>
                     <a href="./#stream" class="btn-primary" style="display: block; text-align: center; margin-top: 15px; text-decoration: none;">Ir al Directo</a>
                 </div>
@@ -1422,7 +1421,7 @@ if (chatForm) {
                             if (viewersEl && viewersNumEl) { viewersEl.style.display = 'block'; viewersNumEl.textContent = viewers.toLocaleString(); }
                         } else {
                             estadoDot.style.backgroundColor = '#ff4d4d';
-                            estadoTexto.textContent = 'Offline';
+                            estadoTexto.textContent = 'La Gocha está offline';
                             if (viewersEl) viewersEl.style.display = 'none';
                         }
                     }
