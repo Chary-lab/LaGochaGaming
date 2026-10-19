@@ -7,116 +7,6 @@ if (window.location.pathname.endsWith('/index.html')) {
 
 const SUPABASE_URL = 'https://cydiyaacnyydprgffmkq.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN5ZGl5YWFjbnl5ZHByZ2ZmbWtxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE3NjY1ODQsImV4cCI6MjEwNzM0MjU4NH0.fkipcX7Lx4lhGSa0zTDQ9BDNN3jiGTksB2hMlHH1bAs';
-var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-// === INYECCIÓN DINÁMICA DEL MENÚ DE NAVEGACIÓN ===
-
-window.inyectarMenuGlobal = function inyectarMenuGlobal() {
-    const header = document.getElementById('global-header');
-    if (!header) return;
-
-    const path = window.location.pathname;
-    const enCine = path.includes('cine');
-    const enSorteo = path.includes('sorteo');
-    const enGaleria = path.includes('galeria');
-    const enComunidad = path.includes('comunidad');
-    const enInicio = path.endsWith('/') || path.includes('index.html');
-
-    const apodo = localStorage.getItem('comunidad_nickname');
-    const temaClaro = localStorage.getItem('gochi_tema') === 'light';
-
-    const navbarExistente = header.querySelector('.navbar');
-
-    const normalizarPath = p => p.replace(/\/index\.html$/, '/').replace(/\.html$/, '');
-
-    if (navbarExistente) {
-        // Navbar ya inyectado: solo actualizar partes dinámicas sin destruir el DOM
-        const links = navbarExistente.querySelectorAll('.nav-links a');
-        links.forEach(link => {
-            const href = link.getAttribute('href');
-            let activo = false;
-            if (href === './' && enInicio) activo = true;
-            if (href === 'cine' && enCine) activo = true;
-            if (href === 'sorteo' && enSorteo) activo = true;
-            if (href === 'galeria' && enGaleria) activo = true;
-            if (href === 'comunidad' && enComunidad) activo = true;
-            link.classList.toggle('nav-active', activo);
-        });
-
-        const btnTema = navbarExistente.querySelector('#btn-toggle-tema');
-        if (btnTema) {
-            const icono = btnTema.querySelector('i');
-            if (icono) icono.className = 'fa-solid ' + (temaClaro ? 'fa-moon' : 'fa-sun');
-        }
-
-        const authButtons = navbarExistente.querySelector('#auth-buttons');
-        const navUserInfo = navbarExistente.querySelector('#nav-user-info');
-        if (apodo && !navUserInfo) {
-            authButtons.insertAdjacentHTML('beforeend', `
-                <span id="nav-user-info" style="display:inline-flex; align-items:center; gap:8px; color:var(--text-main); font-size:0.9rem; font-weight:600;">
-                    <i class="fa-solid fa-user" style="color:var(--accent-color);"></i>
-                    <span id="nav-username">${apodo}</span>
-                    <button onclick="cerrarSesion()" class="btn-logout-nav" title="Cerrar Sesión"><i class="fa-solid fa-right-from-bracket"></i> Salir</button>
-                </span>
-            `);
-        } else if (!apodo && navUserInfo) {
-            navUserInfo.remove();
-        } else if (apodo && navUserInfo) {
-            const usernameSpan = navUserInfo.querySelector('#nav-username');
-            if (usernameSpan) usernameSpan.textContent = apodo;
-        }
-
-        return;
-    }
-
-    // Primera inyección: crear navbar completo
-    const usuarioHTML = apodo
-        ? `<span id="nav-user-info" style="display:inline-flex; align-items:center; gap:8px; color:var(--text-main); font-size:0.9rem; font-weight:600;">
-                <i class="fa-solid fa-user" style="color:var(--accent-color);"></i>
-                <span id="nav-username">${apodo}</span>
-                <button onclick="cerrarSesion()" class="btn-logout-nav" title="Cerrar Sesión"><i class="fa-solid fa-right-from-bracket"></i> Salir</button>
-            </span>`
-        : '';
-    const temaBtnHTML = `<button id="btn-toggle-tema" class="btn-tema-nav" title="Cambiar tema" style="background:transparent; border:none; color:var(--text-main); cursor:pointer; font-size:1.15rem; padding:7px 10px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; min-width:38px; height:34px;"><i class="fa-solid ${temaClaro ? 'fa-moon' : 'fa-sun'}" style="font-size:1.15rem;"></i></button>`;
-
-    header.innerHTML = `
-        <nav class="navbar">
-            <div class="logo">LAGOCHA<span>GAMING</span></div>
-            <button class="mobile-menu-toggle-btn" aria-label="Abrir menú"><i class="fa-solid fa-bars"></i></button>
-            <div class="nav-links">
-                <a href="./" class="${enInicio ? 'nav-active' : ''}">Inicio</a>
-                <a href="./#stream" class="">Directo</a>
-                <a href="./#clips" class="">Clips</a>
-                <a href="cine" class="${enCine ? 'nav-active' : ''}">🍿 GochiWatch</a>
-                <a href="sorteo" class="${enSorteo ? 'nav-active' : ''}">🎁 Sorteo</a>
-                <a href="galeria" class="${enGaleria ? 'nav-active' : ''}">📸 Galería</a>
-                <a href="comunidad" class="${enComunidad ? 'nav-active' : ''}">💬 Comunidad</a>
-            </div>
-            <div class="auth-buttons" id="auth-buttons">
-                ${temaBtnHTML}
-                ${usuarioHTML}
-            </div>
-        </nav>
-    `;
-
-    // Prevenir navegación/recarga cuando el enlace apunta a la página actual (sin hash)
-    const nav = header.querySelector('.navbar');
-    const navLinks = nav.querySelectorAll('.nav-links a');
-    navLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            const href = link.getAttribute('href');
-            if (!href || href.includes('#')) return; // permitir anclas
-            const linkUrl = new URL(href, window.location.origin + window.location.pathname).pathname;
-            if (normalizarPath(linkUrl) === normalizarPath(path)) {
-                e.preventDefault();
-            }
-            // Cerrar menú móvil tras clickear un enlace
-            const btn = document.querySelector('.mobile-menu-toggle-btn');
-            const navLinksMenu = document.querySelector('.nav-links');
-            if (btn && navLinksMenu) navLinksMenu.classList.remove('mobile-active');
-        });
-    });
-};
 
 // === MODO CLARO / OSCURO ===
 
@@ -147,7 +37,6 @@ window.toggleTema = function toggleTema() {
 // === SESIÓN DE COMUNIDAD ===
 
 window.cerrarSesion = function cerrarSesion() {
-    // Solo cierra sesión de comunidad (usuarios_comunidad), no toca Supabase Auth (admin independiente)
     localStorage.removeItem('comunidad_nickname');
     localStorage.removeItem('comunidad_session_token');
     localStorage.removeItem('comunidad_user_id');
@@ -159,9 +48,11 @@ window.cerrarSesion = function cerrarSesion() {
 };
 
 window.cerrarSesionAdminGlobal = async function cerrarSesionAdminGlobal() {
-    try {
-        await supabase.auth.signOut();
-    } catch (e) {}
+    if (window.supabase) {
+        try {
+            await window.supabase.auth.signOut();
+        } catch (e) {}
+    }
 
     localStorage.removeItem('comunidad_nickname');
     localStorage.removeItem('comunidad_session_token');
@@ -186,12 +77,30 @@ window.cerrarSesionAdminGlobal = async function cerrarSesionAdminGlobal() {
 };
 
 window.actualizarUsuarioNavComunidad = function actualizarUsuarioNavComunidad() {
-    inyectarMenuGlobal();
+    const apodo = localStorage.getItem('comunidad_nickname');
+    const authButtons = document.getElementById('auth-buttons');
+    const navUserInfo = document.getElementById('nav-user-info');
+
+    if (apodo && !navUserInfo && authButtons) {
+        authButtons.insertAdjacentHTML('beforeend', `
+            <span id="nav-user-info" style="display:inline-flex; align-items:center; gap:8px; color:var(--text-main); font-size:0.9rem; font-weight:600;">
+                <i class="fa-solid fa-user" style="color:var(--accent-color);"></i>
+                <span id="nav-username">${apodo}</span>
+                <button onclick="cerrarSesion()" class="btn-logout-nav" title="Cerrar Sesión"><i class="fa-solid fa-right-from-bracket"></i> Salir</button>
+            </span>
+        `);
+    } else if (!apodo && navUserInfo) {
+        navUserInfo.remove();
+    } else if (apodo && navUserInfo) {
+        const usernameSpan = navUserInfo.querySelector('#nav-username');
+        if (usernameSpan) usernameSpan.textContent = apodo;
+    }
 };
 
 window.validarSesionStreamer = async function validarSesionStreamer() {
     try {
-        const { data: { session } } = await supabase.auth.getSession();
+        if (!window.supabase) return false;
+        const { data: { session } } = await window.supabase.auth.getSession();
         return !!session;
     } catch (e) {
         return false;
@@ -266,7 +175,7 @@ window.mostrarConfirmacionModal = function mostrarConfirmacionModal({ titulo, me
 function cerrarConfirmModal() {
     const modal = document.getElementById('gochi-confirm-modal');
     if (modal) modal.style.display = 'none';
-};
+}
 
 // === MENÚ MÓVIL ===
 
@@ -280,16 +189,38 @@ window.inicializarMenuMovil = function inicializarMenuMovil() {
     };
 };
 
+// Prevenir navegación/recarga cuando el enlace apunta a la página actual (sin hash)
+window.inicializarNavLinks = function inicializarNavLinks() {
+    const path = window.location.pathname;
+    const normalizarPath = p => p.replace(/\/index\.html$/, '/').replace(/\.html$/, '');
+    const navLinks = document.querySelectorAll('.nav-links a');
+    navLinks.forEach(link => {
+        const href = link.getAttribute('href');
+        if (!href || href.includes('#')) return;
+        const linkUrl = new URL(href, window.location.origin + window.location.pathname).pathname;
+        if (normalizarPath(linkUrl) === normalizarPath(path)) {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+            });
+        }
+        // Cerrar menú móvil tras clickear un enlace
+        link.addEventListener('click', () => {
+            const btn = document.querySelector('.mobile-menu-toggle-btn');
+            const navLinksMenu = document.querySelector('.nav-links');
+            if (btn && navLinksMenu) navLinksMenu.classList.remove('mobile-active');
+        });
+    });
+};
+
 window.verificarSesionGlobal = function verificarSesionGlobal() {
     // La sesión de comunidad se gestiona por página (comunidad_nickname en localStorage).
 };
 
 // === INICIALIZACIÓN ===
 
-document.addEventListener('DOMContentLoaded', () => {
-    insertarComponentesUIGlobales();
-    inyectarMenuGlobal();
-    initTema();
-    inicializarMenuMovil();
-    verificarSesionGlobal();
-});
+try { insertarComponentesUIGlobales(); } catch (e) { console.error('insertarComponentesUIGlobales:', e); }
+try { initTema(); } catch (e) { console.error('initTema:', e); }
+try { inicializarMenuMovil(); } catch (e) { console.error('inicializarMenuMovil:', e); }
+try { inicializarNavLinks(); } catch (e) { console.error('inicializarNavLinks:', e); }
+try { actualizarUsuarioNavComunidad(); } catch (e) { console.error('actualizarUsuarioNavComunidad:', e); }
+try { verificarSesionGlobal(); } catch (e) { console.error('verificarSesionGlobal:', e); }

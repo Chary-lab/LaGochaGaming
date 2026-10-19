@@ -362,13 +362,29 @@
 <body>
 
     <!-- ALERTA VISUAL DE STREAM EN VIVO -->
+    <header id="global-header">
+        <nav class="navbar">
+            <div class="logo">LAGOCHA<span>GAMING</span></div>
+            <button class="mobile-menu-toggle-btn" aria-label="Abrir menú"><i class="fa-solid fa-bars"></i></button>
+            <div class="nav-links">
+                <a href="./" class="">Inicio</a>
+                <a href="./#stream" class="">Directo</a>
+                <a href="./#clips" class="">Clips</a>
+                <a href="cine" class="">🍿 GochiWatch</a>
+                <a href="sorteo" class="">🎁 Sorteo</a>
+                <a href="galeria" class="">📸 Galería</a>
+                <a href="comunidad" class="nav-active">💬 Comunidad</a>
+            </div>
+            <div class="auth-buttons" id="auth-buttons">
+                <button id="btn-toggle-tema" class="btn-tema-nav" title="Cambiar tema"><i class="fa-solid fa-sun"></i></button>
+            </div>
+        </nav>
+    </header>
+
     <div id="stream-alert" class="stream-alert-overlay">
         <i class="fa-solid fa-tower-broadcast"></i>
         <span id="stream-alert-text">¡LA GOCHA ESTÁ EN DIRECTO! 🎉</span>
     </div>
-
-    <!-- NAVBAR -->
-    <header id="global-header"></header>
 
     <!-- CONTENIDO PRINCIPAL COMUNIDAD -->
     <main class="comunidad-layout">
@@ -539,7 +555,7 @@
 
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="main.js"></script>
+    <script src="main.js" defer></script>
     <script>
         // Funciones globales para los botones de login/registro (llamadas desde HTML)
         let _modalModo = 'login'; // 'login' o 'registro'
