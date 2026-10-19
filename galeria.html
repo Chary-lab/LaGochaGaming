@@ -207,6 +207,12 @@
             right: 12px;
             left: auto;
         }
+
+        /* Feedback visual al arrastrar sobre el contenedor de subida */
+        #uploadContainer.dragover {
+            border: 2px dashed var(--accent-color);
+            background: rgba(255, 102, 178, 0.1);
+        }
     </style>
 </head>
 <body>
@@ -225,7 +231,7 @@
                 <a href="comunidad" class="">💬 Comunidad</a>
             </div>
             <div class="nav-right">
-                <button id="btn-toggle-tema" class="btn-tema-nav" title="Cambiar tema"><i class="fa-solid fa-sun"></i></button>
+                <button id="btn-toggle-tema" class="btn-tema-nav" title="Cambiar tema" aria-label="Cambiar tema claro/oscuro"><i class="fa-solid fa-sun"></i></button>
                 <div id="nav-user-info"></div>
             </div>
         </nav>
@@ -417,10 +423,10 @@
                         <div class="gallery-card-info">
                             <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px;" title="${image.title}">${escapeHtml(image.title || 'Sin título')}</span>
                             <div style="display: flex; gap: 8px; align-items: center;">
-                                <button class="btn-eliminar-publica" onclick="eliminarImagenPublica('${image.id}')" title="Borrar foto de la galería">
+                                <button class="btn-eliminar-publica" onclick="eliminarImagenPublica('${image.id}')" title="Borrar foto de la galería" aria-label="Borrar foto de la galería">
                                     <i class="fa-solid fa-trash-can"></i>
                                 </button>
-                                <button class="like-btn ${isLiked ? 'liked' : ''}" id="like-btn-${image.id}" onclick="toggleLike('${image.id}', ${cantLikes})">
+                                <button class="like-btn ${isLiked ? 'liked' : ''}" id="like-btn-${image.id}" onclick="toggleLike('${image.id}', ${cantLikes})" aria-label="Me gusta">
                                     <i class="${isLiked ? 'fas' : 'far'} fa-heart"></i>
                                     <span id="like-count-${image.id}">${cantLikes}</span>
                                 </button>
@@ -652,6 +658,45 @@
 
             uploadToSupabase(file, customTitle);
         });
+
+        // ===================================================
+        // SOPORTE DE ARRASTRAR Y SOLTAR EN #uploadContainer
+        // ===================================================
+        const uploadContainer = document.getElementById('uploadContainer');
+        if (uploadContainer) {
+            ['dragenter', 'dragover'].forEach((evt) => {
+                uploadContainer.addEventListener(evt, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    uploadContainer.classList.add('dragover');
+                });
+            });
+            ['dragleave', 'drop'].forEach((evt) => {
+                uploadContainer.addEventListener(evt, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    uploadContainer.classList.remove('dragover');
+                });
+            });
+            uploadContainer.addEventListener('drop', (e) => {
+                const file = e.dataTransfer.files[0];
+                if (!file) return;
+                if (!file.type.startsWith('image/')) {
+                    mostrarToast('Solo se permiten archivos de imagen.', true);
+                    return;
+                }
+                const customTitle = titleInput.value.trim();
+                if (!customTitle) {
+                    mostrarToast('Por favor escribe un título para la foto.', true);
+                    return;
+                }
+                if (file.size > 5 * 1024 * 1024) {
+                    uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ La imagen supera el límite máximo de 5MB.</p>';
+                    return;
+                }
+                uploadToSupabase(file, customTitle);
+            });
+        }
 
         async function uploadToSupabase(file, title) {
             if (file.type.startsWith('image/')) {

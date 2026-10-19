@@ -59,13 +59,13 @@
                 <a href="comunidad" class="">💬 Comunidad</a>
             </div>
             <div class="nav-right">
-                <button id="btn-toggle-tema" class="btn-tema-nav" title="Cambiar tema"><i class="fa-solid fa-sun"></i></button>
+                <button id="btn-toggle-tema" class="btn-tema-nav" title="Cambiar tema" aria-label="Cambiar tema claro/oscuro"><i class="fa-solid fa-sun"></i></button>
                 <div id="nav-user-info"></div>
             </div>
         </nav>
     </header>
 
-    <div id="stream-alert" class="stream-alert-overlay">
+    <div id="stream-alert" class="stream-alert-overlay" aria-live="polite" aria-label="Alerta de stream en vivo">
         <i class="fa-solid fa-tower-broadcast"></i>
         <span id="stream-alert-text">¡LA GOCHA ESTÁ EN DIRECTO! 🎉</span>
     </div>
@@ -291,7 +291,7 @@ document.getElementById('muro-form').addEventListener('submit', (e) => {
                     if (navbar) navbar.classList.add('live-glow');
 
                     // Mostrar overlay de alerta si es la primera vez que detecta live
-                    if (alertOverlay && ultimaEstadoEnVivoIndex === false) {
+                    if (alertOverlay && (ultimaEstadoEnVivoIndex === false || ultimaEstadoEnVivoIndex === null)) {
                         alertOverlay.classList.add('visible', 'live');
                         setTimeout(() => {
                             alertOverlay.classList.remove('visible');
@@ -350,7 +350,7 @@ document.getElementById('muro-form').addEventListener('submit', (e) => {
                         <div class="muro-card-header">
                             <span class="muro-autor">${escapeHtml(msg.autor)}</span>
                             <div style="display: flex; gap: 8px; align-items: center;">
-                                <button class="btn-eliminar-muro" onclick="eliminarSaludo(${msg.id})" title="Eliminar saludo">
+                                <button class="btn-eliminar-muro" onclick="eliminarSaludo(${msg.id})" title="Eliminar saludo" aria-label="Eliminar saludo">
                                     <i class="fa-solid fa-trash-can"></i>
                                 </button>
                                 <span class="muro-fecha">${fecha}</span>

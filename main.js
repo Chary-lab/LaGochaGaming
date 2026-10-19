@@ -87,7 +87,7 @@ window.actualizarUsuarioNavComunidad = function actualizarUsuarioNavComunidad() 
         navUserInfo.innerHTML = `
             <i class="fa-solid fa-user" style="color:var(--accent-color);"></i>
             <span id="nav-username">${apodo}</span>
-            <button onclick="cerrarSesion()" class="btn-logout-nav" title="Cerrar Sesión"><i class="fa-solid fa-right-from-bracket"></i> Salir</button>
+            <button onclick="cerrarSesion()" class="btn-logout-nav" title="Cerrar Sesión" aria-label="Cerrar sesión"><i class="fa-solid fa-right-from-bracket"></i> Salir</button>
         `;
     } else if (!apodo && navUserInfo) {
         navUserInfo.innerHTML = '';

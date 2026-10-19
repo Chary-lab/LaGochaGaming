@@ -168,7 +168,7 @@
                 <a href="comunidad" class="">💬 Comunidad</a>
             </div>
             <div class="nav-right">
-                <button id="btn-toggle-tema" class="btn-tema-nav" title="Cambiar tema"><i class="fa-solid fa-sun"></i></button>
+                <button id="btn-toggle-tema" class="btn-tema-nav" title="Cambiar tema" aria-label="Cambiar tema claro/oscuro"><i class="fa-solid fa-sun"></i></button>
                 <div id="nav-user-info"></div>
             </div>
         </nav>
@@ -265,6 +265,7 @@
         let esYouTube = false;
         let actualizandoLocalmente = false;
         let urlActual = '';
+        let ytApiReady = false;
 
         function procesarUrlEntrante(url) {
             if (!url) return '';
@@ -297,7 +298,9 @@
             return (match && match[2].length === 11) ? match[2] : null;
         }
 
-        function onYouTubeIframeAPIReady() {}
+        function onYouTubeIframeAPIReady() {
+            ytApiReady = true;
+        }
 
         document.addEventListener('DOMContentLoaded', async () => {
             const { data: { session } } = await supabase.auth.getSession();
@@ -408,6 +411,10 @@
         }
 
         function sincronizarReproductorRemoto(data) {
+            if (!ytApiReady) {
+                setTimeout(() => sincronizarReproductorRemoto(data), 300);
+                return;
+            }
             if (!data || !data.video_url) {
                 if (mp4Player) {
                     mp4Player.pause();

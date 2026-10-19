@@ -24,8 +24,8 @@
             padding-top: 20px;
             padding: 20px 20px 0 20px;
             display: grid;
-            grid-template-columns: 300px minmax(500px, 1fr) 300px;
-            gap: 25px;
+            grid-template-columns: 280px minmax(560px, 1fr) 280px;
+            gap: 32px;
             align-items: start;
         }
 
@@ -64,9 +64,12 @@
             background: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 16px;
-            padding: 20px;
+            padding: 24px;
             text-align: center;
             box-shadow: var(--glow);
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
         }
         .sidebar-info h3 {
             color: var(--accent-color);
@@ -307,7 +310,7 @@
                 <a href="comunidad" class="">💬 Comunidad</a>
             </div>
             <div class="nav-right">
-                <button id="btn-toggle-tema" class="btn-tema-nav" title="Cambiar tema"><i class="fa-solid fa-sun"></i></button>
+                <button id="btn-toggle-tema" class="btn-tema-nav" title="Cambiar tema" aria-label="Cambiar tema claro/oscuro"><i class="fa-solid fa-sun"></i></button>
                 <div id="nav-user-info"></div>
             </div>
         </nav>
@@ -860,14 +863,14 @@
 
         async function guardarGanadorOficial(nombre) {
             try {
-                const { error } = await supabase.from('ganadores_sorteo').insert([{ nombre: `@${nombre}`, fecha: new Date().toISOString() }]);
+                const { error } = await supabase.from('ganadores_sorteo').insert([{ nombre: `@${nombre}`, created_at: new Date().toISOString() }]);
                 if (!error) cargarTopGanadores();
             } catch (err) { console.error('Error:', err); }
         }
 
         async function cargarTopGanadores() {
             try {
-                const { data, error } = await supabase.from('ganadores_sorteo').select('nombre, fecha').order('fecha', { ascending: false }).limit(20);
+                const { data, error } = await supabase.from('ganadores_sorteo').select('nombre, created_at').order('created_at', { ascending: false }).limit(20);
                 if (error) return;
                 const grid = document.getElementById('top-ganadores-grid');
                 if (!grid) return;
@@ -879,7 +882,7 @@
                 data.forEach(g => {
                     const card = document.createElement('div');
                     card.className = 'ganador-card-side';
-                    const fecha = new Date(g.fecha).toLocaleString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                    const fecha = new Date(g.created_at).toLocaleString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
                     card.innerHTML = `<div class="ganador-nombre">🎉 ${escapeHtml(g.nombre)}</div><div class="ganador-fecha">${fecha}</div>`;
                     grid.appendChild(card);
                 });

@@ -377,13 +377,13 @@
                 <a href="comunidad" class="nav-active">💬 Comunidad</a>
             </div>
             <div class="nav-right">
-                <button id="btn-toggle-tema" class="btn-tema-nav" title="Cambiar tema"><i class="fa-solid fa-sun"></i></button>
+                <button id="btn-toggle-tema" class="btn-tema-nav" title="Cambiar tema" aria-label="Cambiar tema claro/oscuro"><i class="fa-solid fa-sun"></i></button>
                 <div id="nav-user-info"></div>
             </div>
         </nav>
     </header>
 
-    <div id="stream-alert" class="stream-alert-overlay">
+    <div id="stream-alert" class="stream-alert-overlay" aria-live="polite" aria-label="Alerta de stream en vivo">
         <i class="fa-solid fa-tower-broadcast"></i>
         <span id="stream-alert-text">¡LA GOCHA ESTÁ EN DIRECTO! 🎉</span>
     </div>
@@ -569,7 +569,7 @@
             document.getElementById('nickname-modal-input').focus();
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             const chatForm = document.getElementById('chat-form');
             const chatMensajes = document.getElementById('chat-mensajes');
             const inputAutor = document.getElementById('chat-autor');
@@ -1169,7 +1169,10 @@ if (chatForm) {
                 chatForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
                     const ahora = Date.now();
-                    if (ahora - ultimoEnvio < 2500) return;
+                    if (ahora - ultimoEnvio < 2500) {
+                        mostrarToast('Espera unos segundos antes de enviar otro mensaje', true);
+                        return;
+                    }
                     if (!userNickname) return;
                     const mensaje = inputMensaje.value.trim();
                     if (!mensaje) return;
@@ -1254,7 +1257,10 @@ if (chatForm) {
                     container.appendChild(burbuja);
 
                     chatMensajes.appendChild(container);
-                    chatMensajes.scrollTop = chatMensajes.scrollHeight;
+                    const estaCercaDelFondo = chatMensajes.scrollHeight - chatMensajes.scrollTop - chatMensajes.clientHeight < 100;
+                    if (estaCercaDelFondo) {
+                        chatMensajes.scrollTop = chatMensajes.scrollHeight;
+                    }
                     
                     // Cargar reacciones de Supabase para este mensaje nuevo
                     cargarReaccionesDeSupabase([nuevoMsg]);
@@ -1470,8 +1476,9 @@ if (chatForm) {
                 }, 60000);
 
                 window._trackPresence = (nick) => {
-                    if (canalPresencia && trackHecho) {
-                        canalPresencia.track({ user_id: presenceId, nickname: nick || userNickname });
+                    const nombre = nick || userNickname || nickParaTrack;
+                    if (canalPresencia) {
+                        canalPresencia.track({ user_id: presenceId, nickname: nombre });
                     }
                 };
                 window._presenceKeepAlive = keepAliveInterval;
@@ -1537,40 +1544,26 @@ if (chatForm) {
             cargarLeaderboard();
             setInterval(cargarLeaderboard, 60000); // Actualizar ranking cada minuto
 
-            // Restaurar UI de chat y perfil SINCRÓNICAMENTE si hay sesión guardada
+            // Restaurar UI de chat y perfil solo si la sesión guardada es válida en Supabase
             const chatLoginForm = document.getElementById('chat-form');
             const chatLoginArea = document.getElementById('chat-login-area');
 
-            if (savedApodo && savedToken) {
-                // Mostrar chat y perfil inmediatamente (sin esperar validación)
-                if (chatLoginForm) chatLoginForm.style.display = 'flex';
-                if (chatLoginArea) chatLoginArea.style.display = 'none';
-
-                // Mostrar panel de perfil
-                if (userProfilePanel && userInfoDisplay && userPointsDisplay) {
-                    userProfilePanel.style.display = 'block';
-                    userInfoDisplay.textContent = savedApodo;
-                    const navUserInfo = document.getElementById('nav-user-info');
-                    const navUsername = document.getElementById('nav-username');
-                    if (navUserInfo && navUsername) { navUsername.textContent = savedApodo; navUserInfo.style.display = 'inline-flex'; }
-                    // Cargar puntos y rango actuales
-                    supabase.from('usuarios_comunidad').select('puntos, rango').eq('apodo', savedApodo).single().then(({ data }) => {
-                        if (data && userPointsDisplay) {
-                            userPointsDisplay.textContent = data.puntos + ' pts';
-                            const userRangoEl = document.getElementById('user-rango-badge');
-                            const rango = data.rango || 'semilla';
-                            const rangoLower = rango.toLowerCase();
-                            const emojiMap = { 'semilla': '🌱', 'gota': '💧', 'flor': '🌸', 'estrella': '⭐', 'leyenda': '👑' };
-                            const emoji = emojiMap[rangoLower] || '🌱';
-                            const rangoNombre = rangoLower.charAt(0).toUpperCase() + rangoLower.slice(1);
-                            if (userRangoEl) userRangoEl.textContent = emoji + ' ' + rangoNombre;
-                        }
-                    });
-                }
-            } else {
-                // Mostrar solo área de login
+            function mostrarAreaLoginComunidad() {
                 if (chatLoginForm) chatLoginForm.style.display = 'none';
                 if (chatLoginArea) chatLoginArea.style.display = 'flex';
+            }
+
+            if (savedApodo && savedToken) {
+                const sesionValida = await validarSesionGuardada();
+                if (!sesionValida) {
+                    localStorage.removeItem(STORAGE_KEY_NICK);
+                    localStorage.removeItem(STORAGE_KEY_TOKEN);
+                    localStorage.removeItem('comunidad_user_id');
+                    userNickname = null;
+                    mostrarAreaLoginComunidad();
+                }
+            } else {
+                mostrarAreaLoginComunidad();
             }
 
             verificarEstadoStream();
