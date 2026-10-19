@@ -465,6 +465,12 @@
                     <div id="viewers-count" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px; display: none;">
                         <i class="fa-solid fa-eye"></i> <span id="viewers-num">0</span> espectadores
                     </div>
+                    <img id="canal-preview" src="" alt="Vista previa del canal" style="display:none;width:100%;height:160px;object-fit:cover;border-radius:8px;margin-top:10px;border:1px solid var(--border-color);">
+                    <div id="canal-info" style="font-size:0.8rem;color:var(--text-muted);margin-top:6px;display:none;"></div>
+                    <div id="canal-offline" style="text-align:center;padding:20px;color:var(--text-muted);display:none;">
+                        <img src="img/3.jpg" alt="Canal offline" style="width:100%;height:160px;object-fit:cover;border-radius:8px;border:1px solid var(--border-color);">
+                        <div style="margin-top:8px;">La Gocha está offline</div>
+                    </div>
                     <a href="./#stream" class="btn-primary" style="display: block; text-align: center; margin-top: 15px; text-decoration: none;">Ir al Directo</a>
                 </div>
                 <div id="user-profile-panel" style="margin-top: 15px; padding: 14px; border-top: 1px solid rgba(255,255,255,0.1); background: var(--card-bg-subtle, rgba(255,255,255,0.03)); border-radius: 10px; display: none;">
@@ -1421,7 +1427,25 @@ if (chatForm) {
                         }
                     }
 
-                    // Activar/desactivar navbar glow
+                     // Canal preview
+                    const canalPreview = document.getElementById('canal-preview');
+                    const canalInfo = document.getElementById('canal-info');
+                    const canalOffline = document.getElementById('canal-offline');
+                    if (enVivo) {
+                        const thumb = data.livestream.thumbnail_url;
+                        if (canalPreview && thumb) { canalPreview.src = thumb; canalPreview.style.display = 'block'; }
+                        if (canalInfo) {
+                            const title = data.livestream.session_title || '';
+                            const cat = data.livestream.category ? data.livestream.category.name : '';
+                            canalInfo.textContent = [title, cat].filter(Boolean).join(' • ');
+                            canalInfo.style.display = canalInfo.textContent ? 'block' : 'none';
+                        }
+                        if (canalOffline) canalOffline.style.display = 'none';
+                    } else {
+                        if (canalPreview) canalPreview.style.display = 'none';
+                        if (canalInfo) canalInfo.style.display = 'none';
+                        if (canalOffline) canalOffline.style.display = 'block';
+                    }
                     if (navbar) {
                         if (enVivo) {
                             navbar.classList.add('live-glow');
@@ -1443,9 +1467,12 @@ if (chatForm) {
                 } catch (err) {
                     console.error('Error verificando estado del stream:', err);
                     if (estadoDot && estadoTexto) { estadoDot.style.backgroundColor = '#ff4d4d'; estadoTexto.textContent = 'Error'; }
-                    const viewersEl = document.getElementById('viewers-count');
-                    if (viewersEl) viewersEl.style.display = 'none';
-                }
+                    const viewersEl2 = document.getElementById('viewers-count');
+                    if (viewersEl2) viewersEl2.style.display = 'none';
+                    const co = document.getElementById('canal-offline');
+                    if (co) co.style.display = 'block';
+                    const cp = document.getElementById('canal-preview');
+                    if (cp) cp.style.display = 'none';
             }
 
             function iniciarPresenciaUsuarios() {
