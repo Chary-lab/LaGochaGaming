@@ -454,22 +454,12 @@
             const idStr = String(imageId);
             const idNumerico = isNaN(imageId) ? imageId : Number(imageId);
             const isLiked = userLikes.includes(idStr);
-
-            let newLikesCount = currentLikes;
-
-            if (isLiked) {
-                userLikes = userLikes.filter(id => id !== idStr);
-                newLikesCount = Math.max(0, currentLikes - 1);
-            } else {
-                userLikes.push(idStr);
-                newLikesCount = currentLikes + 1;
-            }
+            const delta = isLiked ? -1 : 1;
 
             const btn = document.getElementById(`like-btn-${imageId}`);
             const countSpan = document.getElementById(`like-count-${imageId}`);
 
             if (btn && countSpan) {
-                countSpan.innerText = newLikesCount;
                 if (!isLiked) {
                     btn.classList.add('liked');
                     btn.querySelector('i').className = 'fas fa-heart';
@@ -477,15 +467,30 @@
                     btn.classList.remove('liked');
                     btn.querySelector('i').className = 'far fa-heart';
                 }
-                btn.setAttribute('onclick', `toggleLike('${imageId}', ${newLikesCount})`);
             }
 
+            if (isLiked) {
+                userLikes = userLikes.filter(id => id !== idStr);
+            } else {
+                userLikes.push(idStr);
+            }
             localStorage.setItem('gocha_user_likes', JSON.stringify(userLikes));
 
             try {
-                await supabase.from('galeria').update({ likes: newLikesCount }).eq('id', idNumerico);
-                if (filtroActual === 'populares') loadApprovedImages();
-            } catch (e) { console.error(e); }
+                const { data, error } = await supabase.rpc('incrementar_likes', {
+                    image_id_param: idNumerico,
+                    delta_param: delta
+                });
+                if (!error && data !== null && data !== undefined && countSpan) {
+                    countSpan.innerText = data;
+                } else if (countSpan) {
+                    countSpan.innerText = Math.max(0, currentLikes + delta);
+                }
+                if (!error && filtroActual === 'populares') loadApprovedImages();
+            } catch (e) {
+                console.error(e);
+                if (countSpan) countSpan.innerText = Math.max(0, currentLikes + delta);
+            }
         }
 
         lightbox.addEventListener('click', () => { lightbox.style.display = 'none'; });
