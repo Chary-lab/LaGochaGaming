@@ -358,6 +358,26 @@
         .msg-reaccion-esquina.mia .esquina-count {
             color: rgba(0,0,0,0.7);
         }
+
+        .btn-eliminar-chat {
+            background: #ff4d4d;
+            color: white;
+            border: none;
+            padding: 3px 7px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            font-weight: bold;
+            display: none;
+            align-items: center;
+            gap: 3px;
+            transition: 0.2s;
+            margin-left: 6px;
+        }
+        .btn-eliminar-chat:hover { filter: brightness(1.15); }
+        body.admin-mode-active .btn-eliminar-chat {
+            display: inline-flex;
+        }
     </style>
 </head>
 <body>
@@ -602,6 +622,24 @@
             let userNickname = null;
             let userToken = null;
             let userId = null;
+
+            let adminAutenticado = false;
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session && session.user?.email === 'gocha@admin.com') {
+                    adminAutenticado = true;
+                    document.body.classList.add('admin-mode-active');
+                }
+            } catch (e) { console.warn('No se pudo verificar sesión admin:', e); }
+
+            chatMensajes.addEventListener('click', (e) => {
+                const btn = e.target.closest('.btn-eliminar-chat');
+                if (!btn) return;
+                e.stopPropagation();
+                const container = btn.closest('.chat-msg-container');
+                const msgId = container?.dataset.msgid;
+                if (msgId) eliminarMensajeChat(String(msgId));
+            });
 
             // CARGA SÍNCRONA DEL APODO DESDE LOCALSTORAGE AL INICIAR
             const savedApodo = localStorage.getItem('comunidad_nickname');
@@ -882,6 +920,39 @@
                 if (tooltipReaccionEl) tooltipReaccionEl.classList.remove('visible');
             }
 
+            async function eliminarMensajeChat(msgId) {
+                if (!adminAutenticado) return;
+                try {
+                    if (typeof window.validarSesionStreamer === 'function') {
+                        if (!(await window.validarSesionStreamer())) {
+                            alert('Tu sesión de administración ha expirado.');
+                            location.reload();
+                            return;
+                        }
+                    }
+                } catch (e) {}
+                mostrarConfirmacionModal({
+                    titulo: 'Eliminar mensaje',
+                    mensaje: '¿Seguro que deseas borrar este mensaje del chat?',
+                    textoConfirmar: 'Eliminar',
+                    enConfirmar: async () => {
+                        try {
+                            const { error } = await supabase.from('comunidad_chat').delete().eq('id', Number(msgId));
+                            if (error) {
+                                mostrarToast('Error al eliminar el mensaje.', true);
+                                return;
+                            }
+                            const el = document.querySelector(`.chat-msg-container[data-msgid="${msgId}"]`);
+                            if (el) el.remove();
+                            mostrarToast('Eliminado.');
+                        } catch (e) {
+                            console.error('Error eliminando mensaje:', e);
+                            mostrarToast('Error inesperado al eliminar.', true);
+                        }
+                    }
+                });
+            }
+
             // Actualizar badges de un mensaje concreto
             function actualizarUIReacciones(msgId) {
                 const container = document.querySelector(`.chat-msg-container[data-msgid="${msgId}"]`);
@@ -1082,6 +1153,14 @@
                     headerDiv.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;font-size:0.8rem;';
                     headerDiv.innerHTML = '<span style="color:var(--accent-color);font-weight:bold;">'+escaparHTML(msg.autor||'Anónimo')+'</span><span style="color:var(--text-muted);">'+fecha+'</span>';
 
+                    if (adminAutenticado) {
+                        const btnEliminar = document.createElement('button');
+                        btnEliminar.className = 'btn-eliminar-chat';
+                        btnEliminar.setAttribute('aria-label', 'Eliminar mensaje');
+                        btnEliminar.innerHTML = '<i class="fa-solid fa-trash-can"></i>';
+                        headerDiv.appendChild(btnEliminar);
+                    }
+
                     const mensajeDiv = document.createElement('div');
                     mensajeDiv.style.cssText = 'color:var(--text-main);font-size:0.95rem;word-break:break-word;';
                     mensajeDiv.textContent = msg.mensaje || '';
@@ -1241,6 +1320,14 @@ if (chatForm) {
                     headerDiv.style.cssText = 'display:flex;justify-content:space-between;margin-bottom:4px;font-size:0.8rem;';
                     headerDiv.innerHTML = '<span style="color:var(--accent-color);font-weight:bold;">'+escaparHTML(nuevoMsg.autor||'Anónimo')+'</span><span style="color:var(--text-muted);">'+fecha+'</span>';
 
+                    if (adminAutenticado) {
+                        const btnEliminarRealtime = document.createElement('button');
+                        btnEliminarRealtime.className = 'btn-eliminar-chat';
+                        btnEliminarRealtime.setAttribute('aria-label', 'Eliminar mensaje');
+                        btnEliminarRealtime.innerHTML = '<i class="fa-solid fa-trash-can"></i>';
+                        headerDiv.appendChild(btnEliminarRealtime);
+                    }
+
                     const mensajeDiv = document.createElement('div');
                     mensajeDiv.style.cssText = 'color:var(--text-main);font-size:0.95rem;word-break:break-word;';
                     mensajeDiv.textContent = nuevoMsg.mensaje || '';
@@ -1272,7 +1359,15 @@ if (chatForm) {
                     
                     // Limpiar mensajes antiguos si supera el límite
                     limpiarMensajesAntiguos();
-                }).subscribe();
+                })
+                .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'comunidad_chat' }, payload => {
+                    const msgId = String(payload.old.id);
+                    const container = document.querySelector(`.chat-msg-container[data-msgid="${msgId}"]`);
+                    if (container) {
+                        container.remove();
+                    }
+                })
+                .subscribe();
 
                 // Escuchar reacciones en tiempo real
                 try {
