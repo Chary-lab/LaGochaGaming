@@ -27,7 +27,7 @@ window.inyectarMenuGlobal = function inyectarMenuGlobal() {
 
     const navbarExistente = header.querySelector('.navbar');
 
-    const normalizarPath = p => p.replace(/\/index\.html$/, '/');
+    const normalizarPath = p => p.replace(/\/index\.html$/, '/').replace(/\.html$/, '');
 
     if (navbarExistente) {
         // Navbar ya inyectado: solo actualizar partes dinámicas sin destruir el DOM
@@ -36,15 +36,18 @@ window.inyectarMenuGlobal = function inyectarMenuGlobal() {
             const href = link.getAttribute('href');
             let activo = false;
             if (href === './' && enInicio) activo = true;
-            if (href === 'cine.html' && enCine) activo = true;
-            if (href === 'sorteo.html' && enSorteo) activo = true;
-            if (href === 'galeria.html' && enGaleria) activo = true;
-            if (href === 'comunidad.html' && enComunidad) activo = true;
+            if (href === 'cine' && enCine) activo = true;
+            if (href === 'sorteo' && enSorteo) activo = true;
+            if (href === 'galeria' && enGaleria) activo = true;
+            if (href === 'comunidad' && enComunidad) activo = true;
             link.classList.toggle('nav-active', activo);
         });
 
         const btnTema = navbarExistente.querySelector('#btn-toggle-tema');
-        if (btnTema) btnTema.textContent = temaClaro ? '🌙 Oscuro' : '☀️ Claro';
+        if (btnTema) {
+            const icono = btnTema.querySelector('i');
+            if (icono) icono.className = 'fa-solid ' + (temaClaro ? 'fa-moon' : 'fa-sun');
+        }
 
         const authButtons = navbarExistente.querySelector('#auth-buttons');
         const navUserInfo = navbarExistente.querySelector('#nav-user-info');
@@ -79,14 +82,15 @@ window.inyectarMenuGlobal = function inyectarMenuGlobal() {
     header.innerHTML = `
         <nav class="navbar">
             <div class="logo">LAGOCHA<span>GAMING</span></div>
+            <button class="mobile-menu-toggle-btn" aria-label="Abrir menú"><i class="fa-solid fa-bars"></i></button>
             <div class="nav-links">
                 <a href="./" class="${enInicio ? 'nav-active' : ''}">Inicio</a>
                 <a href="./#stream" class="">Directo</a>
                 <a href="./#clips" class="">Clips</a>
-                <a href="cine.html" class="${enCine ? 'nav-active' : ''}">🍿 GochiWatch</a>
-                <a href="sorteo.html" class="${enSorteo ? 'nav-active' : ''}">🎁 Sorteo</a>
-                <a href="galeria.html" class="${enGaleria ? 'nav-active' : ''}">📸 Galería</a>
-                <a href="comunidad.html" class="${enComunidad ? 'nav-active' : ''}">💬 Comunidad</a>
+                <a href="cine" class="${enCine ? 'nav-active' : ''}">🍿 GochiWatch</a>
+                <a href="sorteo" class="${enSorteo ? 'nav-active' : ''}">🎁 Sorteo</a>
+                <a href="galeria" class="${enGaleria ? 'nav-active' : ''}">📸 Galería</a>
+                <a href="comunidad" class="${enComunidad ? 'nav-active' : ''}">💬 Comunidad</a>
             </div>
             <div class="auth-buttons" id="auth-buttons">
                 ${temaBtnHTML}
@@ -106,6 +110,10 @@ window.inyectarMenuGlobal = function inyectarMenuGlobal() {
             if (normalizarPath(linkUrl) === normalizarPath(path)) {
                 e.preventDefault();
             }
+            // Cerrar menú móvil tras clickear un enlace
+            const btn = document.querySelector('.mobile-menu-toggle-btn');
+            const navLinksMenu = document.querySelector('.nav-links');
+            if (btn && navLinksMenu) navLinksMenu.classList.remove('mobile-active');
         });
     });
 };
