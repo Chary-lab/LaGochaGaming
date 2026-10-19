@@ -81,7 +81,7 @@
                 <a href="https://kick.com/lagochagaming" target="_blank" class="btn-primary">ÚNETE AL STREAM</a>
                 <div class="follower-widget">
                     <span class="kick-dot"></span>
-                    <span>10K followers</span>
+                    <span id="kick-followers-count">10K</span> followers
                 </div>
             </div>
         </div>
@@ -89,14 +89,13 @@
 
     <main class="main-container" id="stream">
         <div class="video-container">
-            <iframe src="https://player.kick.com/lagochagaming?autoplay=true&muted=true" frameborder="0" scrolling="no" allowfullscreen="true" loading="lazy"></iframe>
+            <iframe src="https://player.kick.com/lagochagaming?autoplay=true&muted=true" frameborder="0" scrolling="no" allowfullscreen="true"></iframe>
         </div>
         <aside class="chat-sidebar chat-sidebar-box">
             <iframe src="https://kick.com/popout/lagochagaming/chat"
                     frameborder="0"
                     scrolling="no"
-                    class="chat-iframe"
-                    loading="lazy">
+                    class="chat-iframe">
             </iframe>
         </aside>
     </main>
@@ -283,6 +282,13 @@ document.getElementById('muro-form').addEventListener('submit', (e) => {
                 const data = await response.json();
                 const enVivo = data.livestream && data.livestream.is_live === true;
 
+                const followersCount = data.followers_count ?? data.channel?.followers_count ?? data.user?.followers_count;
+                const followersEl = document.getElementById('kick-followers-count');
+                if (followersEl && followersCount !== undefined) {
+                    followersEl.textContent = formatNumber(followersCount);
+                    followersEl.title = followersCount.toLocaleString('es-ES') + ' seguidores';
+                }
+
                 const navbar = document.querySelector('.navbar');
                 const alertOverlay = document.getElementById('stream-alert');
 
@@ -433,6 +439,12 @@ document.getElementById('muro-form').addEventListener('submit', (e) => {
             } catch (err) {
                 console.error('Error:', err);
             }
+        }
+
+        function formatNumber(n) {
+            if (n >= 1000000) return (n / 1000000).toFixed(1).replace('.0', '') + 'M';
+            if (n >= 1000) return (n / 1000).toFixed(1).replace('.0', '') + 'K';
+            return String(n);
         }
 
         function escapeHtml(text) {
