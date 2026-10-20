@@ -709,8 +709,8 @@
             if (savedApodo) {
                 userNickname = savedApodo;
                 userToken = savedToken;
-                const savedUid = localStorage.getItem('comunidad_user_id');
-                if (savedUid) userId = parseInt(savedUid, 10);
+                const savedUid = parseInt(localStorage.getItem('comunidad_user_id') || '', 10);
+                if (Number.isFinite(savedUid)) userId = savedUid;
                 if (inputAutor) {
                     inputAutor.value = savedApodo;
                     inputAutor.readOnly = true;
@@ -752,8 +752,8 @@
                 if (id) userId = id;
                 localStorage.setItem(STORAGE_KEY_NICK, apodo);
                 if (id) localStorage.setItem('comunidad_user_id', String(id));
-                localStorage.setItem(STORAGE_KEY_TOKEN, token || btoa(Date.now().toString()));
-                if (id) localStorage.setItem('comunidad_user_id', String(id));
+                localStorage.setItem(STORAGE_KEY_TOKEN, token || localStorage.getItem(STORAGE_KEY_TOKEN) || btoa(Date.now().toString()));
+                userToken = localStorage.getItem(STORAGE_KEY_TOKEN);
                 if (userProfilePanel && userInfoDisplay && userPointsDisplay) {
                     userProfilePanel.style.display = 'block';
                     const emojiMap = { 'semilla': '🌱', 'gota': '💧', 'flor': '🌸', 'estrella': '⭐', 'leyenda': '👑' };
@@ -765,7 +765,10 @@
                     const userRangoEl = document.getElementById('user-rango-badge');
                     if (userInfoEl) userInfoEl.textContent = apodo;
                     if (userPointsEl) userPointsEl.textContent = (puntos || 0) + ' pts';
-                    if (userRangoEl) userRangoEl.textContent = emoji + ' ' + rangoNombre.toUpperCase();
+                    if (userRangoEl) {
+                        userRangoEl.className = 'rango-badge rango-' + rangoLower;
+                        userRangoEl.textContent = emoji + ' ' + rangoNombre.toUpperCase();
+                    }
                 }
                 if (inputAutor) {
                     inputAutor.value = apodo;
@@ -788,16 +791,25 @@
 
             async function validarSesionGuardada() {
                 const savedApodo = localStorage.getItem(STORAGE_KEY_NICK);
-                const savedToken = localStorage.getItem(STORAGE_KEY_TOKEN);
-                if (!savedApodo || !savedToken) return false;
+                if (!savedApodo) return false;
                 try {
-                    const { data, error } = await supabase.from('usuarios_comunidad').select('id, puntos, rango, session_token').eq('apodo', savedApodo).single();
-                    if (!error && data && data.session_token === savedToken) {
-                        guardarSesion(savedApodo, savedToken, data.puntos, data.rango, data.id);
-                        return true;
-                    }
-                } catch (e) {}
-                return false;
+                    // La sesión se valida por existencia de la cuenta, NO por session_token:
+                    // el frontend nunca escribe ese token en Supabase (la columna queda en NULL),
+                    // por lo que compararlo cerraba la sesión en cada cambio de página.
+                    const { data, error } = await supabase
+                        .from('usuarios_comunidad')
+                        .select('id, puntos, rango, session_token')
+                        .eq('apodo', savedApodo)
+                        .order('id', { ascending: true })
+                        .limit(1);
+                    const usuario = Array.isArray(data) ? data[0] : null;
+                    if (error || !usuario) return false;
+                    guardarSesion(savedApodo, usuario.session_token || localStorage.getItem(STORAGE_KEY_TOKEN), usuario.puntos, usuario.rango, usuario.id);
+                    return true;
+                } catch (e) {
+                    console.error('Error validando sesión de comunidad:', e);
+                    return false;
+                }
             }
 
             async function enviarNickConPIN() {
@@ -1563,10 +1575,11 @@ if (chatForm) {
             // invocado por el polling global de main.js (un solo fetch por ciclo).
 
             function iniciarPresenciaUsuarios() {
-                const presenceId = userId || (Math.random().toString(36).substr(2, 9));
-                if (!userId) localStorage.setItem('comunidad_user_id', presenceId);
+                // El ID de presencia es efímero: NUNCA debe sobrescribir el id real de la cuenta
+                const presenceId = userId || sessionStorage.getItem('gochi_presence_id') || (Math.random().toString(36).slice(2, 11));
+                if (!userId) sessionStorage.setItem('gochi_presence_id', String(presenceId));
 
-                const nickParaTrack = userNickname || savedApodo;
+                const nickParaTrack = userNickname;
                 let trackHecho = false; // Evitar tracks duplicados
 
                 const canalPresencia = supabase.channel('presence:comunidad')
@@ -1670,13 +1683,21 @@ if (chatForm) {
                 if (chatLoginArea) chatLoginArea.style.display = 'flex';
             }
 
-            if (savedApodo && savedToken) {
+            if (savedApodo) {
                 const sesionValida = await validarSesionGuardada();
                 if (!sesionValida) {
                     localStorage.removeItem(STORAGE_KEY_NICK);
                     localStorage.removeItem(STORAGE_KEY_TOKEN);
                     localStorage.removeItem('comunidad_user_id');
                     userNickname = null;
+                    userToken = null;
+                    userId = null;
+                    if (inputAutor) {
+                        inputAutor.value = '';
+                        inputAutor.readOnly = false;
+                    }
+                    // Refrescar el navbar para que no quede un apodo "fantasma"
+                    window.actualizarUsuarioNavComunidad?.();
                     mostrarAreaLoginComunidad();
                 }
             } else {
@@ -1685,10 +1706,10 @@ if (chatForm) {
 
             const presenciaChannel = iniciarPresenciaUsuarios();
             
-            // Forzar track inmediato si hay usuario logueado
-            if (savedApodo && typeof window._trackPresence === 'function') {
+            // Forzar track inmediato solo si la sesión quedó restaurada
+            if (userNickname && typeof window._trackPresence === 'function') {
                 setTimeout(() => {
-                    window._trackPresence(savedApodo);
+                    window._trackPresence(userNickname);
                 }, 500);
             }
 
@@ -1702,7 +1723,7 @@ if (chatForm) {
                             // Actualizar UI de puntos y rango
                             const { data } = await supabase.from('usuarios_comunidad').select('puntos, rango').eq('apodo', currentNick).single();
                             if (data && userPointsDisplay) {
-                                userPointsDisplay.textContent = '💎 Puntos: ' + data.puntos;
+                                userPointsDisplay.textContent = data.puntos + ' pts';
                             }
                             // Actualizar badge de rango si está visible
                             const rangoBadge = document.getElementById('user-rango-badge');
