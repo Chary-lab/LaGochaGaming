@@ -40,7 +40,7 @@ body { background-color: var(--bg-color); color: var(--text-main); font-family: 
 .logo { font-size: 22px; font-weight: 900; letter-spacing: 2px; color: var(--text-main); flex-shrink: 0; }
 .logo span { color: var(--accent-color); text-shadow: var(--glow); }
 .nav-links { display: flex; gap: 20px; align-items: center; flex: 1; justify-content: center; }
-.nav-links a { text-decoration: none; color: var(--text-main); text-transform: uppercase; font-weight: 600; font-size: 13px; transition: 0.2s; }
+.nav-links a { text-decoration: none; color: var(--text-main); text-transform: uppercase; font-weight: 600; font-size: 13px; transition: color 0.2s; }
 .nav-links a:hover { color: var(--accent-color); }
 .nav-active { color: var(--accent-color); font-weight: bold; }
 .nav-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
@@ -52,7 +52,7 @@ body { background-color: var(--bg-color); color: var(--text-main); font-family: 
 .btn-logout-nav { background: var(--card-bg-subtle); border: 1px solid var(--border-color); color: #ff4d4d; cursor: pointer; padding: 7px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease; white-space: nowrap; }
 .btn-logout-nav:hover { background: rgba(255,77,77,0.15); color: #ff6b6b; border-color: rgba(255,77,77,0.3); transform: translateY(-1px); }
 .btn-logout-nav:active { transform: translateY(0); }
-.btn-login { text-decoration: none; color: var(--text-main); padding: 6px 15px; border-radius: 6px; font-weight: bold; font-size: 13px; border: 1px solid var(--accent-color); transition: 0.2s; }
+.btn-login { text-decoration: none; color: var(--text-main); padding: 6px 15px; border-radius: 6px; font-weight: bold; font-size: 13px; border: 1px solid var(--accent-color); transition: background-color 0.2s, color 0.2s, box-shadow 0.2s; }
 .btn-login:hover { background: var(--accent-color); color: #fff; box-shadow: var(--glow); }
 
 /* Hero Section */
@@ -85,7 +85,7 @@ body.light-mode .hero-bio {
 
 .hero-content { max-width: 1200px; width: 100%; z-index: 2; }
 .hero-subtitle { font-size: 0.9rem; color: var(--accent-color); text-transform: uppercase; letter-spacing: 2px; font-weight: 700; display: block; margin-bottom: 15px; text-shadow: var(--glow); }
-.hero-title { font-size: clamp(2.2rem, 7vw, 5.5rem); font-weight: 900; text-transform: uppercase; letter-spacing: 2px; color: var(--text-main); line-height: 1.1; margin-bottom: 20px; overflow-wrap: break-word; word-break: break-word; }
+.hero-title { font-size: clamp(2.2rem, 7vw, 5.5rem); font-weight: 900; text-transform: uppercase; letter-spacing: 2px; color: var(--text-main); line-height: 1.1; margin-bottom: 20px; overflow-wrap: anywhere; }
 
 @media (max-width: 600px) {
     .hero-title {
@@ -96,8 +96,8 @@ body.light-mode .hero-bio {
 .hero-bio { font-size: 1.05rem; line-height: 1.7; color: var(--text-muted); max-width: 850px; margin-bottom: 30px; }
 .hero-buttons { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
 
-.btn-primary { display: inline-block; padding: 12px 30px; background: var(--accent-color); color: #fff; text-decoration: none; border-radius: 8px; font-weight: 900; font-size: 0.95rem; text-transform: uppercase; box-shadow: var(--glow); transition: 0.2s; }
-.btn-primary:hover { filter: brightness(1.15); transform: translateY(-2px); }
+.btn-primary { display: inline-block; padding: 12px 30px; background: var(--accent-color); color: #fff; text-decoration: none; border-radius: 8px; font-weight: 900; font-size: 0.95rem; text-transform: uppercase; box-shadow: var(--glow); transition: transform 0.2s, filter 0.2s; }
+.btn-primary:hover { filter: brightness(1.1); transform: translateY(-2px); }
 
 .follower-widget { display: flex; align-items: center; gap: 10px; padding: 10px 20px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; font-weight: bold; font-size: 0.95rem; color: var(--text-main); }
 .kick-dot { width: 10px; height: 10px; background-color: var(--accent-color); border-radius: 50%; box-shadow: var(--glow); animation: pulse 1.5s infinite; }
@@ -126,8 +126,8 @@ body.light-mode .hero-bio {
 .video-card:hover { border-color: var(--accent-color); transform: translateY(-3px); }
 .video-thumb { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 10px; margin-bottom: 15px; border: 1px solid var(--border-color); overflow: hidden; position: relative; }
 .video-thumb iframe { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; border: none !important; }
-.watch-btn { display: inline-block; width: 100%; text-align: center; padding: 8px 20px; background: var(--accent-color); color: white; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 0.9rem; box-shadow: var(--glow); transition: 0.2s; }
-.watch-btn:hover { filter: brightness(1.15); }
+.watch-btn { display: inline-block; width: 100%; text-align: center; padding: 8px 20px; background: var(--accent-color); color: white; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 0.9rem; box-shadow: var(--glow); transition: filter 0.2s; }
+.watch-btn:hover { filter: brightness(1.1); }
 
 /* Social Feed (Instagram & TikTok) */
 .social-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 25px; }
@@ -179,7 +179,7 @@ body.light-mode .hero-bio {
     align-items: center;
     gap: 6px;
     font-weight: bold;
-    transition: 0.2s;
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
 }
 .like-btn:hover, .like-btn.liked {
     background: var(--accent-color);
@@ -192,8 +192,8 @@ body.light-mode .hero-bio {
 .upload-container { background-color: var(--card-bg); border: 2px dashed var(--border-color); border-radius: 16px; padding: 30px; text-align: center; margin-bottom: 30px; transition: 0.3s; }
 .upload-container:hover, .upload-container.dragover { border-color: var(--accent-color); box-shadow: var(--glow); }
 .upload-input { display: none; }
-.upload-label { display: inline-block; padding: 12px 25px; background: var(--accent-color); color: #fff; font-weight: bold; border-radius: 8px; cursor: pointer; box-shadow: var(--glow); transition: 0.2s; text-transform: uppercase; }
-.upload-label:hover { filter: brightness(1.15); transform: translateY(-2px); }
+.upload-label { display: inline-block; padding: 12px 25px; background: var(--accent-color); color: #fff; font-weight: bold; border-radius: 8px; cursor: pointer; box-shadow: var(--glow); transition: transform 0.2s, filter 0.2s; text-transform: uppercase; }
+.upload-label:hover { filter: brightness(1.1); transform: translateY(-2px); }
 
 /* Lightbox */
 #lightbox { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(5, 7, 10, 0.9); backdrop-filter: blur(8px); display: none; justify-content: center; align-items: center; z-index: 9999; padding: 20px; }
@@ -255,7 +255,7 @@ body.light-mode .hero-bio {
 .muro-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); }
 .muro-autor { font-weight: 900; color: var(--accent-color); text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; }
 .muro-fecha { font-size: 0.75rem; color: var(--text-muted); }
-.muro-texto { font-size: 0.95rem; line-height: 1.6; color: var(--text-main); word-wrap: break-word; }
+.muro-texto { font-size: 0.95rem; line-height: 1.6; color: var(--text-main); overflow-wrap: anywhere; }
 
 /* Footer */
 .main-footer { width: 100%; background-color: var(--card-bg); padding: 40px 0; margin-top: 60px; display: flex; justify-content: center; align-items: center; border-top: 1px solid var(--border-color); }
@@ -300,6 +300,7 @@ body.light-mode .hero-bio {
     left: 0;
     width: 100vw;
     height: 100vh;
+    height: 100dvh;
     background: rgba(5, 7, 10, 0.82);
     backdrop-filter: blur(8px);
     z-index: 100000;
@@ -339,7 +340,7 @@ body.light-mode .hero-bio {
     align-items: center;
     justify-content: center;
     font-size: 1.2rem;
-    transition: 0.2s;
+    transition: border-color 0.2s, color 0.2s;
 }
 .mobile-menu-toggle-btn:hover {
     border-color: var(--accent-color);
@@ -376,7 +377,7 @@ body.light-mode .hero-bio {
     /* Menú desplegable hamburguesa moderno para móviles */
     .nav-links {
         position: fixed;
-        top: 60px;
+        top: var(--navbar-height);
         left: 0;
         width: 100%;
         background: var(--card-bg);
@@ -392,7 +393,9 @@ body.light-mode .hero-bio {
         transition: transform 0.3s ease, opacity 0.3s ease, visibility 0.3s;
         z-index: 999;
         max-width: 100vw !important;
-        overflow-x: visible !important;
+        max-height: calc(100dvh - var(--navbar-height));
+        overflow-y: auto;
+        overscroll-behavior: contain;
     }
 
     .nav-links.mobile-active {
@@ -452,11 +455,6 @@ body.light-mode .hero-bio {
  }
 
   /* --- REACCIONES CHAT (BURBUJA AL HOVER) --- */
-  .chat-msg-container {
-      position: relative;
-      cursor: pointer;
-  }
-
   /* Burbuja de reacciones (oculta por defecto, se muestra al hover) */
   .chat-msg-burbuja {
       position: absolute;
@@ -817,4 +815,14 @@ body.light-mode .hero-bio {
  @keyframes streakPulse {
      0%, 100% { transform: scale(1); }
      50% { transform: scale(1.1); }
+ }
+
+ /* Accesibilidad: respeta la preferencia de movimiento reducido */
+ @media (prefers-reduced-motion: reduce) {
+     *, *::before, *::after {
+         animation-duration: 0.01ms !important;
+         animation-iteration-count: 1 !important;
+         transition-duration: 0.01ms !important;
+         scroll-behavior: auto !important;
+     }
  }

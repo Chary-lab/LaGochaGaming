@@ -99,7 +99,7 @@
             font-weight: bold;
             font-size: 0.95rem;
             cursor: pointer;
-            transition: 0.2s;
+            transition: background-color 0.2s, color 0.2s, border-color 0.2s;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -223,11 +223,11 @@
             cursor: pointer;
             text-transform: uppercase;
             box-shadow: var(--glow);
-            transition: 0.2s;
+            transition: transform 0.2s, filter 0.2s;
             margin-top: 20px;
         }
         .btn-sortear:hover {
-            filter: brightness(1.15);
+            filter: brightness(1.1);
             transform: translateY(-2px);
         }
         .participants-box {
@@ -266,7 +266,7 @@
             padding: 10px 12px;
             margin-bottom: 10px;
             text-align: left;
-            transition: 0.2s;
+            transition: border-color 0.2s, transform 0.2s;
         }
         .ganador-card-side:hover {
             border-color: var(--accent-color);

@@ -30,9 +30,9 @@
             display: none;
             align-items: center;
             gap: 4px;
-            transition: 0.2s;
+            transition: filter 0.2s, transform 0.2s;
         }
-        .btn-eliminar-muro:hover { filter: brightness(1.15); }
+        .btn-eliminar-muro:hover { filter: brightness(1.1); }
         .admin-mode-active .btn-eliminar-muro {
             display: inline-flex;
         }
@@ -200,7 +200,7 @@
         <div id="muro-mensajes-container" class="muro-grid"></div>
         
         <div class="cargar-mas-container">
-            <button id="btn-cargar-mas-muro" class="btn-primary" onclick="cargarMasMensajes()" style="display: none; background: var(--card-bg-subtle); color: var(--text-main); border: 1px solid var(--border-color);">
+            <button id="btn-cargar-mas-muro" class="btn-primary" style="display: none; background: var(--card-bg-subtle); color: var(--text-main); border: 1px solid var(--border-color);">
                 <i class="fa-solid fa-chevron-down"></i> Cargar más saludos
             </button>
         </div>
@@ -240,10 +240,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         // El polling del stream está centralizado en main.js (iniciarPollingStreamGlobal)
         cargarMensajes(true);
 
-document.getElementById('muro-form').addEventListener('submit', (e) => {
+        document.getElementById('muro-form').addEventListener('submit', (e) => {
             e.preventDefault();
             enviarMensaje();
         });
+
+        const muroContainer = document.getElementById('muro-mensajes-container');
+        if (muroContainer) {
+            muroContainer.addEventListener('click', (e) => {
+                const btn = e.target.closest('.btn-eliminar-muro');
+                if (!btn) return;
+                eliminarSaludo(Number(btn.dataset.id));
+            });
+        }
+
+        const btnCargarMas = document.getElementById('btn-cargar-mas-muro');
+        if (btnCargarMas) btnCargarMas.addEventListener('click', cargarMasMensajes);
 
         // Prefill autor si hay sesión de comunidad
         const savedApodo = localStorage.getItem('comunidad_nickname');
@@ -297,7 +309,7 @@ document.getElementById('muro-form').addEventListener('submit', (e) => {
                         <div class="muro-card-header">
                             <span class="muro-autor">${escapeHtml(msg.autor)}</span>
                             <div style="display: flex; gap: 8px; align-items: center;">
-                                <button class="btn-eliminar-muro" onclick="eliminarSaludo(${msg.id})" title="Eliminar saludo" aria-label="Eliminar saludo">
+                                <button type="button" class="btn-eliminar-muro" data-id="${msg.id}" title="Eliminar saludo" aria-label="Eliminar saludo">
                                     <i class="fa-solid fa-trash-can"></i>
                                 </button>
                                 <span class="muro-fecha">${fecha}</span>
@@ -357,29 +369,36 @@ document.getElementById('muro-form').addEventListener('submit', (e) => {
 
         async function eliminarSaludo(id) {
             if (!(await validarSesionStreamer())) {
-                alert('Tu sesión de administración ha expirado.');
-                location.reload();
+                mostrarToast('Tu sesión de administración ha expirado.', true);
+                setTimeout(() => { window.location.reload(); }, 800);
                 return;
             }
 
-            if (!confirm('¿Deseas borrar este saludo del muro?')) return;
+            mostrarConfirmacionModal({
+                titulo: 'Eliminar saludo',
+                mensaje: '¿Deseas borrar este saludo del muro?',
+                textoConfirmar: 'Eliminar',
+                enConfirmar: async () => {
+                    try {
+                        const { error } = await supabase
+                            .from('muro_saludos')
+                            .delete()
+                            .eq('id', id);
 
-            try {
-                const { error } = await supabase
-                    .from('muro_saludos')
-                    .delete()
-                    .eq('id', id);
+                        if (error) {
+                            mostrarToast('Error al borrar el saludo.', true);
+                            return;
+                        }
 
-                if (error) {
-                    alert('Error al borrar el saludo.');
-                    return;
+                        const card = document.getElementById(`muro-card-${id}`);
+                        if (card) card.remove();
+                        mostrarToast('Saludo eliminado.');
+                    } catch (err) {
+                        console.error('Error:', err);
+                        mostrarToast('Error inesperado al borrar el saludo.', true);
+                    }
                 }
-
-                const card = document.getElementById(`muro-card-${id}`);
-                if (card) card.remove();
-            } catch (err) {
-                console.error('Error:', err);
-            }
+            });
         }
 
         // formatNumber ahora está en main.js

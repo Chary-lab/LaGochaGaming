@@ -88,8 +88,10 @@ window.actualizarUsuarioNavComunidad = function actualizarUsuarioNavComunidad() 
         navUserInfo.innerHTML = `
             <i class="fa-solid fa-user" style="color:var(--accent-color);"></i>
             <span id="nav-username">${apodoSeguro}</span>
-            <button onclick="cerrarSesion()" class="btn-logout-nav" title="Cerrar Sesión" aria-label="Cerrar sesión"><i class="fa-solid fa-right-from-bracket"></i> Salir</button>
+            <button type="button" class="btn-logout-nav" title="Cerrar Sesión" aria-label="Cerrar sesión"><i class="fa-solid fa-right-from-bracket"></i> Salir</button>
         `;
+        const btnSalir = navUserInfo.querySelector('.btn-logout-nav');
+        if (btnSalir) btnSalir.addEventListener('click', window.cerrarSesion);
     } else if (!apodo && navUserInfo) {
         navUserInfo.innerHTML = '';
         navUserInfo.style.display = 'none';

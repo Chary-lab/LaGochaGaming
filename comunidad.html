@@ -66,66 +66,6 @@
             from { opacity: 0; transform: translateY(4px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        @media (max-width: 1024px) {
-            .comunidad-layout {
-                grid-template-columns: minmax(200px, 240px) minmax(0, 1fr);
-                gap: 16px;
-            }
-            /* El sidebar (tabs Canal/Rangos/Info) ocupa todo el ancho bajo el chat */
-            .sidebar-card {
-                grid-column: 1 / -1;
-            }
-        }
-        @media (max-width: 768px) {
-            .comunidad-layout {
-                grid-template-columns: 1fr;
-                gap: 14px;
-                padding: 20px 12px 0 12px;
-                margin: 0 auto 32px auto;
-            }
-            /* Orden jerárquico en móvil: chat primero, usuarios segundo, sidebar tercero */
-            .chat-box-container { order: 1; }
-            .online-users-column { order: 2; }
-            .sidebar-card { order: 3; grid-column: auto; }
-            .chat-box-container {
-                height: 70vh;
-                min-height: 420px;
-                max-height: 600px;
-            }
-            .chat-messages {
-                padding: 12px;
-                gap: 8px;
-            }
-            .chat-input-area {
-                padding: 10px;
-                gap: 8px;
-                flex-wrap: wrap;
-            }
-            .chat-input-area input, .chat-input-area textarea {
-                font-size: 16px; /* evita zoom en iOS */
-                padding: 12px;
-                min-height: 44px;
-            }
-            .chat-input-area button {
-                min-height: 44px;
-                padding: 10px 16px;
-            }
-            #online-users-list {
-                max-height: 240px;
-            }
-            #leaderboard-list {
-                max-height: 240px;
-            }
-        }
-        @media (max-width: 480px) {
-            .comunidad-layout {
-                padding: 20px 8px 0 8px;
-            }
-            .chat-box-container {
-                height: 60vh;
-                min-height: 360px;
-            }
-        }
         #online-users-list {
             flex: 1;
             min-height: 100px;
@@ -178,6 +118,7 @@
             flex-direction: column;
             height: 600px;
             max-height: calc(100vh - 120px);
+            max-height: calc(100dvh - 120px);
             overflow: hidden;
         }
         .chat-header {
@@ -351,12 +292,108 @@
             display: none;
             align-items: center;
             gap: 3px;
-            transition: 0.2s;
+            transition: filter 0.2s, transform 0.2s;
             margin-left: 6px;
         }
-        .btn-eliminar-chat:hover { filter: brightness(1.15); }
+        .btn-eliminar-chat:hover { filter: brightness(1.1); transform: scale(1.05); }
         body.admin-mode-active .btn-eliminar-chat {
             display: inline-flex;
+        }
+
+        /* Estructura de mensajes: sustituye los style.cssText del JS */
+        .chat-msg-container {
+            position: relative;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+        }
+        body.light-mode .chat-msg-container {
+            background: rgba(0, 0, 0, 0.025);
+        }
+        .chat-msg-container:hover .chat-msg-burbuja,
+        .chat-msg-burbuja:hover {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .chat-msg-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+            font-size: 0.8rem;
+        }
+        .chat-msg-autor { color: var(--accent-color); font-weight: bold; }
+        .chat-msg-fecha { color: var(--text-muted); }
+        .chat-msg-meta { display: inline-flex; align-items: center; gap: 8px; }
+        .chat-msg-texto { color: var(--text-main); font-size: 0.95rem; overflow-wrap: anywhere; }
+        .chat-msg-vacio { text-align: center; color: var(--text-muted); margin-top: 40px; }
+        .btn-burbuja.mia { background: var(--accent-color); color: #000; }
+
+        /* Responsive al final del bloque: así prevalece sobre las reglas base */
+        @media (max-width: 1024px) {
+            .comunidad-layout {
+                grid-template-columns: minmax(200px, 240px) minmax(0, 1fr);
+                gap: 16px;
+            }
+            /* El sidebar (tabs Canal/Rangos/Info) ocupa todo el ancho bajo el chat */
+            .sidebar-card {
+                grid-column: 1 / -1;
+            }
+        }
+        @media (max-width: 768px) {
+            .comunidad-layout {
+                grid-template-columns: 1fr;
+                gap: 14px;
+                padding: 20px 12px 0 12px;
+                margin: 0 auto 32px auto;
+            }
+            /* Orden jerárquico en móvil: chat primero, usuarios segundo, sidebar tercero */
+            .chat-box-container { order: 1; }
+            .online-users-column { order: 2; }
+            .sidebar-card { order: 3; grid-column: auto; }
+            .chat-box-container {
+                height: 70vh;
+                height: 70dvh;
+                min-height: 420px;
+                max-height: 600px;
+            }
+            .chat-messages {
+                padding: 12px;
+                gap: 8px;
+            }
+            .chat-input-area {
+                padding: 10px;
+                gap: 8px;
+                flex-wrap: wrap;
+            }
+            .chat-input-area input, .chat-input-area textarea {
+                font-size: 16px; /* evita zoom en iOS */
+                padding: 12px;
+                min-height: 44px;
+            }
+            .chat-input-area button {
+                min-height: 44px;
+                padding: 10px 16px;
+            }
+            #online-users-list {
+                max-height: 240px;
+            }
+            #leaderboard-list {
+                max-height: 240px;
+            }
+        }
+        @media (max-width: 480px) {
+            .comunidad-layout {
+                padding: 20px 8px 0 8px;
+            }
+            .chat-box-container {
+                height: 60vh;
+                height: 60dvh;
+                min-height: 360px;
+            }
         }
     </style>
 </head>
@@ -433,7 +470,7 @@
 
             <div id="chat-mensajes" class="chat-messages">
                 <!-- Los mensajes se cargarán dinámicamente aquí -->
-                <div style="text-align: center; color: var(--text-muted); margin-top: 40px;">
+                <div class="chat-msg-vacio">
                     Cargando mensajes de la comunidad...
                 </div>
             </div>
@@ -442,10 +479,10 @@
             <div id="chat-login-area" class="chat-input-area" style="display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 20px; text-align: center;">
                 <div style="color: var(--text-muted); font-size: 0.9rem;">Inicia sesión o regístrate para participar en el chat</div>
                 <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
-                    <button id="btn-login-chat" class="btn-primary" onclick="abrirModalLogin()" style="flex: 1; min-width: 140px; padding: 12px 18px; font-size: 0.95rem;">
+                    <button id="btn-login-chat" class="btn-primary" style="flex: 1; min-width: 140px; padding: 12px 18px; font-size: 0.95rem;">
                         <i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión
                     </button>
-                    <button id="btn-registro-chat" class="btn-primary" onclick="abrirModalRegistro()" style="flex: 1; min-width: 140px; padding: 12px 18px; font-size: 0.95rem; background: var(--accent-color);">
+                    <button id="btn-registro-chat" class="btn-primary" style="flex: 1; min-width: 140px; padding: 12px 18px; font-size: 0.95rem; background: var(--accent-color);">
                         <i class="fa-solid fa-user-plus"></i> Registrarse
                     </button>
                 </div>
@@ -464,9 +501,9 @@
         <!-- COLUMNA DERECHA: SIDEBAR DE ESTADO Y REGLAS (TABS) -->
         <div class="sidebar-card">
             <div class="tab-header" style="display: flex; gap: 8px; margin-bottom: 15px;">
-                <button class="tab-btn active" onclick="cambiarTabComunidad('canal')">Canal</button>
-                <button class="tab-btn" onclick="cambiarTabComunidad('rangos')">Rangos</button>
-                <button class="tab-btn" onclick="cambiarTabComunidad('info')">Info & Reglas</button>
+                <button type="button" class="tab-btn active" data-tab="canal">Canal</button>
+                <button type="button" class="tab-btn" data-tab="rangos">Rangos</button>
+                <button type="button" class="tab-btn" data-tab="info">Info & Reglas</button>
             </div>
 
             <div id="tab-canal" class="tab-content active">
@@ -983,8 +1020,8 @@
                 try {
                     if (typeof window.validarSesionStreamer === 'function') {
                         if (!(await window.validarSesionStreamer())) {
-                            alert('Tu sesión de administración ha expirado.');
-                            location.reload();
+                            mostrarToast('Tu sesión de administración ha expirado.', true);
+                            setTimeout(() => { window.location.reload(); }, 800);
                             return;
                         }
                     }
@@ -1020,6 +1057,7 @@
                 const esquina = container.querySelector('.msg-reaccion-esquina');
 
                 const msgIdStr = String(msgId);
+                marcarMiReaccionEnBurbuja(container.querySelector('.chat-msg-burbuja'), msgIdStr);
                 // Leer cache local para mostrar inmediatamente
                 try {
                     const cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
@@ -1027,7 +1065,7 @@
 
                     // Actualizar icono en esquina del mensaje (tipo WhatsApp/Messenger)
                     if (esquina) {
-                        // Prioridad 1: reacciÃ³n del usuario actual, 2: la mÃ¡s popular
+                        // Prioridad 1: reacción del usuario actual, 2: la más popular
                         const miReaccion = obtenerMiReaccionLocal(msgIdStr);
                         let emojiAMostrar = null;
                         let countAMostrar = 0;
@@ -1053,14 +1091,14 @@
                             esquina.style.display = "flex";
                             esquina.innerHTML = `<span class="esquina-emoji">${emojiAMostrar}</span><span class="esquina-count">${countAMostrar}</span>`;
                             esquina.className = "msg-reaccion-esquina" + (esMia ? " mia" : "");
-                            // Hacer clickeable para cambiar/quitar reacciÃ³n
+                            // Hacer clickeable para cambiar/quitar reacción
                             esquina.onclick = (e) => {
                                 e.stopPropagation();
                                 if (userNickname) {
                                     establecerReaccionUsuario(msgIdStr, emojiAMostrar);
                                 }
                             };
-                            esquina.title = countAMostrar + " reacciÃ³n" + (countAMostrar > 1 ? "es" : "") + " con " + emojiAMostrar + (esMia ? " (clic para quitar)" : " (clic para reaccionar)");
+                            esquina.title = countAMostrar + " reacción" + (countAMostrar > 1 ? "es" : "") + " con " + emojiAMostrar + (esMia ? " (clic para quitar)" : " (clic para reaccionar)");
                         } else {
                             esquina.style.display = "none";
                             esquina.onclick = null;
@@ -1098,28 +1136,36 @@
                 const msgIdStr = String(msgId);
                 const container = document.createElement('div');
                 container.className = 'chat-msg-burbuja';
-                container.style.cssText = 'position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:6px;background:var(--card-bg);border:1px solid var(--border-color);border-radius:24px;padding:6px 10px;box-shadow:var(--glow);z-index:10;opacity:0;pointer-events:none;transition:opacity 0.2s,transform 0.2s;';
+                container.setAttribute('role', 'group');
+                container.setAttribute('aria-label', 'Reacciones rápidas');
 
                 REACCIONES.forEach(emoji => {
                     const btn = document.createElement('button');
+                    btn.type = 'button';
                     btn.className = 'btn-burbuja';
                     btn.textContent = emoji;
                     btn.title = emoji;
-                    btn.style.cssText = 'background:transparent;border:none;cursor:pointer;font-size:1.15rem;padding:6px;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;transition:transform 0.15s,background 0.15s;';
-                    btn.onmouseenter = function() { this.style.transform = 'scale(1.25)'; this.style.background = 'var(--card-bg-subtle)'; };
-                    btn.onmouseleave = function() {
-                        this.style.transform = 'scale(1)';
-                        if (obtenerMiReaccionLocal(msgIdStr) !== emoji) this.style.background = 'transparent';
-                    };
-                    btn.onclick = async (e) => {
+                    btn.setAttribute('aria-label', 'Reaccionar con ' + emoji);
+                    btn.addEventListener('click', async (e) => {
                         e.preventDefault();
                         e.stopPropagation();
                         await establecerReaccionUsuario(msgIdStr, emoji);
                         actualizarUIReacciones(msgIdStr);
-                    };
+                    });
                     container.appendChild(btn);
                 });
+
+                marcarMiReaccionEnBurbuja(container, msgIdStr);
                 return container;
+            }
+
+            // Resalta en la burbuja la reacción elegida por el usuario actual
+            function marcarMiReaccionEnBurbuja(burbuja, msgIdStr) {
+                if (!burbuja) return;
+                const miReaccion = obtenerMiReaccionLocal(msgIdStr);
+                burbuja.querySelectorAll('.btn-burbuja').forEach(btn => {
+                    btn.classList.toggle('mia', btn.textContent === miReaccion);
+                });
             }
 
             // Sistema de racha de mensajes
@@ -1163,77 +1209,78 @@
                 return streakData.count;
             }
 
+            // Construye el DOM de un mensaje (usado por carga inicial y Realtime)
+            function crearMensajeElemento(msg) {
+                const fecha = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const msgId = msg.id ?? 'tmp-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7);
+
+                const container = document.createElement('div');
+                container.className = 'chat-msg-container';
+                container.dataset.msgid = msgId;
+                container.addEventListener('mouseleave', function () {
+                    const id = this.dataset.msgid;
+                    if (id) actualizarUIReacciones(id);
+                    ocultarTooltipReaccion();
+                });
+
+                const headerDiv = document.createElement('div');
+                headerDiv.className = 'chat-msg-header';
+
+                const autorSpan = document.createElement('span');
+                autorSpan.className = 'chat-msg-autor';
+                autorSpan.textContent = msg.autor || 'Anónimo';
+
+                const fechaSpan = document.createElement('span');
+                fechaSpan.className = 'chat-msg-fecha';
+                fechaSpan.textContent = fecha;
+
+                const metaDiv = document.createElement('span');
+                metaDiv.className = 'chat-msg-meta';
+                metaDiv.appendChild(fechaSpan);
+
+                if (adminAutenticado) {
+                    const btnEliminar = document.createElement('button');
+                    btnEliminar.className = 'btn-eliminar-chat';
+                    btnEliminar.setAttribute('aria-label', 'Eliminar mensaje');
+                    btnEliminar.innerHTML = '<i class="fa-solid fa-trash-can"></i>';
+                    metaDiv.appendChild(btnEliminar);
+                }
+
+                headerDiv.append(autorSpan, metaDiv);
+
+                const mensajeDiv = document.createElement('div');
+                mensajeDiv.className = 'chat-msg-texto';
+                mensajeDiv.textContent = msg.mensaje || '';
+
+                // Icono de reacción en esquina (tipo WhatsApp/Messenger)
+                const reaccionEsquina = document.createElement('div');
+                reaccionEsquina.className = 'msg-reaccion-esquina';
+                ['click', 'mouseenter', 'mouseleave'].forEach(evt =>
+                    reaccionEsquina.addEventListener(evt, e => e.stopPropagation())
+                );
+
+                // Burbuja de reacciones al hover
+                const burbuja = crearBurbujaReacciones(msgId);
+
+                container.append(headerDiv, mensajeDiv, reaccionEsquina, burbuja);
+                return container;
+            }
+
             function renderizarMensajes(mensajes) {
+                chatMensajes.replaceChildren();
+
                 if (!mensajes || mensajes.length === 0) {
-                    chatMensajes.innerHTML = '<div style="text-align:center;color:var(--text-muted);margin-top:40px;">¡Sé el primero en escribir!</div>';
+                    const vacio = document.createElement('div');
+                    vacio.className = 'chat-msg-vacio';
+                    vacio.textContent = '¡Sé el primero en escribir!';
+                    chatMensajes.appendChild(vacio);
                     return;
                 }
-                chatMensajes.innerHTML = '';
-                mensajes.forEach(msg => {
-                    const fecha = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                    const msgId = msg.id || Date.now() + Math.random();
-                    
-                    const container = document.createElement('div');
-                    container.className = 'chat-msg-container';
-                    container.dataset.msgid = msgId;
-                    container.style.cssText = 'position:relative;background:rgba(255,255,255,0.03);padding:10px 14px;border-radius:8px;border:1px solid var(--border-color);cursor:pointer;';
-                    
-                    // Mostrar burbuja de reacciones al hover
-                    container.onmouseenter = function() {
-                        const burbuja = this.querySelector('.chat-msg-burbuja');
-                        if (burbuja) {
-                            burbuja.style.opacity = '1';
-                            burbuja.style.pointerEvents = 'auto';
-                        }
-                        const esquina = this.querySelector('.msg-reaccion-esquina');
-                        // no forzar display; actualizarUIReacciones controla la visibilidad
-                    };
-                    container.onmouseleave = function() {
-                        const burbuja = this.querySelector('.chat-msg-burbuja');
-                        if (burbuja) {
-                            burbuja.style.opacity = '0';
-                            burbuja.style.pointerEvents = 'none';
-                        }
-                        const msgId = this.dataset.msgid;
-                        if (msgId) actualizarUIReacciones(msgId);
-                        ocultarTooltipReaccion();
-                    };
 
-                    const headerDiv = document.createElement('div');
-                    headerDiv.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;font-size:0.8rem;';
-                    headerDiv.innerHTML = '<span style="color:var(--accent-color);font-weight:bold;">'+escaparHTML(msg.autor||'Anónimo')+'</span><span style="color:var(--text-muted);">'+fecha+'</span>';
+                const fragment = document.createDocumentFragment();
+                mensajes.forEach(msg => fragment.appendChild(crearMensajeElemento(msg)));
+                chatMensajes.appendChild(fragment);
 
-                    if (adminAutenticado) {
-                        const btnEliminar = document.createElement('button');
-                        btnEliminar.className = 'btn-eliminar-chat';
-                        btnEliminar.setAttribute('aria-label', 'Eliminar mensaje');
-                        btnEliminar.innerHTML = '<i class="fa-solid fa-trash-can"></i>';
-                        headerDiv.appendChild(btnEliminar);
-                    }
-
-                    const mensajeDiv = document.createElement('div');
-                    mensajeDiv.style.cssText = 'color:var(--text-main);font-size:0.95rem;word-break:break-word;';
-                    mensajeDiv.textContent = msg.mensaje || '';
-
-                    container.appendChild(headerDiv);
-                    container.appendChild(mensajeDiv);
-                    
-                    // Icono de reacción en esquina (tipo WhatsApp/Messenger)
-                    const reaccionEsquina = document.createElement('div');
-                    reaccionEsquina.className = 'msg-reaccion-esquina';
-                    reaccionEsquina.style.display = 'none';
-                    reaccionEsquina.innerHTML = '';
-                    reaccionEsquina.onclick = (e) => { e.stopPropagation(); };
-                    reaccionEsquina.onmouseenter = (e) => { e.stopPropagation(); };
-                    reaccionEsquina.onmouseleave = (e) => { e.stopPropagation(); };
-                    container.appendChild(reaccionEsquina);
-                    
-                    // Burbuja de reacciones al hover
-                    const burbuja = crearBurbujaReacciones(msgId);
-                    container.appendChild(burbuja);
-
-                    chatMensajes.appendChild(container);
-                });
                 // Cargar reacciones de Supabase para estos mensajes
                 cargarReaccionesDeSupabase(mensajes);
                 chatMensajes.scrollTop = chatMensajes.scrollHeight;
@@ -1332,81 +1379,20 @@ if (chatForm) {
                 // Escuchar nuevos mensajes del chat
                 supabase.channel('public:comunidad_chat').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'comunidad_chat' }, payload => {
                     const nuevoMsg = payload.new;
-                    if (!chatInicializado || chatMensajes.querySelector('div[style*="margin-top"]')) {
-                        chatMensajes.innerHTML = '';
+                    if (!chatInicializado || chatMensajes.querySelector('.chat-msg-vacio')) {
+                        chatMensajes.replaceChildren();
                         chatInicializado = true;
                     }
-                    
-                    const fecha = new Date(nuevoMsg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                    const msgId = nuevoMsg.id || Date.now() + Math.random();
-                    
-                    const container = document.createElement('div');
-                    container.className = 'chat-msg-container';
-                    container.dataset.msgid = msgId;
-                    container.style.cssText = 'position:relative;background:rgba(255,255,255,0.03);padding:10px 14px;border-radius:8px;border:1px solid var(--border-color);cursor:pointer;';
-                    
-                    // Mostrar burbuja de reacciones al hover
-                    container.onmouseenter = function() {
-                        const burbuja = this.querySelector('.chat-msg-burbuja');
-                        if (burbuja) {
-                            burbuja.style.opacity = '1';
-                            burbuja.style.pointerEvents = 'auto';
-                        }
-                        const esquina = this.querySelector('.msg-reaccion-esquina');
-                        // no forzar display; actualizarUIReacciones controla la visibilidad
-                    };
-                    container.onmouseleave = function() {
-                        const burbuja = this.querySelector('.chat-msg-burbuja');
-                        if (burbuja) {
-                            burbuja.style.opacity = '0';
-                            burbuja.style.pointerEvents = 'none';
-                        }
-                        const msgId = this.dataset.msgid;
-                        if (msgId) actualizarUIReacciones(msgId);
-                        ocultarTooltipReaccion();
-                    };
 
-                    const headerDiv = document.createElement('div');
-                    headerDiv.style.cssText = 'display:flex;justify-content:space-between;margin-bottom:4px;font-size:0.8rem;';
-                    headerDiv.innerHTML = '<span style="color:var(--accent-color);font-weight:bold;">'+escaparHTML(nuevoMsg.autor||'Anónimo')+'</span><span style="color:var(--text-muted);">'+fecha+'</span>';
-
-                    if (adminAutenticado) {
-                        const btnEliminarRealtime = document.createElement('button');
-                        btnEliminarRealtime.className = 'btn-eliminar-chat';
-                        btnEliminarRealtime.setAttribute('aria-label', 'Eliminar mensaje');
-                        btnEliminarRealtime.innerHTML = '<i class="fa-solid fa-trash-can"></i>';
-                        headerDiv.appendChild(btnEliminarRealtime);
-                    }
-
-                    const mensajeDiv = document.createElement('div');
-                    mensajeDiv.style.cssText = 'color:var(--text-main);font-size:0.95rem;word-break:break-word;';
-                    mensajeDiv.textContent = nuevoMsg.mensaje || '';
-
-                    container.appendChild(headerDiv);
-                    container.appendChild(mensajeDiv);
-                    
-                    // Icono de reacción en esquina (tipo WhatsApp/Messenger)
-                    const reaccionEsquina = document.createElement('div');
-                    reaccionEsquina.className = 'msg-reaccion-esquina';
-                    reaccionEsquina.style.display = 'none';
-                    reaccionEsquina.innerHTML = '';
-                    reaccionEsquina.onclick = (e) => { e.stopPropagation(); };
-                    reaccionEsquina.onmouseenter = (e) => { e.stopPropagation(); };
-                    reaccionEsquina.onmouseleave = (e) => { e.stopPropagation(); };
-                    container.appendChild(reaccionEsquina);
-                    
-                    const burbuja = crearBurbujaReacciones(msgId);
-                    container.appendChild(burbuja);
-
-                    chatMensajes.appendChild(container);
                     const estaCercaDelFondo = chatMensajes.scrollHeight - chatMensajes.scrollTop - chatMensajes.clientHeight < 100;
+                    chatMensajes.appendChild(crearMensajeElemento(nuevoMsg));
                     if (estaCercaDelFondo) {
                         chatMensajes.scrollTop = chatMensajes.scrollHeight;
                     }
-                    
+
                     // Cargar reacciones de Supabase para este mensaje nuevo
                     cargarReaccionesDeSupabase([nuevoMsg]);
-                    
+
                     // Limpiar mensajes antiguos si supera el límite
                     limpiarMensajesAntiguos();
                 })
@@ -1701,6 +1687,14 @@ if (chatForm) {
                 p.classList.toggle('active', p.id === 'tab-' + tab);
             });
         };
+
+        const btnLoginChat = document.getElementById('btn-login-chat');
+        if (btnLoginChat) btnLoginChat.addEventListener('click', abrirModalLogin);
+        const btnRegistroChat = document.getElementById('btn-registro-chat');
+        if (btnRegistroChat) btnRegistroChat.addEventListener('click', abrirModalRegistro);
+        document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
+            btn.addEventListener('click', () => window.cambiarTabComunidad(btn.dataset.tab));
+        });
     </script>
     <!-- FOOTER -->
     <footer class="main-footer">
