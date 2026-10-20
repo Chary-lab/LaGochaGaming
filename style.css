@@ -96,8 +96,13 @@ body.light-mode .hero-bio {
 .hero-bio { font-size: 1.05rem; line-height: 1.7; color: var(--text-muted); max-width: 850px; margin-bottom: 30px; }
 .hero-buttons { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
 
-.btn-primary { display: inline-block; padding: 12px 30px; background: var(--accent-color); color: #fff; text-decoration: none; border-radius: 8px; font-weight: 900; font-size: 0.95rem; text-transform: uppercase; box-shadow: var(--glow); transition: transform 0.2s, filter 0.2s; }
+.btn-primary { display: inline-block; box-sizing: border-box; padding: 12px 30px; background: var(--accent-color); color: #fff; text-decoration: none; border: none; border-radius: 8px; font-family: inherit; font-weight: 900; font-size: 0.95rem; text-transform: uppercase; box-shadow: var(--glow); cursor: pointer; transition: transform 0.2s, filter 0.2s; }
 .btn-primary:hover { filter: brightness(1.1); transform: translateY(-2px); }
+.btn-primary:focus-visible { outline: 2px solid var(--accent-color); outline-offset: 3px; }
+.btn-danger { background: #ff4d4d; }
+.btn-danger-dark { background: #c0392b; }
+.btn-success { background: #2ecc71; }
+.btn-muted { background: var(--text-muted); color: #fff; }
 
 .follower-widget { display: flex; align-items: center; gap: 10px; padding: 10px 20px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; font-weight: bold; font-size: 0.95rem; color: var(--text-main); }
 .kick-dot { width: 10px; height: 10px; background-color: var(--accent-color); border-radius: 50%; box-shadow: var(--glow); animation: pulse 1.5s infinite; }
@@ -298,6 +303,7 @@ body.light-mode .hero-bio {
     position: fixed;
     top: 0;
     left: 0;
+    box-sizing: border-box;
     width: 100vw;
     height: 100vh;
     height: 100dvh;
@@ -311,6 +317,7 @@ body.light-mode .hero-bio {
 }
 
 .gochi-modal-box {
+    box-sizing: border-box;
     background: var(--card-bg);
     border: 1px solid var(--accent-color);
     padding: 25px 30px;
@@ -320,6 +327,52 @@ body.light-mode .hero-bio {
     max-width: 400px;
     width: 100%;
     animation: modalAppear 0.25s ease-out;
+}
+
+.gochi-modal-box h3 {
+    color: var(--accent-color);
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+}
+
+.gochi-modal-box > p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+}
+
+.gochi-modal-input {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--card-bg-subtle);
+    color: var(--text-main);
+    font-family: inherit;
+    font-size: 0.95rem;
+    margin-bottom: 10px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.gochi-modal-input:focus {
+    border-color: var(--accent-color);
+}
+
+.gochi-modal-feedback {
+    min-height: 1em;
+    margin-bottom: 15px;
+    color: #ff4d4d;
+    font-size: 0.85rem;
+    font-weight: bold;
+}
+
+.gochi-modal-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
 }
 
 @keyframes modalAppear {

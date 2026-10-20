@@ -193,7 +193,7 @@
             <!-- BARRA DE TÍTULO Y BOTÓN DE PANEL -->
             <div class="cine-controls-bar">
                 <h1 style="font-size: 1.3rem;"><i class="fa-solid fa-film" style="color: var(--accent-color);"></i> GochiWatch - Cine en Directo</h1>
-                <button id="btn-toggle-streamer" class="btn-streamer-login" onclick="toggleModoStreamerCine()">
+                <button id="btn-toggle-streamer" class="btn-streamer-login" data-action="toggle-streamer-panel" aria-expanded="false" aria-controls="streamerAdminPanel">
                     <i class="fa-solid fa-lock"></i> Panel Streamer
                 </button>
             </div>
@@ -206,9 +206,9 @@
                 </p>
                 <div style="display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap;">
                     <input type="text" id="inputVideoUrl" placeholder="Pega aquí el enlace de Drive, YouTube o .mp4..." style="flex: 1; min-width: 250px; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg-subtle); color: var(--text-main); outline: none;">
-                    <button onclick="actualizarUrlPelicula()" class="btn-primary" style="padding: 10px 20px; border: none; cursor: pointer;">Cargar Video</button>
-                    <button onclick="cerrarReproductorTotal()" class="btn-primary" style="background: #ff4d4d; padding: 10px 20px; border: none; cursor: pointer;">🛑 Apagar</button>
-                    <button onclick="cerrarSesionAdminGlobal()" class="btn-primary" style="background: #c0392b; padding: 10px 20px; border: none; cursor: pointer;"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión</button>
+                    <button type="button" data-action="load-video" class="btn-primary" style="padding: 10px 20px;">Cargar Video</button>
+                    <button type="button" data-action="stop-video" class="btn-primary btn-danger" style="padding: 10px 20px;">🛑 Apagar</button>
+                    <button type="button" data-action="logout-admin" class="btn-primary btn-danger-dark" style="padding: 10px 20px;"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión</button>
                 </div>
                 <div>
                     <span style="font-size: 0.85rem; color: #53fc18; font-weight: bold;" id="statusSyncText">🟢 Sincronización activa</span>
@@ -248,19 +248,19 @@
     </div>
 
     <!-- MODAL DE LOGIN PARA STREAMER -->
-    <div id="modal-pin-cine" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5,7,10,0.85); backdrop-filter: blur(5px); z-index: 10000; justify-content: center; align-items: center;">
-        <div style="background: var(--card-bg); border: 1px solid var(--accent-color); padding: 30px; border-radius: 16px; box-shadow: var(--glow); text-align: center; max-width: 380px; width: 90%;">
-            <h3 style="color: var(--accent-color); margin-bottom: 15px; font-size: 1.2rem;">🔒 ACCESO STREAMER CINE</h3>
-            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Ingresa tus datos para controlar la reproducción:</p>
-            
-            <input type="email" id="streamer-cine-email" placeholder="Correo electrónico" style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg-subtle); color: var(--text-main); font-size: 0.95rem; margin-bottom: 10px; outline: none;">
-            <input type="password" id="streamer-cine-password" placeholder="Contraseña" style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg-subtle); color: var(--text-main); font-size: 0.95rem; margin-bottom: 10px; outline: none;">
-            
-            <div id="feedback-cine-pin" style="margin-bottom:15px; color: #ff4d4d; font-size: 0.85rem; font-weight: bold;"></div>
-            
-            <div style="display: flex; gap: 10px; justify-content: center;">
-                <button onclick="iniciarSesionStreamerCine()" class="btn-primary" style="border: none; cursor: pointer;">Entrar</button>
-                <button onclick="cerrarModalCinePin()" class="btn-primary" style="background: var(--text-muted); color: #fff; border: none; cursor: pointer;">Cancelar</button>
+    <div id="modal-pin-cine" class="gochi-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-cine-titulo">
+        <div class="gochi-modal-box">
+            <h3 id="modal-cine-titulo">🔒 ACCESO STREAMER CINE</h3>
+            <p>Ingresa tus datos para controlar la reproducción:</p>
+
+            <input type="email" id="streamer-cine-email" class="gochi-modal-input" placeholder="Correo electrónico" aria-label="Correo electrónico" autocomplete="email">
+            <input type="password" id="streamer-cine-password" class="gochi-modal-input" placeholder="Contraseña" aria-label="Contraseña" autocomplete="current-password">
+
+            <div id="feedback-cine-pin" class="gochi-modal-feedback" role="status" aria-live="polite"></div>
+
+            <div class="gochi-modal-actions">
+                <button type="button" data-action="login-streamer" class="btn-primary">Entrar</button>
+                <button type="button" data-action="close-login" class="btn-primary btn-muted">Cancelar</button>
             </div>
         </div>
     </div>
@@ -339,6 +339,20 @@
             mp4Player.addEventListener('seeked', () => { if (streamerCineAutenticado && !actualizandoLocalmente && !esYouTube) enviarComandoSync('seek', mp4Player.currentTime); });
 
             document.getElementById('streamer-cine-password')?.addEventListener('keypress', (e) => { if (e.key === 'Enter') iniciarSesionStreamerCine(); });
+        });
+
+        document.addEventListener('click', (e) => {
+            const trigger = e.target.closest('[data-action]');
+            if (!trigger) return;
+
+            switch (trigger.dataset.action) {
+                case 'toggle-streamer-panel': toggleModoStreamerCine(); break;
+                case 'load-video': actualizarUrlPelicula(); break;
+                case 'stop-video': cerrarReproductorTotal(); break;
+                case 'logout-admin': window.cerrarSesionAdminGlobal?.(); break;
+                case 'login-streamer': iniciarSesionStreamerCine(); break;
+                case 'close-login': cerrarModalCinePin(); break;
+            }
         });
 
         async function cargarEstadoCine() {
@@ -528,6 +542,7 @@
                     btn.innerHTML = '<i class="fa-solid fa-lock"></i> Panel Streamer';
                     btn.classList.remove('active');
                 }
+                btn.setAttribute('aria-expanded', adminPanel.style.display === 'block' ? 'true' : 'false');
             }
         }
 
@@ -560,6 +575,7 @@
             const btn = document.getElementById('btn-toggle-streamer');
             btn.innerHTML = '<i class="fa-solid fa-lock-open"></i> Ocultar Panel';
             btn.classList.add('active');
+            btn.setAttribute('aria-expanded', 'true');
         }
     </script>
 

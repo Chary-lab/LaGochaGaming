@@ -121,13 +121,17 @@ window.insertarComponentesUIGlobales = function insertarComponentesUIGlobales() 
         const modal = document.createElement('div');
         modal.id = 'gochi-confirm-modal';
         modal.className = 'gochi-modal-overlay';
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-modal', 'true');
+        modal.setAttribute('aria-labelledby', 'gochi-confirm-titulo');
+        modal.setAttribute('aria-describedby', 'gochi-confirm-mensaje');
         modal.innerHTML = `
             <div class="gochi-modal-box">
                 <h3 id="gochi-confirm-titulo" style="margin:0 0 10px; color:var(--text-main);">Confirmar</h3>
                 <p id="gochi-confirm-mensaje" style="color:var(--text-muted); margin-bottom:20px;"></p>
-                <div style="display:flex; gap:10px; justify-content:center;">
-                    <button id="gochi-confirm-cancelar" class="btn-primary" style="background:var(--text-muted); border:none;">Cancelar</button>
-                    <button id="gochi-confirm-confirmar" class="btn-primary" style="border:none;">Confirmar</button>
+                <div class="gochi-modal-actions">
+                    <button id="gochi-confirm-cancelar" class="btn-primary btn-muted">Cancelar</button>
+                    <button id="gochi-confirm-confirmar" class="btn-primary">Confirmar</button>
                 </div>
             </div>
         `;
@@ -167,6 +171,7 @@ window.mostrarConfirmacionModal = function mostrarConfirmacionModal({ titulo, me
     };
 
     modal.style.display = 'flex';
+    btnCanc.focus();
     btnConf.onclick = null;
     btnCanc.onclick = null;
     btnConf.onclick = onConfirm;
@@ -177,6 +182,30 @@ function cerrarConfirmModal() {
     const modal = document.getElementById('gochi-confirm-modal');
     if (modal) modal.style.display = 'none';
 }
+
+// Cierra con Escape o clic en el fondo cualquier modal visible que tenga un botón de cierre.
+function cerrarModalVisible() {
+    const modal = [...document.querySelectorAll('.gochi-modal-overlay')]
+        .find((elemento) => getComputedStyle(elemento).display !== 'none');
+    if (!modal) return false;
+
+    const botonCerrar = modal.querySelector('[data-action="close-login"], #gochi-confirm-cancelar');
+    if (!botonCerrar) return false;
+
+    botonCerrar.click();
+    return true;
+}
+
+document.addEventListener('keydown', (evento) => {
+    if (evento.key === 'Escape') cerrarModalVisible();
+});
+
+document.addEventListener('click', (evento) => {
+    if (!evento.target.classList.contains('gochi-modal-overlay')) return;
+
+    const botonCerrar = evento.target.querySelector('[data-action="close-login"], #gochi-confirm-cancelar');
+    if (botonCerrar) botonCerrar.click();
+});
 
 // === MENÚ MÓVIL ===
 

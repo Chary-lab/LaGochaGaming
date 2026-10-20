@@ -255,10 +255,10 @@
         <div class="admin-controls-panel">
             <h1>Mi Galería</h1>
             <div style="display: flex; gap: 10px; align-items: center;">
-                <button id="btn-toggle-admin" class="btn-admin-mode" onclick="toggleModoAdmin()">
+                <button id="btn-toggle-admin" class="btn-admin-mode" data-action="toggle-admin" aria-expanded="false" aria-controls="panelPendientes">
                     <i class="fa-solid fa-lock"></i> Modo Moderación
                 </button>
-                <button id="btn-logout-galeria" class="btn-admin-mode" onclick="cerrarSesionAdminGlobal()" style="display: none; background: #c0392b; color: #fff;">
+                <button id="btn-logout-galeria" class="btn-admin-mode" data-action="logout" style="display: none; background: #c0392b; color: #fff;">
                     <i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión Admin
                 </button>
             </div>
@@ -288,10 +288,10 @@
         <div class="filter-tabs-container">
             <h2 style="font-size: 1.2rem; margin: 0; color: var(--text-muted);">📸 Galería Pública</h2>
             <div class="filter-tabs">
-                <button id="tab-populares" class="tab-filter-btn active" onclick="cambiarFiltroGaleria('populares')">
+                <button id="tab-populares" class="tab-filter-btn active" data-action="filter-gallery" data-filter="populares">
                     <i class="fa-solid fa-fire"></i> Más Populares
                 </button>
-                <button id="tab-recientes" class="tab-filter-btn" onclick="cambiarFiltroGaleria('recientes')">
+                <button id="tab-recientes" class="tab-filter-btn" data-action="filter-gallery" data-filter="recientes">
                     <i class="fa-solid fa-sparkles"></i> Más Recientes
                 </button>
             </div>
@@ -301,20 +301,19 @@
     </div>
 
     <!-- MODAL DE INICIO DE SESIÓN ADMIN -->
-    <div id="modal-pin" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5,7,10,0.85); backdrop-filter: blur(5px); z-index: 10000; justify-content: center; align-items: center;">
-        <div style="background: var(--card-bg); border: 1px solid var(--accent-color); padding: 30px; border-radius: 16px; box-shadow: var(--glow); text-align: center; max-width: 380px; width: 90%;">
-            <h3 style="color: var(--accent-color); margin-bottom: 15px; font-size: 1.2rem;">🔒 MODERACIÓN DE GALERÍA</h3>
-            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Ingresa tus datos de acceso:</p>
-            
-            <input type="email" id="admin-email" placeholder="Correo electrónico" style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg-subtle); color: var(--text-main); font-size: 0.95rem; margin-bottom: 10px; outline: none;">
-            
-            <input type="password" id="admin-password" placeholder="Contraseña" style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg-subtle); color: var(--text-main); font-size: 0.95rem; margin-bottom: 10px; outline: none;">
-            
-            <div id="feedback-pin" style="margin-bottom:15px; color: #ff4d4d; font-size: 0.85rem; font-weight: bold;"></div>
-            
-            <div style="display: flex; gap: 10px; justify-content: center;">
-                <button onclick="iniciarSesionAdmin()" class="btn-primary" style="border: none; cursor: pointer;">Entrar</button>
-                <button onclick="cerrarModalPin()" class="btn-primary" style="background: var(--text-muted); color: #fff; border: none; cursor: pointer;">Cancelar</button>
+    <div id="modal-pin" class="gochi-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-galeria-titulo">
+        <div class="gochi-modal-box">
+            <h3 id="modal-galeria-titulo">🔒 MODERACIÓN DE GALERÍA</h3>
+            <p>Ingresa tus datos de acceso:</p>
+
+            <input type="email" id="admin-email" class="gochi-modal-input" placeholder="Correo electrónico" aria-label="Correo electrónico" autocomplete="email">
+            <input type="password" id="admin-password" class="gochi-modal-input" placeholder="Contraseña" aria-label="Contraseña" autocomplete="current-password">
+
+            <div id="feedback-pin" class="gochi-modal-feedback" role="status" aria-live="polite"></div>
+
+            <div class="gochi-modal-actions">
+                <button type="button" data-action="login-admin" class="btn-primary">Entrar</button>
+                <button type="button" data-action="close-login" class="btn-primary btn-muted">Cancelar</button>
             </div>
         </div>
     </div>
@@ -352,12 +351,30 @@
                 const btn = document.getElementById('btn-toggle-admin');
                 btn.innerHTML = '<i class="fa-solid fa-lock-open"></i> Ocultar Moderación';
                 btn.classList.add('active');
+                btn.setAttribute('aria-expanded', 'true');
                 loadPendingImages();
             }
 
             document.getElementById('admin-password')?.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') iniciarSesionAdmin();
             });
+        });
+
+        document.addEventListener('click', (e) => {
+            const trigger = e.target.closest('[data-action]');
+            if (!trigger) return;
+
+            const imageId = trigger.dataset.imageId;
+            switch (trigger.dataset.action) {
+                case 'toggle-admin': toggleModoAdmin(); break;
+                case 'logout': window.cerrarSesionAdminGlobal?.(); break;
+                case 'filter-gallery': cambiarFiltroGaleria(trigger.dataset.filter); break;
+                case 'login-admin': iniciarSesionAdmin(); break;
+                case 'close-login': cerrarModalPin(); break;
+                case 'delete-image': if (imageId) eliminarImagenPublica(imageId); break;
+                case 'toggle-like': if (imageId) toggleLike(imageId, Number(trigger.dataset.likes || 0)); break;
+                case 'approve-image': if (imageId) aprobarImagen(imageId); break;
+            }
         });
 
         const lightbox = document.createElement('div');
@@ -411,7 +428,7 @@
                 const horaAhora = new Date().getTime();
 
                 imagenesPublicas.forEach((image, index) => {
-                    const cantLikes = image.likes || 0;
+                    const cantLikes = Number(image.likes) || 0;
                     const idStr = String(image.id);
                     const isLiked = userLikes.includes(idStr);
 
@@ -433,14 +450,14 @@
                     galleryCard.className = 'gallery-card';
                     galleryCard.innerHTML = `
                         ${badgeHTML}
-                        <img src="${image.image_url}" alt="${image.title || 'Foto Gocha'}" loading="lazy">
+                        <img src="${escapeAttr(image.image_url)}" alt="${escapeAttr(image.title || 'Foto Gocha')}" loading="lazy">
                         <div class="gallery-card-info">
-                            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px;" title="${image.title}">${escapeHtml(image.title || 'Sin título')}</span>
+                            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px;" title="${escapeAttr(image.title || 'Sin título')}">${escapeHtml(image.title || 'Sin título')}</span>
                             <div style="display: flex; gap: 8px; align-items: center;">
-                                <button class="btn-eliminar-publica" onclick="eliminarImagenPublica('${image.id}')" title="Borrar foto de la galería" aria-label="Borrar foto de la galería">
+                                <button class="btn-eliminar-publica" data-action="delete-image" data-image-id="${image.id}" title="Borrar foto de la galería" aria-label="Borrar foto de la galería">
                                     <i class="fa-solid fa-trash-can"></i>
                                 </button>
-                                <button class="like-btn ${isLiked ? 'liked' : ''}" id="like-btn-${image.id}" onclick="toggleLike('${image.id}', ${cantLikes})" aria-label="Me gusta">
+                                <button class="like-btn ${isLiked ? 'liked' : ''}" id="like-btn-${image.id}" data-action="toggle-like" data-image-id="${image.id}" data-likes="${cantLikes}" aria-label="Me gusta">
                                     <i class="${isLiked ? 'fas' : 'far'} fa-heart"></i>
                                     <span id="like-count-${image.id}">${cantLikes}</span>
                                 </button>
@@ -448,7 +465,7 @@
                         </div>
                     `;
                     galleryCard.querySelector('img').addEventListener('click', () => {
-                        lightbox.innerHTML = `<img src="${image.image_url}" alt="${image.title || 'Foto'}">`;
+                        lightbox.innerHTML = `<img src="${escapeAttr(image.image_url)}" alt="${escapeAttr(image.title || 'Foto')}">`;
                         lightbox.style.display = 'flex';
                     });
                     galleryGrid.appendChild(galleryCard);
@@ -535,12 +552,12 @@
                     card.className = 'gallery-card';
                     card.style.border = '1px solid #f39c12';
                     card.innerHTML = `
-                        <img src="${image.image_url}" alt="${image.title}" loading="lazy">
+                        <img src="${escapeAttr(image.image_url)}" alt="${escapeAttr(image.title || 'Foto pendiente')}" loading="lazy">
                         <div class="gallery-card-info" style="flex-direction: column; gap: 8px; align-items: stretch;">
                             <span style="font-weight: bold; text-align: center;">${escapeHtml(image.title)}</span>
                             <div style="display: flex; justify-content: space-between; gap: 5px;">
-                                <button class="btn-aprobar" onclick="aprobarImagen('${image.id}')"><i class="fa-solid fa-check"></i> Aprobar</button>
-                                <button class="btn-rechazar" onclick="eliminarImagenPublica('${image.id}')"><i class="fa-solid fa-xmark"></i> Rechazar</button>
+                                <button class="btn-aprobar" data-action="approve-image" data-image-id="${image.id}"><i class="fa-solid fa-check"></i> Aprobar</button>
+                                <button class="btn-rechazar" data-action="delete-image" data-image-id="${image.id}"><i class="fa-solid fa-xmark"></i> Rechazar</button>
                             </div>
                         </div>
                     `;
@@ -611,6 +628,7 @@
                     btn.innerHTML = '<i class="fa-solid fa-lock"></i> Modo Moderación';
                     btn.classList.remove('active');
                 }
+                btn.setAttribute('aria-expanded', panel.style.display === 'block' ? 'true' : 'false');
             }
         }
 
@@ -646,6 +664,7 @@
             const btn = document.getElementById('btn-toggle-admin');
             btn.innerHTML = '<i class="fa-solid fa-lock-open"></i> Ocultar Moderación';
             btn.classList.add('active');
+            btn.setAttribute('aria-expanded', 'true');
             loadPendingImages();
             mostrarToast('¡Modo moderación activado!');
         }
@@ -752,6 +771,16 @@
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
+        }
+
+        function escapeAttr(text) {
+            return String(text ?? '').replace(/[&<>"']/g, (char) => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            })[char]);
         }
     </script>
     <script src="main.js" defer></script>
