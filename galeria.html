@@ -310,7 +310,7 @@
     </header>
 
     <!-- TOAST DE STREAM EN VIVO -->
-    <div id="stream-toast" class="stream-toast-hidden">
+    <div id="stream-toast" class="stream-toast stream-toast-hidden">
         <div class="stream-toast-content">
             <span class="live-indicator"></span>
             <span>🔴 EN VIVO</span>
@@ -399,8 +399,6 @@
                 <a href="https://www.instagram.com/oscurostefany" target="_blank" class="social-icon" title="Instagram"><i class="fab fa-instagram"></i></a>
                 <a href="https://discord.com/invite/svrteKBbeh" target="_blank" class="social-icon" title="Discord"><i class="fab fa-discord"></i></a>
                 <a href="https://www.youtube.com/@lagochagaming" target="_blank" class="social-icon" title="YouTube"><i class="fab fa-youtube"></i></a>
-                <a href="#" target="_blank" class="social-icon" title="Twitter"><i class="fab fa-x-twitter"></i></a>
-                <a href="#" target="_blank" class="social-icon" title="Facebook"><i class="fab fa-facebook-f"></i></a>
             </div>
             <p class="footer-copyright">&copy; 2026 LAGOCHAGAMING - ALL RIGHTS RESERVED</p>
         </div>
@@ -410,21 +408,32 @@
     <script>
         let adminAutenticado = false;
         let filtroActual = 'populares'; // 'populares' o 'recientes'
+        let paginaActualGaleria = 0;
+        const LIMITE_GALERIA = 24;
 
         document.addEventListener('DOMContentLoaded', async () => {
             loadApprovedImages();
-            
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                adminAutenticado = true;
-                document.body.classList.add('admin-mode-active');
-                document.getElementById('panelPendientes').style.display = 'block';
-                document.getElementById('btn-logout-galeria').style.display = 'inline-flex';
-                const btn = document.getElementById('btn-toggle-admin');
-                btn.innerHTML = '<i class="fa-solid fa-lock-open"></i> Ocultar Moderación';
-                btn.classList.add('active');
-                btn.setAttribute('aria-expanded', 'true');
-                loadPendingImages();
+
+            if (window.supabase) {
+                try {
+                    const { data } = await supabase.auth.getSession();
+                    const session = data.session;
+                    if (session && session.user.email === 'gocha@admin.com') {
+                        adminAutenticado = true;
+                        document.body.classList.add('admin-mode-active');
+                        document.getElementById('panelPendientes').style.display = 'block';
+                        document.getElementById('btn-logout-galeria').style.display = 'inline-flex';
+                        const btn = document.getElementById('btn-toggle-admin');
+                        btn.innerHTML = '<i class="fa-solid fa-lock-open"></i> Ocultar Moderación';
+                        btn.classList.add('active');
+                        btn.setAttribute('aria-expanded', 'true');
+                        loadPendingImages();
+                    }
+                } catch (e) {
+                    console.error('Error obteniendo sesión:', e);
+                }
+            } else {
+                mostrarToast('Supabase no está disponible en este entorno', true);
             }
 
             document.getElementById('admin-password')?.addEventListener('keypress', (e) => {
@@ -458,6 +467,7 @@
         // ===================================================
         function cambiarFiltroGaleria(filtro) {
             filtroActual = filtro;
+            paginaActualGaleria = 0;
             document.getElementById('tab-populares').classList.toggle('active', filtro === 'populares');
             document.getElementById('tab-recientes').classList.toggle('active', filtro === 'recientes');
             loadApprovedImages();
@@ -467,10 +477,17 @@
         // 2. CARGAR IMÁGENES APROBADAS (CON ORDENAMIENTO Y BADGES)
         // ===================================================
         async function loadApprovedImages() {
+            if (!window.supabase) return;
             try {
+                const desde = paginaActualGaleria * LIMITE_GALERIA;
+                const hasta = desde + LIMITE_GALERIA - 1;
+
                 const { data, error } = await supabase
                     .from('galeria')
-                    .select('id, image_url, title, estado, likes, created_at');
+                    .select('id, image_url, title, estado, likes, created_at')
+                    .eq('estado', 'aprobado')
+                    .order('created_at', { ascending: false })
+                    .range(desde, hasta);
 
                 if (error) {
                     console.error('Error cargando imágenes:', error);
@@ -478,17 +495,16 @@
                 }
 
                 const galleryGrid = document.getElementById('galleryGrid');
-                galleryGrid.innerHTML = '';
+                if (paginaActualGaleria === 0) galleryGrid.innerHTML = '';
 
-                // Filtrar aprobadas o sin estado
-                let imagenesPublicas = data ? data.filter(img => !img.estado || img.estado.toLowerCase() === 'aprobado') : [];
+                const imagenesPublicas = data ? data : [];
 
-                if (imagenesPublicas.length === 0) {
+                if (paginaActualGaleria === 0 && imagenesPublicas.length === 0) {
                     galleryGrid.innerHTML = '<p class="gallery-empty">No hay imágenes públicas aprobadas aún. ¡Sé el primero en subir una! 📸</p>';
                     return;
                 }
 
-                // Ordenar según la pestaña seleccionada de manera segura
+                // Ordenar según la pestaña seleccionada de manera segura (sobre lo ya traído del servidor)
                 if (filtroActual === 'populares') {
                     imagenesPublicas.sort((a, b) => (b.likes || 0) - (a.likes || 0));
                 } else {
@@ -543,16 +559,40 @@
                     galleryGrid.appendChild(galleryCard);
                 });
 
+                // Mostrar u ocultar botón "cargar más"
+                const btnCargarMas = document.getElementById('btn-cargar-mas-galeria');
+                if (imagenesPublicas.length >= LIMITE_GALERIA) {
+                    if (!btnCargarMas) {
+                        const btn = document.createElement('button');
+                        btn.id = 'btn-cargar-mas-galeria';
+                        btn.className = 'btn-primary btn-cargar-mas';
+                        btn.innerHTML = '<i class="fa-solid fa-chevron-down"></i> Cargar más imágenes';
+                        btn.type = 'button';
+                        btn.addEventListener('click', cargarMasGaleria);
+                        galleryGrid.parentNode.insertBefore(btn, galleryGrid.nextSibling);
+                    } else {
+                        btnCargarMas.style.display = 'inline-block';
+                    }
+                } else if (btnCargarMas) {
+                    btnCargarMas.style.display = 'none';
+                }
+
                 if (adminAutenticado) {
                     document.body.classList.add('admin-mode-active');
                 }
             } catch (err) { console.error('Error:', err); }
         }
 
+        function cargarMasGaleria() {
+            paginaActualGaleria++;
+            loadApprovedImages();
+        }
+
         // ===================================================
         // 3. SISTEMA DE LIKES EN TIEMPO REAL
         // ===================================================
         async function toggleLike(imageId, currentLikes) {
+            if (!window.supabase) return;
             let userLikes = JSON.parse(localStorage.getItem('gocha_user_likes') || '[]');
             const idStr = String(imageId);
             const idNumerico = isNaN(imageId) ? imageId : Number(imageId);
@@ -561,6 +601,12 @@
 
             const btn = document.getElementById(`like-btn-${imageId}`);
             const countSpan = document.getElementById(`like-count-${imageId}`);
+
+            // Estado optimista
+            const prevLikes = currentLikes;
+            const prevUserLikes = [...userLikes];
+            const prevBtnClasses = btn ? btn.className : '';
+            const prevBtnIcon = btn ? btn.querySelector('i')?.className : '';
 
             if (btn && countSpan) {
                 if (!isLiked) {
@@ -578,6 +624,7 @@
                 userLikes.push(idStr);
             }
             localStorage.setItem('gocha_user_likes', JSON.stringify(userLikes));
+            if (countSpan) countSpan.innerText = Math.max(0, currentLikes + delta);
 
             try {
                 const { data, error } = await supabase.rpc('incrementar_likes', {
@@ -587,12 +634,23 @@
                 if (!error && data !== null && data !== undefined && countSpan) {
                     countSpan.innerText = data;
                 } else if (countSpan) {
-                    countSpan.innerText = Math.max(0, currentLikes + delta);
+                    // Rollback del estado optimista
+                    countSpan.innerText = Math.max(0, prevLikes);
+                    if (isLiked) userLikes.push(idStr); else userLikes = userLikes.filter(id => id !== idStr);
+                    localStorage.setItem('gocha_user_likes', JSON.stringify(userLikes));
+                    if (btn) {
+                        btn.className = prevBtnClasses;
+                        btn.querySelector('i').className = prevBtnIcon;
+                        if (isLiked) btn.classList.add('liked'); else btn.classList.remove('liked');
+                    }
                 }
-                if (!error && filtroActual === 'populares') loadApprovedImages();
             } catch (e) {
                 console.error(e);
-                if (countSpan) countSpan.innerText = Math.max(0, currentLikes + delta);
+                if (countSpan) countSpan.innerText = Math.max(0, prevLikes);
+                if (btn) {
+                    btn.className = prevBtnClasses;
+                    btn.querySelector('i').className = prevBtnIcon;
+                }
             }
         }
 
@@ -603,11 +661,10 @@
         // ===================================================
         async function loadPendingImages() {
             if (!adminAutenticado) return;
+            if (!window.supabase) return;
             try {
-                const { data, error } = await supabase.from('galeria').select('id, image_url, title, estado');
+                const { data, error } = await supabase.from('galeria').select('id, image_url, title, estado').eq('estado', 'pendiente');
                 if (error) return;
-
-                const pendientes = data ? data.filter(img => img.estado && img.estado.toLowerCase() === 'pendiente') : [];
 
                 const gridPendientes = document.getElementById('gridPendientes');
                 const cantSpan = document.getElementById('cantPendientes');
@@ -841,10 +898,12 @@
         }
 
         async function saveToSupabaseTable(title, publicUrl) {
-            const { error } = await supabase.from('galeria').insert([{ title: title, image_url: publicUrl, estado: 'pendiente', likes: 0 }]);
-            if (!error) {
+            const { data: resultado, error } = await supabase.rpc('publicar_foto_galeria', { p_title: title, p_image_url: publicUrl });
+            if (!error && resultado && resultado.ok) {
                 uploadFeedback.innerHTML = '<p class="msg-subida-exito">✅ ¡Imagen enviada! Aparecerá cuando sea aprobada. 💖</p>';
                 setTimeout(() => { uploadFeedback.innerHTML = ''; }, 5000);
+                paginaActualGaleria = 0;
+                loadApprovedImages();
                 if (adminAutenticado) loadPendingImages();
             } else {
                 uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ Error al guardar en base de datos.</p>';

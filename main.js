@@ -1,8 +1,12 @@
 // --- LÓGICA GLOBAL COMPARTIDA (URLs, Supabase, Menú y Tema) ---
 
-if (window.location.pathname.endsWith('/index.html')) {
-    const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname.replace('/index.html', '/') + window.location.search + window.location.hash;
-    window.history.replaceState(null, null, cleanUrl);
+try {
+    if (window.location.pathname.endsWith('/index.html')) {
+        const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname.replace('/index.html', '/') + window.location.search + window.location.hash;
+        window.history.replaceState(null, null, cleanUrl);
+    }
+} catch (e) {
+    // file:// no permite replaceState; se ignora
 }
 
 const SUPABASE_URL = 'https://cydiyaacnyydprgffmkq.supabase.co';
@@ -10,9 +14,15 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 if (window.supabase) {
     try {
         window.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        window.supabaseReady = true;
     } catch (e) {
         console.error('Error inicializando Supabase:', e);
+        window.supabase = null;
+        window.supabaseReady = false;
     }
+} else {
+    window.supabase = null;
+    window.supabaseReady = false;
 }
 
 // === MODO CLARO / OSCURO ===
@@ -43,12 +53,19 @@ window.toggleTema = function toggleTema() {
 
 // === SESIÓN DE COMUNIDAD ===
 
-window.cerrarSesion = function cerrarSesion() {
+window.cerrarSesion = async function cerrarSesion() {
+    const token = localStorage.getItem('comunidad_session_token');
     localStorage.removeItem('comunidad_nickname');
     localStorage.removeItem('comunidad_session_token');
     localStorage.removeItem('comunidad_user_id');
-    localStorage.removeItem('gochi_registrado_user');
-    localStorage.removeItem('gochi_user_likes');
+
+    if (token && window.supabase) {
+        try {
+            await window.supabase.rpc('cerrar_sesion_comunidad', { p_token: token });
+        } catch (e) {
+            // no bloquea el cierre local
+        }
+    }
 
     mostrarToast('Sesión de comunidad cerrada');
     setTimeout(() => { window.location.reload(); }, 800);
@@ -102,7 +119,7 @@ window.validarSesionStreamer = async function validarSesionStreamer() {
     try {
         if (!window.supabase) return false;
         const { data: { session } } = await window.supabase.auth.getSession();
-        return !!session;
+        return session ? session.user.email === 'gocha@admin.com' : false;
     } catch (e) {
         return false;
     }
@@ -142,6 +159,10 @@ window.insertarComponentesUIGlobales = function insertarComponentesUIGlobales() 
 window.mostrarToast = function mostrarToast(mensaje, esError = false) {
     const toast = document.getElementById('gochi-toast');
     if (!toast) return;
+    if (window._toastTimer) {
+        clearTimeout(window._toastTimer);
+        window._toastTimer = null;
+    }
     toast.textContent = mensaje;
     if (esError) {
         toast.style.borderColor = '#ff4d4d';
@@ -151,7 +172,10 @@ window.mostrarToast = function mostrarToast(mensaje, esError = false) {
         toast.style.boxShadow = 'var(--glow)';
     }
     toast.classList.add('show');
-    setTimeout(() => { toast.classList.remove('show'); }, 3000);
+    window._toastTimer = setTimeout(() => {
+        toast.classList.remove('show');
+        window._toastTimer = null;
+    }, 3000);
 };
 
 window.mostrarConfirmacionModal = function mostrarConfirmacionModal({ titulo, mensaje, textoConfirmar = 'Confirmar', enConfirmar }) {
@@ -251,61 +275,101 @@ function formatNumber(n) {
 // === POLLING DE ESTADO DEL STREAM ===
 window._streamInterval = null;
 window._ultimaEstadoEnVivo = null;
+window._streamBackoff = null;
+window._streamUltimoError = 0;
 
 window.verificarEstadoStream = async function verificarEstadoStream() {
     if (window._streamAbort) window._streamAbort.abort();
     window._streamAbort = new AbortController();
+
+    // Backoff: si falló hace poco, esperar el intervalo de retroceso antes de reintentar
+    if (window._streamBackoff && Date.now() - window._streamUltimoError < window._streamBackoff) {
+        return;
+    }
+
+    const ahora = Date.now();
+    let data = null;
+    let enVivo = false;
+    let usoCache = false;
+
     try {
-        const response = await fetch('https://kick.com/api/v2/channels/lagochagaming', { signal: window._streamAbort.signal });
-        if (!response.ok) throw new Error('Error');
-        const data = await response.json();
-        const enVivo = data.livestream && data.livestream.is_live === true;
-
-        const navbar = document.querySelector('.navbar');
-        const toast = document.getElementById('stream-toast');
-
-        // Actualizar contador de followers si existe (solo en index.html)
-        const followersCount = data.followers_count ?? data.channel?.followers_count ?? data.user?.followers_count;
-        const followersEl = document.getElementById('kick-followers-count');
-        if (followersEl && followersCount !== undefined) {
-            followersEl.textContent = formatNumber(followersCount);
-            followersEl.title = followersCount.toLocaleString('es-ES') + ' seguidores';
-        }
-
-        if (enVivo) {
-            if (navbar) navbar.classList.add('live-glow');
-            
-            // Mostrar toast si no está visible
-            if (toast && toast.style.display !== 'flex') {
-                mostrarToastStream();
+        const cached = sessionStorage.getItem('gochi_stream_cache');
+        if (cached) {
+            const c = JSON.parse(cached);
+            if (c && c.ts && ahora - c.ts < 60000) {
+                data = c.data;
+                enVivo = c.enVivo;
+                usoCache = true;
             }
-        } else {
-            if (navbar) navbar.classList.remove('live-glow');
-            if (toast) toast.style.display = 'none';
         }
+    } catch (e) {
+        // ignora caché corrupta
+    }
 
-        // Notificar a la página actual (paneles específicos) sin duplicar el fetch
-        if (typeof window.actualizarEstadoStreamPagina === 'function') {
-            window.actualizarEstadoStreamPagina(data, enVivo, null);
-        }
-
-        window._ultimaEstadoEnVivo = enVivo;
-    } catch (err) {
-        // Un abort es esperado cuando un sondeo nuevo cancela al anterior
-        if (err && err.name === 'AbortError') return;
-        console.error('Error verificando estado:', err);
-        if (typeof window.actualizarEstadoStreamPagina === 'function') {
-            window.actualizarEstadoStreamPagina(null, false, err);
+    if (!usoCache) {
+        try {
+            const response = await fetch('https://kick.com/api/v2/channels/lagochagaming', { signal: window._streamAbort.signal });
+            if (response.status === 429 || response.status >= 500) {
+                throw new Error('HTTP ' + response.status);
+            }
+            if (!response.ok) throw new Error('Error');
+            data = await response.json();
+            enVivo = data.livestream && data.livestream.is_live === true;
+            try {
+                sessionStorage.setItem('gochi_stream_cache', JSON.stringify({ data, enVivo, ts: ahora }));
+            } catch (e) {}
+            window._streamBackoff = null;
+        } catch (err) {
+            if (err && err.name === 'AbortError') return;
+            console.error('Error verificando estado:', err);
+            window._streamUltimoError = Date.now();
+            if (!window._streamBackoff) window._streamBackoff = 60000;
+            else if (window._streamBackoff < 300000) {
+                window._streamBackoff = Math.min(window._streamBackoff * 2, 300000);
+            }
+            if (typeof window.actualizarEstadoStreamPagina === 'function') {
+                window.actualizarEstadoStreamPagina(null, false, err);
+            }
+            return;
         }
     }
+
+    const navbar = document.querySelector('.navbar');
+    const toast = document.getElementById('stream-toast');
+
+    // Actualizar contador de followers si existe (solo en index.html)
+    const followersCount = data.followers_count ?? data.channel?.followers_count ?? data.user?.followers_count;
+    const followersEl = document.getElementById('kick-followers-count');
+    if (followersEl && followersCount !== undefined) {
+        followersEl.textContent = formatNumber(followersCount);
+        followersEl.title = followersCount.toLocaleString('es-ES') + ' seguidores';
+    }
+
+    const yaEnVivo = window._ultimaEstadoEnVivo === true;
+    if (enVivo) {
+        if (navbar) navbar.classList.add('live-glow');
+        // Toast solo en la transición offline → live
+        if (!yaEnVivo && toast && toast.classList.contains('stream-toast-hidden')) {
+            mostrarToastStream();
+        }
+    } else {
+        if (navbar) navbar.classList.remove('live-glow');
+        if (toast) toast.classList.add('stream-toast-hidden');
+    }
+
+    // Notificar a la página actual (paneles específicos) sin duplicar el fetch
+    if (typeof window.actualizarEstadoStreamPagina === 'function') {
+        window.actualizarEstadoStreamPagina(data, enVivo, null);
+    }
+
+    window._ultimaEstadoEnVivo = enVivo;
 };
 
 window.mostrarToastStream = function mostrarToastStream() {
     const toast = document.getElementById('stream-toast');
     if (!toast) return;
     toast.classList.remove('stream-toast-hidden');
-    toast.style.display = 'flex';
-    
+
     // Auto-cerrar después de 10 segundos
     setTimeout(() => {
         cerrarToastStream();
@@ -315,10 +379,7 @@ window.mostrarToastStream = function mostrarToastStream() {
 window.cerrarToastStream = function cerrarToastStream() {
     const toast = document.getElementById('stream-toast');
     if (!toast) return;
-    toast.style.display = 'none';
-    setTimeout(() => {
-        toast.classList.add('stream-toast-hidden');
-    }, 300);
+    toast.classList.add('stream-toast-hidden');
 };
 
 // Inicializar polling en todas las páginas
@@ -336,7 +397,7 @@ function iniciarPollingStreamGlobal() {
         if (document.visibilityState === 'visible') {
             verificarEstadoStream();
         }
-    }, 60000);
+    }, 90000);
 
     // Pausar cuando pestaña oculta
     document.addEventListener('visibilitychange', () => {
@@ -347,7 +408,7 @@ function iniciarPollingStreamGlobal() {
                     if (document.visibilityState === 'visible') {
                         verificarEstadoStream();
                     }
-                }, 60000);
+                }, 90000);
             }
         } else {
             if (window._streamInterval) {

@@ -470,7 +470,7 @@
     </header>
 
     <!-- TOAST DE STREAM EN VIVO -->
-    <div id="stream-toast" class="stream-toast-hidden">
+    <div id="stream-toast" class="stream-toast stream-toast-hidden">
         <div class="stream-toast-content">
             <span class="live-indicator"></span>
             <span>🔴 EN VIVO</span>
@@ -622,15 +622,25 @@
         let sorteoAbierto = false;
         let modoManualAbierto = false;
         let streamerAutenticado = false;
+        let ruletaGirando = false;
 
         document.addEventListener('DOMContentLoaded', async () => {
             cargarEstadoSorteo();
             cargarParticipantesOnline();
             cargarTopGanadores();
 
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                streamerAutenticado = true;
+            if (window.supabase) {
+                try {
+                    const { data } = await supabase.auth.getSession();
+                    const session = data.session;
+                    if (session && session.user.email === 'gocha@admin.com') {
+                        streamerAutenticado = true;
+                    }
+                } catch (e) {
+                    console.error('Error obteniendo sesión:', e);
+                }
+            } else {
+                mostrarToast('Supabase no está disponible en este entorno', true);
             }
 
             try {
@@ -646,7 +656,7 @@
                     .subscribe();
             } catch(e) { console.log('Modo local detectado'); }
 
-            document.getElementById('streamer-password')?.addEventListener('keypress', (e) => {
+            document.getElementById('streamer-password')?.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') confirmarLoginStreamer();
             });
         });
@@ -706,19 +716,13 @@
             const btnStreamer = document.getElementById('tab-streamer');
 
             if (tab === 'manual') {
-                modoManualAbierto = !modoManualAbierto;
-                if (modoManualAbierto) {
-                    secManual.style.display = 'block';
-                    secStreamer.style.display = 'none';
-                    btnManual.classList.add('active');
-                    btnStreamer.classList.remove('active');
-                    btnManual.setAttribute('aria-selected', 'true');
-                    btnStreamer.setAttribute('aria-selected', 'false');
-                } else {
-                    secManual.style.display = 'none';
-                    btnManual.classList.remove('active');
-                    btnManual.setAttribute('aria-selected', 'false');
-                }
+                // Los botones muestran/ocultan paneles, nunca alternan: el panel manual queda visible al hacer clic
+                secManual.style.display = 'block';
+                secStreamer.style.display = 'none';
+                btnManual.classList.add('active');
+                btnStreamer.classList.remove('active');
+                btnManual.setAttribute('aria-selected', 'true');
+                btnStreamer.setAttribute('aria-selected', 'false');
             } else if (tab === 'streamer') {
                 if (!streamerAutenticado) {
                     document.getElementById('feedback-pin').innerText = '';
@@ -783,8 +787,10 @@
 
         function salirModoStreamer() {
             document.getElementById('sec-modo-streamer').style.display = 'none';
+            document.getElementById('sec-modo-manual').style.display = 'block';
             document.getElementById('tab-streamer').classList.remove('active');
-            document.getElementById('tab-manual').setAttribute('aria-selected', 'false');
+            document.getElementById('tab-manual').classList.add('active');
+            document.getElementById('tab-manual').setAttribute('aria-selected', 'true');
             document.getElementById('tab-streamer').setAttribute('aria-selected', 'false');
         }
 
@@ -903,15 +909,22 @@
             renderListaStreamer();
 
             try {
-                const { error } = await supabase.from('participantes_en_vivo').insert([{ username: username }]);
+                const { data: resultado, error } = await supabase.rpc('registrar_participante_sorteo', { p_username: username });
                 if (error) throw error;
+                if (!resultado || !resultado.ok) {
+                    throw new Error(resultado ? resultado.error : 'error_desconocido');
+                }
             } catch (err) {
                 console.error('No se pudo registrar en Supabase:', err);
                 listaStreamerOnline = listaStreamerOnline.filter(
                     u => String(u.username ?? u).toLowerCase() !== username.toLowerCase()
                 );
                 renderListaStreamer();
-                mostrarFeedback(feedbackId, '❌ No se pudo completar el registro. Inténtalo de nuevo.', true);
+                const msg = err.message === 'sorteo_cerrado' ? 'El sorteo está cerrado en este momento.'
+                    : err.message === 'ya_registrado' ? '⚠️ ¡Este usuario ya está registrado!'
+                    : err.message === 'lleno' ? '⚠️ El sorteo está lleno.'
+                    : '❌ No se pudo completar el registro. Inténtalo de nuevo.';
+                mostrarFeedback(feedbackId, msg, true);
                 return;
             }
 
@@ -965,10 +978,12 @@
         }
 
         function girarRuletaPublica() {
+            if (ruletaGirando) return;
             if (listaPublica.length === 0) {
                 mostrarFeedback('feedback-manual', '⚠️ Agrega al menos un participante antes de girar.', true);
                 return;
             }
+            ruletaGirando = true;
             let display = document.getElementById('ruleta-display-publico');
             let counter = 0;
             let interval = setInterval(() => {
@@ -980,6 +995,7 @@
                     let ganadorFinal = listaPublica[Math.floor(Math.random() * listaPublica.length)];
                     display.innerHTML = `🎉 ¡@${escapeHtml(ganadorFinal)}! 🎉`;
                     lanzarConfeti('confetti-canvas-publico');
+                    ruletaGirando = false;
                 }
             }, 50);
         }
@@ -1065,10 +1081,12 @@
         }
 
         function girarRuletaStreamer() {
+            if (ruletaGirando) return;
             if (listaStreamerOnline.length === 0) {
                 mostrarFeedback('feedback-streamer-direct', '⚠️ No hay participantes inscritos.', true);
                 return;
             }
+            ruletaGirando = true;
 
             // CREAR ARRAY PONDERADO (Bingo virtual)
             let bolillero = [];
@@ -1091,6 +1109,7 @@
                     display.innerHTML = `🎉 ¡@${escapeHtml(ganadorFinal)}! 🎉`;
                     lanzarConfeti('confetti-canvas-streamer');
                     guardarGanadorOficial(ganadorFinal);
+                    ruletaGirando = false;
                 }
             }, 50);
         }
@@ -1163,7 +1182,7 @@
 
         function escapeHtml(text) {
             const div = document.createElement('div');
-            div.textContent = text;
+            div.textContent = text ?? '';
             return div.innerHTML;
         }
     </script>
@@ -1176,8 +1195,6 @@
                 <a href="https://www.instagram.com/oscurostefany" target="_blank" class="social-icon" title="Instagram"><i class="fab fa-instagram"></i></a>
                 <a href="https://discord.com/invite/svrteKBbeh" target="_blank" class="social-icon" title="Discord"><i class="fab fa-discord"></i></a>
                 <a href="https://www.youtube.com/@lagochagaming" target="_blank" class="social-icon" title="YouTube"><i class="fab fa-youtube"></i></a>
-                <a href="#" target="_blank" class="social-icon" title="Twitter"><i class="fab fa-x-twitter"></i></a>
-                <a href="#" target="_blank" class="social-icon" title="Facebook"><i class="fab fa-facebook-f"></i></a>
             </div>
             <p class="footer-copyright">&copy; 2026 LAGOCHAGAMING - ALL RIGHTS RESERVED</p>
         </div>

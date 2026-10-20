@@ -183,7 +183,7 @@
     </header>
 
     <!-- TOAST DE STREAM EN VIVO -->
-    <div id="stream-toast" class="stream-toast-hidden">
+    <div id="stream-toast" class="stream-toast stream-toast-hidden">
         <div class="stream-toast-content">
             <span class="live-indicator"></span>
             <span>🔴 EN VIVO</span>
@@ -236,7 +236,7 @@
 
                 <!-- Overlay con la cámara/stream en directo de La Gocha -->
                 <div class="streamer-overlay-cam">
-                    <iframe src="https://player.kick.com/lagochagaming?autoplay=true&muted=false" frameborder="0" scrolling="no" allowfullscreen="true" title="Transmisión en directo" loading="lazy"></iframe>
+                    <iframe src="https://player.kick.com/lagochagaming?autoplay=true&muted=1" frameborder="0" scrolling="no" allowfullscreen="true" title="Transmisión en directo" loading="lazy"></iframe>
                 </div>
             </div>
         </div>
@@ -288,6 +288,8 @@
         let actualizandoLocalmente = false;
         let urlActual = '';
         let ytApiReady = false;
+        let sincronizarUltimoIntento = 0;
+        let _ultimoSyncEnviado = null;
 
         function procesarUrlEntrante(url) {
             if (!url) return '';
@@ -327,8 +329,9 @@
         document.addEventListener('DOMContentLoaded', async () => {
             try {
                 if (window.supabase) {
-                    const { data: { session } } = await window.supabase.auth.getSession();
-                    if (session) {
+                    const { data } = await window.supabase.auth.getSession();
+                    const session = data.session;
+                    if (session && session.user.email === 'gocha@admin.com') {
                         streamerCineAutenticado = true;
                         activarModoStreamerUI();
                     }
@@ -444,6 +447,8 @@
 
         async function enviarComandoSync(estado, tiempo) {
             if (!(await validarSesionStreamer())) return;
+            // Marcar el comando propio antes de enviar para detectar su eco y evitar re-emisión
+            window._ultimoSyncEnviado = { estado, tiempo };
 
             try {
                 await supabase.from('sync_cine').upsert({
@@ -456,10 +461,20 @@
         }
 
         function sincronizarReproductorRemoto(data, intento = 0) {
+            const miIntento = ++sincronizarUltimoIntento;
             if (!ytApiReady) {
                 if (intento < 40) {
-                    setTimeout(() => sincronizarReproductorRemoto(data, intento + 1), 300);
+                    setTimeout(() => {
+                        if (miIntento === sincronizarUltimoIntento) {
+                            sincronizarReproductorRemoto(data, intento + 1);
+                        }
+                    }, 300);
                 }
+                return;
+            }
+            // Ignorar el eco de nuestro propio comando ya aplicado localmente (evita bucle de re-emisión)
+            if (window._ultimoSyncEnviado && data && data.estado === window._ultimoSyncEnviado.estado && Math.abs((data.tiempo || 0) - (window._ultimoSyncEnviado.tiempo || 0)) < 1.5) {
+                window._ultimoSyncEnviado = null;
                 return;
             }
             if (!data || !data.video_url) {
@@ -613,12 +628,6 @@
             } finally {
                 if (btnEntrar) btnEntrar.disabled = false;
             }
-        }
-
-        function abrirModalCinePin() {
-            document.getElementById('feedback-cine-pin').textContent = '';
-            document.getElementById('modal-pin-cine').style.display = 'flex';
-            document.getElementById('streamer-cine-email').focus();
         }
 
         function activarModoStreamerUI() {

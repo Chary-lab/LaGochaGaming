@@ -486,7 +486,7 @@
     </header>
 
     <!-- TOAST DE STREAM EN VIVO -->
-    <div id="stream-toast" class="stream-toast-hidden">
+    <div id="stream-toast" class="stream-toast stream-toast-hidden">
         <div class="stream-toast-content">
             <span class="live-indicator"></span>
             <span>🔴 EN VIVO</span>
@@ -801,7 +801,8 @@
             function pintarBadgeRango(el, rango) {
                 if (!el) return;
                 const { clave, emoji, nombre } = datosRango(rango);
-                el.className = 'rango-badge rango-' + clave;
+                el.classList.remove('rango-semilla', 'rango-gota', 'rango-flor', 'rango-estrella', 'rango-leyenda');
+                el.classList.add('rango-badge', 'rango-' + clave);
                 el.textContent = emoji + ' ' + nombre.toUpperCase();
             }
 
@@ -844,25 +845,28 @@
             }
 
             async function registrarUsuario(apodo, pin) {
+                if (!window.supabase) return { ok: false, error: 'Supabase no disponible' };
                 try {
-                    const { data, error } = await supabase.from('usuarios_comunidad').insert([{ apodo, pin, puntos: 0, rango: 'semilla' }]).select().single();
-                    return { success: !error, error: error?.message, user: data };
-                } catch (e) { return { success: false, error: e.message }; }
+                    const { data, error } = await supabase.rpc('registrar_comunidad', { p_apodo: apodo, p_pin: pin });
+                    if (error) return { ok: false, error: error.message };
+                    return { ok: !!data?.ok, error: data?.error, token: data?.token, usuario: data?.usuario };
+                } catch (e) { return { ok: false, error: e.message }; }
             }
 
             async function verificarLogin(apodo, pin) {
+                if (!window.supabase) return { ok: false, error: 'Supabase no disponible' };
                 try {
-                    const { data, error } = await supabase.from('usuarios_comunidad').select('id, puntos, rango, session_token').eq('apodo', apodo).eq('pin', pin).single();
-                    if (error || !data) return { success: false, user: null };
-                    return { success: true, user: data };
-                } catch (e) { return { success: false, user: null }; }
+                    const { data, error } = await supabase.rpc('login_comunidad', { p_apodo: apodo, p_pin: pin });
+                    if (error) return { ok: false, error: error.message };
+                    return { ok: !!data?.ok, error: data?.error, token: data?.token, usuario: data?.usuario };
+                } catch (e) { return { ok: false, error: e.message }; }
             }
 
             function guardarSesion(apodo, token, puntos, rango, id) {
                 if (id) userId = id;
                 localStorage.setItem(STORAGE_KEY_NICK, apodo);
                 if (id) localStorage.setItem('comunidad_user_id', String(id));
-                localStorage.setItem(STORAGE_KEY_TOKEN, token || localStorage.getItem(STORAGE_KEY_TOKEN) || btoa(Date.now().toString()));
+                if (token) localStorage.setItem(STORAGE_KEY_TOKEN, token);
                 if (userProfilePanel) {
                     userProfilePanel.style.display = 'block';
                     if (userInfoDisplay) userInfoDisplay.textContent = apodo;
@@ -889,21 +893,30 @@
             }
 
             async function validarSesionGuardada() {
+                const savedToken = localStorage.getItem(STORAGE_KEY_TOKEN);
                 const savedApodo = localStorage.getItem(STORAGE_KEY_NICK);
-                if (!savedApodo) return false;
+                if (!savedToken || !savedApodo) return false;
+                if (!window.supabase) return false;
                 try {
-                    // La sesión se valida por existencia de la cuenta, NO por session_token:
-                    // el frontend nunca escribe ese token en Supabase (la columna queda en NULL),
-                    // por lo que compararlo cerraba la sesión en cada cambio de página.
-                    const { data, error } = await supabase
-                        .from('usuarios_comunidad')
-                        .select('id, puntos, rango, session_token')
-                        .eq('apodo', savedApodo)
-                        .order('id', { ascending: true })
-                        .limit(1);
-                    const usuario = Array.isArray(data) ? data[0] : null;
-                    if (error || !usuario) return false;
-                    guardarSesion(savedApodo, usuario.session_token || localStorage.getItem(STORAGE_KEY_TOKEN), usuario.puntos, usuario.rango, usuario.id);
+                    const { data, error } = await supabase.rpc('validar_sesion_comunidad', { p_token: savedToken });
+                    if (error || !data?.ok) {
+                        // Sesión inválida: limpiar todo
+                        localStorage.removeItem(STORAGE_KEY_NICK);
+                        localStorage.removeItem(STORAGE_KEY_TOKEN);
+                        localStorage.removeItem('comunidad_user_id');
+                        userNickname = null;
+                        userId = null;
+                        if (userProfilePanel) { userProfilePanel.style.display = 'none'; }
+                        if (inputAutor) { inputAutor.value = ''; inputAutor.readOnly = false; }
+                        if (userInfoDisplay) userInfoDisplay.textContent = '';
+                        if (userPointsDisplay) userPointsDisplay.textContent = '';
+                        const badge = document.getElementById('user-rango-badge');
+                        if (badge) { badge.className = 'rango-badge'; badge.textContent = ''; }
+                        window.actualizarUsuarioNavComunidad?.();
+                        return false;
+                    }
+                    const usuario = data.usuario;
+                    guardarSesion(savedApodo, savedToken, usuario.puntos, usuario.rango, usuario.id);
                     return true;
                 } catch (e) {
                     console.error('Error validando sesión de comunidad:', e);
@@ -924,31 +937,39 @@
                     return;
                 }
 
+                const mensajeError = {
+                    credenciales: 'Credenciales incorrectas. Verifica tu apodo y PIN.',
+                    apodo_duplicado: 'Ese apodo ya existe. Elige otro.',
+                    apodo_invalido: 'Apodo inválido (1-20 caracteres, sin símbolos de control).',
+                    pin_invalido: 'PIN inválido (debe ser 4 dígitos).'
+                };
+                const traducir = (codigo) => mensajeError[codigo] || (codigo ? 'Error: ' + codigo : 'No se pudo completar la operación.');
+
                 // Si estamos en modo registro, forzamos crear cuenta nueva
                 if (_modalModo === 'registro') {
                     const verif = await verificarLogin(nick, pin);
-                    if (verif.success) {
+                    if (verif.ok) {
                         if (nicknameModalError) { nicknameModalError.textContent = 'Este usuario ya existe. Usa "Iniciar Sesión" si es tu cuenta.'; nicknameModalError.style.display = 'block'; }
                         return;
                     }
                     const reg = await registrarUsuario(nick, pin);
-                    if (reg.success) {
-                        guardarSesion(nick, reg.user?.session_token || null, 0, 'semilla', reg.user?.id || null);
+                    if (reg.ok && reg.token && reg.usuario) {
+                        guardarSesion(reg.usuario.apodo, reg.token, reg.usuario.puntos, reg.usuario.rango, reg.usuario.id);
                         hideNicknameModal();
                         return;
                     }
-                    if (nicknameModalError) { nicknameModalError.textContent = 'Error: ' + (reg.error || 'No se pudo crear la cuenta.'); nicknameModalError.style.display = 'block'; }
+                    if (nicknameModalError) { nicknameModalError.textContent = traducir(reg.error); nicknameModalError.style.display = 'block'; }
                     return;
                 }
 
                 // Modo login: intentar autenticar
                 const verif = await verificarLogin(nick, pin);
-                if (verif.success) {
-                    guardarSesion(nick, verif.user.session_token, verif.user.puntos, verif.user.rango, verif.user.id);
+                if (verif.ok && verif.token && verif.usuario) {
+                    guardarSesion(verif.usuario.apodo, verif.token, verif.usuario.puntos, verif.usuario.rango, verif.usuario.id);
                     hideNicknameModal();
                     return;
                 }
-                if (nicknameModalError) { nicknameModalError.textContent = 'Credenciales incorrectas. Verifica tu apodo y PIN.'; nicknameModalError.style.display = 'block'; }
+                if (nicknameModalError) { nicknameModalError.textContent = traducir(verif.error); nicknameModalError.style.display = 'block'; }
             }
 
             async function cargarMensajesChat() {
@@ -985,72 +1006,57 @@
                 } catch (e) {}
             }
 
-            // Toggle de reacción: same emoji -> delete, different emoji -> upsert
+            // Toggle de reacción: el servidor decide borrar vs upsert. UI optimista con rollback.
             async function establecerReaccionUsuario(msgId, emoji) {
                 const msgIdStr = String(msgId);
-                if (!userNickname || !userId || isNaN(Number(userId))) {
+                const token = localStorage.getItem(STORAGE_KEY_TOKEN);
+                if (!token || !userNickname) {
                     mostrarToast('Inicia sesion para reaccionar', true);
                     return;
                 }
 
                 const miReaccionActual = obtenerMiReaccionLocal(msgIdStr);
 
-                // Toggle: si es la misma reaccion, eliminarla
-                if (miReaccionActual === emoji) {
-                    try {
-                        await supabase.from('message_reactions')
-                            .delete()
-                            .eq('message_id', msgIdStr)
-                            .eq('user_id', userId);
-                    } catch (e) {
-                        console.warn('[REACCIÓN] Error eliminando reacción:', e.message);
-                    }
-                    // Limpiar cache local
-                    const cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
-                    if (cache[msgIdStr]) {
-                        Object.keys(cache[msgIdStr]).forEach(emo => {
-                            if (cache[msgIdStr][emo]) {
-                                cache[msgIdStr][emo] = cache[msgIdStr][emo].filter(u => u !== userNickname);
-                                if (cache[msgIdStr][emo].length === 0) delete cache[msgIdStr][emo];
-                            }
-                        });
-                        if (Object.keys(cache[msgIdStr]).length === 0) delete cache[msgIdStr];
-                        localStorage.setItem('gochi_chat_reacciones_cache', JSON.stringify(cache));
-                    }
-                    guardarMiReaccionLocal(msgIdStr, null);
-                    actualizarUIReacciones(msgIdStr);
-                    return;
-                }
-
-                // Usar upsert: la restricción única (message_id, usuario) hace que
-                // si ya existe un registro con message_id+usuario, lo actualice con el nuevo emoji
-                try {
-                    const { error } = await supabase.from('message_reactions')
-                            .upsert(
-                                { message_id: msgIdStr, emoji, user_id: userId, apodo: userNickname },
-                                { onConflict: 'message_id,user_id' }
-                            );
-                    if (error) throw error;
-                } catch (e) {
-                    console.warn('[REACCIÓN] Error upsert reacción:', e.message);
-                }
-
-                // Actualizar cache local
+                // Estado optimista (antes de saber la respuesta del servidor)
+                const prevMiReaccion = miReaccionActual;
                 const cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
-                if (!cache[msgIdStr]) cache[msgIdStr] = {};
-                // Quitar al usuario de la reacción anterior si la tenía
-                if (miReaccionActual && cache[msgIdStr][miReaccionActual]) {
-                    cache[msgIdStr][miReaccionActual] = cache[msgIdStr][miReaccionActual].filter(u => u !== userNickname);
-                    if (cache[msgIdStr][miReaccionActual].length === 0) delete cache[msgIdStr][miReaccionActual];
+                const prevCache = JSON.parse(JSON.stringify(cache));
+
+                // Aplicar optimista: quitar del emoji anterior, poner/quitar el nuevo
+                if (cache[msgIdStr] && cache[msgIdStr][prevMiReaccion]) {
+                    cache[msgIdStr][prevMiReaccion] = cache[msgIdStr][prevMiReaccion].filter(u => u !== userNickname);
+                    if (cache[msgIdStr][prevMiReaccion].length === 0) delete cache[msgIdStr][prevMiReaccion];
                 }
-                // Agregar a la nueva reacción
-                if (!cache[msgIdStr][emoji]) cache[msgIdStr][emoji] = [];
-                if (!cache[msgIdStr][emoji].includes(userNickname)) {
-                    cache[msgIdStr][emoji].push(userNickname);
+                const quiereBorrar = (prevMiReaccion === emoji);
+                if (!quiereBorrar) {
+                    if (!cache[msgIdStr]) cache[msgIdStr] = {};
+                    if (!cache[msgIdStr][emoji]) cache[msgIdStr][emoji] = [];
+                    if (!cache[msgIdStr][emoji].includes(userNickname)) cache[msgIdStr][emoji].push(userNickname);
+                    if (Object.keys(cache[msgIdStr]).length === 0) delete cache[msgIdStr];
                 }
                 localStorage.setItem('gochi_chat_reacciones_cache', JSON.stringify(cache));
-                guardarMiReaccionLocal(msgIdStr, emoji);
+                guardarMiReaccionLocal(msgIdStr, quiereBorrar ? null : emoji);
                 actualizarUIReacciones(msgIdStr);
+
+                try {
+                    const { data: resultado, error } = await supabase.rpc('establecer_reaccion', { p_token: token, p_message_id: msgIdStr, p_emoji: emoji });
+                    if (error) throw new Error(error.message || 'error_desconocido');
+                    if (!resultado || !resultado.ok) {
+                        throw new Error(resultado && resultado.error ? resultado.error : 'error_desconocido');
+                    }
+                    // Servidor confirmó: el emoji devuelto (null = borrada) es el estado final
+                } catch (err) {
+                    // Rollback completo
+                    localStorage.setItem('gochi_chat_reacciones_cache', JSON.stringify(prevCache));
+                    guardarMiReaccionLocal(msgIdStr, prevMiReaccion);
+                    actualizarUIReacciones(msgIdStr);
+                    const codigo = err && err.message ? err.message : '';
+                    if (codigo === 'sin_sesion') {
+                        mostrarToast('Sesión expirada. Inicia sesión de nuevo.', true);
+                    } else {
+                        mostrarToast('No se pudo registrar la reacción.', true);
+                    }
+                }
             }
 
             // Tooltip: quiénes reaccionaron con un emoji
@@ -1069,10 +1075,13 @@
 
                 const rect = target.getBoundingClientRect();
                 const tw = tooltipReaccionEl.offsetWidth || 160;
+                const th = tooltipReaccionEl.offsetHeight || 40;
                 let left = rect.left + rect.width / 2 - tw / 2;
                 if (left < 8) left = 8;
+                let top = rect.top - th - 8;
+                if (top < 8) top = rect.top + rect.height + 8;
                 tooltipReaccionEl.style.left = left + 'px';
-                tooltipReaccionEl.style.top = (rect.top - (tooltipReaccionEl.offsetHeight || 40) - 8) + 'px';
+                tooltipReaccionEl.style.top = top + 'px';
                 tooltipReaccionEl.classList.add('visible');
             }
 
@@ -1426,14 +1435,24 @@ if (chatForm) {
                     const btnEnviar = chatForm.querySelector('button[type="submit"]');
                     if (btnEnviar) btnEnviar.disabled = true;
                     try {
-                        const { error } = await supabase.from('comunidad_chat').insert([{ autor: userNickname, mensaje }]);
-                        if (error) console.error('Error:', error);
-                        else {
+                        const token = localStorage.getItem(STORAGE_KEY_TOKEN);
+                        const { data: resultado, error } = await supabase.rpc('enviar_mensaje_chat', { p_token: token, p_mensaje: mensaje });
+                        if (error) {
+                            console.error('Error:', error);
+                            mostrarToast('Error al enviar el mensaje.', true);
+                        } else if (!resultado || !resultado.ok) {
+                            if (resultado && resultado.error === 'rate_limit') {
+                                mostrarToast('Espera unos segundos antes de enviar otro mensaje', true);
+                            } else if (resultado && resultado.error === 'sin_sesion') {
+                                mostrarToast('Sesión expirada. Inicia sesión de nuevo.', true);
+                            } else {
+                                mostrarToast('Error al enviar el mensaje.', true);
+                            }
+                        } else {
                             inputMensaje.value = '';
                             // Actualizar streak de mensajes
                             actualizarStreak();
-                            // Actualizar ultima_actividad en BD
-                            await supabase.from('usuarios_comunidad').update({ ultima_actividad: new Date().toISOString() }).eq('apodo', userNickname);
+                            // ultima_actividad se actualiza dentro del RPC
                         }
                     } catch (e) { console.error(e); }
                     if (btnEnviar) btnEnviar.disabled = false;
@@ -1538,6 +1557,33 @@ if (chatForm) {
                 }
             }
 
+            // Caché de rangos en memoria (refrescado como máximo cada 30 s)
+            let rangosCache = { map: {}, ts: 0 };
+            async function obtenerRangosCache(nicknames) {
+                const ahora = Date.now();
+                const nicknamesUnicos = [...new Set(nicknames.filter(Boolean))];
+                if (rangosCache.ts && ahora - rangosCache.ts < 30000) {
+                    const out = {};
+                    nicknamesUnicos.forEach(n => { if (rangosCache.map[n] !== undefined) out[n] = rangosCache.map[n]; });
+                    // Completar los que faltan del cache
+                    const faltantes = nicknamesUnicos.filter(n => out[n] === undefined);
+                    if (faltantes.length === 0) return out;
+                    nicknamesUnicos.forEach(n => { out[n] = out[n] || 'semilla'; });
+                    return out;
+                }
+                let map = {};
+                try {
+                    const { data } = await supabase.from('usuarios_comunidad').select('apodo, rango').in('apodo', nicknamesUnicos);
+                    if (data) {
+                        data.forEach(u => { map[u.apodo] = u.rango; });
+                    }
+                } catch (e) { console.error('Error cargando rangos:', e); }
+                rangosCache = { map, ts: ahora };
+                const out = {};
+                nicknamesUnicos.forEach(n => { out[n] = map[n] || 'semilla'; });
+                return out;
+            }
+
             async function renderizarListaUsuarios(estadoPresencia) {
                 if (!onlineUsersListEl) return;
 
@@ -1556,26 +1602,9 @@ if (chatForm) {
                 onlineUsersListEl.dataset.loaded = 'true';
                 let html = '';
                 
-                // Cargar rangos de todos los usuarios de una sola vez
+                // Cargar rangos de todos los usuarios (caché 30 s)
                 const nicknames = Object.values(estadoPresencia).map(arr => (arr[0] || {}).nickname).filter(Boolean);
-                let rangosMap = {};
-                
-                if (nicknames.length > 0) {
-                    try {
-                        const { data: usuariosData } = await supabase
-                            .from('usuarios_comunidad')
-                            .select('apodo, rango')
-                            .in('apodo', nicknames);
-                        
-                        if (usuariosData) {
-                            usuariosData.forEach(u => {
-                                rangosMap[u.apodo] = u.rango;
-                            });
-                        }
-                    } catch (e) {
-                        console.error('Error cargando rangos:', e);
-                    }
-                }
+                const rangosMap = await obtenerRangosCache(nicknames);
                 
                 for (const [key, presenceArray] of Object.entries(estadoPresencia)) {
                     const datos = presenceArray[0] || {};
@@ -1639,8 +1668,8 @@ if (chatForm) {
             // Event listeners
             nicknameModalSetBtn.addEventListener('click', enviarNickConPIN);
             nicknameModalCloseBtn.addEventListener('click', hideNicknameModal);
-            nicknameModalInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') enviarNickConPIN(); });
-            nicknameModalPin.addEventListener('keypress', (e) => { if (e.key === 'Enter') enviarNickConPIN(); });
+            nicknameModalInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') enviarNickConPIN(); });
+            nicknameModalPin.addEventListener('keydown', (e) => { if (e.key === 'Enter') enviarNickConPIN(); });
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape' && nicknameModal.style.display === 'flex') hideNicknameModal();
             });
@@ -1725,20 +1754,19 @@ if (chatForm) {
                 }, 500);
             }
 
-// Puntos automáticos: +1 punto cada 5 minutos (300,000 ms)
+// Puntos automáticos: +1 punto cada 5 minutos (300,000 ms), rate-limit en servidor
             setInterval(async () => {
-                const currentNick = localStorage.getItem(STORAGE_KEY_NICK);
-                if (currentNick) {
+                const token = localStorage.getItem(STORAGE_KEY_TOKEN);
+                if (token) {
                     try {
-                        const { error } = await supabase.rpc('incrementar_puntos', { apodo_param: currentNick });
-                        if (!error) {
-                            // Actualizar UI de puntos y rango
-                            const { data } = await supabase.from('usuarios_comunidad').select('puntos, rango').eq('apodo', currentNick).single();
-                            if (data && userPointsDisplay) {
-                                userPointsDisplay.textContent = data.puntos + ' pts';
+                        const { data: resultado, error } = await supabase.rpc('incrementar_puntos_comunidad', { p_token: token });
+                        if (error) throw error;
+                        if (resultado && resultado.ok) {
+                            // Actualizar UI de puntos y rango con lo que devuelve el RPC
+                            if (userPointsDisplay) {
+                                userPointsDisplay.textContent = (resultado.puntos || 0) + ' pts';
                             }
-                            // Actualizar badge de rango si está visible
-                            pintarBadgeRango(document.getElementById('user-rango-badge'), data.rango);
+                            pintarBadgeRango(document.getElementById('user-rango-badge'), resultado.rango);
                         }
                     } catch (e) { console.error('Error al sumar puntos:', e); }
                 }
@@ -1746,7 +1774,7 @@ if (chatForm) {
         });
 
         window.cambiarTabComunidad = function(tab) {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.textContent.trim().toLowerCase().startsWith(tab === 'info' ? 'info' : tab)));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', (b.dataset.tab || '') === tab));
             document.querySelectorAll('.tab-content').forEach(p => {
                 p.hidden = p.id !== 'tab-' + tab;
                 p.classList.toggle('active', p.id === 'tab-' + tab);
@@ -1770,8 +1798,6 @@ if (chatForm) {
                 <a href="https://www.instagram.com/oscurostefany" target="_blank" class="social-icon" title="Instagram"><i class="fab fa-instagram"></i></a>
                 <a href="https://discord.com/invite/svrteKBbeh" target="_blank" class="social-icon" title="Discord"><i class="fab fa-discord"></i></a>
                 <a href="https://www.youtube.com/@lagochagaming" target="_blank" class="social-icon" title="YouTube"><i class="fab fa-youtube"></i></a>
-                <a href="#" target="_blank" class="social-icon" title="Twitter"><i class="fab fa-x-twitter"></i></a>
-                <a href="#" target="_blank" class="social-icon" title="Facebook"><i class="fab fa-facebook-f"></i></a>
             </div>
             <p class="footer-copyright">&copy; 2026 LAGOCHAGAMING - ALL RIGHTS RESERVED</p>
         </div>
