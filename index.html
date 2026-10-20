@@ -47,6 +47,22 @@
     <!-- ALERTA VISUAL DE STREAM EN VIVO -->
     <header id="global-header">
         <nav class="navbar">
+
+    <!-- TOAST DE STREAM EN VIVO -->
+    <div id="stream-toast" class="stream-toast-hidden">
+        <div class="stream-toast-content">
+            <span class="live-indicator"></span>
+            <span>🔴 EN VIVO</span>
+            <button class="stream-toast-close" aria-label="Cerrar notificación">&times;</button>
+        </div>
+        <div class="stream-toast-actions">
+            <a href="https://kick.com/lagochagaming" target="_blank" class="btn-stream">
+                Ir al stream
+            </a>
+        </div>
+    </div>
+
+        <div class="logo">LAGOCHA<span>GAMING</span></div>
             <div class="logo">LAGOCHA<span>GAMING</span></div>
             <button class="mobile-menu-toggle-btn" aria-label="Abrir menú"><i class="fa-solid fa-bars"></i></button>
             <div class="nav-links">
@@ -213,9 +229,6 @@
         let paginaActualMuro = 0;
         const LIMITE_POR_PAGINA = 12;
         let adminAutenticado = false;
-        let ultimaEstadoEnVivoIndex = null;
-        let streamInterval = null;
-        let streamAbort = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
             const { data: { session } } = await supabase.auth.getSession();
@@ -224,37 +237,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.body.classList.add('admin-mode-active');
             }
 
-            // Verificar estado del stream al iniciar (diferido para no competir con el primer render)
-            setTimeout(() => {
-                if (document.visibilityState === 'visible') {
-                    verificarEstadoStreamIndex();
-                }
-            }, 500);
-            // Polling cada 60s, pausado cuando la pestaña está oculta
-            function iniciarPollingStream() {
-                if (streamInterval) clearInterval(streamInterval);
-                streamInterval = setInterval(() => {
-                    if (document.visibilityState === 'visible') {
-                        verificarEstadoStreamIndex();
-                    }
-                }, 60000);
+        // El polling del stream ahora está centralizado en main.js
+        // Verificar estado inicial (diferido para no competir con el primer render)
+        setTimeout(() => {
+            if (document.visibilityState === 'visible') {
+                verificarEstadoStream();
             }
-            function detenerPollingStream() {
-                if (streamInterval) clearInterval(streamInterval);
-                streamInterval = null;
-                if (streamAbort) { streamAbort.abort(); streamAbort = null; }
-            }
-            document.addEventListener('visibilitychange', () => {
-                if (document.visibilityState === 'visible') {
-                    verificarEstadoStreamIndex();
-                    iniciarPollingStream();
-                } else {
-                    detenerPollingStream();
-                }
-            });
-            iniciarPollingStream();
+        }, 500);
 
-            cargarMensajes(true);
+        cargarMensajes(true);
 
 document.getElementById('muro-form').addEventListener('submit', (e) => {
             e.preventDefault();
@@ -270,46 +261,40 @@ document.getElementById('muro-form').addEventListener('submit', (e) => {
         }
         });
 
-        async function verificarEstadoStreamIndex() {
-            if (streamAbort) streamAbort.abort();
-            streamAbort = new AbortController();
-            try {
-                const response = await fetch('https://kick.com/api/v2/channels/lagochagaming', { signal: streamAbort.signal });
-                if (!response.ok) throw new Error('Error');
-                const data = await response.json();
-                const enVivo = data.livestream && data.livestream.is_live === true;
-
-                const followersCount = data.followers_count ?? data.channel?.followers_count ?? data.user?.followers_count;
-                const followersEl = document.getElementById('kick-followers-count');
-                if (followersEl && followersCount !== undefined) {
-                    followersEl.textContent = formatNumber(followersCount);
-                    followersEl.title = followersCount.toLocaleString('es-ES') + ' seguidores';
-                }
-
-                const navbar = document.querySelector('.navbar');
-                const alertOverlay = document.getElementById('stream-alert');
-
-                if (enVivo) {
-                    // Activar navbar glow
-                    if (navbar) navbar.classList.add('live-glow');
-
-                    // Mostrar overlay de alerta si es la primera vez que detecta live
-                    if (alertOverlay && (ultimaEstadoEnVivoIndex === false || ultimaEstadoEnVivoIndex === null)) {
-                        alertOverlay.classList.add('visible', 'live');
-                        setTimeout(() => {
-                            alertOverlay.classList.remove('visible');
-                        }, 5000);
-                    }
-                } else {
-                    // Desactivar navbar glow
-                    if (navbar) navbar.classList.remove('live-glow');
-                }
-
-                ultimaEstadoEnVivoIndex = enVivo;
-            } catch (err) {
-                console.error('Error verificando estado:', err);
-            }
+        // Funciones para el toast de stream
+        function mostrarToastStream() {
+            const toast = document.getElementById('stream-toast');
+            if (!toast) return;
+            toast.classList.remove('stream-toast-hidden');
+            toast.style.display = 'flex';
+            
+            // Auto-cerrar después de 10 segundos
+            setTimeout(() => {
+                cerrarToastStream();
+            }, 10000);
         }
+
+        function cerrarToastStream() {
+            const toast = document.getElementById('stream-toast');
+            if (!toast) return;
+            toast.style.display = 'none';
+            setTimeout(() => {
+                toast.classList.add('stream-toast-hidden');
+            }, 300);
+        }
+
+        function cerrarToastStreamManual() {
+            cerrarToastStream();
+        }
+
+        // Event listener para cerrar el toast manualmente
+        const toastCloseBtn = document.querySelector('.stream-toast-close');
+        if (toastCloseBtn) {
+            toastCloseBtn.addEventListener('click', cerrarToastStreamManual);
+        }
+
+        // Funciones del toast de stream ahora están en main.js
+        // (mostrarToastStream, cerrarToastStream, verificarEstadoStream)
 
         async function cargarMensajes(reiniciar = false) {
             if (reiniciar) {
@@ -438,12 +423,7 @@ document.getElementById('muro-form').addEventListener('submit', (e) => {
             }
         }
 
-        function formatNumber(n) {
-            if (n >= 1000000) return (n / 1000000).toFixed(1).replace('.0', '') + 'M';
-            if (n >= 1000) return (n / 1000).toFixed(1).replace('.0', '') + 'K';
-            return String(n);
-        }
-
+        // formatNumber ahora está en main.js
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;

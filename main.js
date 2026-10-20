@@ -214,9 +214,126 @@ window.verificarSesionGlobal = function verificarSesionGlobal() {
     // La sesión de comunidad se gestiona por página (comunidad_nickname en localStorage).
 };
 
-// === INICIALIZACIÓN ===
+window.formatNumber = function formatNumber(n) {
+    if (n >= 1000000) return (n / 1000000).toFixed(1).replace('.0', '') + 'M';
+    if (n >= 1000) return (n / 1000).toFixed(1).replace('.0', '') + 'K';
+    return String(n);
+};
 
-try { insertarComponentesUIGlobales(); } catch (e) { console.error('insertarComponentesUIGlobales:', e); }
+// === POLLING DE ESTADO DEL STREAM ===
+window._streamInterval = null;
+window._ultimaEstadoEnVivo = null;
+
+window.verificarEstadoStream = async function verificarEstadoStream() {
+    if (window._streamAbort) window._streamAbort.abort();
+    window._streamAbort = new AbortController();
+    try {
+        const response = await fetch('https://kick.com/api/v2/channels/lagochagaming', { signal: window._streamAbort.signal });
+        if (!response.ok) throw new Error('Error');
+        const data = await response.json();
+        const enVivo = data.livestream && data.livestream.is_live === true;
+
+        const navbar = document.querySelector('.navbar');
+        const toast = document.getElementById('stream-toast');
+
+        // Actualizar contador de followers si existe (solo en index.html)
+        const followersCount = data.followers_count ?? data.channel?.followers_count ?? data.user?.followers_count;
+        const followersEl = document.getElementById('kick-followers-count');
+        if (followersEl && followersCount !== undefined) {
+            followersEl.textContent = formatNumber(followersCount);
+            followersEl.title = followersCount.toLocaleString('es-ES') + ' seguidores';
+        }
+
+        if (enVivo) {
+            if (navbar) navbar.classList.add('live-glow');
+            
+            // Mostrar toast si no está visible
+            if (toast && toast.style.display !== 'flex') {
+                mostrarToastStream();
+            }
+        } else {
+            if (navbar) navbar.classList.remove('live-glow');
+            if (toast) toast.style.display = 'none';
+        }
+
+        window._ultimaEstadoEnVivo = enVivo;
+    } catch (err) {
+        console.error('Error verificando estado:', err);
+    }
+};
+
+window.mostrarToastStream = function mostrarToastStream() {
+    const toast = document.getElementById('stream-toast');
+    if (!toast) return;
+    toast.classList.remove('stream-toast-hidden');
+    toast.style.display = 'flex';
+    
+    // Auto-cerrar después de 10 segundos
+    setTimeout(() => {
+        cerrarToastStream();
+    }, 10000);
+};
+
+window.cerrarToastStream = function cerrarToastStream() {
+    const toast = document.getElementById('stream-toast');
+    if (!toast) return;
+    toast.style.display = 'none';
+    setTimeout(() => {
+        toast.classList.add('stream-toast-hidden');
+    }, 300);
+};
+
+// Inicializar polling en todas las páginas
+function iniciarPollingStreamGlobal() {
+    // Verificar estado al cargar
+    setTimeout(() => {
+        if (document.visibilityState === 'visible') {
+            verificarEstadoStream();
+        }
+    }, 500);
+
+    // Polling cada 60s
+    if (window._streamInterval) clearInterval(window._streamInterval);
+    window._streamInterval = setInterval(() => {
+        if (document.visibilityState === 'visible') {
+            verificarEstadoStream();
+        }
+    }, 60000);
+
+    // Pausar cuando pestaña oculta
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+            verificarEstadoStream();
+            if (!window._streamInterval) {
+                window._streamInterval = setInterval(() => {
+                    if (document.visibilityState === 'visible') {
+                        verificarEstadoStream();
+                    }
+                }, 60000);
+            }
+        } else {
+            if (window._streamInterval) {
+                clearInterval(window._streamInterval);
+                window._streamInterval = null;
+            }
+            if (window._streamAbort) {
+                window._streamAbort.abort();
+                window._streamAbort = null;
+            }
+        }
+    });
+}
+
+// Event listener para cerrar toast manualmente
+document.addEventListener('DOMContentLoaded', () => {
+    const toastCloseBtn = document.querySelector('.stream-toast-close');
+    if (toastCloseBtn) {
+        toastCloseBtn.addEventListener('click', cerrarToastStream);
+    }
+    
+    // Iniciar polling global
+    iniciarPollingStreamGlobal();
+});
 try { initTema(); } catch (e) { console.error('initTema:', e); }
 try { inicializarMenuMovil(); } catch (e) { console.error('inicializarMenuMovil:', e); }
 try { inicializarNavLinks(); } catch (e) { console.error('inicializarNavLinks:', e); }
