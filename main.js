@@ -211,15 +211,11 @@ window.inicializarNavLinks = function inicializarNavLinks() {
     });
 };
 
-window.verificarSesionGlobal = function verificarSesionGlobal() {
-    // La sesión de comunidad se gestiona por página (comunidad_nickname en localStorage).
-};
-
-window.formatNumber = function formatNumber(n) {
+function formatNumber(n) {
     if (n >= 1000000) return (n / 1000000).toFixed(1).replace('.0', '') + 'M';
     if (n >= 1000) return (n / 1000).toFixed(1).replace('.0', '') + 'K';
     return String(n);
-};
+}
 
 // === POLLING DE ESTADO DEL STREAM ===
 window._streamInterval = null;
@@ -350,4 +346,3 @@ try { initTema(); } catch (e) { console.error('initTema:', e); }
 try { inicializarMenuMovil(); } catch (e) { console.error('inicializarMenuMovil:', e); }
 try { inicializarNavLinks(); } catch (e) { console.error('inicializarNavLinks:', e); }
 try { actualizarUsuarioNavComunidad(); } catch (e) { console.error('actualizarUsuarioNavComunidad:', e); }
-try { verificarSesionGlobal(); } catch (e) { console.error('verificarSesionGlobal:', e); }
