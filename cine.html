@@ -615,6 +615,12 @@
             }
         }
 
+        function abrirModalCinePin() {
+            document.getElementById('feedback-cine-pin').textContent = '';
+            document.getElementById('modal-pin-cine').style.display = 'flex';
+            document.getElementById('streamer-cine-email').focus();
+        }
+
         function activarModoStreamerUI() {
             document.getElementById('streamerAdminPanel').style.display = 'block';
             document.body.classList.add('admin-mode-active');

@@ -721,6 +721,7 @@
                 }
             } else if (tab === 'streamer') {
                 if (!streamerAutenticado) {
+                    document.getElementById('feedback-pin').innerText = '';
                     document.getElementById('modal-pin').style.display = 'flex';
                     document.getElementById('streamer-email').focus();
                 } else {
@@ -744,27 +745,40 @@
         async function confirmarLoginStreamer() {
             const email = document.getElementById('streamer-email').value.trim();
             const password = document.getElementById('streamer-password').value.trim();
+            const btnEntrar = document.querySelector('[data-action="login-streamer"]');
+
+            if (!window.supabase) {
+                mostrarFeedback('feedback-pin', '❌ No se pudo conectar con el servidor', true);
+                return;
+            }
 
             if (!email || !password) {
                 mostrarFeedback('feedback-pin', 'Rellena todos los campos', true);
                 return;
             }
 
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            if (btnEntrar) btnEntrar.disabled = true;
+            try {
+                const { error } = await supabase.auth.signInWithPassword({ email, password });
 
-            if (error) {
-                mostrarFeedback('feedback-pin', '❌ Credenciales incorrectas', true);
-                return;
+                if (error) {
+                    mostrarFeedback('feedback-pin', '❌ Credenciales incorrectas', true);
+                    return;
+                }
+
+                streamerAutenticado = true;
+                cerrarModalPin();
+                document.getElementById('sec-modo-manual').style.display = 'none';
+                document.getElementById('sec-modo-streamer').style.display = 'block';
+                document.getElementById('tab-manual').classList.remove('active');
+                document.getElementById('tab-streamer').classList.add('active');
+                document.getElementById('tab-manual').setAttribute('aria-selected', 'false');
+                document.getElementById('tab-streamer').setAttribute('aria-selected', 'true');
+            } catch (e) {
+                mostrarFeedback('feedback-pin', '❌ No se pudo iniciar sesión', true);
+            } finally {
+                if (btnEntrar) btnEntrar.disabled = false;
             }
-
-            streamerAutenticado = true;
-            cerrarModalPin();
-            document.getElementById('sec-modo-manual').style.display = 'none';
-            document.getElementById('sec-modo-streamer').style.display = 'block';
-            document.getElementById('tab-manual').classList.remove('active');
-            document.getElementById('tab-streamer').classList.add('active');
-            document.getElementById('tab-manual').setAttribute('aria-selected', 'false');
-            document.getElementById('tab-streamer').setAttribute('aria-selected', 'true');
         }
 
         function salirModoStreamer() {
@@ -807,10 +821,12 @@
             if (btnToggle) {
                 if (sorteoAbierto) {
                     btnToggle.innerText = "🔴 CERRAR SORTEO EN VIVO";
-                    btnToggle.style.background = "#ff4d4d";
+                    btnToggle.classList.add('btn-danger');
+                    btnToggle.classList.remove('btn-success');
                 } else {
                     btnToggle.innerText = "🟢 ABRIR SORTEO EN VIVO";
-                    btnToggle.style.background = "#2ecc71";
+                    btnToggle.classList.add('btn-success');
+                    btnToggle.classList.remove('btn-danger');
                 }
             }
 
@@ -875,17 +891,29 @@
         }
 
         async function registrarUsuarioEnLista(username, feedbackId) {
-            if (listaStreamerOnline.some(u => u.toLowerCase() === username.toLowerCase())) {
+            const yaRegistrado = listaStreamerOnline.some(
+                u => String(u.username ?? u).toLowerCase() === username.toLowerCase()
+            );
+            if (yaRegistrado) {
                 mostrarFeedback(feedbackId, '⚠️ ¡Este usuario ya está registrado!', true);
                 return;
             }
 
-            listaStreamerOnline.push(username);
+            listaStreamerOnline.push({ username: username, peso: 1 });
             renderListaStreamer();
 
             try {
-                await supabase.from('participantes_en_vivo').insert([{ username: username }]);
-            } catch (err) { console.error('Guardado localmente:', err); }
+                const { error } = await supabase.from('participantes_en_vivo').insert([{ username: username }]);
+                if (error) throw error;
+            } catch (err) {
+                console.error('No se pudo registrar en Supabase:', err);
+                listaStreamerOnline = listaStreamerOnline.filter(
+                    u => String(u.username ?? u).toLowerCase() !== username.toLowerCase()
+                );
+                renderListaStreamer();
+                mostrarFeedback(feedbackId, '❌ No se pudo completar el registro. Inténtalo de nuevo.', true);
+                return;
+            }
 
             localStorage.setItem('gochi_registrado_user', username);
             actualizarUIEstadoSorteo();

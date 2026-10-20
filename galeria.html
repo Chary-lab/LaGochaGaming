@@ -685,6 +685,7 @@
             const btnLogout = document.getElementById('btn-logout-galeria');
 
             if (!adminAutenticado) {
+                document.getElementById('feedback-pin').innerText = '';
                 document.getElementById('modal-pin').style.display = 'flex';
                 document.getElementById('admin-email').focus();
             } else {
@@ -714,30 +715,43 @@
             const email = document.getElementById('admin-email').value.trim();
             const password = document.getElementById('admin-password').value.trim();
             const feedback = document.getElementById('feedback-pin');
+            const btnEntrar = document.querySelector('[data-action="login-admin"]');
+
+            if (!window.supabase) {
+                feedback.innerText = '❌ No se pudo conectar con el servidor';
+                return;
+            }
 
             if (!email || !password) {
                 feedback.innerText = 'Rellena todos los campos';
                 return;
             }
 
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            if (btnEntrar) btnEntrar.disabled = true;
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
-            if (error) {
-                feedback.innerText = '❌ Credenciales incorrectas';
-                return;
+                if (error) {
+                    feedback.innerText = '❌ Credenciales incorrectas';
+                    return;
+                }
+
+                adminAutenticado = true;
+                cerrarModalPin();
+                document.body.classList.add('admin-mode-active');
+                document.getElementById('panelPendientes').style.display = 'block';
+                document.getElementById('btn-logout-galeria').style.display = 'inline-flex';
+                const btn = document.getElementById('btn-toggle-admin');
+                btn.innerHTML = '<i class="fa-solid fa-lock-open"></i> Ocultar Moderación';
+                btn.classList.add('active');
+                btn.setAttribute('aria-expanded', 'true');
+                loadPendingImages();
+                mostrarToast('¡Modo moderación activado!');
+            } catch (e) {
+                feedback.innerText = '❌ No se pudo iniciar sesión';
+            } finally {
+                if (btnEntrar) btnEntrar.disabled = false;
             }
-
-            adminAutenticado = true;
-            cerrarModalPin();
-            document.body.classList.add('admin-mode-active');
-            document.getElementById('panelPendientes').style.display = 'block';
-            document.getElementById('btn-logout-galeria').style.display = 'inline-flex';
-            const btn = document.getElementById('btn-toggle-admin');
-            btn.innerHTML = '<i class="fa-solid fa-lock-open"></i> Ocultar Moderación';
-            btn.classList.add('active');
-            btn.setAttribute('aria-expanded', 'true');
-            loadPendingImages();
-            mostrarToast('¡Modo moderación activado!');
         }
 
         // ===================================================
