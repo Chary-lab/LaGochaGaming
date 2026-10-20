@@ -27,25 +27,97 @@
             margin-bottom: 20px;
         }
 
-        .btn-admin-mode {
-            background: var(--card-bg-subtle);
-            color: var(--text-muted);
-            border: 1px solid var(--border-color);
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: background-color 0.2s, color 0.2s, border-color 0.2s;
-            display: inline-flex;
+        .admin-controls-actions {
+            display: flex;
+            gap: 10px;
             align-items: center;
-            gap: 6px;
         }
-        .btn-admin-mode.active {
-            background: var(--accent-color);
-            color: #fff;
+
+        .admin-controls-actions .btn-admin-logout {
+            display: none;
+        }
+
+        .galeria-top {
+            margin-top: 0;
+            padding-top: 20px;
+        }
+
+        .upload-title-wrap {
+            margin-bottom: 15px;
+        }
+
+        .gallery-title-input {
+            width: 100%;
+            max-width: 400px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--card-bg-subtle);
+            color: var(--text-main);
+            font-family: inherit;
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        .gallery-title-input:focus {
             border-color: var(--accent-color);
-            box-shadow: var(--glow);
+        }
+
+        .upload-hint {
+            margin-top: 15px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .gallery-public-title {
+            font-size: 1.2rem;
+            margin: 0;
+            color: var(--text-muted);
+        }
+
+        .gallery-empty {
+            color: var(--text-muted);
+            grid-column: 1 / -1;
+            text-align: center;
+        }
+
+        .gallery-card-title {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 140px;
+        }
+
+        .gallery-card-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .gallery-card-info-column {
+            flex-direction: column;
+            gap: 8px;
+            align-items: stretch;
+        }
+
+        .gallery-card-title-full {
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .gallery-card-pending-actions {
+            display: flex;
+            justify-content: space-between;
+            gap: 5px;
+        }
+
+        .gallery-card-pending {
+            border: 1px solid #f39c12;
+        }
+
+        .upload-progress {
+            color: var(--text-muted);
+            margin-top: 10px;
         }
 
         .panel-pendientes {
@@ -251,14 +323,14 @@
         </div>
     </div>
 
-    <div class="content-section" style="margin-top: 0; padding-top: 20px;">
+    <div class="content-section galeria-top">
         <div class="admin-controls-panel">
             <h1>Mi Galería</h1>
-            <div style="display: flex; gap: 10px; align-items: center;">
+            <div class="admin-controls-actions">
                 <button id="btn-toggle-admin" class="btn-admin-mode" data-action="toggle-admin" aria-expanded="false" aria-controls="panelPendientes">
                     <i class="fa-solid fa-lock"></i> Modo Moderación
                 </button>
-                <button id="btn-logout-galeria" class="btn-admin-mode" data-action="logout" style="display: none; background: #c0392b; color: #fff;">
+                <button id="btn-logout-galeria" class="btn-admin-mode btn-admin-logout" data-action="logout">
                     <i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión Admin
                 </button>
             </div>
@@ -272,21 +344,21 @@
 
         <!-- SUBIDA DE IMÁGENES -->
         <div class="upload-container" id="uploadContainer">
-            <div style="margin-bottom: 15px;">
-                <input type="text" id="imageTitleInput" placeholder="Escribe un título para tu imagen..." maxlength="40" style="width: 100%; max-width: 400px; padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg-subtle); color: var(--text-main); font-size: 0.95rem; outline: none;">
+            <div class="upload-title-wrap">
+                <input type="text" id="imageTitleInput" class="gallery-title-input" placeholder="Escribe un título para tu imagen..." maxlength="40">
             </div>
 
             <input type="file" id="uploadInput" class="upload-input" accept="image/*">
             <label for="uploadInput" class="upload-label">
                 <i class="fas fa-upload"></i> Seleccionar Imagen
             </label>
-            <p style="margin-top: 15px; color: var(--text-muted); font-size: 0.9rem;">Formatos: JPG, PNG, GIF. Tamaño máximo: 5MB por imagen.</p>
+            <p class="upload-hint">Formatos: JPG, PNG, GIF. Tamaño máximo: 5MB por imagen.</p>
             <div id="uploadFeedback"></div>
         </div>
 
         <!-- FILTROS Y PESTAÑAS POPULARES / RECIENTES -->
         <div class="filter-tabs-container">
-            <h2 style="font-size: 1.2rem; margin: 0; color: var(--text-muted);">📸 Galería Pública</h2>
+            <h2 class="gallery-public-title">📸 Galería Pública</h2>
             <div class="filter-tabs">
                 <button id="tab-populares" class="tab-filter-btn active" data-action="filter-gallery" data-filter="populares">
                     <i class="fa-solid fa-fire"></i> Más Populares
@@ -412,7 +484,7 @@
                 let imagenesPublicas = data ? data.filter(img => !img.estado || img.estado.toLowerCase() === 'aprobado') : [];
 
                 if (imagenesPublicas.length === 0) {
-                    galleryGrid.innerHTML = '<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center;">No hay imágenes públicas aprobadas aún. ¡Sé el primero en subir una! 📸</p>';
+                    galleryGrid.innerHTML = '<p class="gallery-empty">No hay imágenes públicas aprobadas aún. ¡Sé el primero en subir una! 📸</p>';
                     return;
                 }
 
@@ -452,8 +524,8 @@
                         ${badgeHTML}
                         <img src="${escapeAttr(image.image_url)}" alt="${escapeAttr(image.title || 'Foto Gocha')}" loading="lazy">
                         <div class="gallery-card-info">
-                            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px;" title="${escapeAttr(image.title || 'Sin título')}">${escapeHtml(image.title || 'Sin título')}</span>
-                            <div style="display: flex; gap: 8px; align-items: center;">
+                            <span class="gallery-card-title" title="${escapeAttr(image.title || 'Sin título')}">${escapeHtml(image.title || 'Sin título')}</span>
+                            <div class="gallery-card-actions">
                                 <button class="btn-eliminar-publica" data-action="delete-image" data-image-id="${image.id}" title="Borrar foto de la galería" aria-label="Borrar foto de la galería">
                                     <i class="fa-solid fa-trash-can"></i>
                                 </button>
@@ -543,19 +615,18 @@
                 cantSpan.innerText = pendientes.length;
 
                 if (pendientes.length === 0) {
-                    gridPendientes.innerHTML = '<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center;">¡No hay fotos pendientes por moderar! 🎉</p>';
+                    gridPendientes.innerHTML = '<p class="gallery-empty">¡No hay fotos pendientes por moderar! 🎉</p>';
                     return;
                 }
 
                 pendientes.forEach(image => {
                     const card = document.createElement('div');
-                    card.className = 'gallery-card';
-                    card.style.border = '1px solid #f39c12';
+                    card.className = 'gallery-card gallery-card-pending';
                     card.innerHTML = `
                         <img src="${escapeAttr(image.image_url)}" alt="${escapeAttr(image.title || 'Foto pendiente')}" loading="lazy">
-                        <div class="gallery-card-info" style="flex-direction: column; gap: 8px; align-items: stretch;">
-                            <span style="font-weight: bold; text-align: center;">${escapeHtml(image.title)}</span>
-                            <div style="display: flex; justify-content: space-between; gap: 5px;">
+                        <div class="gallery-card-info gallery-card-info-column">
+                            <span class="gallery-card-title-full">${escapeHtml(image.title)}</span>
+                            <div class="gallery-card-pending-actions">
                                 <button class="btn-aprobar" data-action="approve-image" data-image-id="${image.id}"><i class="fa-solid fa-check"></i> Aprobar</button>
                                 <button class="btn-rechazar" data-action="delete-image" data-image-id="${image.id}"><i class="fa-solid fa-xmark"></i> Rechazar</button>
                             </div>
@@ -738,7 +809,7 @@
 
         async function uploadToSupabase(file, title) {
             if (file.type.startsWith('image/')) {
-                uploadFeedback.innerHTML = '<p style="color: var(--text-muted); margin-top:10px;">⏳ Subiendo imagen...</p>';
+                uploadFeedback.innerHTML = '<p class="upload-progress">⏳ Subiendo imagen...</p>';
                 const filePath = `gallery_${Date.now()}_${file.name}`;
                 const { error } = await supabase.storage.from('fotos-galeria').upload(filePath, file);
                 

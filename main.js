@@ -86,7 +86,7 @@ window.actualizarUsuarioNavComunidad = function actualizarUsuarioNavComunidad() 
         const apodoSeguro = String(apodo).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         navUserInfo.style.display = 'inline-flex';
         navUserInfo.innerHTML = `
-            <i class="fa-solid fa-user" style="color:var(--accent-color);"></i>
+            <i class="fa-solid fa-user nav-user-icon"></i>
             <span id="nav-username">${apodoSeguro}</span>
             <button type="button" class="btn-logout-nav" title="Cerrar Sesión" aria-label="Cerrar sesión"><i class="fa-solid fa-right-from-bracket"></i> Salir</button>
         `;
@@ -127,8 +127,8 @@ window.insertarComponentesUIGlobales = function insertarComponentesUIGlobales() 
         modal.setAttribute('aria-describedby', 'gochi-confirm-mensaje');
         modal.innerHTML = `
             <div class="gochi-modal-box">
-                <h3 id="gochi-confirm-titulo" style="margin:0 0 10px; color:var(--text-main);">Confirmar</h3>
-                <p id="gochi-confirm-mensaje" style="color:var(--text-muted); margin-bottom:20px;"></p>
+                <h3 id="gochi-confirm-titulo">Confirmar</h3>
+                <p id="gochi-confirm-mensaje"></p>
                 <div class="gochi-modal-actions">
                     <button id="gochi-confirm-cancelar" class="btn-primary btn-muted">Cancelar</button>
                     <button id="gochi-confirm-confirmar" class="btn-primary">Confirmar</button>

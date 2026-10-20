@@ -40,6 +40,79 @@
             text-align: center;
             margin-top: 25px;
         }
+        .clip-thumb {
+            background-size: cover;
+            background-position: center;
+        }
+        .clip-thumb-1 { background-image: url('img/1.jpg'); }
+        .clip-thumb-2 { background-image: url('img/2.jpg'); }
+        .clip-thumb-3 { background-image: url('img/3.jpg'); }
+        .clip-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: #fff;
+            background: rgba(0, 0, 0, 0.35);
+        }
+        .clip-play {
+            background: rgba(255, 102, 178, 0.9);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--glow);
+        }
+        .clip-play-icon {
+            font-size: 1.4rem;
+            margin-left: 4px;
+            color: #fff;
+        }
+        .youtube-fallback {
+            display: none;
+            padding: 20px;
+            text-align: center;
+            border-radius: 12px;
+            background: var(--card-bg-subtle);
+            border: 1px solid var(--border-color);
+            margin-top: 12px;
+        }
+        .youtube-fallback p {
+            margin: 0 0 10px;
+            color: var(--text-muted);
+        }
+        .youtube-fallback .btn-primary {
+            display: inline-block;
+            padding: 10px 24px;
+        }
+        .muro-feedback {
+            text-align: center;
+            margin-top: 10px;
+            font-weight: bold;
+            font-size: 0.88rem;
+        }
+        .muro-feedback-error { color: #ff4d4d; }
+        .muro-feedback-success { color: #53fc18; }
+        .btn-cargar-mas {
+            display: none;
+            background: var(--card-bg-subtle);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
+        .muro-empty {
+            color: var(--text-muted);
+            text-align: center;
+            grid-column: 1 / -1;
+        }
+        .muro-card-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
     </style>
 </head>
 <body>
@@ -120,30 +193,30 @@
         <h2>🔥 TOP CLIPS 🔥</h2>
     <div class="youtube-grid">
         <div class="video-card">
-            <div class="video-thumb" style="background-image: url('img/1.jpg'); background-size: cover; background-position: center; position: relative;">
-                <a href="https://kick.com/lagochagaming/clips/clip_01JR9VN6J99XGBBECCH9P7693B" target="_blank" style="position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; text-decoration: none; color: white; background: rgba(0,0,0,0.35);">
-                    <div style="background: rgba(255, 102, 178, 0.9); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: var(--glow);">
-                        <i class="fa-solid fa-play" style="font-size: 1.4rem; margin-left: 4px; color: #fff;"></i>
+            <div class="video-thumb clip-thumb clip-thumb-1">
+                <a href="https://kick.com/lagochagaming/clips/clip_01JR9VN6J99XGBBECCH9P7693B" target="_blank" class="clip-overlay">
+                    <div class="clip-play">
+                        <i class="fa-solid fa-play clip-play-icon"></i>
                     </div>
                 </a>
             </div>
             <a href="https://kick.com/lagochagaming/clips/clip_01JR9VN6J99XGBBECCH9P7693B" target="_blank" class="watch-btn">Dándole celos a mi novio</a>
         </div>
         <div class="video-card">
-            <div class="video-thumb" style="background-image: url('img/2.jpg'); background-size: cover; background-position: center; position: relative;">
-                <a href="https://kick.com/lagochagaming/clips/clip_01JQZEQXE9VJH7NTD69YCG5PXT" target="_blank" style="position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; text-decoration: none; color: white; background: rgba(0,0,0,0.35);">
-                    <div style="background: rgba(255, 102, 178, 0.9); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: var(--glow);">
-                        <i class="fa-solid fa-play" style="font-size: 1.4rem; margin-left: 4px; color: #fff;"></i>
+            <div class="video-thumb clip-thumb clip-thumb-2">
+                <a href="https://kick.com/lagochagaming/clips/clip_01JQZEQXE9VJH7NTD69YCG5PXT" target="_blank" class="clip-overlay">
+                    <div class="clip-play">
+                        <i class="fa-solid fa-play clip-play-icon"></i>
                     </div>
                 </a>
             </div>
             <a href="https://kick.com/lagochagaming/clips/clip_01JQZEQXE9VJH7NTD69YCG5PXT" target="_blank" class="watch-btn">Mamá chiss prendiooo</a>
         </div>
         <div class="video-card">
-            <div class="video-thumb" style="background-image: url('img/3.jpg'); background-size: cover; background-position: center; position: relative;">
-                <a href="https://kick.com/lagochagaming/clips/clip_01JT26P6TW7CS2CPJJ3TRP9WTY" target="_blank" style="position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; text-decoration: none; color: white; background: rgba(0,0,0,0.35);">
-                    <div style="background: rgba(255, 102, 178, 0.9); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: var(--glow);">
-                        <i class="fa-solid fa-play" style="font-size: 1.4rem; margin-left: 4px; color: #fff;"></i>
+            <div class="video-thumb clip-thumb clip-thumb-3">
+                <a href="https://kick.com/lagochagaming/clips/clip_01JT26P6TW7CS2CPJJ3TRP9WTY" target="_blank" class="clip-overlay">
+                    <div class="clip-play">
+                        <i class="fa-solid fa-play clip-play-icon"></i>
                     </div>
                 </a>
             </div>
@@ -177,9 +250,9 @@
 <div class="social-column youtube-wrapper">
     <div class="youtube-box-compact">
         <iframe class="youtube-iframe-compact" src="https://www.youtube.com/embed/videoseries?list=PLdVAlz18ZwEk" title="Lista de reproducción de LaGochaGaming" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen" referrerpolicy="no-referrer-when-downgrade" onerror="this.style.display='none'; document.querySelector('.youtube-fallback').style.display='block';"></iframe>
-        <div class="youtube-fallback" style="padding:20px; text-align:center; border-radius:12px; background:var(--card-bg-subtle); border:1px solid var(--border-color); margin-top:12px;">
-            <p style="margin:0 0 10px; color:var(--text-muted);">Algunos videos no se pueden incrustar directamente en esta página.</p>
-            <a href="https://www.youtube.com/@lagochagaming" target="_blank" rel="noopener noreferrer" class="btn-primary" style="display:inline-block; padding:10px 24px;">🎬 Ver canal de YouTube</a>
+        <div class="youtube-fallback">
+            <p>Algunos videos no se pueden incrustar directamente en esta página.</p>
+            <a href="https://www.youtube.com/@lagochagaming" target="_blank" rel="noopener noreferrer" class="btn-primary">🎬 Ver canal de YouTube</a>
         </div>
     </div>
 </div>
@@ -194,12 +267,12 @@
                 <textarea id="muro-mensaje" placeholder="Escribe tu saludo o mensaje para La Gocha..." maxlength="150" required></textarea>
                 <button type="submit" id="btn-enviar-muro" class="btn-primary">ENVIAR SALUDO</button>
             </form>
-            <div id="muro-feedback" style="text-align:center; margin-top:10px; font-weight:bold; font-size:0.88rem;"></div>
+            <div id="muro-feedback" class="muro-feedback"></div>
         </div>
         <div id="muro-mensajes-container" class="muro-grid"></div>
         
         <div class="cargar-mas-container">
-            <button id="btn-cargar-mas-muro" class="btn-primary" style="display: none; background: var(--card-bg-subtle); color: var(--text-main); border: 1px solid var(--border-color);">
+            <button id="btn-cargar-mas-muro" class="btn-primary btn-cargar-mas">
                 <i class="fa-solid fa-chevron-down"></i> Cargar más saludos
             </button>
         </div>
@@ -291,7 +364,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const btnCargarMas = document.getElementById('btn-cargar-mas-muro');
 
                 if (reiniciar && (!data || data.length === 0)) {
-                    container.innerHTML = '<p style="color: var(--text-muted); text-align: center; grid-column: 1/-1;">Aún no hay saludos. ¡Sé el primero en escribir uno! 💖</p>';
+                    container.innerHTML = '<p class="muro-empty">Aún no hay saludos. ¡Sé el primero en escribir uno! 💖</p>';
                     btnCargarMas.style.display = 'none';
                     return;
                 }
@@ -307,7 +380,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     card.innerHTML = `
                         <div class="muro-card-header">
                             <span class="muro-autor">${escapeHtml(msg.autor)}</span>
-                            <div style="display: flex; gap: 8px; align-items: center;">
+                            <div class="muro-card-actions">
                                 <button type="button" class="btn-eliminar-muro" data-id="${msg.id}" title="Eliminar saludo" aria-label="Eliminar saludo">
                                     <i class="fa-solid fa-trash-can"></i>
                                 </button>
@@ -350,15 +423,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                     .insert([{ autor, mensaje, estado: 'aprobado' }]);
 
                 if (error) {
-                    feedback.style.color = '#ff4d4d';
+                    feedback.classList.remove('muro-feedback-success');
+                    feedback.classList.add('muro-feedback-error');
                     feedback.innerText = '❌ Error al enviar el saludo. Intenta de nuevo.';
                     return;
                 }
 
                 document.getElementById('muro-mensaje').value = '';
-                feedback.style.color = '#53fc18';
+                feedback.classList.remove('muro-feedback-error');
+                feedback.classList.add('muro-feedback-success');
                 feedback.innerText = '✅ ¡Tu saludo ha sido publicado en el muro! 💖';
-                setTimeout(() => { feedback.innerText = ''; }, 4000);
+                setTimeout(() => {
+                    feedback.innerText = '';
+                    feedback.classList.remove('muro-feedback-success');
+                }, 4000);
                 
             cargarMensajes(true);
             } catch (err) {

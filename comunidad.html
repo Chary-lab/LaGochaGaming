@@ -48,6 +48,7 @@
             cursor: pointer;
             font-size: 0.85rem;
             font-weight: 600;
+            white-space: nowrap;
             transition: all 0.2s ease;
         }
         .tab-btn:hover {
@@ -332,6 +333,63 @@
         .chat-msg-vacio { text-align: center; color: var(--text-muted); margin-top: 40px; }
         .btn-burbuja.mia { background: var(--accent-color); color: #000; }
 
+        /* === Componentes locales del panel de comunidad === */
+        .chat-sidebar-title { color: var(--accent-color); margin-bottom: 8px; }
+        .chat-sidebar-section { margin-top: 20px; }
+        .chat-sidebar-subtitle { color: var(--accent-color); margin-bottom: 10px; font-size: 1rem; }
+        .leaderboard-scroll { max-height: 300px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; background: var(--card-bg-subtle); }
+        .chat-empty-note { text-align: center; color: var(--text-muted); padding: 20px; }
+        .chat-empty-error { text-align: center; color: #ff4d4d; padding: 40px; }
+        .chat-header-icon { color: var(--accent-color); }
+
+        .chat-login-area { flex-direction: column; align-items: center; gap: 12px; padding: 20px; text-align: center; }
+        .chat-login-copy { color: var(--text-muted); font-size: 0.9rem; }
+        .chat-login-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+        .chat-login-btn { flex: 1; min-width: 140px; padding: 12px 14px; font-size: 0.9rem; white-space: nowrap; }
+        .chat-login-hint { font-size: 0.8rem; color: var(--text-muted); margin: 5px 0 0 0; }
+
+        .chat-form { display: none; position: relative; grid-template-columns: 140px minmax(0, 1fr) auto; align-items: center; }
+        .chat-form.is-visible { display: grid; }
+        .chat-submit-btn { padding: 10px 20px; }
+        .streak-badge-chat { display: none; position: absolute; top: -25px; right: 10px; white-space: nowrap; }
+
+        .canal-title { color: var(--accent-color); margin-bottom: 10px; }
+        .canal-estado { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+        .estado-dot { display: inline-block; width: 10px; height: 10px; background: #ff4d4d; border-radius: 50%; }
+        .viewers-count { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px; display: none; }
+        .canal-preview { display: none; width: 100%; height: 160px; object-fit: cover; border-radius: 8px; margin-top: 10px; border: 1px solid var(--border-color); }
+        .canal-info { font-size: 0.8rem; color: var(--text-muted); margin-top: 6px; display: none; }
+        .canal-offline { text-align: center; padding: 20px; color: var(--text-muted); display: none; }
+        .canal-offline-img { width: 100%; height: 160px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border-color); }
+        .canal-cta { display: block; text-align: center; margin-top: 15px; text-decoration: none; }
+
+        .user-profile-panel { margin-top: 15px; padding: 14px; border-top: 1px solid rgba(255, 255, 255, 0.1); background: var(--card-bg-subtle, rgba(255, 255, 255, 0.03)); border-radius: 10px; display: none; }
+        .user-profile-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: 700; }
+        .user-profile-rows { display: flex; flex-direction: column; gap: 6px; }
+        .user-profile-row { display: flex; align-items: center; gap: 6px; font-weight: 700; color: var(--text-main); }
+        .user-profile-row-accent { display: flex; align-items: center; gap: 6px; color: var(--accent-color); font-weight: 600; }
+        .user-profile-icon { color: var(--accent-color); }
+        .user-rango-badge { width: fit-content; margin: 2px 0 0 0; }
+
+        .tab-content-title { color: var(--accent-color); margin-bottom: 12px; }
+        .tab-content-title-sm { color: var(--accent-color); margin-bottom: 10px; }
+        .tab-hint { font-size: 0.78rem; color: var(--text-muted); margin-top: 10px; line-height: 1.4; }
+        .tab-list { font-size: 0.88rem; color: var(--text-muted); padding-left: 18px; display: flex; flex-direction: column; gap: 8px; }
+        .tab-list-sm { font-size: 0.82rem; color: var(--text-muted); padding-left: 18px; display: flex; flex-direction: column; gap: 6px; line-height: 1.5; }
+        .tab-section { margin-top: 12px; }
+        .shop-card { border: 1px solid var(--accent-color); border-radius: 12px; padding: 15px; margin-top: 12px; }
+        .shop-badge { font-size: 0.7rem; background: var(--accent-color); color: #000; padding: 2px 6px; border-radius: 4px; margin-left: 8px; }
+        .tab-copy { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px; }
+
+        .modal-subtitle { font-size: 0.9rem; color: var(--text-muted); }
+        .modal-error { color: #ff4d4d; margin-top: 10px; display: none; font-size: 0.85rem; }
+        .tooltip-count { font-weight: normal; }
+        .leaderboard-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 4px; border-bottom: 1px solid var(--border-color); }
+        .leaderboard-item-first { background: rgba(255, 215, 0, 0.1); }
+        .leaderboard-user { font-size: 0.9rem; font-weight: bold; }
+        .leaderboard-points { color: var(--accent-color); font-size: 0.85rem; }
+        .leaderboard-badge { margin-left: 6px; }
+
         /* Responsive al final del bloque: así prevalece sobre las reglas base */
         @media (max-width: 1024px) {
             .comunidad-layout {
@@ -377,6 +435,13 @@
             .chat-input-area button {
                 min-height: 44px;
                 padding: 10px 16px;
+            }
+            .chat-form.is-visible {
+                grid-template-columns: 1fr;
+            }
+            .chat-form.is-visible input,
+            .chat-form.is-visible .chat-submit-btn {
+                width: 100%;
             }
             #online-users-list {
                 max-height: 240px;
@@ -443,7 +508,7 @@
     <main class="comunidad-layout">
         <!-- COLUMNA IZQUIERDA: USUARIOS EN LÍNEA + LEADERBOARD -->
         <section id="online-users" class="online-users-column">
-            <h3 style="color: var(--accent-color); margin-bottom: 8px;">
+            <h3 class="chat-sidebar-title">
                 <i class="fa-solid fa-users"></i> Usuarios en línea
             </h3>
             <div id="online-users-list">
@@ -451,12 +516,12 @@
             </div>
 
             <!-- LEADERBOARD PÚBLICO DE PUNTOS -->
-            <div style="margin-top: 20px;">
-                <h3 style="color: var(--accent-color); margin-bottom: 10px; font-size: 1rem;">
+            <div class="chat-sidebar-section">
+                <h3 class="chat-sidebar-subtitle">
                     <i class="fa-solid fa-trophy"></i> Top Comunidad
                 </h3>
-                <div id="leaderboard-list" style="max-height: 300px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; background: var(--card-bg-subtle);">
-                    <div style="text-align:center; color:var(--text-muted); padding:20px;">Cargando ranking...</div>
+                <div id="leaderboard-list" class="leaderboard-scroll">
+                    <div class="chat-empty-note">Cargando ranking...</div>
                 </div>
             </div>
         </section>
@@ -464,7 +529,7 @@
         <!-- COLUMNA CENTRO: CHAT EN VIVO -->
         <div class="chat-box-container">
             <div class="chat-header">
-                <i class="fa-solid fa-comments" style="color: var(--accent-color);"></i>
+                <i class="fa-solid fa-comments chat-header-icon"></i>
                 <span>Chat Comunitario (Offline / Online)</span>
             </div>
 
@@ -476,31 +541,31 @@
             </div>
 
             <!-- ÁREA DE CHAT: Login/Registro cuando no hay sesión, Formulario cuando hay sesión -->
-            <div id="chat-login-area" class="chat-input-area" style="display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 20px; text-align: center;">
-                <div style="color: var(--text-muted); font-size: 0.9rem;">Inicia sesión o regístrate para participar en el chat</div>
-                <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
-                    <button id="btn-login-chat" class="btn-primary" style="flex: 1; min-width: 140px; padding: 12px 18px; font-size: 0.95rem;">
+            <div id="chat-login-area" class="chat-input-area chat-login-area">
+                <div class="chat-login-copy">Inicia sesión o regístrate para participar en el chat</div>
+                <div class="chat-login-actions">
+                    <button id="btn-login-chat" class="btn-primary chat-login-btn">
                         <i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión
                     </button>
-                    <button id="btn-registro-chat" class="btn-primary" style="flex: 1; min-width: 140px; padding: 12px 18px; font-size: 0.95rem; background: var(--accent-color);">
+                    <button id="btn-registro-chat" class="btn-primary chat-login-btn">
                         <i class="fa-solid fa-user-plus"></i> Registrarse
                     </button>
                 </div>
-                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 5px 0 0 0;">Ambos requieren un apodo y un PIN de 4 dígitos para proteger tu cuenta y puntos.</p>
+                <p class="chat-login-hint">Ambos requieren un apodo y un PIN de 4 dígitos para proteger tu cuenta y puntos.</p>
             </div>
 
-            <form id="chat-form" class="chat-input-area" style="display: none; position: relative;">
-                <input type="text" id="chat-autor" placeholder="Tu apodo" maxlength="30" required style="width: 130px;">
-                <input type="text" id="chat-mensaje" placeholder="Escribe un mensaje..." maxlength="300" required style="flex: 1;">
-                <button type="submit" class="btn-primary" style="padding: 10px 20px; border: none; cursor: pointer;">Enviar</button>
+            <form id="chat-form" class="chat-input-area chat-form">
+                <input type="text" id="chat-autor" placeholder="Tu apodo" maxlength="30" required>
+                <input type="text" id="chat-mensaje" placeholder="Escribe un mensaje..." maxlength="300" required>
+                <button type="submit" class="btn-primary chat-submit-btn">Enviar</button>
                 <!-- Badge de racha de mensajes -->
-                <span id="streak-badge-chat" class="streak-badge" style="display: none; position: absolute; top: -25px; right: 10px; white-space: nowrap;"></span>
+                <span id="streak-badge-chat" class="streak-badge streak-badge-chat"></span>
             </form>
         </div>
 
         <!-- COLUMNA DERECHA: SIDEBAR DE ESTADO Y REGLAS (TABS) -->
         <div class="sidebar-card">
-            <div class="tab-header" style="display: flex; gap: 8px; margin-bottom: 15px;">
+            <div class="tab-header">
                 <button type="button" class="tab-btn active" data-tab="canal">Canal</button>
                 <button type="button" class="tab-btn" data-tab="rangos">Rangos</button>
                 <button type="button" class="tab-btn" data-tab="info">Info & Reglas</button>
@@ -508,41 +573,41 @@
 
             <div id="tab-canal" class="tab-content active">
                 <div class="estado-canal-box">
-                    <h4 style="color: var(--accent-color); margin-bottom: 10px;"><i class="fa-solid fa-tower-broadcast"></i> Estado del Canal</h4>
-                    <div id="canal-estado" style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
-                        <span id="estado-dot" style="display: inline-block; width: 10px; height: 10px; background: #ff4d4d; border-radius: 50%;"></span>
+                    <h4 class="tab-content-title-sm"><i class="fa-solid fa-tower-broadcast"></i> Estado del Canal</h4>
+                    <div id="canal-estado" class="canal-estado">
+                        <span id="estado-dot" class="estado-dot"></span>
                         <span id="estado-texto">Comprobando estado...</span>
                     </div>
-                    <div id="viewers-count" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px; display: none;">
+                    <div id="viewers-count" class="viewers-count">
                         <i class="fa-solid fa-eye"></i> <span id="viewers-num">0</span> espectadores
                     </div>
-                    <img id="canal-preview" src="" alt="Vista previa del canal" style="display:none;width:100%;height:160px;object-fit:cover;border-radius:8px;margin-top:10px;border:1px solid var(--border-color);">
-                    <div id="canal-info" style="font-size:0.8rem;color:var(--text-muted);margin-top:6px;display:none;"></div>
-                    <div id="canal-offline" style="text-align:center;padding:20px;color:var(--text-muted);display:none;">
-                        <img src="img/3.jpg" alt="Canal offline" style="width:100%;height:160px;object-fit:cover;border-radius:8px;border:1px solid var(--border-color);">
+                    <img id="canal-preview" class="canal-preview" src="" alt="Vista previa del canal">
+                    <div id="canal-info" class="canal-info"></div>
+                    <div id="canal-offline" class="canal-offline">
+                        <img src="img/3.jpg" alt="Canal offline" class="canal-offline-img">
                     </div>
-                    <a href="./#stream" class="btn-primary" style="display: block; text-align: center; margin-top: 15px; text-decoration: none;">Ir al Directo</a>
+                    <a href="./#stream" class="btn-primary canal-cta">Ir al Directo</a>
                 </div>
-                <div id="user-profile-panel" style="margin-top: 15px; padding: 14px; border-top: 1px solid rgba(255,255,255,0.1); background: var(--card-bg-subtle, rgba(255,255,255,0.03)); border-radius: 10px; display: none;">
-                    <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: 700;">
-                        <i class="fa-solid fa-user-circle" style="color: var(--accent-color);"></i> Tu Perfil
+                <div id="user-profile-panel" class="user-profile-panel">
+                    <div class="user-profile-label">
+                        <i class="fa-solid fa-user-circle user-profile-icon"></i> Tu Perfil
                     </div>
-                    <div style="display: flex; flex-direction: column; gap: 6px;">
-                        <div style="display: flex; align-items: center; gap: 6px; font-weight: 700; color: var(--text-main);">
-                            <i class="fa-solid fa-user" style="color: var(--accent-color);"></i>
+                    <div class="user-profile-rows">
+                        <div class="user-profile-row">
+                            <i class="fa-solid fa-user user-profile-icon"></i>
                             <span id="user-info-display">MCCHARY</span>
                         </div>
-                        <div style="display: flex; align-items: center; gap: 6px; color: var(--accent-color); font-weight: 600;">
+                        <div class="user-profile-row-accent">
                             <i class="fa-solid fa-gem"></i>
                             <span id="user-points-display">0 pts</span>
                         </div>
-                        <span id="user-rango-badge" class="rango-badge rango-semilla" style="width: fit-content; margin: 2px 0 0 0;">🌱 SEMILLA</span>
+                        <span id="user-rango-badge" class="rango-badge rango-semilla user-rango-badge">🌱 SEMILLA</span>
                     </div>
                 </div>
             </div>
 
-            <div id="tab-rangos" class="tab-content" style="display:none;">
-                <h4 style="color: var(--accent-color); margin-bottom: 12px;"><i class="fa-solid fa-crown"></i> Rangos y Puntos</h4>
+            <div id="tab-rangos" class="tab-content" hidden>
+                <h4 class="tab-content-title"><i class="fa-solid fa-crown"></i> Rangos y Puntos</h4>
                 <div class="cuadro-rangos">
                     <div class="rango-fila"><span class="rango-icono">🌱</span><span class="rango-nombre">Semilla</span><span class="rango-puntos">0 - 49 pts</span></div>
                     <div class="rango-fila"><span class="rango-icono">💧</span><span class="rango-nombre">Gota</span><span class="rango-puntos">50 - 199 pts</span></div>
@@ -550,24 +615,24 @@
                     <div class="rango-fila"><span class="rango-icono">⭐</span><span class="rango-nombre">Estrella</span><span class="rango-puntos">500 - 999 pts</span></div>
                     <div class="rango-fila rango-leyenda"><span class="rango-icono">👑</span><span class="rango-nombre">Leyenda</span><span class="rango-puntos">1000+ pts</span></div>
                 </div>
-                <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 10px; line-height: 1.4;">Ganas <strong>1 punto cada 5 minutos</strong> conectado en el chat. El rango se actualiza automáticamente al sumar puntos.</p>
+                <p class="tab-hint">Ganas <strong>1 punto cada 5 minutos</strong> conectado en el chat. El rango se actualiza automáticamente al sumar puntos.</p>
             </div>
 
-            <div id="tab-info" class="tab-content" style="display:none;">
-                <h4 style="color: var(--accent-color); margin-bottom: 10px;"><i class="fa-solid fa-shield-halved"></i> Reglas del Chat</h4>
-                <ul style="font-size: 0.88rem; color: var(--text-muted); padding-left: 18px; display: flex; flex-direction: column; gap: 8px;">
+            <div id="tab-info" class="tab-content" hidden>
+                <h4 class="tab-content-title-sm"><i class="fa-solid fa-shield-halved"></i> Reglas del Chat</h4>
+                <ul class="tab-list">
                     <li>Respeto ante todo con la comunidad.</li>
                     <li>No hacer spam ni flood de mensajes.</li>
                     <li>No compartir enlaces sospechosos ni info personal.</li>
                     <li>Todo es humor, pásatela bien y ríete mucho.</li>
                 </ul>
-                <div style="border-color: var(--accent-color); margin-top:12px;">
-                    <h4 style="color: var(--accent-color); margin-bottom: 10px;"><i class="fa-solid fa-gift"></i> Tienda de Puntos <span style="font-size:0.7rem;background:var(--accent-color);color:#000;padding:2px 6px;border-radius:4px;margin-left:8px;">PRÓXIMAMENTE</span></h4>
-                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px;">Estamos preparando recompensas exclusivas para canjear tus puntos ganados por participar en la comunidad.</p>
+                <div class="shop-card">
+                    <h4 class="tab-content-title-sm"><i class="fa-solid fa-gift"></i> Tienda de Puntos <span class="shop-badge">PRÓXIMAMENTE</span></h4>
+                    <p class="tab-copy">Estamos preparando recompensas exclusivas para canjear tus puntos ganados por participar en la comunidad.</p>
                 </div>
-                <div style="margin-top:12px;">
-                    <h4 style="color: var(--accent-color); margin-bottom: 10px;"><i class="fa-solid fa-circle-info"></i> ¿Cómo funciona?</h4>
-                    <ul style="font-size: 0.82rem; color: var(--text-muted); padding-left: 18px; display: flex; flex-direction: column; gap: 6px; line-height: 1.5;">
+                <div class="tab-section">
+                    <h4 class="tab-content-title-sm"><i class="fa-solid fa-circle-info"></i> ¿Cómo funciona?</h4>
+                    <ul class="tab-list-sm">
                         <li><strong>💎 Puntos:</strong> Ganas 1 punto cada 5 minutos estando conectado en el chat.</li>
                         <li><strong>🔒 PIN de 4 dígitos:</strong> Protege tu cuenta y progreso. Nadie puede robar tus puntos sin tu PIN.</li>
                         <li><strong>💬 Chat en vivo:</strong> Habla con la comunidad en tiempo real. Los mensajes se sincronizan al instante.</li>
@@ -586,13 +651,13 @@
         <div id="nickname-modal-content">
             <button id="nickname-modal-close" aria-label="Cerrar">&times;</button>
             <h3 id="modal-titulo-accion">¡Bienvenido a la Comunidad!</h3>
-            <p id="modal-subtitulo-accion" style="font-size:0.9rem;color:var(--text-muted);">Ingresa tu apodo y tu PIN de 4 dígitos.</p>
+            <p id="modal-subtitulo-accion" class="modal-subtitle">Ingresa tu apodo y tu PIN de 4 dígitos.</p>
             <input type="text" id="nickname-modal-input" placeholder="Tu apodo" maxlength="20">
             <input type="password" id="nickname-modal-pin" placeholder="PIN (4 dígitos)" maxlength="4" pattern="[0-9]*" inputmode="numeric">
             <div>
                 <button id="nickname-modal-set-btn" class="btn-primary">Entrar</button>
             </div>
-            <p id="nickname-modal-error" style="color:#ff4d4d; margin-top:10px; display:none;font-size:0.85rem;"></p>
+            <p id="nickname-modal-error" class="modal-error"></p>
         </div>
     </div>
 
@@ -816,7 +881,7 @@
                 // Mostrar formulario de chat, ocultar área de login
                 const chatLoginForm = document.getElementById('chat-form');
                 const chatLoginArea = document.getElementById('chat-login-area');
-                if (chatLoginForm) chatLoginForm.style.display = 'flex';
+                if (chatLoginForm) chatLoginForm.classList.add('is-visible');
                 if (chatLoginArea) chatLoginArea.style.display = 'none';
                 const btnEnviar = chatForm ? chatForm.querySelector('button[type="submit"]') : null;
                 if (btnEnviar) btnEnviar.disabled = false;
@@ -889,7 +954,7 @@
             async function cargarMensajesChat() {
                 try {
                     const { data, error } = await supabase.from('comunidad_chat').select('*').order('created_at', { ascending: true }).limit(50);
-                    if (error) { chatMensajes.innerHTML = '<div style="text-align:center;color:#ff4d4d;padding:40px;">Error al cargar el chat.</div>'; return; }
+                    if (error) { chatMensajes.innerHTML = '<div class="chat-empty-error">Error al cargar el chat.</div>'; return; }
                     renderizarMensajes(data);
                 } catch (e) { console.error(e); }
             }
@@ -1000,7 +1065,7 @@
                 }
 
                 const lista = usuarios.map(n => `<span class="tooltip-usuario">${escaparHTML(n)}</span>`).join('');
-                tooltipReaccionEl.innerHTML = `<div class="tooltip-titulo">${emoji} <span style="font-weight:normal;">(${usuarios.length})</span></div><div class="tooltip-lista">${lista}</div>`;
+                tooltipReaccionEl.innerHTML = `<div class="tooltip-titulo">${emoji} <span class="tooltip-count">(${usuarios.length})</span></div><div class="tooltip-lista">${lista}</div>`;
 
                 const rect = target.getBoundingClientRect();
                 const tw = tooltipReaccionEl.offsetWidth || 160;
@@ -1479,11 +1544,11 @@ if (chatForm) {
                 // Si el estado está vacío y nunca hemos recibido presencia, mantener "Cargando usuarios..."
                 if (!estadoPresencia || Object.keys(estadoPresencia).length === 0) {
                     if (onlineUsersListEl.dataset.loaded !== 'true') {
-                        onlineUsersListEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:20px;">Cargando usuarios...</div>';
+                        onlineUsersListEl.innerHTML = '<div class="chat-empty-note">Cargando usuarios...</div>';
                         return;
                     }
                     // Ya habíamos recibido presencia y ahora está vacío = nadie en línea
-                    onlineUsersListEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:20px;">Nadie en línea</div>';
+                    onlineUsersListEl.innerHTML = '<div class="chat-empty-note">Nadie en línea</div>';
                     return;
                 }
 
@@ -1592,7 +1657,7 @@ if (chatForm) {
                         .limit(10);
 
                     if (error || !data || data.length === 0) {
-                        leaderboardEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:20px;">Sin participantes aún</div>';
+                        leaderboardEl.innerHTML = '<div class="chat-empty-note">Sin participantes aún</div>';
                         return;
                     }
 
@@ -1602,17 +1667,17 @@ if (chatForm) {
                         
                         // Agregar badge de rango (siempre se muestra, incluso semilla)
                         const { clave: rangoLower, emoji, nombre: rangoNombre } = datosRango(user.rango);
-                        const rangoBadge = `<span class="rango-badge rango-${rangoLower}" style="margin-left:6px;"><span>${emoji}</span><span>${rangoNombre}</span></span>`;
+                        const rangoBadge = `<span class="rango-badge rango-${rangoLower} leaderboard-badge"><span>${emoji}</span><span>${rangoNombre}</span></span>`;
                         
-                        html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 4px;border-bottom:1px solid var(--border-color);${index === 0 ? 'background:rgba(255,215,0,0.1);' : ''}">
-                            <span style="font-size:0.9rem;font-weight:bold;">${medalla} ${escaparHTML(user.apodo)}${rangoBadge}</span>
-                            <span style="color:var(--accent-color);font-size:0.85rem;">${user.puntos} pts</span>
+                        html += `<div class="leaderboard-item${index === 0 ? ' leaderboard-item-first' : ''}">
+                            <span class="leaderboard-user">${medalla} ${escaparHTML(user.apodo)}${rangoBadge}</span>
+                            <span class="leaderboard-points">${user.puntos} pts</span>
                         </div>`;
                     });
                     leaderboardEl.innerHTML = html;
                 } catch (e) {
                     console.error('Error leaderboard:', e);
-                    leaderboardEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:20px;">Error al cargar ranking</div>';
+                    leaderboardEl.innerHTML = '<div class="chat-empty-note">Error al cargar ranking</div>';
                 }
             }
 
@@ -1627,8 +1692,8 @@ if (chatForm) {
             const chatLoginArea = document.getElementById('chat-login-area');
 
             function mostrarAreaLoginComunidad() {
-                if (chatLoginForm) chatLoginForm.style.display = 'none';
-                if (chatLoginArea) chatLoginArea.style.display = 'flex';
+                if (chatLoginForm) chatLoginForm.classList.remove('is-visible');
+                if (chatLoginArea) chatLoginArea.style.display = '';
             }
 
             if (savedApodo) {
@@ -1683,7 +1748,7 @@ if (chatForm) {
         window.cambiarTabComunidad = function(tab) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.textContent.trim().toLowerCase().startsWith(tab === 'info' ? 'info' : tab)));
             document.querySelectorAll('.tab-content').forEach(p => {
-                p.style.display = (p.id === 'tab-' + tab) ? 'block' : 'none';
+                p.hidden = p.id !== 'tab-' + tab;
                 p.classList.toggle('active', p.id === 'tab-' + tab);
             });
         };

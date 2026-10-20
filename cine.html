@@ -33,6 +33,7 @@
             display: flex;
             flex-direction: column;
             gap: 15px;
+            min-width: 0;
         }
 
         .video-player-box {
@@ -93,21 +94,7 @@
         }
 
         .streamer-admin-panel {
-            background: var(--card-bg);
-            border: 2px solid var(--accent-color);
-            border-radius: 14px;
-            padding: 20px;
-            box-shadow: var(--glow);
             display: none;
-        }
-        .streamer-admin-panel h3 {
-            color: var(--accent-color);
-            font-size: 1rem;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            text-transform: uppercase;
         }
 
         .cine-controls-bar {
@@ -123,25 +110,46 @@
             box-shadow: var(--glow);
         }
 
-        .btn-streamer-login {
-            background: var(--card-bg-subtle);
-            color: var(--text-muted);
-            border: 1px solid var(--border-color);
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: background-color 0.2s, color 0.2s, border-color 0.2s;
-            display: inline-flex;
+        .cine-title {
+            font-size: 1.3rem;
+            display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
         }
-        .btn-streamer-login.active {
-            background: var(--accent-color);
-            color: #fff;
-            border-color: var(--accent-color);
-            box-shadow: var(--glow);
+
+        .cine-title-icon {
+            color: var(--accent-color);
+        }
+
+        .cine-video {
+            display: none;
+        }
+
+        .cine-yt-container {
+            display: none;
+            width: 100%;
+            height: 100%;
+        }
+
+        .cine-info-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 18px;
+            text-align: center;
+        }
+
+        .cine-info-card h3 {
+            color: var(--accent-color);
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .cine-info-card p {
+            color: var(--text-muted);
+            font-size: 0.82rem;
+            line-height: 1.5;
         }
 
         @media (max-width: 1100px) {
@@ -192,39 +200,39 @@
         <div class="cine-main-screen">
             <!-- BARRA DE TÍTULO Y BOTÓN DE PANEL -->
             <div class="cine-controls-bar">
-                <h1 style="font-size: 1.3rem;"><i class="fa-solid fa-film" style="color: var(--accent-color);"></i> GochiWatch - Cine en Directo</h1>
-                <button id="btn-toggle-streamer" class="btn-streamer-login" data-action="toggle-streamer-panel" aria-expanded="false" aria-controls="streamerAdminPanel">
+                <h1 class="cine-title"><i class="fa-solid fa-film cine-title-icon"></i> GochiWatch - Cine en Directo</h1>
+                <button id="btn-toggle-streamer" class="btn-admin-mode" data-action="toggle-streamer-panel" aria-expanded="false" aria-controls="streamerAdminPanel">
                     <i class="fa-solid fa-lock"></i> Panel Streamer
                 </button>
             </div>
 
             <!-- PANEL DE CONTROL DEL STREAMER (SOLO ADMINS) -->
-            <div id="streamerAdminPanel" class="streamer-admin-panel">
-                <h3><i class="fa-solid fa-sliders"></i> Panel Maestro de Reproducción</h3>
-                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">
+            <div id="streamerAdminPanel" class="streamer-admin-panel admin-panel">
+                <h3 class="admin-panel-title"><i class="fa-solid fa-sliders"></i> Panel Maestro de Reproducción</h3>
+                <p class="admin-panel-hint">
                     Pega cualquier enlace (<strong>Google Drive</strong>, <strong>YouTube</strong> o <strong>.mp4 directos</strong>).
                 </p>
-                <div style="display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap;">
-                    <input type="text" id="inputVideoUrl" placeholder="Pega aquí el enlace de Drive, YouTube o .mp4..." style="flex: 1; min-width: 250px; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg-subtle); color: var(--text-main); outline: none;">
-                    <button type="button" data-action="load-video" class="btn-primary" style="padding: 10px 20px;">Cargar Video</button>
-                    <button type="button" data-action="stop-video" class="btn-primary btn-danger" style="padding: 10px 20px;">🛑 Apagar</button>
-                    <button type="button" data-action="logout-admin" class="btn-primary btn-danger-dark" style="padding: 10px 20px;"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión</button>
+                <div class="admin-toolbar">
+                    <input type="text" id="inputVideoUrl" class="admin-input" placeholder="Pega aquí el enlace de Drive, YouTube o .mp4...">
+                    <button type="button" data-action="load-video" class="btn-primary">Cargar Video</button>
+                    <button type="button" data-action="stop-video" class="btn-primary btn-danger">🛑 Apagar</button>
+                    <button type="button" data-action="logout-admin" class="btn-primary btn-danger-dark"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión</button>
                 </div>
                 <div>
-                    <span style="font-size: 0.85rem; color: #53fc18; font-weight: bold;" id="statusSyncText">🟢 Sincronización activa</span>
+                    <span class="admin-status" id="statusSyncText">🟢 Sincronización activa</span>
                 </div>
             </div>
 
             <!-- CONTENEDOR DE REPRODUCCIÓN Y CÁMARA DE KICK -->
             <div class="video-player-box" id="videoBoxContainer">
                 <!-- Reproductor HTML5 para MP4 / Google Drive -->
-                <video id="cineVideoPlayer" controls controlslist="nodownload" style="display: none;">
+                <video id="cineVideoPlayer" class="cine-video" controls controlslist="nodownload">
                     <source id="cineVideoSource" src="" type="video/mp4">
                     Tu navegador no soporta reproducción.
                 </video>
 
                 <!-- Reproductor IFrame para YouTube -->
-                <div id="ytPlayerContainer" style="display: none; width:100%; height:100%;"></div>
+                <div id="ytPlayerContainer" class="cine-yt-container"></div>
 
                 <!-- Overlay con la cámara/stream en directo de La Gocha -->
                 <div class="streamer-overlay-cam">
@@ -238,9 +246,9 @@
             <div class="chat-box-cine">
                 <iframe src="https://kick.com/popout/lagochagaming/chat" frameborder="0" scrolling="no" title="Chat de Kick" loading="lazy"></iframe>
             </div>
-            <div class="sidebar-info" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 18px; text-align: center;">
-                <h3 style="color: var(--accent-color); font-size: 0.9rem; margin-bottom: 8px; text-transform: uppercase;">ℹ️ ¿Cómo funciona?</h3>
-                <p style="color: var(--text-muted); font-size: 0.82rem; line-height: 1.5;">
+            <div class="sidebar-info cine-info-card">
+                <h3>ℹ️ ¿Cómo funciona?</h3>
+                <p>
                     La Gocha transmite su reacción en directo mientras disfrutan de la película o videos totalmente sincronizados en tiempo real.
                 </p>
             </div>
@@ -317,10 +325,16 @@
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                streamerCineAutenticado = true;
-                activarModoStreamerUI();
+            try {
+                if (window.supabase) {
+                    const { data: { session } } = await window.supabase.auth.getSession();
+                    if (session) {
+                        streamerCineAutenticado = true;
+                        activarModoStreamerUI();
+                    }
+                }
+            } catch (e) {
+                console.warn('No se pudo verificar la sesión del streamer:', e);
             }
 
             await cargarEstadoCine();
@@ -329,7 +343,7 @@
                 supabase
                     .channel('realtime_cine_sync')
                     .on('postgres_changes', { event: '*', schema: 'public', table: 'sync_cine' }, (payload) => {
-                        sincronizarReproductorRemoto(payload.new);
+                        sincronizarReproductorRemoto(payload.new || { video_url: '' });
                     })
                     .subscribe();
             } catch(e) { console.log('Modo local activo'); }
@@ -338,7 +352,9 @@
             mp4Player.addEventListener('pause', () => { if (streamerCineAutenticado && !actualizandoLocalmente && !esYouTube) enviarComandoSync('pause', mp4Player.currentTime); });
             mp4Player.addEventListener('seeked', () => { if (streamerCineAutenticado && !actualizandoLocalmente && !esYouTube) enviarComandoSync('seek', mp4Player.currentTime); });
 
-            document.getElementById('streamer-cine-password')?.addEventListener('keypress', (e) => { if (e.key === 'Enter') iniciarSesionStreamerCine(); });
+            document.getElementById('streamer-cine-password')?.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') iniciarSesionStreamerCine();
+            });
         });
 
         document.addEventListener('click', (e) => {
@@ -357,7 +373,8 @@
 
         async function cargarEstadoCine() {
             try {
-                const { data, error } = await supabase.from('sync_cine').select('*').eq('id', 1).single();
+                if (!window.supabase) return;
+                const { data, error } = await window.supabase.from('sync_cine').select('*').eq('id', 1).single();
                 if (!error && data) {
                     sincronizarReproductorRemoto(data);
                 }
@@ -438,12 +455,15 @@
             } catch(e) { console.error(e); }
         }
 
-        function sincronizarReproductorRemoto(data) {
+        function sincronizarReproductorRemoto(data, intento = 0) {
             if (!ytApiReady) {
-                setTimeout(() => sincronizarReproductorRemoto(data), 300);
+                if (intento < 40) {
+                    setTimeout(() => sincronizarReproductorRemoto(data, intento + 1), 300);
+                }
                 return;
             }
             if (!data || !data.video_url) {
+                esYouTube = false;
                 if (mp4Player) {
                     mp4Player.pause();
                     mp4Player.currentTime = 0;
@@ -530,8 +550,7 @@
             const btn = document.getElementById('btn-toggle-streamer');
 
             if (!streamerCineAutenticado) {
-                document.getElementById('modal-pin-cine').style.display = 'flex';
-                document.getElementById('streamer-cine-email').focus();
+                abrirModalCinePin();
             } else {
                 if (adminPanel.style.display === 'none' || adminPanel.style.display === '') {
                     adminPanel.style.display = 'block';
@@ -546,32 +565,59 @@
             }
         }
 
+        function abrirModalCinePin() {
+            document.getElementById('feedback-cine-pin').textContent = '';
+            document.getElementById('modal-pin-cine').style.display = 'flex';
+            document.getElementById('streamer-cine-email').focus();
+        }
+
         function cerrarModalCinePin() {
             document.getElementById('modal-pin-cine').style.display = 'none';
             document.getElementById('streamer-cine-email').value = '';
             document.getElementById('streamer-cine-password').value = '';
-            document.getElementById('feedback-cine-pin').innerText = '';
+            document.getElementById('feedback-cine-pin').textContent = '';
         }
 
         async function iniciarSesionStreamerCine() {
             const email = document.getElementById('streamer-cine-email').value.trim();
             const password = document.getElementById('streamer-cine-password').value.trim();
             const feedback = document.getElementById('feedback-cine-pin');
+            const btnEntrar = document.querySelector('[data-action="login-streamer"]');
 
-            const { error } = await supabase.auth.signInWithPassword({ email, password });
-            if (error) {
-                feedback.innerText = '❌ Credenciales incorrectas';
+            if (!window.supabase) {
+                feedback.textContent = '❌ No se pudo conectar con el servidor';
                 return;
             }
 
-            streamerCineAutenticado = true;
-            cerrarModalCinePin();
-            activarModoStreamerUI();
-            mostrarToast('¡Sesión iniciada con éxito!');
+            if (!email || !password) {
+                feedback.textContent = 'Rellena todos los campos';
+                return;
+            }
+
+            if (btnEntrar) btnEntrar.disabled = true;
+            feedback.textContent = '';
+
+            try {
+                const { error } = await supabase.auth.signInWithPassword({ email, password });
+                if (error) {
+                    feedback.textContent = '❌ Credenciales incorrectas';
+                    return;
+                }
+
+                streamerCineAutenticado = true;
+                cerrarModalCinePin();
+                activarModoStreamerUI();
+                mostrarToast('¡Sesión iniciada con éxito!');
+            } catch (e) {
+                feedback.textContent = '❌ No se pudo iniciar sesión';
+            } finally {
+                if (btnEntrar) btnEntrar.disabled = false;
+            }
         }
 
         function activarModoStreamerUI() {
             document.getElementById('streamerAdminPanel').style.display = 'block';
+            document.body.classList.add('admin-mode-active');
             const btn = document.getElementById('btn-toggle-streamer');
             btn.innerHTML = '<i class="fa-solid fa-lock-open"></i> Ocultar Panel';
             btn.classList.add('active');

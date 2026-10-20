@@ -186,9 +186,19 @@
         .feedback-success { color: #53fc18; }
         .feedback-error { color: #ff4d4d; }
 
+        #confetti-canvas-publico,
+        #confetti-canvas-streamer {
+            position: fixed;
+            inset: 0;
+            display: block;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 9998;
+        }
+
         .ruleta-box {
-            margin-top: 20px;
-            padding: 25px 20px;
+            margin-top: 20px;            padding: 25px 20px;
             background: var(--card-bg-subtle);
             border: 2px dashed var(--accent-color);
             border-radius: 12px;
@@ -288,6 +298,146 @@
             font-size: 0.9rem;
         }
 
+        .sorteo-panel-streamer {
+            display: none;
+            border-top: 1px solid var(--border-color);
+            padding-top: 20px;
+            margin-top: 15px;
+        }
+        .sorteo-spin-wrap {
+            text-align: center;
+        }
+        .sorteo-panel-manual {
+            display: none;
+        }
+        .sorteo-page-title {
+            font-size: 1.5rem;
+            margin-top: 10px;
+        }
+        .sorteo-lead {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+        .form-group-tight {
+            margin-bottom: 5px;
+        }
+        .sorteo-add-btn {
+            padding: 10px 18px;
+        }
+        .sidebar-ganadores-lead {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+        .sorteo-admin-intro {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .sorteo-admin-lead {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+        .admin-bonus-card {
+            background: var(--card-bg-subtle);
+            border: 1px dashed var(--accent-color);
+            border-radius: 12px;
+            padding: 15px;
+            margin: 15px auto 0;
+            max-width: 500px;
+            box-sizing: border-box;
+        }
+        .admin-bonus-title {
+            font-size: 0.88rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            margin-bottom: 8px;
+        }
+        .admin-bonus-form {
+            margin: 0;
+            gap: 8px;
+        }
+        .admin-bonus-input {
+            width: 160px;
+            font-size: 0.85rem;
+            padding: 8px 10px;
+        }
+        .admin-bonus-select {
+            padding: 8px 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--card-bg);
+            color: var(--text-main);
+            font-size: 0.85rem;
+            outline: none;
+        }
+        .admin-bonus-form .btn-primary {
+            padding: 8px 14px;
+            font-size: 0.85rem;
+        }
+        .admin-bonus-form .admin-bonus-input {
+            width: 160px;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+        .participants-title {
+            margin-bottom: 10px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        .participants-list {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+        .sidebar-info-text {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+        .banner-title {
+            color: #53fc18;
+            font-size: 1.1rem;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+        .banner-text {
+            font-size: 0.95rem;
+            color: var(--text-main);
+            margin-bottom: 4px;
+        }
+        .banner-user {
+            color: #53fc18;
+        }
+        .banner-hint {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        .banner-text-lead {
+            font-size: 0.88rem;
+            color: var(--text-main);
+            margin-bottom: 12px;
+        }
+        .form-group-flush {
+            margin-bottom: 0;
+        }
+        .btn-join-draw {
+            padding: 10px 20px;
+            background: #53fc18;
+            color: #000;
+            font-weight: 900;
+        }
+        .peso-tag {
+            font-size: 0.7rem;
+            background: var(--accent-color);
+            padding: 1px 4px;
+            border-radius: 4px;
+            color: #fff;
+        }
+
         @media (max-width: 1200px) {
             .sorteo-layout { grid-template-columns: 280px 1fr; }
             .sidebar-info { display: none; }
@@ -337,7 +487,7 @@
         <!-- SECCIÓN IZQUIERDA: HISTORIAL Y GANADORES -->
         <div class="sidebar-ganadores">
             <h3><i class="fa-solid fa-trophy"></i> Top Ganadores</h3>
-            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">
+            <p class="sidebar-ganadores-lead">
                 Registro histórico con los últimos ganadores afortunados de los sorteos oficiales de la comunidad.
             </p>
             <div id="top-ganadores-grid">
@@ -359,16 +509,16 @@
             </div>
 
             <!-- MODO MANUAL -->
-            <div id="sec-modo-manual" role="tabpanel" aria-labelledby="tab-manual" style="display: none;">
-                <h1 style="font-size: 1.5rem; margin-top: 10px;">✍️ App de Sorteos Manual</h1>
-                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">
+            <div id="sec-modo-manual" class="sorteo-panel-manual" role="tabpanel" aria-labelledby="tab-manual">
+                <h1 class="sorteo-page-title">✍️ App de Sorteos Manual</h1>
+                <p class="sorteo-lead">
                     Función para la comunidad y moderadores: Agrega nombres personalizados de participantes de forma local y haz girar la ruleta de prueba con efectos de confeti.
                 </p>
 
-                <div class="form-group" style="margin-bottom: 5px;">
+                <div class="form-group form-group-tight">
                     <input type="text" id="nombre-input-publico" placeholder="Nombre (ej. CarlosGamer)">
-                    <button type="button" class="btn-primary" data-action="add-public" style="padding: 10px 18px;">Agregar</button>
-                    <button type="button" class="btn-primary btn-muted" data-action="clear-public" style="padding: 10px 18px;">Limpiar</button>
+                    <button type="button" class="btn-primary sorteo-add-btn" data-action="add-public">Agregar</button>
+                    <button type="button" class="btn-primary btn-muted sorteo-add-btn" data-action="clear-public">Limpiar</button>
                 </div>
                 <div id="feedback-manual" class="feedback-msg"></div>
 
@@ -378,42 +528,42 @@
                 </div>
                 <canvas id="confetti-canvas-publico"></canvas>
 
-                <div style="text-align: center;">
+                <div class="sorteo-spin-wrap">
                     <button type="button" class="btn-sortear" data-action="spin-public">🎰 ¡Girar Ruleta!</button>
                 </div>
 
                 <div class="participants-box">
-                    <h4 style="margin-bottom: 10px; color: var(--text-muted); font-size: 0.9rem;">Participantes (<span id="count-publico">0</span>)</h4>
-                    <ul id="lista-participantes-publico" style="list-style: none; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;"></ul>
+                    <h4 class="participants-title">Participantes (<span id="count-publico">0</span>)</h4>
+                    <ul id="lista-participantes-publico" class="participants-list"></ul>
                 </div>
             </div>
 
             <!-- MODO STREAMER -->
-            <div id="sec-modo-streamer" role="tabpanel" aria-labelledby="tab-streamer" style="display: none; border-top: 1px solid var(--border-color); padding-top: 20px; margin-top: 15px;">
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <p style="color: var(--accent-color); font-weight: bold; font-size: 0.9rem;">🔐 Panel Exclusivo GochiSorteo</p>
-                    <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 10px;">
+            <div id="sec-modo-streamer" class="sorteo-panel-streamer" role="tabpanel" aria-labelledby="tab-streamer">
+                <div class="sorteo-admin-intro">
+                    <p class="admin-panel-title">🔐 Panel Exclusivo GochiSorteo</p>
+                    <p class="sorteo-admin-lead">
                         Controla el estado de las inscripciones en vivo, añade participantes con peso especial o vacía registros anteriores.
                     </p>
-                    <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 10px;">
-                        <button type="button" id="btn-toggle-sorteo" data-action="toggle-draw" class="btn-primary btn-success" style="font-size: 0.85rem; padding: 8px 16px;">🟢 ABRIR SORTEO EN VIVO</button>
-                        <button type="button" data-action="empty-tombola" class="btn-primary btn-danger" style="font-size: 0.85rem; padding: 8px 16px;">🗑️ Limpiar Tómbola</button>
-                        <button type="button" data-action="logout-admin" class="btn-primary btn-danger-dark" style="font-size: 0.85rem; padding: 8px 16px;"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión Admin</button>
-                        <button type="button" data-action="exit-streamer" class="btn-primary btn-muted" style="font-size: 0.85rem; padding: 8px 16px;">Salir</button>
+                    <div class="admin-toolbar admin-toolbar-center">
+                        <button type="button" id="btn-toggle-sorteo" data-action="toggle-draw" class="btn-primary btn-success btn-sm">🟢 ABRIR SORTEO EN VIVO</button>
+                        <button type="button" data-action="empty-tombola" class="btn-primary btn-danger btn-sm">🗑️ Limpiar Tómbola</button>
+                        <button type="button" data-action="logout-admin" class="btn-primary btn-danger-dark btn-sm"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión Admin</button>
+                        <button type="button" data-action="exit-streamer" class="btn-primary btn-muted btn-sm">Salir</button>
                     </div>
 
                     <!-- HERRAMIENTA BONUS PARTICIPANTES ADMIN -->
-                    <div style="background: var(--card-bg-subtle); border: 1px dashed var(--accent-color); border-radius: 12px; padding: 15px; margin-top: 15px; max-width: 500px; margin-left: auto; margin-right: auto;">
-                        <p style="font-size: 0.88rem; font-weight: bold; color: var(--accent-color); margin-bottom: 8px;">⭐ Asignar Tickets Extra (Mayor Probabilidad)</p>
-                        <div class="form-group" style="margin: 0; gap: 8px;">
-                            <input type="text" id="input-usuario-admin" placeholder="Usuario (ej. Juan)" style="width: 160px; font-size: 0.85rem; padding: 8px 10px;">
-                            <select id="select-peso-admin" style="padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); font-size: 0.85rem; outline: none;">
+                    <div class="admin-bonus-card">
+                        <p class="admin-bonus-title">⭐ Asignar Tickets Extra (Mayor Probabilidad)</p>
+                        <div class="form-group admin-bonus-form">
+                            <input type="text" id="input-usuario-admin" class="admin-bonus-input" placeholder="Usuario (ej. Juan)">
+                            <select id="select-peso-admin" class="admin-bonus-select">
                                 <option value="1">1x (Normal)</option>
                                 <option value="2">2x (Doble Suerte 🔥)</option>
                                 <option value="3">3x (Triple Suerte ⚡)</option>
                                 <option value="5">5x (Mega Suerte 👑)</option>
                             </select>
-                            <button type="button" data-action="add-bonus" class="btn-primary" style="padding: 8px 14px; font-size: 0.85rem;">Añadir</button>
+                            <button type="button" data-action="add-bonus" class="btn-primary">Añadir</button>
                         </div>
                     </div>
 
@@ -426,13 +576,13 @@
                 </div>
                 <canvas id="confetti-canvas-streamer"></canvas>
 
-                <div style="text-align: center;">
+                <div class="sorteo-spin-wrap">
                     <button type="button" class="btn-sortear" data-action="spin-streamer">🎰 ¡Girar Ruleta Oficial!</button>
                 </div>
 
                 <div class="participants-box">
-                    <h4 style="margin-bottom: 10px; color: var(--text-muted); font-size: 0.9rem;">Participantes Registrados Online (<span id="count-streamer">0</span>)</h4>
-                    <ul id="lista-participantes-streamer" style="list-style: none; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;"></ul>
+                    <h4 class="participants-title">Participantes Registrados Online (<span id="count-streamer">0</span>)</h4>
+                    <ul id="lista-participantes-streamer" class="participants-list"></ul>
                 </div>
             </div>
         </div>
@@ -440,7 +590,7 @@
         <!-- SECCIÓN DERECHA: REGLAS E INFORMACIÓN -->
         <div class="sidebar-info">
             <h3><i class="fa-solid fa-gift"></i> Reglas del Sorteo</h3>
-            <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.5;">
+            <p class="sidebar-info-text">
                 • El GochiSorteo se activa automáticamente cuando La Gocha abre las inscripciones en directo. Los espectadores pueden registrarse con su usuario de Kick.<br><br>
                 • ¡Mucha suerte a todos! 🍀
             </p>
@@ -671,13 +821,13 @@
                     if (registradoUser) {
                         bannerArea.innerHTML = `
                             <div class="banner-sorteo-registrado">
-                                <h3 style="color: #53fc18; font-size: 1.1rem; margin-bottom: 6px; text-transform: uppercase;">
+                                <h3 class="banner-title">
                                     ✅ ¡YA ESTÁS PARTICIPANDO EN EL GOCHISORTEO!
                                 </h3>
-                                <p style="font-size: 0.95rem; color: var(--text-main); margin-bottom: 4px;">
-                                    Inscrito con el usuario: <strong style="color: #53fc18;">@${escapeHtml(registradoUser)}</strong>
+                                <p class="banner-text">
+                                    Inscrito con el usuario: <strong class="banner-user">@${escapeHtml(registradoUser)}</strong>
                                 </p>
-                                <p style="font-size: 0.8rem; color: var(--text-muted);">
+                                <p class="banner-hint">
                                     Permanece atento a la transmisión para conocer al ganador. ¡Mucha suerte! 🍀
                                 </p>
                             </div>
@@ -685,15 +835,15 @@
                     } else {
                         bannerArea.innerHTML = `
                             <div class="banner-sorteo-activo">
-                                <h3 style="color: #53fc18; font-size: 1.1rem; margin-bottom: 6px; text-transform: uppercase;">
+                                <h3 class="banner-title">
                                     🎉 ¡GochiSorteo Oficial ABIERTO! 🎉
                                 </h3>
-                                <p style="font-size: 0.88rem; color: var(--text-main); margin-bottom: 12px;">
+                                <p class="banner-text-lead">
                                     Ingresa tu nombre de usuario exacto de Kick para participar en directo:
                                 </p>
-                                <div class="form-group" style="margin-bottom: 0;">
+                                <div class="form-group form-group-flush">
                                     <input type="text" id="input-usuario-temporal" placeholder="Tu usuario de Kick...">
-                                    <button type="button" class="btn-primary" data-action="join-draw" style="padding: 10px 20px; background: #53fc18; color: #000; font-weight: 900;">
+                                    <button type="button" class="btn-primary btn-join-draw" data-action="join-draw">
                                         🎁 ¡Unirme al GochiSorteo!
                                     </button>
                                 </div>
@@ -861,7 +1011,7 @@
                 li.className = 'tag-participante';
                 // Mostrar peso si es > 1
                 const peso = Number(p.peso) || 1;
-                const tagPeso = peso > 1 ? ` <span style="font-size:0.7rem; background:var(--accent-color); padding:1px 4px; border-radius:4px; color:#fff;">${peso}x</span>` : '';
+                const tagPeso = peso > 1 ? ` <span class="peso-tag">${peso}x</span>` : '';
                 li.innerHTML = `@${escapeHtml(p.username)}${tagPeso}`;
                 ul.appendChild(li);
             });
