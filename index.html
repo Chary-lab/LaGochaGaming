@@ -237,14 +237,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.body.classList.add('admin-mode-active');
             }
 
-        // El polling del stream ahora está centralizado en main.js
-        // Verificar estado inicial (diferido para no competir con el primer render)
-        setTimeout(() => {
-            if (document.visibilityState === 'visible') {
-                verificarEstadoStream();
-            }
-        }, 500);
-
+        // El polling del stream está centralizado en main.js (iniciarPollingStreamGlobal)
         cargarMensajes(true);
 
 document.getElementById('muro-form').addEventListener('submit', (e) => {
@@ -261,41 +254,7 @@ document.getElementById('muro-form').addEventListener('submit', (e) => {
         }
         });
 
-        // Funciones para el toast de stream
-        function mostrarToastStream() {
-            const toast = document.getElementById('stream-toast');
-            if (!toast) return;
-            toast.classList.remove('stream-toast-hidden');
-            toast.style.display = 'flex';
-            
-            // Auto-cerrar después de 10 segundos
-            setTimeout(() => {
-                cerrarToastStream();
-            }, 10000);
-        }
-
-        function cerrarToastStream() {
-            const toast = document.getElementById('stream-toast');
-            if (!toast) return;
-            toast.style.display = 'none';
-            setTimeout(() => {
-                toast.classList.add('stream-toast-hidden');
-            }, 300);
-        }
-
-        function cerrarToastStreamManual() {
-            cerrarToastStream();
-        }
-
-        // Event listener para cerrar el toast manualmente
-        const toastCloseBtn = document.querySelector('.stream-toast-close');
-        if (toastCloseBtn) {
-            toastCloseBtn.addEventListener('click', cerrarToastStreamManual);
-        }
-
-        // Funciones del toast de stream ahora están en main.js
-        // (mostrarToastStream, cerrarToastStream, verificarEstadoStream)
-
+        // Las funciones del toast de stream y su listener viven en main.js
         async function cargarMensajes(reiniciar = false) {
             if (reiniciar) {
                 paginaActualMuro = 0;

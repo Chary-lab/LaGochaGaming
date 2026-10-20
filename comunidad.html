@@ -22,7 +22,6 @@
             gap: 20px;
             max-width: 1400px;
             margin: 0 auto 40px auto;
-            padding-top: 20px;
             padding: 20px 20px 0 20px;
             align-items: start;
         }
@@ -35,14 +34,6 @@
         .chat-box-container {
             width: 100%;
             min-width: 0;
-        }
-        .sidebar-comunidad {
-            width: 100%;
-            min-width: 0;
-            background: var(--card-bg, #1a1a1a);
-            border: 1px solid var(--border-color, #333);
-            border-radius: 12px;
-            padding: 12px;
         }
         .tab-header {
             display: flex;
@@ -84,11 +75,9 @@
                 grid-template-columns: minmax(200px, 240px) minmax(0, 1fr);
                 gap: 16px;
             }
-            .sidebar-comunidad {
+            /* El sidebar (tabs Canal/Rangos/Info) ocupa todo el ancho bajo el chat */
+            .sidebar-card {
                 grid-column: 1 / -1;
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-                gap: 16px;
             }
         }
         @media (max-width: 768px) {
@@ -101,7 +90,7 @@
             /* Orden jerárquico en móvil: chat primero, usuarios segundo, sidebar tercero */
             .chat-box-container { order: 1; }
             .online-users-column { order: 2; }
-            .sidebar-comunidad { order: 3; grid-column: auto; display: flex; flex-direction: column; gap: 14px; }
+            .sidebar-card { order: 3; grid-column: auto; }
             .chat-box-container {
                 height: 70vh;
                 min-height: 420px;
@@ -134,7 +123,7 @@
         }
         @media (max-width: 480px) {
             .comunidad-layout {
-                padding: 0 8px;
+                padding: 20px 8px 0 8px;
             }
             .chat-box-container {
                 height: 60vh;
@@ -218,7 +207,7 @@
             gap: 10px;
         }
         .chat-input-area input, .chat-input-area textarea {
-            background: var(--bg-main, #111);
+            background: var(--card-bg-subtle);
             border: 1px solid var(--border-color, #333);
             color: var(--text-main, #fff);
             padding: 10px;
@@ -276,7 +265,7 @@
             margin: 10px 0;
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            background: var(--bg-main);
+            background: var(--card-bg-subtle);
             color: var(--text-main);
             box-sizing: border-box;
         }
@@ -285,17 +274,10 @@
             letter-spacing: 5px;
             font-size: 1.2rem;
         }
-        #nickname-modal-btn {
-            background: var(--accent-color);
-            color: #fff;
-            border: none;
+        #nickname-modal-set-btn {
+            width: 100%;
+            margin-top: 10px;
             padding: 12px 24px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        #nickname-modal-btn:hover {
-            filter: brightness(1.15);
         }
         #nickname-modal-close {
             position: absolute;
@@ -565,15 +547,15 @@
     </main>
 
     <!-- Nickname Modal -->
-    <div id="nickname-modal">
+    <div id="nickname-modal" role="dialog" aria-modal="true" aria-labelledby="modal-titulo-accion">
         <div id="nickname-modal-content">
-            <button id="nickname-modal-close" aria-label="Close">&times;</button>
+            <button id="nickname-modal-close" aria-label="Cerrar">&times;</button>
             <h3 id="modal-titulo-accion">¡Bienvenido a la Comunidad!</h3>
             <p id="modal-subtitulo-accion" style="font-size:0.9rem;color:var(--text-muted);">Ingresa tu apodo y tu PIN de 4 dígitos.</p>
             <input type="text" id="nickname-modal-input" placeholder="Tu apodo" maxlength="20">
             <input type="password" id="nickname-modal-pin" placeholder="PIN (4 dígitos)" maxlength="4" pattern="[0-9]*" inputmode="numeric">
             <div>
-                <button id="nickname-modal-set-btn" class="btn-primary" style="width:100%;margin-top:10px;">Entrar</button>
+                <button id="nickname-modal-set-btn" class="btn-primary">Entrar</button>
             </div>
             <p id="nickname-modal-error" style="color:#ff4d4d; margin-top:10px; display:none;font-size:0.85rem;"></p>
         </div>
@@ -608,13 +590,80 @@
             document.getElementById('nickname-modal-input').focus();
         }
 
+        // Estado del canal: main.js hace un único fetch y nos pasa los datos,
+        // evitando el polling duplicado que existía en esta página.
+        let _ultimoEstadoEnVivoPagina = null;
+
+        window.actualizarEstadoStreamPagina = function actualizarEstadoStreamPagina(data, enVivo, error) {
+            const estadoDot = document.getElementById('estado-dot');
+            const estadoTexto = document.getElementById('estado-texto');
+            const viewersEl = document.getElementById('viewers-count');
+            const viewersNumEl = document.getElementById('viewers-num');
+            const canalPreview = document.getElementById('canal-preview');
+            const canalInfo = document.getElementById('canal-info');
+            const canalOffline = document.getElementById('canal-offline');
+            const alertOverlay = document.getElementById('stream-alert');
+
+            if (error || !data) {
+                if (estadoDot && estadoTexto) {
+                    estadoDot.style.backgroundColor = '#ff4d4d';
+                    estadoTexto.textContent = 'Error';
+                }
+                if (viewersEl) viewersEl.style.display = 'none';
+                if (canalPreview) canalPreview.style.display = 'none';
+                if (canalInfo) canalInfo.style.display = 'none';
+                if (canalOffline) canalOffline.style.display = 'block';
+                return;
+            }
+
+            const viewers = data.livestream ? data.livestream.viewer_count : 0;
+            if (estadoDot && estadoTexto) {
+                if (enVivo) {
+                    estadoDot.style.backgroundColor = '#53fc18';
+                    estadoTexto.textContent = 'EN VIVO AHORA';
+                    if (viewersEl && viewersNumEl) {
+                        viewersEl.style.display = 'block';
+                        viewersNumEl.textContent = viewers.toLocaleString();
+                    }
+                } else {
+                    estadoDot.style.backgroundColor = '#ff4d4d';
+                    estadoTexto.textContent = 'La Gocha Esta Offline';
+                    if (viewersEl) viewersEl.style.display = 'none';
+                }
+            }
+
+            if (enVivo) {
+                const thumb = data.livestream.thumbnail_url;
+                if (canalPreview && thumb) {
+                    canalPreview.src = thumb;
+                    canalPreview.style.display = 'block';
+                }
+                if (canalInfo) {
+                    const title = data.livestream.session_title || '';
+                    const cat = data.livestream.category ? data.livestream.category.name : '';
+                    canalInfo.textContent = [title, cat].filter(Boolean).join(' • ');
+                    canalInfo.style.display = canalInfo.textContent ? 'block' : 'none';
+                }
+                if (canalOffline) canalOffline.style.display = 'none';
+            } else {
+                if (canalPreview) canalPreview.style.display = 'none';
+                if (canalInfo) canalInfo.style.display = 'none';
+                if (canalOffline) canalOffline.style.display = 'block';
+            }
+
+            // Overlay de alerta solo al pasar de offline a live
+            if (alertOverlay && _ultimoEstadoEnVivoPagina === false && enVivo) {
+                alertOverlay.classList.add('visible', 'live');
+                setTimeout(() => { alertOverlay.classList.remove('visible'); }, 5000);
+            }
+            _ultimoEstadoEnVivoPagina = enVivo;
+        };
+
         document.addEventListener('DOMContentLoaded', async () => {
             const chatForm = document.getElementById('chat-form');
             const chatMensajes = document.getElementById('chat-mensajes');
             const inputAutor = document.getElementById('chat-autor');
             const inputMensaje = document.getElementById('chat-mensaje');
-            const estadoDot = document.getElementById('estado-dot');
-            const estadoTexto = document.getElementById('estado-texto');
             const onlineUsersListEl = document.getElementById('online-users-list');
             const userProfilePanel = document.getElementById('user-profile-panel');
             const userInfoDisplay = document.getElementById('user-info-display');
@@ -631,7 +680,6 @@
             const STORAGE_KEY_TOKEN = 'comunidad_session_token';
 
             let ultimoEnvio = 0;
-            let ultimaEstadoEnVivo = null;
             let chatInicializado = false;
             let userNickname = null;
             let userToken = null;
@@ -1511,78 +1559,8 @@ if (chatForm) {
                 onlineUsersListEl.innerHTML = html;
             }
 
-            async function verificarEstadoStream() {
-                try {
-                    const response = await fetch('https://kick.com/api/v2/channels/lagochagaming');
-                    if (!response.ok) throw new Error('Error al obtener estado del stream');
-                    const data = await response.json();
-                    const enVivo = data.livestream && data.livestream.is_live === true;
-                    const viewers = data.livestream ? data.livestream.viewer_count : 0;
-                    const viewersEl = document.getElementById('viewers-count');
-                    const viewersNumEl = document.getElementById('viewers-num');
-                    const navbar = document.querySelector('.navbar');
-                    const alertOverlay = document.getElementById('stream-alert');
-
-                    if (estadoDot && estadoTexto) {
-                        if (enVivo) {
-                            estadoDot.style.backgroundColor = '#53fc18';
-                            estadoTexto.textContent = 'EN VIVO AHORA';
-                            if (viewersEl && viewersNumEl) { viewersEl.style.display = 'block'; viewersNumEl.textContent = viewers.toLocaleString(); }
-                        } else {
-                            estadoDot.style.backgroundColor = '#ff4d4d';
-                            estadoTexto.textContent = 'La Gocha Esta Offline';
-                            if (viewersEl) viewersEl.style.display = 'none';
-                        }
-                    }
-
-                     // Canal preview
-                    const canalPreview = document.getElementById('canal-preview');
-                    const canalInfo = document.getElementById('canal-info');
-                    const canalOffline = document.getElementById('canal-offline');
-                    if (enVivo) {
-                        const thumb = data.livestream.thumbnail_url;
-                        if (canalPreview && thumb) { canalPreview.src = thumb; canalPreview.style.display = 'block'; }
-                        if (canalInfo) {
-                            const title = data.livestream.session_title || '';
-                            const cat = data.livestream.category ? data.livestream.category.name : '';
-                            canalInfo.textContent = [title, cat].filter(Boolean).join(' • ');
-                            canalInfo.style.display = canalInfo.textContent ? 'block' : 'none';
-                        }
-                        if (canalOffline) canalOffline.style.display = 'none';
-                    } else {
-                        if (canalPreview) canalPreview.style.display = 'none';
-                        if (canalInfo) canalInfo.style.display = 'none';
-                        if (canalOffline) canalOffline.style.display = 'block';
-                    }
-                    if (navbar) {
-                        if (enVivo) {
-                            navbar.classList.add('live-glow');
-                        } else {
-                            navbar.classList.remove('live-glow');
-                        }
-                    }
-
-                    // Mostrar overlay de alerta si es la primera vez que detecta live
-                    if (alertOverlay && ultimaEstadoEnVivo === false && enVivo) {
-                        alertOverlay.classList.add('visible', 'live');
-                        setTimeout(() => {
-                            alertOverlay.classList.remove('visible');
-                        }, 5000);
-                    }
-
-                    if (ultimaEstadoEnVivo === false && enVivo && typeof mostrarToast === 'function') { mostrarToast('¡La Gocha está en directo! 🎉', false); }
-                    ultimaEstadoEnVivo = enVivo;
-                } catch (err) {
-                    console.error('Error verificando estado del stream:', err);
-                    if (estadoDot && estadoTexto) { estadoDot.style.backgroundColor = '#ff4d4d'; estadoTexto.textContent = 'Error'; }
-                    const viewersEl2 = document.getElementById('viewers-count');
-                    if (viewersEl2) viewersEl2.style.display = 'none';
-                    const co = document.getElementById('canal-offline');
-                    if (co) co.style.display = 'block';
-                    const cp = document.getElementById('canal-preview');
-                    if (cp) cp.style.display = 'none';
-                }
-            }
+            // El estado del canal se actualiza desde window.actualizarEstadoStreamPagina,
+            // invocado por el polling global de main.js (un solo fetch por ciclo).
 
             function iniciarPresenciaUsuarios() {
                 const presenceId = userId || (Math.random().toString(36).substr(2, 9));
@@ -1630,6 +1608,9 @@ if (chatForm) {
             nicknameModalCloseBtn.addEventListener('click', hideNicknameModal);
             nicknameModalInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') enviarNickConPIN(); });
             nicknameModalPin.addEventListener('keypress', (e) => { if (e.key === 'Enter') enviarNickConPIN(); });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && nicknameModal.style.display === 'flex') hideNicknameModal();
+            });
 
 // Cargar leaderboard público
             async function cargarLeaderboard() {
@@ -1702,8 +1683,6 @@ if (chatForm) {
                 mostrarAreaLoginComunidad();
             }
 
-            verificarEstadoStream();
-            setInterval(verificarEstadoStream, 30000);
             const presenciaChannel = iniciarPresenciaUsuarios();
             
             // Forzar track inmediato si hay usuario logueado

@@ -83,10 +83,11 @@ window.actualizarUsuarioNavComunidad = function actualizarUsuarioNavComunidad() 
     const navUserInfo = document.getElementById('nav-user-info');
 
     if (apodo && navUserInfo) {
+        const apodoSeguro = String(apodo).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         navUserInfo.style.display = 'inline-flex';
         navUserInfo.innerHTML = `
             <i class="fa-solid fa-user" style="color:var(--accent-color);"></i>
-            <span id="nav-username">${apodo}</span>
+            <span id="nav-username">${apodoSeguro}</span>
             <button onclick="cerrarSesion()" class="btn-logout-nav" title="Cerrar Sesión" aria-label="Cerrar sesión"><i class="fa-solid fa-right-from-bracket"></i> Salir</button>
         `;
     } else if (!apodo && navUserInfo) {
@@ -256,9 +257,19 @@ window.verificarEstadoStream = async function verificarEstadoStream() {
             if (toast) toast.style.display = 'none';
         }
 
+        // Notificar a la página actual (paneles específicos) sin duplicar el fetch
+        if (typeof window.actualizarEstadoStreamPagina === 'function') {
+            window.actualizarEstadoStreamPagina(data, enVivo, null);
+        }
+
         window._ultimaEstadoEnVivo = enVivo;
     } catch (err) {
+        // Un abort es esperado cuando un sondeo nuevo cancela al anterior
+        if (err && err.name === 'AbortError') return;
         console.error('Error verificando estado:', err);
+        if (typeof window.actualizarEstadoStreamPagina === 'function') {
+            window.actualizarEstadoStreamPagina(null, false, err);
+        }
     }
 };
 
@@ -334,6 +345,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Iniciar polling global
     iniciarPollingStreamGlobal();
 });
+try { insertarComponentesUIGlobales(); } catch (e) { console.error('insertarComponentesUIGlobales:', e); }
 try { initTema(); } catch (e) { console.error('initTema:', e); }
 try { inicializarMenuMovil(); } catch (e) { console.error('inicializarMenuMovil:', e); }
 try { inicializarNavLinks(); } catch (e) { console.error('inicializarNavLinks:', e); }
