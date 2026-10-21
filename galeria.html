@@ -353,6 +353,10 @@
                 <i class="fas fa-upload"></i> Seleccionar Imagen
             </label>
             <p class="upload-hint">Formatos: JPG, PNG, GIF. Tamaño máximo: 5MB por imagen.</p>
+            <p id="aviso-sesion-galeria" class="upload-hint" hidden>
+                <i class="fa-solid fa-lock"></i> Necesitas iniciar sesión en la
+                <a href="comunidad">Comunidad</a> para subir fotos.
+            </p>
             <div id="uploadFeedback"></div>
         </div>
 
@@ -439,6 +443,12 @@
             document.getElementById('admin-password')?.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') iniciarSesionAdmin();
             });
+
+            // Aviso de sesión de comunidad requerida para subir fotos
+            const avisoSesion = document.getElementById('aviso-sesion-galeria');
+            if (avisoSesion) {
+                avisoSesion.hidden = !!localStorage.getItem('comunidad_session_token');
+            }
         });
 
         document.addEventListener('click', (e) => {
@@ -662,12 +672,18 @@
         async function loadPendingImages() {
             if (!adminAutenticado) return;
             if (!window.supabase) return;
+            const gridPendientes = document.getElementById('gridPendientes');
+            const cantSpan = document.getElementById('cantPendientes');
             try {
                 const { data, error } = await supabase.from('galeria').select('id, image_url, title, estado').eq('estado', 'pendiente');
-                if (error) return;
+                if (error) {
+                    console.error('Error cargando imágenes pendientes:', error);
+                    gridPendientes.innerHTML = '<p class="gallery-empty">Error al cargar las pendientes: ' + escapeHtml(error.message) + '</p>';
+                    cantSpan.innerText = '?';
+                    return;
+                }
 
-                const gridPendientes = document.getElementById('gridPendientes');
-                const cantSpan = document.getElementById('cantPendientes');
+                const pendientes = data || [];
                 gridPendientes.innerHTML = '';
                 cantSpan.innerText = pendientes.length;
 
@@ -691,7 +707,10 @@
                     `;
                     gridPendientes.appendChild(card);
                 });
-            } catch (err) { console.error('Error:', err); }
+            } catch (err) {
+                console.error('Error:', err);
+                if (gridPendientes) gridPendientes.innerHTML = '<p class="gallery-empty">Error inesperado al cargar las pendientes.</p>';
+            }
         }
 
         async function aprobarImagen(id) {
@@ -879,34 +898,85 @@
         }
 
         async function uploadToSupabase(file, title) {
-            if (file.type.startsWith('image/')) {
-                uploadFeedback.innerHTML = '<p class="upload-progress">⏳ Subiendo imagen...</p>';
-                const filePath = `gallery_${Date.now()}_${file.name}`;
+            if (!file.type.startsWith('image/')) {
+                uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ Solo se permiten archivos de imagen.</p>';
+                return;
+            }
+
+            // El bucket fotos-galeria solo admite estos tipos
+            const TIPOS_PERMITIDOS = ['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'image/avif'];
+            if (!TIPOS_PERMITIDOS.includes(file.type)) {
+                uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ Formato no admitido. Usa JPG, PNG, GIF o WEBP.</p>';
+                uploadInput.value = '';
+                return;
+            }
+
+            uploadFeedback.innerHTML = '<p class="upload-progress">⏳ Subiendo imagen...</p>';
+
+            // La carpeta "gallery/" es obligatoria: la policy de Storage solo permite
+            // subir dentro de esa ruta y el RPC publicar_foto_galeria valida la URL.
+            const nombreSeguro = (file.name || 'imagen').replace(/[^a-zA-Z0-9._-]/g, '_');
+            const filePath = `gallery/${Date.now()}_${nombreSeguro}`;
+
+            try {
                 const { error } = await supabase.storage.from('fotos-galeria').upload(filePath, file);
-                
+
                 if (error) {
-                    uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ Error al subir imagen.</p>';
+                    console.error('Error subiendo a Storage:', error);
+                    uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ Error al subir imagen: ' + escapeHtml(error.message) + '</p>';
                     return;
                 }
 
                 const { data: publicURLData } = supabase.storage.from('fotos-galeria').getPublicUrl(filePath);
-                await saveToSupabaseTable(title, publicURLData.publicUrl);
-                
-                titleInput.value = '';
-                uploadInput.value = '';
+                const guardada = await saveToSupabaseTable(title, publicURLData.publicUrl);
+
+                if (guardada) {
+                    titleInput.value = '';
+                    uploadInput.value = '';
+                }
+            } catch (e) {
+                console.error('Error inesperado en la subida:', e);
+                uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ Error inesperado al subir la imagen.</p>';
             }
         }
 
         async function saveToSupabaseTable(title, publicUrl) {
-            const { data: resultado, error } = await supabase.rpc('publicar_foto_galeria', { p_title: title, p_image_url: publicUrl });
-            if (!error && resultado && resultado.ok) {
-                uploadFeedback.innerHTML = '<p class="msg-subida-exito">✅ ¡Imagen enviada! Aparecerá cuando sea aprobada. 💖</p>';
-                setTimeout(() => { uploadFeedback.innerHTML = ''; }, 5000);
-                paginaActualGaleria = 0;
-                loadApprovedImages();
-                if (adminAutenticado) loadPendingImages();
-            } else {
-                uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ Error al guardar en base de datos.</p>';
+            const token = localStorage.getItem('comunidad_session_token');
+            if (!token) {
+                uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ Inicia sesión en la Comunidad para subir fotos.</p>';
+                return false;
+            }
+
+            try {
+                const { data: resultado, error } = await supabase.rpc('publicar_foto_galeria', {
+                    p_token: token,
+                    p_title: title,
+                    p_image_url: publicUrl
+                });
+
+                if (!error && resultado && resultado.ok) {
+                    uploadFeedback.innerHTML = '<p class="msg-subida-exito">✅ ¡Imagen enviada! Aparecerá cuando sea aprobada. 💖</p>';
+                    setTimeout(() => { uploadFeedback.innerHTML = ''; }, 5000);
+                    paginaActualGaleria = 0;
+                    loadApprovedImages();
+                    if (adminAutenticado) loadPendingImages();
+                    return true;
+                }
+
+                const codigo = resultado && resultado.error ? resultado.error : (error ? error.message : 'desconocido');
+                console.error('Error al registrar la foto en la galería:', codigo);
+                const mensajes = {
+                    sin_sesion: '❌ Tu sesión de comunidad no es válida. Vuelve a iniciar sesión.',
+                    titulo_invalido: '❌ El título no es válido (1-60 caracteres).',
+                    url_invalida: '❌ La imagen no se pudo registrar. Inténtalo de nuevo.',
+                    galeria_limite: '❌ Ya tienes 5 fotos pendientes de moderación.'
+                };
+                uploadFeedback.innerHTML = '<p class="msg-subida-error">' + (mensajes[codigo] || '❌ Error al guardar en base de datos.') + '</p>';
+                return false;
+            } catch (e) {
+                console.error('Error inesperado al guardar la foto:', e);
+                uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ Error inesperado al guardar la foto.</p>';
+                return false;
             }
         }
 

@@ -1420,6 +1420,19 @@
                 }
             }
 
+            // Inserta un mensaje en el chat evitando duplicados.
+            // Se usa tanto para el evento de Realtime como para el render optimista
+            // del emisor, de modo que el mensaje se ve siempre aunque el realtime tarde.
+            function insertarMensajeEnChat(msg, desplazarAlFinal = true) {
+                if (!msg) return;
+                if (msg.id != null && chatMensajes.querySelector(`.chat-msg-container[data-msgid="${msg.id}"]`)) return;
+                const placeholder = chatMensajes.querySelector('.chat-msg-vacio');
+                if (placeholder) placeholder.remove();
+                chatMensajes.appendChild(crearMensajeElemento(msg));
+                chatInicializado = true;
+                if (desplazarAlFinal) chatMensajes.scrollTop = chatMensajes.scrollHeight;
+            }
+
 if (chatForm) {
                 chatForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
@@ -1428,7 +1441,10 @@ if (chatForm) {
                         mostrarToast('Espera unos segundos antes de enviar otro mensaje', true);
                         return;
                     }
-                    if (!userNickname) return;
+                    if (!userNickname) {
+                        mostrarToast('Inicia sesión para enviar mensajes', true);
+                        return;
+                    }
                     const mensaje = inputMensaje.value.trim();
                     if (!mensaje) return;
                     ultimoEnvio = ahora;
@@ -1438,23 +1454,42 @@ if (chatForm) {
                         const token = localStorage.getItem(STORAGE_KEY_TOKEN);
                         const { data: resultado, error } = await supabase.rpc('enviar_mensaje_chat', { p_token: token, p_mensaje: mensaje });
                         if (error) {
-                            console.error('Error:', error);
-                            mostrarToast('Error al enviar el mensaje.', true);
+                            console.error('Error RPC enviar_mensaje_chat:', error);
+                            mostrarToast('No se pudo enviar el mensaje. Revisa tu conexión.', true);
                         } else if (!resultado || !resultado.ok) {
-                            if (resultado && resultado.error === 'rate_limit') {
+                            const codigo = resultado && resultado.error ? resultado.error : 'desconocido';
+                            if (resultado && resultado.detalle) console.error('Detalle del servidor:', resultado.detalle);
+                            if (codigo === 'rate_limit') {
                                 mostrarToast('Espera unos segundos antes de enviar otro mensaje', true);
-                            } else if (resultado && resultado.error === 'sin_sesion') {
+                            } else if (codigo === 'sin_sesion') {
                                 mostrarToast('Sesión expirada. Inicia sesión de nuevo.', true);
+                            } else if (codigo === 'mensaje_vacio') {
+                                mostrarToast('El mensaje está vacío.', true);
+                            } else if (codigo === 'mensaje_muy_largo') {
+                                mostrarToast('El mensaje es demasiado largo (máx. 300 caracteres).', true);
+                            } else if (codigo === 'usuario_no_encontrado') {
+                                mostrarToast('Tu usuario ya no existe. Vuelve a registrarte.', true);
                             } else {
-                                mostrarToast('Error al enviar el mensaje.', true);
+                                mostrarToast('No se pudo enviar el mensaje. Inténtalo de nuevo.', true);
                             }
                         } else {
                             inputMensaje.value = '';
+                            // Render optimista: el emisor ve su mensaje al instante,
+                            // sin depender de la latencia del Realtime.
+                            insertarMensajeEnChat({
+                                id: resultado.msg_id,
+                                autor: userNickname,
+                                mensaje: mensaje,
+                                created_at: new Date().toISOString()
+                            });
                             // Actualizar streak de mensajes
                             actualizarStreak();
                             // ultima_actividad se actualiza dentro del RPC
                         }
-                    } catch (e) { console.error(e); }
+                    } catch (e) {
+                        console.error('Error enviando mensaje:', e);
+                        mostrarToast('No se pudo enviar el mensaje. Revisa tu conexión.', true);
+                    }
                     if (btnEnviar) btnEnviar.disabled = false;
                 });
             }
@@ -1463,16 +1498,16 @@ if (chatForm) {
                 // Escuchar nuevos mensajes del chat
                 supabase.channel('public:comunidad_chat').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'comunidad_chat' }, payload => {
                     const nuevoMsg = payload.new;
+                    // Si el emisor ya lo pintó de forma optimista, no lo duplicamos
+                    if (nuevoMsg && nuevoMsg.id != null && chatMensajes.querySelector(`.chat-msg-container[data-msgid="${nuevoMsg.id}"]`)) return;
+
                     if (!chatInicializado || chatMensajes.querySelector('.chat-msg-vacio')) {
                         chatMensajes.replaceChildren();
                         chatInicializado = true;
                     }
 
                     const estaCercaDelFondo = chatMensajes.scrollHeight - chatMensajes.scrollTop - chatMensajes.clientHeight < 100;
-                    chatMensajes.appendChild(crearMensajeElemento(nuevoMsg));
-                    if (estaCercaDelFondo) {
-                        chatMensajes.scrollTop = chatMensajes.scrollHeight;
-                    }
+                    insertarMensajeEnChat(nuevoMsg, estaCercaDelFondo);
 
                     // Cargar reacciones de Supabase para este mensaje nuevo
                     cargarReaccionesDeSupabase([nuevoMsg]);
