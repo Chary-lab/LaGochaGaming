@@ -88,6 +88,93 @@
             max-width: 140px;
         }
 
+        /* Autor de la foto publicada */
+        .gallery-card-texto {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            min-width: 0;
+        }
+
+        .gallery-card-autor {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            max-width: 160px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .gallery-card-autor i {
+            color: var(--accent-color);
+            font-size: 0.7rem;
+        }
+
+        .gallery-card-autor .autor-avatar {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            color: #000;
+            font-size: 0.62rem;
+            font-weight: 900;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        /* Autor editable (solo moderación) */
+        .autor-editable {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            width: 100%;
+        }
+
+        .autor-editable .autor-input {
+            flex: 1;
+            min-width: 0;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-main);
+            font-family: inherit;
+            font-size: 0.8rem;
+            padding: 5px 8px;
+            outline: none;
+        }
+
+        .autor-editable .autor-input:focus {
+            border-color: var(--accent-color);
+        }
+
+        .btn-guardar-autor {
+            background: var(--accent-color);
+            color: #000;
+            border: none;
+            border-radius: 6px;
+            padding: 5px 9px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        .btn-guardar-autor:hover {
+            filter: brightness(1.1);
+        }
+
+        #admin-author-wrap {
+            margin-top: 10px;
+        }
+
+        #admin-author-wrap .gallery-title-input {
+            max-width: 400px;
+        }
+
         .gallery-card-actions {
             display: flex;
             gap: 8px;
@@ -346,6 +433,13 @@
         <div class="upload-container" id="uploadContainer">
             <div class="upload-title-wrap">
                 <input type="text" id="imageTitleInput" class="gallery-title-input" placeholder="Escribe un título para tu imagen..." maxlength="40">
+                <div id="admin-author-wrap" hidden>
+                    <input type="text" id="imageAuthorInput" class="gallery-title-input" placeholder="Autor de la foto" maxlength="30" value="LaGochaGaming">
+                    <p class="upload-hint">
+                        <i class="fa-solid fa-crown"></i> Sesión de admin: la foto se publicará con este autor
+                        (vacío = LaGochaGaming).
+                    </p>
+                </div>
             </div>
 
             <input type="file" id="uploadInput" class="upload-input" accept="image/*">
@@ -414,6 +508,18 @@
         let filtroActual = 'populares'; // 'populares' o 'recientes'
         let paginaActualGaleria = 0;
         const LIMITE_GALERIA = 24;
+        const AUTOR_POR_DEFECTO = 'LaGochaGaming';
+
+        // Muestra u oculta los controles que solo puede usar el admin:
+        // campo de autor al subir y aviso de sesión de comunidad requerida.
+        function actualizarControlesAdmin() {
+            const wrapAutor = document.getElementById('admin-author-wrap');
+            const avisoSesion = document.getElementById('aviso-sesion-galeria');
+            if (wrapAutor) wrapAutor.hidden = !adminAutenticado;
+            if (avisoSesion) {
+                avisoSesion.hidden = adminAutenticado || !!localStorage.getItem('comunidad_session_token');
+            }
+        }
 
         document.addEventListener('DOMContentLoaded', async () => {
             loadApprovedImages();
@@ -444,11 +550,8 @@
                 if (e.key === 'Enter') iniciarSesionAdmin();
             });
 
-            // Aviso de sesión de comunidad requerida para subir fotos
-            const avisoSesion = document.getElementById('aviso-sesion-galeria');
-            if (avisoSesion) {
-                avisoSesion.hidden = !!localStorage.getItem('comunidad_session_token');
-            }
+            // Controles de admin (campo de autor) y aviso de sesión de comunidad
+            actualizarControlesAdmin();
         });
 
         document.addEventListener('click', (e) => {
@@ -465,6 +568,7 @@
                 case 'delete-image': if (imageId) eliminarImagenPublica(imageId); break;
                 case 'toggle-like': if (imageId) toggleLike(imageId, Number(trigger.dataset.likes || 0)); break;
                 case 'approve-image': if (imageId) aprobarImagen(imageId); break;
+                case 'save-author': if (imageId) guardarAutorImagen(imageId); break;
             }
         });
 
@@ -494,7 +598,7 @@
 
                 const { data, error } = await supabase
                     .from('galeria')
-                    .select('id, image_url, title, estado, likes, created_at')
+                    .select('id, image_url, title, estado, likes, created_at, autor')
                     .eq('estado', 'aprobado')
                     .order('created_at', { ascending: false })
                     .range(desde, hasta);
@@ -546,11 +650,18 @@
 
                     const galleryCard = document.createElement('div');
                     galleryCard.className = 'gallery-card';
+                    const autor = (image.autor || 'Anónimo').trim() || 'Anónimo';
+                    const inicialAutor = autor.charAt(0).toUpperCase();
                     galleryCard.innerHTML = `
                         ${badgeHTML}
                         <img src="${escapeAttr(image.image_url)}" alt="${escapeAttr(image.title || 'Foto Gocha')}" loading="lazy">
                         <div class="gallery-card-info">
-                            <span class="gallery-card-title" title="${escapeAttr(image.title || 'Sin título')}">${escapeHtml(image.title || 'Sin título')}</span>
+                            <div class="gallery-card-texto">
+                                <span class="gallery-card-title" title="${escapeAttr(image.title || 'Sin título')}">${escapeHtml(image.title || 'Sin título')}</span>
+                                <span class="gallery-card-autor" title="Subido por ${escapeAttr(autor)}">
+                                    <span class="autor-avatar">${escapeHtml(inicialAutor)}</span>${escapeHtml(autor)}
+                                </span>
+                            </div>
                             <div class="gallery-card-actions">
                                 <button class="btn-eliminar-publica" data-action="delete-image" data-image-id="${image.id}" title="Borrar foto de la galería" aria-label="Borrar foto de la galería">
                                     <i class="fa-solid fa-trash-can"></i>
@@ -675,7 +786,7 @@
             const gridPendientes = document.getElementById('gridPendientes');
             const cantSpan = document.getElementById('cantPendientes');
             try {
-                const { data, error } = await supabase.from('galeria').select('id, image_url, title, estado').eq('estado', 'pendiente');
+                const { data, error } = await supabase.from('galeria').select('id, image_url, title, estado, autor').eq('estado', 'pendiente');
                 if (error) {
                     console.error('Error cargando imágenes pendientes:', error);
                     gridPendientes.innerHTML = '<p class="gallery-empty">Error al cargar las pendientes: ' + escapeHtml(error.message) + '</p>';
@@ -693,12 +804,21 @@
                 }
 
                 pendientes.forEach(image => {
+                    const autor = (image.autor || 'Anónimo').trim() || 'Anónimo';
+                    const inicialAutor = autor.charAt(0).toUpperCase();
                     const card = document.createElement('div');
                     card.className = 'gallery-card gallery-card-pending';
                     card.innerHTML = `
                         <img src="${escapeAttr(image.image_url)}" alt="${escapeAttr(image.title || 'Foto pendiente')}" loading="lazy">
                         <div class="gallery-card-info gallery-card-info-column">
                             <span class="gallery-card-title-full">${escapeHtml(image.title)}</span>
+                            <div class="autor-editable" title="Autor de la foto">
+                                <span class="autor-avatar">${escapeHtml(inicialAutor)}</span>
+                                <input type="text" class="autor-input" maxlength="30" value="${escapeAttr(autor)}" data-image-id="${image.id}" aria-label="Autor de la foto">
+                                <button class="btn-guardar-autor" data-action="save-author" data-image-id="${image.id}" title="Guardar autor" aria-label="Guardar autor">
+                                    <i class="fa-solid fa-check"></i>
+                                </button>
+                            </div>
                             <div class="gallery-card-pending-actions">
                                 <button class="btn-aprobar" data-action="approve-image" data-image-id="${image.id}"><i class="fa-solid fa-check"></i> Aprobar</button>
                                 <button class="btn-rechazar" data-action="delete-image" data-image-id="${image.id}"><i class="fa-solid fa-xmark"></i> Rechazar</button>
@@ -821,6 +941,7 @@
                 btn.innerHTML = '<i class="fa-solid fa-lock-open"></i> Ocultar Moderación';
                 btn.classList.add('active');
                 btn.setAttribute('aria-expanded', 'true');
+                actualizarControlesAdmin();
                 loadPendingImages();
                 mostrarToast('¡Modo moderación activado!');
             } catch (e) {
@@ -941,21 +1062,33 @@
         }
 
         async function saveToSupabaseTable(title, publicUrl) {
-            const token = localStorage.getItem('comunidad_session_token');
-            if (!token) {
+            const token = localStorage.getItem('comunidad_session_token') || '';
+            const esAdmin = adminAutenticado;
+
+            // El admin puede subir sin sesión de comunidad; el usuario común no
+            if (!esAdmin && !token) {
                 uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ Inicia sesión en la Comunidad para subir fotos.</p>';
                 return false;
             }
 
+            const args = {
+                p_token: token,
+                p_title: title,
+                p_image_url: publicUrl
+            };
+
+            if (esAdmin) {
+                // El admin decide el autor de la foto (por defecto LaGochaGaming)
+                const autorAdmin = (document.getElementById('imageAuthorInput')?.value || '').trim() || AUTOR_POR_DEFECTO;
+                args.p_autor = autorAdmin;
+            }
+
             try {
-                const { data: resultado, error } = await supabase.rpc('publicar_foto_galeria', {
-                    p_token: token,
-                    p_title: title,
-                    p_image_url: publicUrl
-                });
+                const { data: resultado, error } = await supabase.rpc('publicar_foto_galeria', args);
 
                 if (!error && resultado && resultado.ok) {
-                    uploadFeedback.innerHTML = '<p class="msg-subida-exito">✅ ¡Imagen enviada! Aparecerá cuando sea aprobada. 💖</p>';
+                    const autor = resultado.autor || (esAdmin ? AUTOR_POR_DEFECTO : 'Anónimo');
+                    uploadFeedback.innerHTML = `<p class="msg-subida-exito">✅ ¡Imagen enviada como "${escapeHtml(autor)}"! Aparecerá cuando sea aprobada. 💖</p>`;
                     setTimeout(() => { uploadFeedback.innerHTML = ''; }, 5000);
                     paginaActualGaleria = 0;
                     loadApprovedImages();
@@ -966,7 +1099,9 @@
                 const codigo = resultado && resultado.error ? resultado.error : (error ? error.message : 'desconocido');
                 console.error('Error al registrar la foto en la galería:', codigo);
                 const mensajes = {
-                    sin_sesion: '❌ Tu sesión de comunidad no es válida. Vuelve a iniciar sesión.',
+                    sin_sesion: esAdmin
+                        ? '❌ Tu sesión de admin no es válida. Vuelve a iniciar sesión.'
+                        : '❌ Tu sesión de comunidad no es válida. Vuelve a iniciar sesión.',
                     titulo_invalido: '❌ El título no es válido (1-60 caracteres).',
                     url_invalida: '❌ La imagen no se pudo registrar. Inténtalo de nuevo.',
                     galeria_limite: '❌ Ya tienes 5 fotos pendientes de moderación.'
@@ -977,6 +1112,38 @@
                 console.error('Error inesperado al guardar la foto:', e);
                 uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ Error inesperado al guardar la foto.</p>';
                 return false;
+            }
+        }
+
+        // El admin puede corregir el autor de cualquier foto pendiente
+        async function guardarAutorImagen(imageId) {
+            const input = document.querySelector(`.autor-input[data-image-id="${imageId}"]`);
+            if (!input) return;
+            const nuevoAutor = input.value.trim();
+            if (!nuevoAutor) {
+                mostrarToast('El autor no puede estar vacío.', true);
+                return;
+            }
+            try {
+                const { data: resultado, error } = await supabase.rpc('actualizar_autor_galeria', {
+                    p_image_id: Number(imageId),
+                    p_autor: nuevoAutor
+                });
+                if (error) {
+                    console.error('Error actualizando autor:', error);
+                    mostrarToast('Error al cambiar el autor.', true);
+                    return;
+                }
+                if (!resultado || !resultado.ok) {
+                    mostrarToast(resultado && resultado.error === 'sin_permiso' ? 'Necesitas la sesión de admin.' : 'No se pudo cambiar el autor.', true);
+                    return;
+                }
+                mostrarToast('Autor actualizado a ' + resultado.autor);
+                loadPendingImages();
+                loadApprovedImages();
+            } catch (e) {
+                console.error('Error inesperado cambiando el autor:', e);
+                mostrarToast('Error inesperado al cambiar el autor.', true);
             }
         }
 
