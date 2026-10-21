@@ -408,9 +408,31 @@
                 min-height: 360px;
             }
         }
+
+        /* Prevenir overflow de texto en tab de información */
+        .tab-content,
+        .tab-list,
+        .tab-list-sm {
+            word-break: break-word;
+            overflow-wrap: anywhere;
+        }
+        .tab-list li,
+        .tab-list-sm li {
+            word-break: break-word;
+            overflow-wrap: anywhere;
+        }
+        /* Aumentar margen del body para más espacio */
+        body {
+            margin: 0 auto;
+            max-width: 100%;
+        }
+        /* Espacio adicional al final del body */
+        .comunidad-layout {
+            margin-bottom: 60px;
+        }
     </style>
 </head>
-<body>
+<body class="comunidad-page">
 
     <!-- ALERTA VISUAL DE STREAM EN VIVO -->
     <header id="global-header">
@@ -458,6 +480,14 @@
                 </h3>
                 <div id="leaderboard-list" class="leaderboard-scroll">
                     <div class="chat-empty-note">Cargando ranking...</div>
+                </div>
+            </div>
+
+            <!-- TIENDA DE PUNTOS (debajo del ranking) -->
+            <div class="chat-sidebar-section">
+                <div class="shop-card">
+                    <h4 class="tab-content-title-sm"><i class="fa-solid fa-gift"></i> Tienda de Puntos <span class="shop-badge">PRÓXIMAMENTE</span></h4>
+                    <p class="tab-copy">Estamos preparando recompensas exclusivas para canjear tus puntos ganados por participar en la comunidad.</p>
                 </div>
             </div>
         </section>
@@ -562,10 +592,6 @@
                     <li>No compartir enlaces sospechosos ni info personal.</li>
                     <li>Todo es humor, pásatela bien y ríete mucho.</li>
                 </ul>
-                <div class="shop-card">
-                    <h4 class="tab-content-title-sm"><i class="fa-solid fa-gift"></i> Tienda de Puntos <span class="shop-badge">PRÓXIMAMENTE</span></h4>
-                    <p class="tab-copy">Estamos preparando recompensas exclusivas para canjear tus puntos ganados por participar en la comunidad.</p>
-                </div>
                 <div class="tab-section">
                     <h4 class="tab-content-title-sm"><i class="fa-solid fa-circle-info"></i> ¿Cómo funciona?</h4>
                     <ul class="tab-list-sm">

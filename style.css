@@ -35,6 +35,22 @@ body.light-mode .chat-box-container {
 }
 body { background-color: var(--bg-color); color: var(--text-main); font-family: 'Segoe UI', sans-serif; overflow-x: hidden; margin: 0; transition: background-color 0.3s ease, color 0.3s ease; }
 
+/* Mayor margen en el body para más espacio vertical */
+body.comunidad-page {
+    margin: 0 auto;
+    padding-bottom: 80px;
+}
+
+/* Prevenir overflow de texto en lists */
+.tab-list,
+.tab-list-sm,
+.tab-list li,
+.tab-list-sm li {
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    max-width: 100%;
+}
+
 #global-header { min-height: 65px; }
 .navbar { height: var(--navbar-height); background-color: var(--card-bg); display: flex; align-items: center; padding: 0 30px; position: fixed; top: 0; width: 100%; max-width: 100%; box-sizing: border-box; z-index: 1000; border-bottom: 2px solid var(--accent-color); transition: background-color 0.3s ease; }
 .logo { font-size: 22px; font-weight: 900; letter-spacing: 2px; color: var(--text-main); flex-shrink: 0; }
