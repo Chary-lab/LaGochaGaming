@@ -229,58 +229,6 @@
             cursor: pointer;
         }
 
-        /* Badge de reacción en esquina del mensaje (tipo WhatsApp/Messenger) */
-        .msg-reaccion-esquina {
-            position: absolute;
-            bottom: 6px;
-            right: 8px;
-            display: none;
-            align-items: center;
-            gap: 3px;
-            background: var(--card-bg-subtle);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 2px 8px 2px 6px;
-            font-size: 0.75rem;
-            pointer-events: auto;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-            z-index: 5;
-        }
-
-        .msg-reaccion-esquina:hover {
-            transform: scale(1.08);
-            border-color: var(--accent-color);
-            box-shadow: 0 3px 12px rgba(255, 102, 178, 0.3);
-        }
-
-        .msg-reaccion-esquina.mia {
-            background: var(--accent-color);
-            border-color: var(--accent-color);
-        }
-
-        .msg-reaccion-esquina.mia .esquina-emoji {
-            filter: brightness(1.1);
-        }
-
-        .esquina-emoji {
-            font-size: 0.95rem;
-            line-height: 1;
-        }
-
-        .esquina-count {
-            font-size: 0.7rem;
-            font-weight: 700;
-            color: var(--text-muted);
-            min-width: 12px;
-            text-align: center;
-        }
-
-        .msg-reaccion-esquina.mia .esquina-count {
-            color: rgba(0,0,0,0.7);
-        }
-
         .btn-eliminar-chat {
             background: #ff4d4d;
             color: white;
@@ -989,6 +937,33 @@
             // Canal de realtime para reacciones
             let canalReacciones = null;
 
+            // Reacción propia pendiente de confirmar por el servidor. Solo se conserva
+            // un tiempo corto: si el servidor no la refleja, es que ya no existe y
+            // mantenerla en localStorage resucitaba reacciones fantasma.
+            const STORAGE_KEY_PENDIENTE = 'gochi_chat_mi_reaccion_pendiente_v1';
+            const PENDIENTE_TTL_MS = 15000;
+
+            function obtenerPendientesLocales() {
+                try {
+                    return JSON.parse(localStorage.getItem(STORAGE_KEY_PENDIENTE) || '{}');
+                } catch (e) { return {}; }
+            }
+
+            function guardarPendienteLocal(msgId, emoji) {
+                try {
+                    const data = obtenerPendientesLocales();
+                    if (emoji === null) { delete data[msgId]; }
+                    else { data[msgId] = { emoji, ts: Date.now() }; }
+                    localStorage.setItem(STORAGE_KEY_PENDIENTE, JSON.stringify(data));
+                } catch (e) {}
+            }
+
+            function pendienteVigente(pend) {
+                if (!pend || !pend.emoji) return null;
+                if (Date.now() - (pend.ts || 0) > PENDIENTE_TTL_MS) return null;
+                return pend.emoji;
+            }
+
 // Toggle de reacción: same emoji -> delete, different emoji -> upsert
             function obtenerMiReaccionLocal(msgId) {
                 try {
@@ -1036,6 +1011,7 @@
                 }
                 localStorage.setItem('gochi_chat_reacciones_cache', JSON.stringify(cache));
                 guardarMiReaccionLocal(msgIdStr, quiereBorrar ? null : emoji);
+                guardarPendienteLocal(msgIdStr, quiereBorrar ? null : emoji);
                 actualizarUIReacciones(msgIdStr);
 
                 try {
@@ -1045,10 +1021,12 @@
                         throw new Error(resultado && resultado.error ? resultado.error : 'error_desconocido');
                     }
                     // Servidor confirmó: el emoji devuelto (null = borrada) es el estado final
+                    guardarPendienteLocal(msgIdStr, null);
                 } catch (err) {
                     // Rollback completo
                     localStorage.setItem('gochi_chat_reacciones_cache', JSON.stringify(prevCache));
                     guardarMiReaccionLocal(msgIdStr, prevMiReaccion);
+                    guardarPendienteLocal(msgIdStr, null);
                     actualizarUIReacciones(msgIdStr);
                     const codigo = err && err.message ? err.message : '';
                     if (codigo === 'sin_sesion') {
@@ -1128,7 +1106,6 @@
                 if (!container) return;
 
                 const badgesContainer = container.querySelector('.reacciones-badges');
-                const esquina = container.querySelector('.msg-reaccion-esquina');
 
                 const msgIdStr = String(msgId);
                 marcarMiReaccionEnBurbuja(container.querySelector('.chat-msg-burbuja'), msgIdStr);
@@ -1136,48 +1113,6 @@
                 try {
                     const cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
                     const msgCache = cache[msgIdStr] || {};
-
-                    // Actualizar icono en esquina del mensaje (tipo WhatsApp/Messenger)
-                    if (esquina) {
-                        // Prioridad 1: reacción del usuario actual, 2: la más popular
-                        const miReaccion = obtenerMiReaccionLocal(msgIdStr);
-                        let emojiAMostrar = null;
-                        let countAMostrar = 0;
-                        let esMia = false;
-
-                        if (miReaccion && msgCache[miReaccion] && msgCache[miReaccion].length > 0) {
-                            emojiAMostrar = miReaccion;
-                            countAMostrar = msgCache[miReaccion].length;
-                            esMia = true;
-                        } else {
-                            let mejorCount = 0;
-                            REACCIONES.forEach(emoji => {
-                                 const usuarios = msgCache[emoji] || [];
-                                 if (usuarios.length > mejorCount) {
-                                     mejorCount = usuarios.length;
-                                     emojiAMostrar = emoji;
-                                     countAMostrar = usuarios.length;
-                                 }
-                             });
-                        }
-
-                        if (emojiAMostrar && countAMostrar > 0) {
-                            esquina.style.display = "flex";
-                            esquina.innerHTML = `<span class="esquina-emoji">${emojiAMostrar}</span><span class="esquina-count">${countAMostrar}</span>`;
-                            esquina.className = "msg-reaccion-esquina" + (esMia ? " mia" : "");
-                            // Hacer clickeable para cambiar/quitar reacción
-                            esquina.onclick = (e) => {
-                                e.stopPropagation();
-                                if (userNickname) {
-                                    establecerReaccionUsuario(msgIdStr, emojiAMostrar);
-                                }
-                            };
-                            esquina.title = countAMostrar + " reacción" + (countAMostrar > 1 ? "es" : "") + " con " + emojiAMostrar + (esMia ? " (clic para quitar)" : " (clic para reaccionar)");
-                        } else {
-                            esquina.style.display = "none";
-                            esquina.onclick = null;
-                        }
-                    }
 
                     // Badges visibles debajo del mensaje: una insignia por cada
                     // emoji con reacciones, para que se vean independientes.
@@ -1331,24 +1266,17 @@
                 mensajeDiv.className = 'chat-msg-texto';
                 mensajeDiv.textContent = msg.mensaje || '';
 
-                // Icono de reacción en esquina (tipo WhatsApp/Messenger)
-                const reaccionEsquina = document.createElement('div');
-                reaccionEsquina.className = 'msg-reaccion-esquina';
-                ['click', 'mouseenter', 'mouseleave'].forEach(evt =>
-                    reaccionEsquina.addEventListener(evt, e => e.stopPropagation())
-                );
-
                 // Burbuja de reacciones al hover
                 const burbuja = crearBurbujaReacciones(msgId);
 
                 // Contenedor de reacciones independientes (una insignia por emoji).
-                // Sin este elemento los chips nunca se renderizaban: solo se veía
-                // la esquina, que muestra un único emoji.
+                // Antes solo se pintaba un badge de esquina con un único emoji, así
+                // que las reacciones distintas entre usuarios no se veían.
                 const badgesCont = document.createElement('div');
                 badgesCont.className = 'reacciones-badges';
                 badgesCont.style.display = 'none';
 
-                container.append(headerDiv, mensajeDiv, badgesCont, reaccionEsquina, burbuja);
+                container.append(headerDiv, mensajeDiv, badgesCont, burbuja);
                 return container;
             }
 
@@ -1427,15 +1355,26 @@
                         }
                     });
 
-                    // Conservar la reacción optimista propia si el servidor aún no la refleja
+                    // Conservar la reacción optimista propia SOLO si sigue pendiente de
+                    // confirmación. Si el servidor ya la refleja, manda el servidor; si no
+                    // la refleja y no está pendiente, la reacción ya no existe.
+                    const pendientes = obtenerPendientesLocales();
                     ids.forEach(id => {
-                        const miEmoji = miCache[id];
+                        const miEmoji = pendienteVigente(pendientes[id]);
                         if (!miEmoji || conMiReaccion.has(id)) return;
+                        if (!userNickname) return;
                         if (!cache[id]) cache[id] = {};
                         if (!cache[id][miEmoji]) cache[id][miEmoji] = [];
                         if (!cache[id][miEmoji].includes(userNickname)) {
                             cache[id][miEmoji].push(userNickname);
                         }
+                    });
+
+                    // Limpiar el marcador de "mi reacción" si el servidor ya no la tiene
+                    ids.forEach(id => {
+                        if (conMiReaccion.has(id)) return;
+                        if (pendientes[id] && Date.now() - (pendientes[id].ts || 0) <= PENDIENTE_TTL_MS) return;
+                        if (miCache[id]) delete miCache[id];
                     });
 
                     localStorage.setItem('gochi_chat_reacciones_cache', JSON.stringify(cache));
@@ -1798,6 +1737,14 @@ if (chatForm) {
             iniciarRealtimeChat();
             cargarLeaderboard();
             setInterval(cargarLeaderboard, 60000); // Actualizar ranking cada minuto
+
+            // Reconciliación periódica de las reacciones visibles. Si se pierde algún
+            // evento de Realtime (p. ej. un DELETE que solo trae la clave primaria),
+            // los chips podrían quedarse fantasma: esto los vuelve a sincronizar.
+            setInterval(() => {
+                if (document.hidden || !chatInicializado) return;
+                recargarReaccionesVisibles();
+            }, 30000);
 
             // Restaurar UI de chat y perfil solo si la sesión guardada es válida en Supabase
             const chatLoginForm = document.getElementById('chat-form');
