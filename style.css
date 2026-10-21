@@ -885,11 +885,13 @@ body.light-mode .hero-bio {
       gap: 6px;
   }
 
-  .btn-stream:hover {
-      background: linear-gradient(135deg, #ff3385, var(--accent-color));
-      color: #fff;
+  .btn-stream i {
+      font-size: 0.75rem;
+      transition: transform 0.3s ease;
+  }
+
+  .btn-stream:hover i {
       transform: translateX(4px);
-      box-shadow: 0 6px 16px rgba(255, 102, 178, 0.5);
   }
 
   .stream-toast-hidden {

@@ -125,7 +125,7 @@ window.validarSesionStreamer = async function validarSesionStreamer() {
     }
 };
 
-// === COMPONENTES UI GLOBALES (toast, confirm modal, menú móvil) ===
+ // === COMPONENTES UI GLOBALES (toast, confirm modal, menú móvil) ===
 
 window.insertarComponentesUIGlobales = function insertarComponentesUIGlobales() {
     if (!document.getElementById('gochi-toast')) {
@@ -154,6 +154,27 @@ window.insertarComponentesUIGlobales = function insertarComponentesUIGlobales() 
         `;
         document.body.appendChild(modal);
     }
+    insertarToastStream();
+};
+
+window.insertarToastStream = function insertarToastStream() {
+    if (document.getElementById('stream-toast')) return;
+    const toast = document.createElement('div');
+    toast.id = 'stream-toast';
+    toast.className = 'stream-toast stream-toast-hidden';
+    toast.innerHTML = `
+        <div class="stream-toast-content">
+            <span class="live-indicator"></span>
+            <span>EN VIVO</span>
+            <button class="stream-toast-close" aria-label="Cerrar notificación">&times;</button>
+        </div>
+        <div class="stream-toast-actions">
+            <a href="https://kick.com/lagochagaming" target="_blank" rel="noopener noreferrer" class="btn-stream">
+                Ir al stream <i class="fa-solid fa-arrow-right"></i>
+            </a>
+        </div>
+    `;
+    document.body.appendChild(toast);
 };
 
 window.mostrarToast = function mostrarToast(mensaje, esError = false) {
@@ -423,15 +444,29 @@ function iniciarPollingStreamGlobal() {
     });
 }
 
+ // Event listener para cerrar toast manualmente (delegación)
+document.addEventListener('click', (event) => {
+    if (event.target.classList.contains('stream-toast-close')) {
+        cerrarToastStream();
+    }
+    if (event.target.closest('.stream-toast-close')) {
+        cerrarToastStream();
+    }
+    if (!event.target.classList.contains('gochi-modal-overlay')) return;
+
+    const botonCerrar = event.target.querySelector('[data-action="close-login"], #gochi-confirm-cancelar');
+    if (botonCerrar) botonCerrar.click();
+});
+
 // Event listener para cerrar toast manualmente
 document.addEventListener('DOMContentLoaded', () => {
-    const toastCloseBtn = document.querySelector('.stream-toast-close');
-    if (toastCloseBtn) {
-        toastCloseBtn.addEventListener('click', cerrarToastStream);
-    }
-    
     // Iniciar polling global
     iniciarPollingStreamGlobal();
+    try { insertarComponentesUIGlobales(); } catch (e) { console.error('insertarComponentesUIGlobales:', e); }
+    try { initTema(); } catch (e) { console.error('initTema:', e); }
+    try { inicializarMenuMovil(); } catch (e) { console.error('inicializarMenuMovil:', e); }
+    try { inicializarNavLinks(); } catch (e) { console.error('inicializarNavLinks:', e); }
+    try { actualizarUsuarioNavComunidad(); } catch (e) { console.error('actualizarUsuarioNavComunidad:', e); }
 });
 try { insertarComponentesUIGlobales(); } catch (e) { console.error('insertarComponentesUIGlobales:', e); }
 try { initTema(); } catch (e) { console.error('initTema:', e); }
