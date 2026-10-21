@@ -38,17 +38,20 @@
             flex-wrap: wrap;
         }
         .tab-btn {
-            flex: 1;
-            min-width: 80px;
-            padding: 8px 12px;
+            flex: 1 1 auto;
+            min-width: 0;
+            padding: 8px 10px;
             border: 1px solid var(--border-color, #333);
             background: var(--card-bg-subtle, rgba(255,255,255,0.03));
             color: var(--text-muted, #aaa);
             border-radius: 8px;
             cursor: pointer;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 600;
-            white-space: nowrap;
+            white-space: normal;
+            word-break: break-word;
+            line-height: 1.2;
+            text-align: center;
             transition: all 0.2s ease;
         }
         .tab-btn:hover {
