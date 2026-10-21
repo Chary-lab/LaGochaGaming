@@ -133,15 +133,6 @@
             gap: 8px;
             align-items: center;
         }
-        .muro-autor-rango {
-            display: inline-flex;
-            align-items: center;
-            margin-left: 6px;
-            vertical-align: middle;
-        }
-        .muro-autor-rango:empty {
-            display: none;
-        }
     </style>
 </head>
 <body>
@@ -276,7 +267,7 @@
         <h2>💬 MURO DE SALUDOS DE LA COMUNIDAD</h2>
         <div class="muro-form-container">
             <form id="muro-form" class="muro-form">
-                <input type="text" id="muro-autor" placeholder="Tu apodo o nombre" maxlength="30" required>
+                <input type="text" id="muro-autor" placeholder="Tu apodo o nombre (invitado)" maxlength="30" required>
                 <textarea id="muro-mensaje" placeholder="Escribe tu saludo o mensaje para La Gocha..." maxlength="150" required></textarea>
                 <button type="submit" id="btn-enviar-muro" class="btn-primary">ENVIAR SALUDO</button>
             </form>
@@ -312,28 +303,9 @@
         const LIMITE_POR_PAGINA = 12;
         let adminAutenticado = false;
 
-        // Rango de comunidad por apodo (cacheado): solo se piden las columnas
-        // públicas apodo/rango, nunca datos sensibles.
-        const rangoMuroCache = new Map();
-
-        async function obtenerRangosMuro(apodos) {
-            const pendientes = [...new Set(apodos.filter(Boolean))]
-                .filter(apodo => !rangoMuroCache.has(apodo));
-            if (pendientes.length === 0) return;
-
-            try {
-                const { data, error } = await supabase
-                    .from('usuarios_comunidad')
-                    .select('apodo, rango')
-                    .in('apodo', pendientes);
-                if (error) throw error;
-                pendientes.forEach(apodo => rangoMuroCache.set(apodo, null));
-                (data || []).forEach(u => rangoMuroCache.set(u.apodo, u.rango));
-            } catch (e) {
-                console.warn('No se pudieron cargar los rangos del muro:', e);
-            }
-        }
-
+        // El rango llega en el propio mensaje (snapshot del servidor). Solo los
+        // saludos de usuarios con sesion verificada llevan badge: el nombre que
+        // escribe el invitado jamas se resuelve contra usuarios_comunidad.
         const RANGOS_MURO = {
             semilla:  { emoji: '🌱', nombre: 'Semilla' },
             gota:     { emoji: '💧', nombre: 'Gota' },
@@ -342,12 +314,12 @@
             leyenda:  { emoji: '👑', nombre: 'Leyenda' }
         };
 
-        function badgeRangoMuro(apodo) {
-            const rango = rangoMuroCache.get(apodo);
-            if (!rango) return '';
-            const info = RANGOS_MURO[String(rango).toLowerCase()];
+        function badgeRangoMuro(msg) {
+            if (!msg || !msg.verificado || !msg.rango) return '';
+            const clave = String(msg.rango).toLowerCase();
+            const info = RANGOS_MURO[clave];
             if (!info) return '';
-            return `<span class="rango-badge rango-solo-icono rango-${String(rango).toLowerCase()}" title="${escapeAttr(info.nombre)}">${info.emoji}</span>`;
+            return `<span class="rango-badge rango-solo-icono rango-${clave}" title="${escapeAttr(info.nombre)}">${info.emoji}</span>`;
         }
 
         function construirTarjetaMuro(msg) {
@@ -360,7 +332,7 @@
             });
             card.innerHTML = `
                 <div class="muro-card-header">
-                    <span class="muro-autor">${escapeHtml(msg.autor)}<span class="muro-autor-rango" data-autor="${escapeAttr(msg.autor)}"></span></span>
+                    <span class="muro-autor">${escapeHtml(msg.autor)}${badgeRangoMuro(msg)}</span>
                     <div class="muro-card-actions">
                         <button type="button" class="btn-eliminar-muro" data-id="${msg.id}" title="Eliminar saludo" aria-label="Eliminar saludo">
                             <i class="fa-solid fa-trash-can"></i>
@@ -371,14 +343,6 @@
                 <p class="muro-texto">${escapeHtml(msg.mensaje)}</p>
             `;
             return card;
-        }
-
-        // Inserta el badge de rango en las tarjetas recién pintadas.
-        async function pintarRangosMuro(tarjetas) {
-            const apodos = tarjetas.map(t => t.dataset.autor).filter(Boolean);
-            if (apodos.length === 0) return;
-            await obtenerRangosMuro(apodos);
-            tarjetas.forEach(t => { t.innerHTML = badgeRangoMuro(t.dataset.autor); });
         }
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -416,12 +380,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         const btnCargarMas = document.getElementById('btn-cargar-mas-muro');
         if (btnCargarMas) btnCargarMas.addEventListener('click', cargarMasMensajes);
 
-        // Prefill autor si hay sesión de comunidad
+        // Prefill del autor: con sesión de Comunidad el apodo canónico del
+        // servidor deja el campo en solo lectura (el nombre real lo pone la BD).
+        const tokenComunidad = localStorage.getItem('comunidad_session_token');
         const savedApodo = localStorage.getItem('comunidad_nickname');
         const autorInputInit = document.getElementById('muro-autor');
-        if (savedApodo && autorInputInit) {
-            autorInputInit.value = savedApodo;
-            autorInputInit.readOnly = true;
+        if (autorInputInit) {
+            if (tokenComunidad) {
+                autorInputInit.value = savedApodo || '';
+                autorInputInit.readOnly = true;
+                autorInputInit.title = savedApodo
+                    ? 'Publicarás como ' + savedApodo
+                    : 'Publicarás con tu cuenta de Comunidad';
+            } else {
+                autorInputInit.placeholder = 'Tu apodo o nombre (invitado)';
+            }
         }
         });
 
@@ -441,7 +414,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             try {
                 const { data, error } = await supabase
                     .from('muro_saludos')
-                    .select('id, autor, mensaje, created_at, estado')
+                    .select('id, autor, mensaje, created_at, estado, verificado, rango')
                     .eq('estado', 'aprobado')
                     .order('created_at', { ascending: false })
                     .range(desde, hasta);
@@ -463,14 +436,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
 
                 const fragment = document.createDocumentFragment();
-                const tarjetas = [];
                 filas.slice(0, LIMITE_POR_PAGINA).forEach(msg => {
-                    const card = construirTarjetaMuro(msg);
-                    fragment.appendChild(card);
-                    tarjetas.push(card.querySelector('.muro-autor-rango'));
+                    fragment.appendChild(construirTarjetaMuro(msg));
                 });
                 container.appendChild(fragment);
-                pintarRangosMuro(tarjetas.filter(Boolean));
 
                 paginaActualMuro++;
 
@@ -500,8 +469,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                         const card = construirTarjetaMuro(nuevo);
                         container.insertBefore(card, container.firstChild);
-                        const rangoEl = card.querySelector('.muro-autor-rango');
-                        if (rangoEl) pintarRangosMuro([rangoEl]);
                     })
                     .subscribe();
             } catch (e) {
@@ -521,30 +488,60 @@ document.addEventListener('DOMContentLoaded', async () => {
             const autor = autorInput.value.trim();
             const mensaje = mensajeInput.value.trim();
 
-            if (!autor || !mensaje) return;
+            if (!mensaje) return;
+
+            // Con sesión de comunidad el autor lo decide el servidor; sin
+            // sesión el nombre va como invitado (el servidor valida el charset
+            // y además impide usar el nombre de un miembro registrado).
+            const token = localStorage.getItem('comunidad_session_token');
+            if (!autor && !token) {
+                feedback.classList.remove('muro-feedback-success');
+                feedback.classList.add('muro-feedback-error');
+                feedback.innerText = '❌ Escribe tu nombre para publicar.';
+                return;
+            }
+
+            const ERRORES_MURO = {
+                sin_sesion:       'Tu sesión de Comunidad expiró. Inicia sesión para publicar con tu rango.',
+                autor_invalido:   'Nombre no válido. Usa solo letras, números, espacios, guion y guion bajo.',
+                nombre_reservado: 'Ese nombre ya pertenece a un miembro de la comunidad.',
+                mensaje_invalido: 'El mensaje es demasiado largo o está vacío.',
+                frecuencia:       'Espera un momento antes de enviar otro saludo.',
+                limite_hora:      'Has alcanzado el límite de saludos por hora.',
+                muro_lleno:       'El muro está completo por ahora. Vuelve luego.'
+            };
 
             try {
-                const { data: resultado, error } = await supabase.rpc('publicar_saludo_muro', { p_autor: autor, p_mensaje: mensaje });
+                const { data: resultado, error } = await supabase.rpc('publicar_saludo_muro', {
+                    p_autor: autor, p_mensaje: mensaje, p_token: token
+                });
 
-                if (error) {
+                if (error) throw error;
+
+                if (!resultado || !resultado.ok) {
                     feedback.classList.remove('muro-feedback-success');
                     feedback.classList.add('muro-feedback-error');
-                    feedback.innerText = '❌ Error al enviar el saludo. Intenta de nuevo.';
+                    feedback.innerText = '❌ ' + (ERRORES_MURO[resultado?.error] || 'No se pudo publicar el saludo.');
                     return;
                 }
 
-                document.getElementById('muro-mensaje').value = '';
+                mensajeInput.value = '';
                 feedback.classList.remove('muro-feedback-error');
                 feedback.classList.add('muro-feedback-success');
-                feedback.innerText = '✅ ¡Tu saludo ha sido publicado en el muro! 💖';
+                feedback.innerText = token
+                    ? '✅ ¡Saludo publicado con tu rango!'
+                    : '✅ ¡Tu saludo ha sido publicado! 💖';
                 setTimeout(() => {
                     feedback.innerText = '';
                     feedback.classList.remove('muro-feedback-success');
                 }, 4000);
-                
-            cargarMensajes(true);
+
+                cargarMensajes(true);
             } catch (err) {
                 console.error('Error:', err);
+                feedback.classList.remove('muro-feedback-success');
+                feedback.classList.add('muro-feedback-error');
+                feedback.innerText = '❌ Error al enviar el saludo. Intenta de nuevo.';
             }
         }
 

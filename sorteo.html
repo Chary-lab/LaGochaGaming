@@ -860,6 +860,10 @@
                         `;
                     }
                 } else {
+                    // El sorteo cerrado libera el bloqueo "ya te registraste":
+                    // si no, el participante ve el banner del sorteo anterior
+                    // y no puede volver a registrarse al reabrir.
+                    localStorage.removeItem('gochi_registrado_user');
                     bannerArea.innerHTML = `
                         <div class="banner-sorteo-cerrado">
                             <i class="fa-solid fa-lock"></i> El GochiSorteo está cerrado en este momento.
@@ -869,20 +873,78 @@
             }
         }
 
+        // Verificación del handle contra la API pública de Kick.
+        // Solo bloquea ante un 404 explícito (el usuario no existe): si la API
+        // falla o va lenta, el sorteo nunca se bloquea por un problema externo.
+        const CACHE_KICK_KEY = 'gochi_kick_cache';
+        const CACHE_KICK_TTL = 30 * 60 * 1000;
+
+        function leerCacheKick() {
+            try {
+                const raw = sessionStorage.getItem(CACHE_KICK_KEY);
+                const c = raw ? JSON.parse(raw) : {};
+                return (c && typeof c === 'object') ? c : {};
+            } catch (e) { return {}; }
+        }
+
+        function guardarCacheKick(handle, data) {
+            try {
+                const c = leerCacheKick();
+                c[handle.toLowerCase()] = { ts: Date.now(), data };
+                sessionStorage.setItem(CACHE_KICK_KEY, JSON.stringify(c));
+            } catch (e) { /* cache no disponible */ }
+        }
+
+        async function verificarHandleKick(username) {
+            const clave = String(username).toLowerCase();
+            const cache = leerCacheKick();
+            const hit = cache[clave];
+            if (hit && (Date.now() - hit.ts) < CACHE_KICK_TTL) {
+                return hit.data;
+            }
+
+            let resultado = { ok: true, username, kickUserId: null };
+            try {
+                const res = await fetch(`https://kick.com/api/v2/channels/${encodeURIComponent(username)}`);
+                if (res.status === 404) {
+                    resultado = { ok: false, error: 'usuario_no_existe' };
+                } else if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.user) {
+                        resultado = { ok: true, username: data.user.username, kickUserId: data.user.id };
+                    }
+                }
+            } catch (e) {
+                // Red caída: se permite el registro (el sorteo no se bloquea).
+                resultado = { ok: true, username, kickUserId: null };
+            }
+
+            // Solo se cachean las verificaciones reales: un fallo de red no
+            // debe dejar el handle "verificado" durante media hora.
+            if (resultado.kickUserId) guardarCacheKick(clave, resultado);
+            return resultado;
+        }
+
         async function enviarParticipacionTemporal() {
             const input = document.getElementById('input-usuario-temporal');
             if (!input) return;
-            let username = input.value.trim().replace('@', '');
+            const username = input.value.trim().replace(/^@/, '');
 
             if (!username) {
                 mostrarFeedback('feedback-publico-temporal', 'Por favor escribe tu usuario de Kick.', true);
                 return;
             }
 
-            registrarUsuarioEnLista(username, 'feedback-publico-temporal');
+            const check = await verificarHandleKick(username);
+            if (!check.ok) {
+                mostrarFeedback('feedback-publico-temporal', '❌ Ese usuario de Kick no existe. Revisa el nombre.', true);
+                return;
+            }
+
+            registrarUsuarioEnLista(check.username, 'feedback-publico-temporal', check.kickUserId ?? null);
         }
 
-        async function registrarUsuarioEnLista(username, feedbackId) {
+        async function registrarUsuarioEnLista(username, feedbackId, kickUserId = null) {
             const yaRegistrado = listaStreamerOnline.some(
                 u => String(u.username ?? u).toLowerCase() === username.toLowerCase()
             );
@@ -895,7 +957,9 @@
             renderListaStreamer();
 
             try {
-                const { data: resultado, error } = await supabase.rpc('registrar_participante_sorteo', { p_username: username });
+                const { data: resultado, error } = await supabase.rpc('registrar_participante_sorteo', {
+                    p_username: username, p_kick_user_id: kickUserId
+                });
                 if (error) throw error;
                 if (!resultado || !resultado.ok) {
                     throw new Error(resultado ? resultado.error : 'error_desconocido');
@@ -909,6 +973,7 @@
                 const msg = err.message === 'sorteo_cerrado' ? 'El sorteo está cerrado en este momento.'
                     : err.message === 'ya_registrado' ? '⚠️ ¡Este usuario ya está registrado!'
                     : err.message === 'lleno' ? '⚠️ El sorteo está lleno.'
+                    : err.message === 'usuario_invalido' ? '❌ Usuario inválido (solo letras, números y _).'
                     : '❌ No se pudo completar el registro. Inténtalo de nuevo.';
                 mostrarFeedback(feedbackId, msg, true);
                 return;
@@ -1005,7 +1070,7 @@
         async function agregarParticipanteAdminBonus() {
             const input = document.getElementById('input-usuario-admin');
             const selectPeso = document.getElementById('select-peso-admin');
-            const username = input.value.trim().replace('@', '');
+            const username = input.value.trim().replace(/^@/, '');
             const peso = parseInt(selectPeso.value);
 
             if (!username) {
@@ -1014,20 +1079,26 @@
             }
 
             try {
-                // Insertar con el peso seleccionado
-                const { error } = await supabase
-                    .from('participantes_en_vivo')
-                    .insert([{ username: username, peso: peso }]);
-
-                if (error) {
-                    mostrarFeedback('feedback-streamer-direct', '❌ Error al agregar participante.', true);
-                } else {
-                    mostrarFeedback('feedback-streamer-direct', `✅ @${username} añadido con ${peso}x de probabilidad.`);
-                    input.value = '';
-                    cargarParticipantesOnline();
+                // La RPC actualiza el peso si el usuario ya existe: el bono
+                // reemplaza en vez de crear una fila nueva (ni sumar tickets).
+                const { data: resultado, error } = await supabase.rpc('asignar_peso_sorteo', {
+                    p_username: username, p_peso: peso
+                });
+                if (error) throw error;
+                if (!resultado || !resultado.ok) {
+                    throw new Error(resultado ? resultado.error : 'error_desconocido');
                 }
+                mostrarFeedback('feedback-streamer-direct', `✅ @${username} añadido con ${peso}x de probabilidad.`);
+                input.value = '';
+                cargarParticipantesOnline();
             } catch (err) {
                 console.error('Error:', err);
+                const msg = err.message === 'usuario_invalido'
+                    ? '❌ Usuario inválido (solo letras, números y _).'
+                    : err.message === 'sin_permiso'
+                    ? '❌ Tu sesión no tiene permiso para hacer eso.'
+                    : '❌ Error al agregar participante.';
+                mostrarFeedback('feedback-streamer-direct', msg, true);
             }
         }
 

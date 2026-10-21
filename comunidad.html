@@ -1182,7 +1182,9 @@
                         return false;
                     }
                     const usuario = data.usuario;
-                    guardarSesion(savedApodo, savedToken, usuario.puntos, usuario.rango, usuario.id);
+                    // El apodo canónico lo devuelve el servidor: se usa ese,
+                    // no el que quedó cacheado en el navegador.
+                    guardarSesion(usuario.apodo, savedToken, usuario.puntos, usuario.rango, usuario.id);
                     return true;
                 } catch (e) {
                     console.error('Error validando sesión de comunidad:', e);
@@ -1205,8 +1207,8 @@
 
                 const mensajeError = {
                     credenciales: 'Credenciales incorrectas. Verifica tu apodo y PIN.',
-                    apodo_duplicado: 'Ese apodo ya existe. Elige otro.',
-                    apodo_invalido: 'Apodo inválido (1-20 caracteres, sin símbolos de control).',
+                    apodo_duplicado: 'Ese apodo ya existe (no distingue mayúsculas ni acentos). Elige otro.',
+                    apodo_invalido: 'Apodo inválido (1-20 caracteres; solo letras, números, espacios, guion y guion bajo).',
                     pin_invalido: 'PIN inválido (debe ser 4 dígitos).'
                 };
                 const traducir = (codigo) => mensajeError[codigo] || (codigo ? 'Error: ' + codigo : 'No se pudo completar la operación.');
