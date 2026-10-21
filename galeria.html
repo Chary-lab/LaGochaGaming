@@ -7,16 +7,28 @@
     <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="192x192" href="img/android-chrome-192x192.png">
     <link rel="icon" type="image/png" sizes="512x512" href="img/android-chrome-512x512.png">
-    <meta name="theme-color" content="#ffffff">
+    <meta name="theme-color" content="#ff66b2">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Galería | LaGochaGaming</title>
+    <meta name="description" content="Galería de fotos de la comunidad de LaGochaGaming. Sube tus imágenes, vota las más populares y forma parte del top.">
+    <link rel="canonical" href="https://lagochagaming.com/galeria">
     <meta property="og:title" content="Galería | LaGochaGaming">
     <meta property="og:description" content="Explora las mejores fotos y momentos de La Gocha.">
-    <meta property="og:image" content="img/3.jpg">
+    <meta property="og:image" content="https://lagochagaming.com/img/3.jpg">
+    <meta property="og:url" content="https://lagochagaming.com/galeria">
     <meta property="og:type" content="website">
+    <meta property="og:site_name" content="LaGochaGaming">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Galería | LaGochaGaming">
+    <meta name="twitter:description" content="Explora las mejores fotos y momentos de La Gocha.">
+    <meta name="twitter:image" content="https://lagochagaming.com/img/3.jpg">
+    <link rel="manifest" href="manifest.webmanifest">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="dns-prefetch" href="https://kick.com">
     <style>
         .admin-controls-panel {
             display: flex;
@@ -386,7 +398,7 @@
                 <a href="./#clips" class="">Clips</a>
                 <a href="cine" class="">🍿 GochiWatch</a>
                 <a href="sorteo" class="">🎁 Sorteo</a>
-                <a href="galeria" class="nav-active">📸 Galería</a>
+                <a href="galeria" class="nav-active" aria-current="page">📸 Galería</a>
                 <a href="comunidad" class="">💬 Comunidad</a>
             </div>
             <div class="nav-right">
@@ -480,11 +492,11 @@
     <footer class="main-footer">
         <div class="footer-container">
             <div class="footer-social-icons">
-                <a href="https://kick.com/lagochagaming" target="_blank" class="social-icon kick-icon" title="Kick">K</a>
-                <a href="https://www.tiktok.com/@lagochagaming11" target="_blank" class="social-icon" title="TikTok"><i class="fab fa-tiktok"></i></a>
-                <a href="https://www.instagram.com/oscurostefany" target="_blank" class="social-icon" title="Instagram"><i class="fab fa-instagram"></i></a>
-                <a href="https://discord.com/invite/svrteKBbeh" target="_blank" class="social-icon" title="Discord"><i class="fab fa-discord"></i></a>
-                <a href="https://www.youtube.com/@lagochagaming" target="_blank" class="social-icon" title="YouTube"><i class="fab fa-youtube"></i></a>
+                <a href="https://kick.com/lagochagaming" target="_blank" rel="noopener noreferrer" class="social-icon kick-icon" title="Kick">K</a>
+                <a href="https://www.tiktok.com/@lagochagaming11" target="_blank" rel="noopener noreferrer" class="social-icon" title="TikTok"><i class="fab fa-tiktok"></i></a>
+                <a href="https://www.instagram.com/oscurostefany" target="_blank" rel="noopener noreferrer" class="social-icon" title="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="https://discord.com/invite/svrteKBbeh" target="_blank" rel="noopener noreferrer" class="social-icon" title="Discord"><i class="fab fa-discord"></i></a>
+                <a href="https://www.youtube.com/@lagochagaming" target="_blank" rel="noopener noreferrer" class="social-icon" title="YouTube"><i class="fab fa-youtube"></i></a>
             </div>
             <p class="footer-copyright">&copy; 2026 LAGOCHAGAMING - ALL RIGHTS RESERVED</p>
         </div>
@@ -497,6 +509,8 @@
         let paginaActualGaleria = 0;
         const LIMITE_GALERIA = 24;
         const AUTOR_POR_DEFECTO = 'LaGochaGaming';
+        let topGaleriaGlobal = new Map(); // id -> posición (1..3) del top de likes
+        let focoPrevioLightbox = null;
 
         // Muestra u oculta los controles que solo puede usar el admin:
         // campo de autor al subir y aviso de sesión de comunidad requerida.
@@ -514,10 +528,8 @@
 
             if (window.supabase) {
                 try {
-                    const { data } = await supabase.auth.getSession();
-                    const session = data.session;
-                    if (session && session.user.email === 'gocha@admin.com') {
-                        adminAutenticado = true;
+                    adminAutenticado = await window.esAdminActual();
+                    if (adminAutenticado) {
                         document.body.classList.add('admin-mode-active');
                         document.getElementById('panelPendientes').style.display = 'block';
                         document.getElementById('btn-logout-galeria').style.display = 'inline-flex';
@@ -540,6 +552,9 @@
 
             // Controles de admin (campo de autor) y aviso de sesión de comunidad
             actualizarControlesAdmin();
+
+            // Al aprobarse una foto aparece sola en la galería pública
+            iniciarRealtimeGaleria();
         });
 
         document.addEventListener('click', (e) => {
@@ -578,17 +593,43 @@
         // ===================================================
         // 2. CARGAR IMÁGENES APROBADAS (CON ORDENAMIENTO Y BADGES)
         // ===================================================
+
+        // Top 3 global por likes: las medallas se calculan sobre toda la tabla,
+        // no solo sobre la página visible.
+        async function cargarTopGlobal() {
+            try {
+                const { data, error } = await supabase
+                    .from('galeria')
+                    .select('id, likes')
+                    .eq('estado', 'aprobado')
+                    .order('likes', { ascending: false })
+                    .limit(3);
+                if (error) throw error;
+                const mapa = new Map();
+                (data || []).forEach((fila, i) => {
+                    if ((fila.likes || 0) > 0) mapa.set(fila.id, i + 1);
+                });
+                topGaleriaGlobal = mapa;
+            } catch (e) {
+                console.warn('No se pudo calcular el top global de la galería:', e);
+                topGaleriaGlobal = new Map();
+            }
+        }
+
         async function loadApprovedImages() {
             if (!window.supabase) return;
             try {
                 const desde = paginaActualGaleria * LIMITE_GALERIA;
                 const hasta = desde + LIMITE_GALERIA - 1;
 
+                // El orden se aplica en el servidor: en "populares" por likes y en
+                // "recientes" por fecha, de modo que la paginación sea coherente.
+                const orden = filtroActual === 'populares' ? { col: 'likes', asc: false } : { col: 'created_at', asc: false };
                 const { data, error } = await supabase
                     .from('galeria')
                     .select('id, image_url, title, estado, likes, created_at, autor')
                     .eq('estado', 'aprobado')
-                    .order('created_at', { ascending: false })
+                    .order(orden.col, { ascending: orden.asc })
                     .range(desde, hasta);
 
                 if (error) {
@@ -608,16 +649,16 @@
 
                 // Ordenar según la pestaña seleccionada de manera segura (sobre lo ya traído del servidor)
                 if (filtroActual === 'populares') {
-                    imagenesPublicas.sort((a, b) => (b.likes || 0) - (a.likes || 0));
+                    await cargarTopGlobal();
                 } else {
-                    imagenesPublicas.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+                    // Las medallas TOP solo aplican a la vista de populares.
+                    topGaleriaGlobal = new Map();
                 }
 
-                const maxLikes = Math.max(...imagenesPublicas.map(i => i.likes || 0));
                 const userLikes = JSON.parse(localStorage.getItem('gocha_user_likes') || '[]');
                 const horaAhora = new Date().getTime();
 
-                imagenesPublicas.forEach((image, index) => {
+                imagenesPublicas.forEach((image) => {
                     const cantLikes = Number(image.likes) || 0;
                     const idStr = String(image.id);
                     const isLiked = userLikes.includes(idStr);
@@ -626,10 +667,11 @@
                     const esNueva = fechaFoto > 0 && (horaAhora - fechaFoto) < (48 * 60 * 60 * 1000);
 
                     let badgeHTML = '';
-                    if (cantLikes > 0 && cantLikes === maxLikes) {
+                    const posicionTop = topGaleriaGlobal.get(image.id);
+                    if (posicionTop === 1) {
                         badgeHTML = `<span class="badge-tag badge-top1">👑 TOP 1</span>`;
-                    } else if (index < 3 && cantLikes > 0 && filtroActual === 'populares') {
-                        badgeHTML = `<span class="badge-tag badge-top3">🔥 TOP ${index + 1}</span>`;
+                    } else if (posicionTop) {
+                        badgeHTML = `<span class="badge-tag badge-top3">🔥 TOP ${posicionTop}</span>`;
                     }
 
                     if (esNueva) {
@@ -638,6 +680,8 @@
 
                     const galleryCard = document.createElement('div');
                     galleryCard.className = 'gallery-card';
+                    // Foco programatico al cerrar el lightbox (no entra en el orden de tabulacion).
+                    galleryCard.tabIndex = -1;
                     const autor = (image.autor || 'Anónimo').trim() || 'Anónimo';
                     const inicialAutor = autor.charAt(0).toUpperCase();
                     galleryCard.innerHTML = `
@@ -662,8 +706,7 @@
                         </div>
                     `;
                     galleryCard.querySelector('img').addEventListener('click', () => {
-                        lightbox.innerHTML = `<img src="${escapeAttr(image.image_url)}" alt="${escapeAttr(image.title || 'Foto')}">`;
-                        lightbox.style.display = 'flex';
+                        abrirLightbox(image, galleryCard);
                     });
                     galleryGrid.appendChild(galleryCard);
                 });
@@ -698,10 +741,17 @@
         }
 
         // ===================================================
-        // 3. SISTEMA DE LIKES EN TIEMPO REAL
+        // 3. SISTEMA DE LIKES (requiere sesión de comunidad)
         // ===================================================
         async function toggleLike(imageId, currentLikes) {
             if (!window.supabase) return;
+
+            const token = localStorage.getItem('comunidad_session_token');
+            if (!token) {
+                mostrarToast('Inicia sesión en la Comunidad para dar like', true);
+                return;
+            }
+
             let userLikes = JSON.parse(localStorage.getItem('gocha_user_likes') || '[]');
             const idStr = String(imageId);
             const idNumerico = isNaN(imageId) ? imageId : Number(imageId);
@@ -711,19 +761,24 @@
             const btn = document.getElementById(`like-btn-${imageId}`);
             const countSpan = document.getElementById(`like-count-${imageId}`);
 
+            // El contador del DOM es la fuente de verdad: data-likes se queda
+            // desactualizado despues del primer like.
+            const baseLikes = countSpan ? (Number(countSpan.textContent) || 0) : (Number(currentLikes) || 0);
+
             // Estado optimista
-            const prevLikes = currentLikes;
+            const prevLikes = baseLikes;
             const prevUserLikes = [...userLikes];
             const prevBtnClasses = btn ? btn.className : '';
             const prevBtnIcon = btn ? btn.querySelector('i')?.className : '';
 
+            const icono = btn ? btn.querySelector('i') : null;
             if (btn && countSpan) {
                 if (!isLiked) {
                     btn.classList.add('liked');
-                    btn.querySelector('i').className = 'fas fa-heart';
+                    if (icono) icono.className = 'fas fa-heart';
                 } else {
                     btn.classList.remove('liked');
-                    btn.querySelector('i').className = 'far fa-heart';
+                    if (icono) icono.className = 'far fa-heart';
                 }
             }
 
@@ -733,37 +788,99 @@
                 userLikes.push(idStr);
             }
             localStorage.setItem('gocha_user_likes', JSON.stringify(userLikes));
-            if (countSpan) countSpan.innerText = Math.max(0, currentLikes + delta);
+            if (countSpan) countSpan.innerText = Math.max(0, baseLikes + delta);
+
+            const revertir = () => {
+                if (countSpan) countSpan.innerText = Math.max(0, prevLikes);
+                localStorage.setItem('gocha_user_likes', JSON.stringify(prevUserLikes));
+                if (btn) {
+                    btn.className = prevBtnClasses;
+                    const ico = btn.querySelector('i');
+                    if (ico) ico.className = prevBtnIcon;
+                    if (isLiked) btn.classList.add('liked'); else btn.classList.remove('liked');
+                }
+            };
 
             try {
                 const { data, error } = await supabase.rpc('incrementar_likes', {
-                    image_id_param: idNumerico,
-                    delta_param: delta
+                    p_token: token,
+                    p_image_id: idNumerico,
+                    p_delta: delta
                 });
-                if (!error && data !== null && data !== undefined && countSpan) {
-                    countSpan.innerText = data;
-                } else if (countSpan) {
-                    // Rollback del estado optimista
-                    countSpan.innerText = Math.max(0, prevLikes);
-                    if (isLiked) userLikes.push(idStr); else userLikes = userLikes.filter(id => id !== idStr);
-                    localStorage.setItem('gocha_user_likes', JSON.stringify(userLikes));
-                    if (btn) {
-                        btn.className = prevBtnClasses;
-                        btn.querySelector('i').className = prevBtnIcon;
-                        if (isLiked) btn.classList.add('liked'); else btn.classList.remove('liked');
+                if (error) throw error;
+                if (!data || !data.ok) {
+                    if (data && data.error === 'sin_sesion') {
+                        mostrarToast('Sesión expirada. Inicia sesión de nuevo.', true);
+                    } else {
+                        mostrarToast('No se pudo registrar tu like.', true);
                     }
+                    revertir();
+                    return;
                 }
+                if (countSpan) countSpan.innerText = data.likes;
             } catch (e) {
                 console.error(e);
-                if (countSpan) countSpan.innerText = Math.max(0, prevLikes);
-                if (btn) {
-                    btn.className = prevBtnClasses;
-                    btn.querySelector('i').className = prevBtnIcon;
-                }
+                revertir();
             }
         }
 
-        lightbox.addEventListener('click', () => { lightbox.style.display = 'none'; });
+        // ===================================================
+        // LIGHTBOX: Escape para cerrar y foco restaurado
+        // ===================================================
+        function abrirLightbox(image, tarjetaOrigen) {
+            focoPrevioLightbox = tarjetaOrigen || document.activeElement;
+            lightbox.innerHTML = `<img src="${escapeAttr(image.image_url)}" alt="${escapeAttr(image.title || 'Foto')}">`;
+            lightbox.style.display = 'flex';
+            lightbox.setAttribute('role', 'dialog');
+            lightbox.setAttribute('aria-modal', 'true');
+            lightbox.setAttribute('aria-label', image.title || 'Foto de la galería');
+            const img = lightbox.querySelector('img');
+            if (img) img.setAttribute('tabindex', '-1');
+            if (img) img.focus();
+        }
+
+        function cerrarLightbox() {
+            if (lightbox.style.display === 'none') return;
+            lightbox.style.display = 'none';
+            lightbox.innerHTML = '';
+            if (focoPrevioLightbox && typeof focoPrevioLightbox.focus === 'function' && document.contains(focoPrevioLightbox)) {
+                focoPrevioLightbox.focus();
+            }
+            focoPrevioLightbox = null;
+        }
+
+        lightbox.addEventListener('click', (e) => {
+            if (e.target === lightbox || e.target.tagName === 'IMG') cerrarLightbox();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && lightbox.style.display !== 'none') cerrarLightbox();
+        });
+
+        // ===================================================
+        // REALTIME: las fotos aprobadas aparecen solas
+        // ===================================================
+        function iniciarRealtimeGaleria() {
+            if (!window.supabase) return;
+            try {
+                supabase.channel('galeria_realtime')
+                    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'galeria' }, (payload) => {
+                        const nueva = payload.new;
+                        if (!nueva || nueva.estado !== 'aprobado') return;
+                        paginaActualGaleria = 0;
+                        loadApprovedImages();
+                    })
+                    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'galeria' }, (payload) => {
+                        const fila = payload.new;
+                        if (!fila || fila.estado !== 'aprobado') return;
+                        paginaActualGaleria = 0;
+                        loadApprovedImages();
+                    })
+                    .subscribe();
+            } catch (e) {
+                console.warn('Realtime de la galería no disponible:', e);
+            }
+        }
 
         // ===================================================
         // 4. MODERACIÓN Y APROBACIÓN DE FOTOS
@@ -921,6 +1038,7 @@
                 }
 
                 adminAutenticado = true;
+                window.refrescarCacheAdmin?.();
                 cerrarModalPin();
                 document.body.classList.add('admin-mode-active');
                 document.getElementById('panelPendientes').style.display = 'block';
@@ -1135,22 +1253,7 @@
             }
         }
 
-        function escapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        function escapeAttr(text) {
-            return String(text ?? '').replace(/[&<>"']/g, (char) => ({
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#39;'
-            })[char]);
-        }
+        // escapeHtml / escapeAttr viven en main.js (fuente única del sitio)
     </script>
     <script src="main.js" defer></script>
 </body>

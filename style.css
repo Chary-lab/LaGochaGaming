@@ -547,6 +547,17 @@ body.light-mode .hero-bio {
      animation: badgePulse 2s infinite;
  }
 
+ /* Barrido de brillo sobre el badge de Leyenda (se suma al degradado base) */
+ .rango-badge.rango-leyenda,
+ .rango-badge.leyenda-brillo {
+     background-image:
+         linear-gradient(120deg, transparent 20%, rgba(255, 255, 255, 0.55) 50%, transparent 80%),
+         linear-gradient(135deg, #9b59b6, #ff66b2);
+     background-size: 250% 100%, 100% 100%;
+     background-repeat: no-repeat;
+     animation: badgePulse 2s infinite, brilloBarrido 3.2s ease-in-out infinite;
+ }
+
  @keyframes badgePulse {
      0%, 100% { box-shadow: 0 0 6px rgba(255, 102, 178, 0.5); }
      50% { box-shadow: 0 0 14px rgba(255, 102, 178, 0.9); }
@@ -756,6 +767,276 @@ body.light-mode .hero-bio {
       font-size: 0.75rem;
       color: var(--text-muted);
       font-weight: 600;
+  }
+
+  /* --- GAMIFICACIÓN: MULTIPLICADOR, PROGRESO Y CELEBRACIÓN --- */
+
+  /* Multiplicador por rango (×1 … ×5) */
+  .rango-mult {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      background: linear-gradient(135deg, var(--accent-color), #9b59b6);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      border-radius: 10px;
+      padding: 2px 8px;
+      font-size: 0.7rem;
+      font-weight: 900;
+      letter-spacing: 0.4px;
+      margin-left: 6px;
+      white-space: nowrap;
+      box-shadow: 0 2px 8px rgba(255, 102, 178, 0.35);
+  }
+
+  /* Chip de multiplicador dentro de la fila de la escalera */
+  .rango-fila .rango-mult {
+      margin-left: 4px;
+      padding: 1px 7px;
+      font-size: 0.66rem;
+  }
+
+  /* Fila del rango actual: barra de acento a la izquierda */
+  .rango-fila.rango-actual {
+      border-color: var(--accent-color);
+      box-shadow: 0 0 12px rgba(255, 102, 178, 0.3);
+      background: linear-gradient(90deg, rgba(255, 102, 178, 0.14), var(--card-bg-subtle) 60%);
+      position: relative;
+      overflow: hidden;
+  }
+
+  .rango-fila.rango-actual::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: var(--accent-color);
+      box-shadow: 0 0 10px var(--accent-color);
+  }
+
+  /* Chip "TÚ" del rango actual */
+  .rango-actual-chip {
+      display: inline-flex;
+      align-items: center;
+      background: var(--accent-color);
+      color: #000;
+      border-radius: 8px;
+      padding: 1px 7px;
+      font-size: 0.62rem;
+      font-weight: 900;
+      letter-spacing: 0.6px;
+      margin-left: 6px;
+  }
+
+  /* Barra de progreso hacia el siguiente rango */
+  .rango-progreso {
+      width: 100%;
+      height: 10px;
+      border-radius: 999px;
+      background: var(--card-bg-subtle);
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+      margin-top: 8px;
+  }
+
+  .rango-progreso-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--accent-color), #9b59b6);
+      box-shadow: 0 0 10px rgba(255, 102, 178, 0.6);
+      transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  /* Ya es Leyenda: la barra se llena con un degradado animado */
+  .rango-progreso-leyenda .rango-progreso-fill {
+      background: linear-gradient(90deg, #ffd43b, #ff66b2, #9b59b6, #00f2fe, #ffd43b);
+      background-size: 300% 100%;
+      animation: rangoBrillo 4s linear infinite;
+      box-shadow: 0 0 14px rgba(255, 212, 59, 0.7);
+  }
+
+  @keyframes rangoBrillo {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 300% 50%; }
+  }
+
+  /* Texto auxiliar: "Te faltan N pts para ⭐ Estrella" */
+  .rango-meta {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+      line-height: 1.4;
+  }
+
+  .rango-meta strong {
+      color: var(--accent-color);
+  }
+
+  .rango-progreso-panel {
+      margin-top: 14px;
+      padding: 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      background: var(--card-bg-subtle);
+  }
+
+  /* Chip flotante "+N pts" junto al contador */
+  .rango-sube-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      background: #53fc18;
+      color: #000;
+      border-radius: 10px;
+      padding: 1px 8px;
+      font-size: 0.7rem;
+      font-weight: 900;
+      opacity: 0;
+      transform: translateY(4px);
+      pointer-events: none;
+  }
+
+  .rango-sube-chip.visible {
+      animation: rangoSube 1.6s ease-out forwards;
+  }
+
+  @keyframes rangoSube {
+      0% { opacity: 0; transform: translateY(6px) scale(0.9); }
+      20% { opacity: 1; transform: translateY(0) scale(1.08); }
+      70% { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(-10px) scale(1); }
+  }
+
+  /* Ascenso del badge de rango */
+  .rango-subida {
+      animation: rangoAsciende 0.9s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  @keyframes rangoAsciende {
+      0% { transform: scale(1) rotate(0deg); }
+      35% { transform: scale(1.35) rotate(-6deg); }
+      60% { transform: scale(1.15) rotate(4deg); }
+      100% { transform: scale(1) rotate(0deg); }
+  }
+
+  /* Celebration overlay for a rank-up */
+  .celebracion-leyenda {
+      position: fixed;
+      inset: 0;
+      z-index: 100000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(5, 7, 10, 0.82);
+      backdrop-filter: blur(6px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s ease;
+  }
+
+  .celebracion-leyenda.visible {
+      opacity: 1;
+      pointer-events: auto;
+  }
+
+  .celebracion-caja {
+      text-align: center;
+      padding: 35px 45px;
+      border-radius: 20px;
+      background: var(--card-bg);
+      border: 2px solid var(--accent-color);
+      box-shadow: 0 0 45px rgba(255, 102, 178, 0.6);
+      transform: scale(0.85);
+      transition: transform 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  .celebracion-leyenda.visible .celebracion-caja {
+      transform: scale(1);
+  }
+
+  .celebracion-emoji {
+      font-size: 3.6rem;
+      display: block;
+      animation: celebracionEmoji 0.9s ease-out;
+  }
+
+  @keyframes celebracionEmoji {
+      0% { transform: scale(0.2) rotate(-25deg); }
+      60% { transform: scale(1.25) rotate(8deg); }
+      100% { transform: scale(1) rotate(0deg); }
+  }
+
+  .celebracion-titulo {
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: var(--accent-color);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin: 10px 0 6px;
+  }
+
+  .celebracion-texto {
+      color: var(--text-muted);
+      font-size: 0.92rem;
+  }
+
+  .celebracion-cierre {
+      margin-top: 18px;
+  }
+
+  /* Leyenda: fila de la escalera con borde cónico giratorio */
+  @property --ang {
+      syntax: '<angle>';
+      initial-value: 0deg;
+      inherits: false;
+  }
+
+  @keyframes leyendaGiro {
+      to { --ang: 360deg; }
+  }
+
+  .rango-fila.rango-leyenda {
+      position: relative;
+      border-color: transparent;
+      background:
+          linear-gradient(var(--card-bg-subtle), var(--card-bg-subtle)) padding-box,
+          conic-gradient(from var(--ang), #ffd43b, #ff66b2, #9b59b6, #00f2fe, #ffd43b) border-box;
+      border: 2px solid transparent;
+      animation: leyendaGiro 4s linear infinite;
+  }
+
+  .rango-fila.rango-leyenda::after {
+      content: 'MÁXIMO';
+      position: absolute;
+      top: 6px;
+      right: 8px;
+      font-size: 0.58rem;
+      font-weight: 900;
+      letter-spacing: 1px;
+      color: #ffd43b;
+      text-shadow: 0 0 8px rgba(255, 212, 59, 0.8);
+  }
+
+  .rango-fila.rango-leyenda .rango-puntos {
+      margin-right: 52px;
+  }
+
+  /* Gloss sweep over the Leyenda badge */
+  .leyenda-brillo {
+      position: relative;
+      overflow: hidden;
+      background-image: linear-gradient(120deg, transparent 20%, rgba(255, 255, 255, 0.55) 50%, transparent 80%);
+      background-size: 250% 100%;
+      background-repeat: no-repeat;
+      animation: brilloBarrido 3.2s ease-in-out infinite;
+  }
+
+  @keyframes brilloBarrido {
+      0% { background-position: 180% 0; }
+      60%, 100% { background-position: -80% 0; }
   }
 
   /* --- ALERTAS VISUALES EN PANTALLA (OVERLAY) --- */
@@ -977,6 +1258,30 @@ body.light-mode .hero-bio {
  @keyframes streakPulse {
      0%, 100% { transform: scale(1); }
      50% { transform: scale(1.1); }
+ }
+
+ /* --- PATRÓN COMPARTIDO: BOTONES DE PESTAÑA ---
+    Bloque comun a sorteo.html y comunidad.html (antes duplicado en los dos
+    <style> de pagina). Cada pagina conserva su propio tamaño y su color de
+    texto activo en su <style> local, que al ir despues gana en especificidad. */
+ .tab-btn {
+     background: var(--card-bg-subtle);
+     color: var(--text-muted);
+     border: 1px solid var(--border-color);
+     border-radius: 10px;
+     cursor: pointer;
+     transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+ }
+
+ .tab-btn:hover {
+     color: var(--text-main);
+     border-color: var(--accent-color);
+ }
+
+ .tab-btn.active {
+     background: var(--accent-color);
+     border-color: var(--accent-color);
+     box-shadow: var(--glow);
  }
 
  /* Accesibilidad: respeta la preferencia de movimiento reducido */

@@ -3,17 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#ff66b2">
     <title>LaGochaGaming | Comunidad y Chat</title>
+    <meta name="description" content="Únete al chat de la comunidad de LaGochaGaming, comparte con otros fans, sube de rango y gana puntos mientras no hay stream.">
+    <link rel="canonical" href="https://lagochagaming.com/comunidad">
     
     <!-- Open Graph / Redes Sociales -->
     <meta property="og:title" content="LaGochaGaming | Comunidad">
     <meta property="og:description" content="Únete al chat de la comunidad, comparte con otros fans y entérate de todo mientras no hay stream.">
-    <meta property="og:image" content="img/3.jpg">
+    <meta property="og:image" content="https://lagochagaming.com/img/3.jpg">
+    <meta property="og:url" content="https://lagochagaming.com/comunidad">
     <meta property="og:type" content="website">
+    <meta property="og:site_name" content="LaGochaGaming">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="LaGochaGaming | Comunidad">
+    <meta name="twitter:description" content="Únete al chat de la comunidad, comparte con otros fans y entérate de todo mientras no hay stream.">
+    <meta name="twitter:image" content="https://lagochagaming.com/img/3.jpg">
 
     <link rel="icon" type="image/x-icon" href="img/favicon.ico">
+    <link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="img/android-chrome-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="img/android-chrome-512x512.png">
+    <link rel="manifest" href="manifest.webmanifest">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="dns-prefetch" href="https://kick.com">
     
     <style>
 .comunidad-layout {
@@ -41,11 +59,6 @@
             flex: 1 1 auto;
             min-width: 0;
             padding: 8px 10px;
-            border: 1px solid var(--border-color, #333);
-            background: var(--card-bg-subtle, rgba(255,255,255,0.03));
-            color: var(--text-muted, #aaa);
-            border-radius: 8px;
-            cursor: pointer;
             font-size: 0.8rem;
             font-weight: 600;
             white-space: normal;
@@ -53,15 +66,10 @@
             line-height: 1.2;
             text-align: center;
             transition: all 0.2s ease;
-        }
-        .tab-btn:hover {
-            border-color: var(--accent-color);
-            color: var(--text-main);
+            border-radius: 8px;
         }
         .tab-btn.active {
-            background: var(--accent-color, #ff66b2);
             color: #000;
-            border-color: var(--accent-color, #ff66b2);
         }
         .tab-content {
             animation: fadeInTab 0.2s ease;
@@ -299,8 +307,16 @@
         .chat-login-btn { flex: 1; min-width: 140px; padding: 12px 14px; font-size: 0.9rem; white-space: nowrap; }
         .chat-login-hint { font-size: 0.8rem; color: var(--text-muted); margin: 5px 0 0 0; }
 
-        .chat-form { display: none; position: relative; grid-template-columns: 140px minmax(0, 1fr) auto; align-items: center; }
-        .chat-form.is-visible { display: grid; }
+    .chat-form { display: none; position: relative; grid-template-columns: 140px minmax(0, 1fr) auto; align-items: center; }
+    .chat-form.is-visible { display: grid; }
+    .chat-form textarea {
+        resize: none;
+        overflow-y: hidden;
+        font-family: inherit;
+        line-height: 1.35;
+        max-height: 140px;
+        min-height: 42px;
+    }
         .chat-submit-btn { padding: 10px 20px; }
         .streak-badge-chat { display: none; position: absolute; top: -25px; right: 10px; white-space: nowrap; }
 
@@ -449,7 +465,7 @@
                 <a href="cine" class="">🍿 GochiWatch</a>
                 <a href="sorteo" class="">🎁 Sorteo</a>
                 <a href="galeria" class="">📸 Galería</a>
-                <a href="comunidad" class="nav-active">💬 Comunidad</a>
+                <a href="comunidad" class="nav-active" aria-current="page">💬 Comunidad</a>
             </div>
             <div class="nav-right">
                 <button id="btn-toggle-tema" class="btn-tema-nav" title="Cambiar tema" aria-label="Cambiar tema claro/oscuro"><i class="fa-solid fa-sun"></i></button>
@@ -460,11 +476,6 @@
 
     <!-- TOAST DE STREAM EN VIVO se inserta dinámicamente desde main.js -->
 
-    <div id="stream-alert" class="stream-alert-overlay" aria-live="polite" aria-label="Alerta de stream en vivo">
-        <i class="fa-solid fa-tower-broadcast"></i>
-        <span id="stream-alert-text">¡LA GOCHA ESTÁ EN DIRECTO! 🎉</span>
-    </div>
-
     <!-- CONTENIDO PRINCIPAL COMUNIDAD -->
     <main class="comunidad-layout">
         <!-- COLUMNA IZQUIERDA: USUARIOS EN LÍNEA + LEADERBOARD -->
@@ -472,7 +483,7 @@
             <h3 class="chat-sidebar-title">
                 <i class="fa-solid fa-users"></i> Usuarios en línea
             </h3>
-            <div id="online-users-list">
+            <div id="online-users-list" aria-live="polite" aria-label="Usuarios conectados al chat">
                 Cargando usuarios...
             </div>
 
@@ -481,7 +492,7 @@
                 <h3 class="chat-sidebar-subtitle">
                     <i class="fa-solid fa-trophy"></i> Top Comunidad
                 </h3>
-                <div id="leaderboard-list" class="leaderboard-scroll">
+                <div id="leaderboard-list" class="leaderboard-scroll" aria-live="polite" aria-label="Ranking de puntos de la comunidad">
                     <div class="chat-empty-note">Cargando ranking...</div>
                 </div>
             </div>
@@ -525,7 +536,7 @@
 
             <form id="chat-form" class="chat-input-area chat-form">
                 <input type="text" id="chat-autor" placeholder="Tu apodo" maxlength="30" required>
-                <input type="text" id="chat-mensaje" placeholder="Escribe un mensaje..." maxlength="300" required>
+                <textarea id="chat-mensaje" rows="1" maxlength="300" placeholder="Escribe un mensaje..." aria-label="Mensaje del chat" required></textarea>
                 <button type="submit" class="btn-primary chat-submit-btn">Enviar</button>
                 <!-- Badge de racha de mensajes -->
                 <span id="streak-badge-chat" class="streak-badge streak-badge-chat"></span>
@@ -534,13 +545,13 @@
 
         <!-- COLUMNA DERECHA: SIDEBAR DE ESTADO Y REGLAS (TABS) -->
         <div class="sidebar-card">
-            <div class="tab-header">
-                <button type="button" class="tab-btn active" data-tab="canal">Canal</button>
-                <button type="button" class="tab-btn" data-tab="rangos">Rangos</button>
-                <button type="button" class="tab-btn" data-tab="info">Info & Reglas</button>
+            <div class="tab-header" role="tablist" aria-label="Paneles de la comunidad">
+                <button type="button" class="tab-btn active" data-tab="canal" role="tab" id="tabbtn-canal" aria-selected="true" aria-controls="tab-canal">Canal</button>
+                <button type="button" class="tab-btn" data-tab="rangos" role="tab" id="tabbtn-rangos" aria-selected="false" aria-controls="tab-rangos" tabindex="-1">Rangos</button>
+                <button type="button" class="tab-btn" data-tab="info" role="tab" id="tabbtn-info" aria-selected="false" aria-controls="tab-info" tabindex="-1">Info &amp; Reglas</button>
             </div>
 
-            <div id="tab-canal" class="tab-content active">
+            <div id="tab-canal" class="tab-content active" role="tabpanel" aria-labelledby="tabbtn-canal">
                 <div class="estado-canal-box">
                     <h4 class="tab-content-title-sm"><i class="fa-solid fa-tower-broadcast"></i> Estado del Canal</h4>
                     <div id="canal-estado" class="canal-estado">
@@ -569,25 +580,41 @@
                         <div class="user-profile-row-accent">
                             <i class="fa-solid fa-gem"></i>
                             <span id="user-points-display">0 pts</span>
+                            <span id="user-puntos-chip" class="rango-sube-chip" hidden>+0</span>
+                            <span id="user-rango-mult" class="rango-mult">x1</span>
                         </div>
                         <span id="user-rango-badge" class="rango-badge rango-semilla user-rango-badge">🌱 SEMILLA</span>
                     </div>
+                    <div class="rango-progreso rango-progreso-usuario">
+                        <div id="user-rango-progreso" class="rango-progreso-fill"></div>
+                    </div>
+                    <p id="user-rango-meta" class="rango-meta">Próximo rango: Gota (50 pts)</p>
                 </div>
             </div>
 
-            <div id="tab-rangos" class="tab-content" hidden>
+            <div id="tab-rangos" class="tab-content" hidden role="tabpanel" aria-labelledby="tabbtn-rangos">
                 <h4 class="tab-content-title"><i class="fa-solid fa-crown"></i> Rangos y Puntos</h4>
-                <div class="cuadro-rangos">
+                <div id="cuadro-rangos" class="cuadro-rangos">
                     <div class="rango-fila"><span class="rango-icono">🌱</span><span class="rango-nombre">Semilla</span><span class="rango-puntos">0 - 49 pts</span></div>
                     <div class="rango-fila"><span class="rango-icono">💧</span><span class="rango-nombre">Gota</span><span class="rango-puntos">50 - 199 pts</span></div>
                     <div class="rango-fila"><span class="rango-icono">🌸</span><span class="rango-nombre">Flor</span><span class="rango-puntos">200 - 499 pts</span></div>
                     <div class="rango-fila"><span class="rango-icono">⭐</span><span class="rango-nombre">Estrella</span><span class="rango-puntos">500 - 999 pts</span></div>
                     <div class="rango-fila rango-leyenda"><span class="rango-icono">👑</span><span class="rango-nombre">Leyenda</span><span class="rango-puntos">1000+ pts</span></div>
                 </div>
-                <p class="tab-hint">Ganas <strong>1 punto cada 5 minutos</strong> conectado en el chat. El rango se actualiza automáticamente al sumar puntos.</p>
+                <div id="rango-progreso-panel" class="rango-progreso-panel">
+                    <div class="rango-progreso-head">
+                        <span id="rango-progreso-label" class="rango-progreso-label">Progreso hacia el siguiente rango</span>
+                        <span id="rango-progreso-valor" class="rango-progreso-valor">0 / 0 pts</span>
+                    </div>
+                    <div class="rango-progreso" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Progreso hacia el siguiente rango">
+                        <div id="rango-progreso-fill" class="rango-progreso-fill"></div>
+                    </div>
+                    <p id="rango-meta" class="rango-meta">Multiplicador actual: x1</p>
+                </div>
+                <p id="rango-hint-tick" class="tab-hint">Ganas <strong>1 punto cada 5 minutos</strong> conectado en el chat. El rango se actualiza automáticamente al sumar puntos.</p>
             </div>
 
-            <div id="tab-info" class="tab-content" hidden>
+            <div id="tab-info" class="tab-content" hidden role="tabpanel" aria-labelledby="tabbtn-info">
                 <h4 class="tab-content-title-sm"><i class="fa-solid fa-shield-halved"></i> Reglas del Chat</h4>
                 <ul class="tab-list">
                     <li>Respeto ante todo con la comunidad.</li>
@@ -633,26 +660,51 @@
         // Funciones globales para los botones de login/registro (llamadas desde HTML)
         let _modalModo = 'login'; // 'login' o 'registro'
 
+        function abrirModalComunidad(modo) {
+            _modalModo = modo;
+            const titulo = document.getElementById('modal-titulo-accion');
+            const subtitulo = document.getElementById('modal-subtitulo-accion');
+            const input = document.getElementById('nickname-modal-input');
+            const pin = document.getElementById('nickname-modal-pin');
+            const error = document.getElementById('nickname-modal-error');
+            const modal = document.getElementById('nickname-modal');
+
+            if (modo === 'registro') {
+                titulo.textContent = 'Registrarse en la Comunidad';
+                subtitulo.textContent = 'Crea un nuevo perfil con apodo y PIN de 4 dígitos.';
+            } else {
+                titulo.textContent = 'Iniciar Sesión';
+                subtitulo.textContent = 'Ingresa tu apodo y PIN de 4 dígitos para acceder a tu cuenta.';
+            }
+
+            const btnAccion = document.getElementById('nickname-modal-set-btn');
+            if (btnAccion) btnAccion.textContent = (modo === 'registro') ? 'Crear cuenta' : 'Entrar';
+
+            input.value = '';
+            pin.value = '';
+            error.style.display = 'none';
+            modal.style.display = 'flex';
+            // Trampa de foco: el teclado no puede salir del modal mientras está abierto.
+            if (window.activarTrampaFoco) {
+                window.activarTrampaFoco(modal, input);
+            } else {
+                input.focus();
+            }
+        }
+
+        function cerrarModalComunidad() {
+            const modal = document.getElementById('nickname-modal');
+            if (!modal || modal.style.display === 'none') return;
+            modal.style.display = 'none';
+            if (window.desactivarTrampaFoco) window.desactivarTrampaFoco(true);
+        }
+
         function abrirModalLogin() {
-            _modalModo = 'login';
-            document.getElementById('modal-titulo-accion').textContent = 'Iniciar Sesión';
-            document.getElementById('modal-subtitulo-accion').textContent = 'Ingresa tu apodo y PIN de 4 dígitos para acceder a tu cuenta.';
-            document.getElementById('nickname-modal-input').value = '';
-            document.getElementById('nickname-modal-pin').value = '';
-            document.getElementById('nickname-modal-error').style.display = 'none';
-            document.getElementById('nickname-modal').style.display = 'flex';
-            document.getElementById('nickname-modal-input').focus();
+            abrirModalComunidad('login');
         }
 
         function abrirModalRegistro() {
-            _modalModo = 'registro';
-            document.getElementById('modal-titulo-accion').textContent = 'Registrarse en la Comunidad';
-            document.getElementById('modal-subtitulo-accion').textContent = 'Crea un nuevo perfil con apodo y PIN de 4 dígitos.';
-            document.getElementById('nickname-modal-input').value = '';
-            document.getElementById('nickname-modal-pin').value = '';
-            document.getElementById('nickname-modal-error').style.display = 'none';
-            document.getElementById('nickname-modal').style.display = 'flex';
-            document.getElementById('nickname-modal-input').focus();
+            abrirModalComunidad('registro');
         }
 
         // Estado del canal: main.js hace un único fetch y nos pasa los datos,
@@ -667,7 +719,9 @@
             const canalPreview = document.getElementById('canal-preview');
             const canalInfo = document.getElementById('canal-info');
             const canalOffline = document.getElementById('canal-offline');
-            const alertOverlay = document.getElementById('stream-alert');
+            // El overlay de "en vivo" lo inserta main.js: se busca de forma perezosa
+            // porque en el momento del parseo todavia no existe en el DOM.
+            const obtenerAlertaStream = () => document.getElementById('stream-alert');
 
             if (error || !data) {
                 if (estadoDot && estadoTexto) {
@@ -717,6 +771,7 @@
             }
 
             // Overlay de alerta solo al pasar de offline a live
+            const alertOverlay = obtenerAlertaStream();
             if (alertOverlay && _ultimoEstadoEnVivoPagina === false && enVivo) {
                 alertOverlay.classList.add('visible', 'live');
                 setTimeout(() => { alertOverlay.classList.remove('visible'); }, 5000);
@@ -725,6 +780,10 @@
         };
 
         document.addEventListener('DOMContentLoaded', async () => {
+            // Asegura que el toast y el overlay de "en vivo" existan antes de usarlos
+            // (main.js tambien los inserta, pero su listener se registra despues).
+            try { window.insertarComponentesUIGlobales?.(); } catch (e) { console.warn('insertarComponentesUIGlobales:', e); }
+
             const chatForm = document.getElementById('chat-form');
             const chatMensajes = document.getElementById('chat-mensajes');
             const inputAutor = document.getElementById('chat-autor');
@@ -771,11 +830,243 @@
                 el.textContent = emoji + ' ' + nombre.toUpperCase();
             }
 
+            // === GAMIFICACIÓN: escalera de rangos, progreso y celebración ===
+
+            // Fuente de verdad: la RPC obtener_rangos(). El fallback local solo entra
+            // si la RPC falla, para no dejar la UI de rangos vacia.
+            const RANGOS_FALLBACK = [
+                { clave: 'semilla', emoji: '🌱', nombre: 'Semilla', min: 0, max: 49, mult: 1 },
+                { clave: 'gota', emoji: '💧', nombre: 'Gota', min: 50, max: 199, mult: 2 },
+                { clave: 'flor', emoji: '🌸', nombre: 'Flor', min: 200, max: 499, mult: 3 },
+                { clave: 'estrella', emoji: '⭐', nombre: 'Estrella', min: 500, max: 999, mult: 4 },
+                { clave: 'leyenda', emoji: '👑', nombre: 'Leyenda', min: 1000, max: null, mult: 5 }
+            ];
+
+            let rangosEscalera = RANGOS_FALLBACK;
+            let rangoActualUsuario = 'semilla';
+            let puntosActualesUsuario = 0;
+            let sesionComunidadActiva = false;
+
+            async function cargarEscaleraRangos() {
+                try {
+                    const { data, error } = await supabase.rpc('obtener_rangos');
+                    if (!error && Array.isArray(data) && data.length > 0) {
+                        rangosEscalera = data.map(r => ({
+                            clave: String(r.clave),
+                            emoji: r.emoji,
+                            nombre: r.nombre,
+                            min: Number(r.min) || 0,
+                            max: (r.max === null || r.max === undefined) ? null : Number(r.max),
+                            mult: Number(r.mult) || 1
+                        }));
+                    }
+                } catch (e) {
+                    console.warn('No se pudo cargar la escalera de rangos:', e);
+                }
+                pintarEscaleraRangos();
+                actualizarProgresoRangos(puntosActualesUsuario, rangoActualUsuario);
+            }
+
+            function obtenerRangoPorPuntos(puntos) {
+                const p = Number(puntos) || 0;
+                // La escalera es ascendente: gana el ultimo rango cuyo minimo
+                // ya se ha superado (con "el primero que encaja" se quedaba
+                // en Semilla incluso con 50+ puntos).
+                let actual = rangosEscalera[0];
+                for (const r of rangosEscalera) {
+                    if (p >= r.min) actual = r;
+                }
+                return actual;
+            }
+
+            function obtenerSiguienteRango(clave) {
+                const i = rangosEscalera.findIndex(r => r.clave === clave);
+                if (i < 0 || i >= rangosEscalera.length - 1) return null;
+                return rangosEscalera[i + 1];
+            }
+
+            function calcularProgreso(puntos) {
+                const actual = obtenerRangoPorPuntos(puntos);
+                const siguiente = obtenerSiguienteRango(actual.clave);
+                if (!siguiente) {
+                    return { actual, siguiente: null, porcentaje: 100, faltan: 0, esMaximo: true };
+                }
+                const span = Math.max(1, siguiente.min - actual.min);
+                const bruto = (puntos - actual.min) / span;
+                const progreso = Math.max(0, Math.min(1, bruto));
+                return {
+                    actual,
+                    siguiente,
+                    porcentaje: Math.round(progreso * 100),
+                    faltan: Math.max(0, siguiente.min - puntos),
+                    esMaximo: false
+                };
+            }
+
+            function pintarEscaleraRangos() {
+                const cont = document.getElementById('cuadro-rangos');
+                if (!cont) return;
+                cont.innerHTML = rangosEscalera.map(r => {
+                    const esActual = sesionComunidadActiva && r.clave === rangoActualUsuario;
+                    const puntosTxt = (r.max === null) ? (r.min + '+ pts') : (r.min + ' - ' + r.max + ' pts');
+                    const clases = 'rango-fila'
+                        + (esActual ? ' rango-actual' : '')
+                        + (r.clave === 'leyenda' ? ' rango-leyenda' : '');
+                    return `<div class="${clases}" data-rango="${r.clave}">
+                        <span class="rango-icono">${r.emoji}</span>
+                        <span class="rango-nombre">${escapeHtml(r.nombre)}</span>
+                        <span class="rango-puntos">${puntosTxt}</span>
+                        <span class="rango-mult">x${r.mult}</span>
+                        ${esActual ? '<span class="rango-actual-chip">TÚ</span>' : ''}
+                    </div>`;
+                }).join('');
+            }
+
+            function actualizarProgresoRangos(puntos, rango) {
+                const info = calcularProgreso(puntos);
+                rangoActualUsuario = rango ? String(rango).toLowerCase() : info.actual.clave;
+                puntosActualesUsuario = Number(puntos) || 0;
+
+                pintarEscaleraRangos();
+
+                const chipMult = document.getElementById('user-rango-mult');
+                if (chipMult) chipMult.textContent = 'x' + info.actual.mult;
+
+                const fillUsuario = document.getElementById('user-rango-progreso');
+                if (fillUsuario) fillUsuario.style.width = info.porcentaje + '%';
+
+                const fill = document.getElementById('rango-progreso-fill');
+                if (fill) fill.style.width = info.porcentaje + '%';
+
+                const panel = document.getElementById('tab-rangos');
+                if (panel) {
+                    panel.classList.toggle('rango-progreso-leyenda', info.esMaximo);
+                    const barra = panel.querySelector('.rango-progreso');
+                    if (barra) barra.setAttribute('aria-valuenow', String(info.porcentaje));
+                }
+
+                const valor = document.getElementById('rango-progreso-valor');
+                if (valor) {
+                    valor.textContent = info.esMaximo
+                        ? (puntosActualesUsuario + ' pts · Rango máximo')
+                        : (puntosActualesUsuario + ' / ' + info.siguiente.min + ' pts');
+                }
+
+                const label = document.getElementById('rango-progreso-label');
+                if (label) {
+                    label.textContent = info.esMaximo
+                        ? 'Has alcanzado el rango máximo'
+                        : ('Progreso hacia ' + info.siguiente.emoji + ' ' + info.siguiente.nombre);
+                }
+
+                const meta = document.getElementById('rango-meta');
+                if (meta) {
+                    meta.textContent = info.esMaximo
+                        ? ('Multiplicador actual: x' + info.actual.mult + ' · Eres Leyenda')
+                        : ('Multiplicador actual: x' + info.actual.mult
+                            + ' · Te faltan ' + info.faltan + ' pts para ' + info.siguiente.emoji + ' ' + info.siguiente.nombre
+                            + ' · al llegar x' + info.siguiente.mult);
+                }
+
+                const metaUsuario = document.getElementById('user-rango-meta');
+                if (metaUsuario) {
+                    metaUsuario.textContent = info.esMaximo
+                        ? ('👑 Rango máximo · x' + info.actual.mult)
+                        : ('Te faltan ' + info.faltan + ' pts para ' + info.siguiente.emoji + ' ' + info.siguiente.nombre
+                            + ' · al llegar x' + info.siguiente.mult);
+                }
+
+                const hint = document.getElementById('rango-hint-tick');
+                if (hint) {
+                    hint.textContent = 'Ganas 1 punto x' + info.actual.mult
+                        + ' cada 5 minutos con la comunidad abierta. El rango se actualiza automáticamente al sumar puntos.';
+                }
+            }
+
+            function obtenerOverlayCelebracion() {
+                let overlay = document.getElementById('overlay-celebracion');
+                if (!overlay) {
+                    overlay = document.createElement('div');
+                    overlay.id = 'overlay-celebracion';
+                    overlay.className = 'celebracion-leyenda';
+                    overlay.setAttribute('role', 'dialog');
+                    overlay.setAttribute('aria-label', 'Celebración de ascenso de rango');
+                    document.body.appendChild(overlay);
+                }
+                return overlay;
+            }
+
+            function cerrarCelebracion() {
+                const overlay = document.getElementById('overlay-celebracion');
+                if (!overlay) return;
+                overlay.classList.remove('visible');
+            }
+
+            function mostrarChipPuntos(cantidad) {
+                const chip = document.getElementById('user-puntos-chip');
+                if (!chip || !cantidad) return;
+                chip.textContent = '+' + cantidad;
+                chip.classList.remove('visible');
+                void chip.offsetWidth; // reinicia la animacion
+                chip.classList.add('visible');
+                clearTimeout(chip._temporizador);
+                chip._temporizador = setTimeout(() => chip.classList.remove('visible'), 4000);
+            }
+
+            // Aplica el estado de rango: badge, progreso y celebracion si hubo ascenso.
+            function aplicarEstadoRango(puntos, rango, opciones) {
+                const op = opciones || {};
+                const rangoAnterior = op.rangoAnterior || rangoActualUsuario;
+                const rangoNuevo = String(rango || obtenerRangoPorPuntos(puntos).clave).toLowerCase();
+
+                pintarBadgeRango(document.getElementById('user-rango-badge'), rangoNuevo);
+                actualizarProgresoRangos(puntos, rangoNuevo);
+
+                if (op.silencioso) return;
+
+                if (rangoAnterior && rangoAnterior !== rangoNuevo) {
+                    celebrarAscenso(rangoAnterior, rangoNuevo);
+                }
+            }
+
+            function celebrarAscenso(rangoAnterior, rangoNuevo) {
+                const info = datosRango(rangoNuevo);
+                const mult = (rangosEscalera.find(r => r.clave === rangoNuevo) || {}).mult || 1;
+
+                const badge = document.getElementById('user-rango-badge');
+                if (badge) {
+                    badge.classList.remove('rango-subida');
+                    void badge.offsetWidth;
+                    badge.classList.add('rango-subida');
+                }
+
+                window.lanzarConfetti?.(null, { cantidad: rangoNuevo === 'leyenda' ? 320 : 140 });
+
+                if (rangoNuevo === 'leyenda') {
+                    const overlay = obtenerOverlayCelebracion();
+                    overlay.innerHTML = `<div class="celebracion-caja">
+                        <span class="celebracion-emoji">👑</span>
+                        <h2 class="celebracion-titulo">¡Te has convertido en Leyenda!</h2>
+                        <p class="celebracion-texto">Multiplicador x${mult} en cada crédito de puntos.</p>
+                        <button type="button" class="btn-primary celebracion-cierre" data-cierre-celebracion>¡Vamos!</button>
+                    </div>`;
+                    overlay.classList.add('visible');
+                    const btn = overlay.querySelector('[data-cierre-celebracion]');
+                    if (btn) {
+                        btn.addEventListener('click', cerrarCelebracion);
+                        btn.focus();
+                    }
+                    overlay.addEventListener('click', (e) => { if (e.target === overlay) cerrarCelebracion(); });
+                } else {
+                    window.mostrarToast?.('🎉 ¡Subiste a ' + info.nombre + '! Multiplicador x' + mult);
+                }
+            }
+
             let adminAutenticado = false;
             try {
-                const { data: { session } } = await supabase.auth.getSession();
-                if (session && session.user?.email === 'gocha@admin.com') {
-                    adminAutenticado = true;
+                // La lista de administradores vive en main.js (window.esAdminActual).
+                adminAutenticado = !!(await window.esAdminActual?.());
+                if (adminAutenticado) {
                     document.body.classList.add('admin-mode-active');
                 }
             } catch (e) { console.warn('No se pudo verificar sesión admin:', e); }
@@ -801,12 +1092,11 @@
                 }
             }
 
-            function escaparHTML(str) {
-                return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'}[tag] || tag));
-            }
+            // El escapado de HTML vive en main.js (window.escapeHtml) como fuente unica.
 
             function hideNicknameModal() {
                 nicknameModal.style.display = 'none';
+                if (window.desactivarTrampaFoco) window.desactivarTrampaFoco(true);
             }
 
             async function registrarUsuario(apodo, pin) {
@@ -829,6 +1119,7 @@
 
             function guardarSesion(apodo, token, puntos, rango, id) {
                 if (id) userId = id;
+                sesionComunidadActiva = true;
                 localStorage.setItem(STORAGE_KEY_NICK, apodo);
                 if (id) localStorage.setItem('comunidad_user_id', String(id));
                 if (token) localStorage.setItem(STORAGE_KEY_TOKEN, token);
@@ -836,7 +1127,7 @@
                     userProfilePanel.style.display = 'block';
                     if (userInfoDisplay) userInfoDisplay.textContent = apodo;
                     if (userPointsDisplay) userPointsDisplay.textContent = (puntos || 0) + ' pts';
-                    pintarBadgeRango(document.getElementById('user-rango-badge'), rango);
+                    aplicarEstadoRango(puntos || 0, rango, { silencioso: true });
                 }
                 if (inputAutor) {
                     inputAutor.value = apodo;
@@ -871,12 +1162,22 @@
                         localStorage.removeItem('comunidad_user_id');
                         userNickname = null;
                         userId = null;
+                        sesionComunidadActiva = false;
+                        rangoActualUsuario = 'semilla';
+                        puntosActualesUsuario = 0;
+                        pintarEscaleraRangos();
                         if (userProfilePanel) { userProfilePanel.style.display = 'none'; }
                         if (inputAutor) { inputAutor.value = ''; inputAutor.readOnly = false; }
                         if (userInfoDisplay) userInfoDisplay.textContent = '';
                         if (userPointsDisplay) userPointsDisplay.textContent = '';
                         const badge = document.getElementById('user-rango-badge');
                         if (badge) { badge.className = 'rango-badge'; badge.textContent = ''; }
+                        const chipMult = document.getElementById('user-rango-mult');
+                        if (chipMult) chipMult.textContent = 'x1';
+                        const fillUsuario = document.getElementById('user-rango-progreso');
+                        if (fillUsuario) fillUsuario.style.width = '0%';
+                        const fill = document.getElementById('rango-progreso-fill');
+                        if (fill) fill.style.width = '0%';
                         window.actualizarUsuarioNavComunidad?.();
                         return false;
                     }
@@ -939,9 +1240,15 @@
 
             async function cargarMensajesChat() {
                 try {
-                    const { data, error } = await supabase.from('comunidad_chat').select('*').order('created_at', { ascending: true }).limit(50);
+                    // Se piden los mensajes mas recientes primero (indice sobre created_at)
+                    // y luego se invierte el array para pintarlos de mas antiguo a mas nuevo.
+                    const { data, error } = await supabase
+                        .from('comunidad_chat')
+                        .select('id, autor, mensaje, created_at')
+                        .order('created_at', { ascending: false })
+                        .limit(50);
                     if (error) { chatMensajes.innerHTML = '<div class="chat-empty-error">Error al cargar el chat.</div>'; return; }
-                    renderizarMensajes(data);
+                    renderizarMensajes((data || []).reverse());
                 } catch (e) { console.error(e); }
             }
 
@@ -1065,7 +1372,7 @@
                     document.body.appendChild(tooltipReaccionEl);
                 }
 
-                const lista = usuarios.map(n => `<span class="tooltip-usuario">${escaparHTML(n)}</span>`).join('');
+                const lista = usuarios.map(n => `<span class="tooltip-usuario">${escapeHtml(n)}</span>`).join('');
                 tooltipReaccionEl.innerHTML = `<div class="tooltip-titulo">${emoji} <span class="tooltip-count">(${usuarios.length})</span></div><div class="tooltip-lista">${lista}</div>`;
 
                 const rect = target.getBoundingClientRect();
@@ -1471,6 +1778,7 @@ if (chatForm) {
                             }
                         } else {
                             inputMensaje.value = '';
+                            ajustarAltoChat();
                             // Render optimista: el emisor ve su mensaje al instante,
                             // sin depender de la latencia del Realtime.
                             insertarMensajeEnChat({
@@ -1489,6 +1797,33 @@ if (chatForm) {
                     }
                     if (btnEnviar) btnEnviar.disabled = false;
                 });
+            }
+
+            // Input de chat como textarea: Enter envia, Shift+Enter hace salto de linea
+            // y el alto crece con el contenido hasta un maximo.
+            const MAX_ALTO_CHAT = 140;
+            function ajustarAltoChat() {
+                if (!inputMensaje) return;
+                inputMensaje.style.height = 'auto';
+                const necesitaScroll = inputMensaje.scrollHeight > MAX_ALTO_CHAT;
+                inputMensaje.style.height = Math.min(inputMensaje.scrollHeight, MAX_ALTO_CHAT) + 'px';
+                inputMensaje.style.overflowY = necesitaScroll ? 'auto' : 'hidden';
+            }
+
+            if (inputMensaje && inputMensaje.tagName === 'TEXTAREA') {
+                inputMensaje.addEventListener('input', ajustarAltoChat);
+                inputMensaje.addEventListener('keydown', (e) => {
+                    if (e.key !== 'Enter') return;
+                    if (e.shiftKey) return; // Shift+Enter = salto de linea
+                    e.preventDefault();
+                    if (!chatForm) return;
+                    if (typeof chatForm.requestSubmit === 'function') {
+                        chatForm.requestSubmit();
+                    } else {
+                        chatForm.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+                    }
+                });
+                ajustarAltoChat();
             }
 
             function iniciarRealtimeChat() {
@@ -1601,25 +1936,32 @@ if (chatForm) {
             async function obtenerRangosCache(nicknames) {
                 const ahora = Date.now();
                 const nicknamesUnicos = [...new Set(nicknames.filter(Boolean))];
-                if (rangosCache.ts && ahora - rangosCache.ts < 30000) {
-                    const out = {};
-                    nicknamesUnicos.forEach(n => { if (rangosCache.map[n] !== undefined) out[n] = rangosCache.map[n]; });
-                    // Completar los que faltan del cache
-                    const faltantes = nicknamesUnicos.filter(n => out[n] === undefined);
-                    if (faltantes.length === 0) return out;
-                    nicknamesUnicos.forEach(n => { out[n] = out[n] || 'semilla'; });
-                    return out;
-                }
-                let map = {};
+                if (nicknamesUnicos.length === 0) return {};
+
+                const cacheValida = rangosCache.ts && (ahora - rangosCache.ts < 30000);
+                const out = {};
+                const faltantes = [];
+                nicknamesUnicos.forEach(n => {
+                    if (cacheValida && rangosCache.map[n] !== undefined) out[n] = rangosCache.map[n];
+                    else faltantes.push(n);
+                });
+                if (faltantes.length === 0) return out;
+
+                // Los nicks que no estan en la cache se vuelven a consultar: rellenarlos
+                // con 'semilla' dejaba a los usuarios recien conectados sin su rango real.
                 try {
-                    const { data } = await supabase.from('usuarios_comunidad').select('apodo, rango').in('apodo', nicknamesUnicos);
+                    const { data } = await supabase
+                        .from('usuarios_comunidad')
+                        .select('apodo, rango')
+                        .in('apodo', faltantes);
                     if (data) {
-                        data.forEach(u => { map[u.apodo] = u.rango; });
+                        data.forEach(u => { out[u.apodo] = u.rango; });
                     }
                 } catch (e) { console.error('Error cargando rangos:', e); }
-                rangosCache = { map, ts: ahora };
-                const out = {};
-                nicknamesUnicos.forEach(n => { out[n] = map[n] || 'semilla'; });
+
+                rangosCache = { map: { ...rangosCache.map, ...out }, ts: ahora };
+                // Los que no existen en la comunidad no tienen rango propio.
+                faltantes.forEach(n => { if (out[n] === undefined) out[n] = 'semilla'; });
                 return out;
             }
 
@@ -1738,7 +2080,7 @@ if (chatForm) {
                         const rangoBadge = `<span class="rango-badge rango-${rangoLower} leaderboard-badge"><span>${emoji}</span><span>${rangoNombre}</span></span>`;
                         
                         html += `<div class="leaderboard-item${index === 0 ? ' leaderboard-item-first' : ''}">
-                            <span class="leaderboard-user">${medalla} ${escaparHTML(user.apodo)}${rangoBadge}</span>
+                            <span class="leaderboard-user">${medalla} ${escapeHtml(user.apodo)}${rangoBadge}</span>
                             <span class="leaderboard-points">${user.puntos} pts</span>
                         </div>`;
                     });
@@ -1750,6 +2092,7 @@ if (chatForm) {
             }
 
 // Inicializar
+            cargarEscaleraRangos();
             cargarMensajesChat();
             iniciarRealtimeChat();
             cargarLeaderboard();
@@ -1801,32 +2144,90 @@ if (chatForm) {
                 }, 500);
             }
 
-// Puntos automáticos: +1 punto cada 5 minutos (300,000 ms), rate-limit en servidor
-            setInterval(async () => {
+            // === PUNTOS AUTOMÁTICOS ===
+            // El navegador estrangula los timers en las pestañas ocultas: si el fan
+            // deja la comunidad abierta en segundo plano mientras ve el stream,
+            // perderia los puntos. Por eso el planificador se autocorrige al
+            // volver a la pestana (el rate limit del servidor sigue ponguiendo
+            // el techo de 1 credito cada 5 minutos).
+            const INTERVALO_PUNTOS_MS = 300000;
+            let ultimoCreditoIntento = Date.now();
+
+            async function creditarPuntos() {
                 const token = localStorage.getItem(STORAGE_KEY_TOKEN);
-                if (token) {
-                    try {
-                        const { data: resultado, error } = await supabase.rpc('incrementar_puntos_comunidad', { p_token: token });
-                        if (error) throw error;
-                        if (resultado && resultado.ok) {
-                            // Actualizar UI de puntos y rango con lo que devuelve el RPC
-                            if (userPointsDisplay) {
-                                userPointsDisplay.textContent = (resultado.puntos || 0) + ' pts';
-                            }
-                            pintarBadgeRango(document.getElementById('user-rango-badge'), resultado.rango);
+                if (!token) return;
+                const rangoAnterior = rangoActualUsuario;
+                try {
+                    const { data: resultado, error } = await supabase.rpc('incrementar_puntos_comunidad', { p_token: token });
+                    if (error) throw error;
+                    if (resultado && resultado.ok) {
+                        if (userPointsDisplay) {
+                            userPointsDisplay.textContent = (resultado.puntos || 0) + ' pts';
                         }
-                    } catch (e) { console.error('Error al sumar puntos:', e); }
+                        aplicarEstadoRango(resultado.puntos || 0, resultado.rango, { rangoAnterior });
+                        if (resultado.ganados) mostrarChipPuntos(resultado.ganados);
+                    }
+                } catch (e) {
+                    console.error('Error al sumar puntos:', e);
                 }
-            }, 300000); // 5 minutos
+            }
+
+            function iniciarPlanificadorPuntos() {
+                setInterval(() => {
+                    if (document.hidden) return; // el visibilitychange recupera el tiempo perdido
+                    ultimoCreditoIntento = Date.now();
+                    creditarPuntos();
+                }, INTERVALO_PUNTOS_MS);
+
+                document.addEventListener('visibilitychange', () => {
+                    if (document.hidden) return;
+                    const transcurrido = Date.now() - ultimoCreditoIntento;
+                    if (transcurrido >= INTERVALO_PUNTOS_MS) {
+                        ultimoCreditoIntento = Date.now();
+                        creditarPuntos();
+                    }
+                });
+            }
+
+            iniciarPlanificadorPuntos();
         });
 
         window.cambiarTabComunidad = function(tab) {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', (b.dataset.tab || '') === tab));
-            document.querySelectorAll('.tab-content').forEach(p => {
-                p.hidden = p.id !== 'tab-' + tab;
-                p.classList.toggle('active', p.id === 'tab-' + tab);
+            const botones = document.querySelectorAll('.tab-btn[data-tab]');
+            const paneles = document.querySelectorAll('.tab-content');
+            let activo = null;
+            botones.forEach(b => {
+                const esActivo = (b.dataset.tab || '') === tab;
+                b.classList.toggle('active', esActivo);
+                b.setAttribute('aria-selected', esActivo ? 'true' : 'false');
+                b.tabIndex = esActivo ? 0 : -1;
+                if (esActivo) activo = b;
             });
+            paneles.forEach(p => {
+                const esActivo = p.id === 'tab-' + tab;
+                p.hidden = !esActivo;
+                p.classList.toggle('active', esActivo);
+            });
+            if (activo) activo.focus();
         };
+
+        // Navegacion por teclado entre tabs (patron WAI-ARIA de tabs).
+        document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
+            btn.addEventListener('keydown', (e) => {
+                const teclas = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'];
+                if (!teclas.includes(e.key)) return;
+                e.preventDefault();
+                const botones = Array.from(document.querySelectorAll('.tab-btn[data-tab]'));
+                const i = botones.indexOf(btn);
+                let destino = i;
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') destino = (i + 1) % botones.length;
+                if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') destino = (i - 1 + botones.length) % botones.length;
+                if (e.key === 'Home') destino = 0;
+                if (e.key === 'End') destino = botones.length - 1;
+                const siguiente = botones[destino];
+                if (siguiente) window.cambiarTabComunidad(siguiente.dataset.tab);
+            });
+        });
 
         const btnLoginChat = document.getElementById('btn-login-chat');
         if (btnLoginChat) btnLoginChat.addEventListener('click', abrirModalLogin);
@@ -1840,11 +2241,11 @@ if (chatForm) {
     <footer class="main-footer">
         <div class="footer-container">
             <div class="footer-social-icons">
-                <a href="https://kick.com/lagochagaming" target="_blank" class="social-icon kick-icon" title="Kick">K</a>
-                <a href="https://www.tiktok.com/@lagochagaming11" target="_blank" class="social-icon" title="TikTok"><i class="fab fa-tiktok"></i></a>
-                <a href="https://www.instagram.com/oscurostefany" target="_blank" class="social-icon" title="Instagram"><i class="fab fa-instagram"></i></a>
-                <a href="https://discord.com/invite/svrteKBbeh" target="_blank" class="social-icon" title="Discord"><i class="fab fa-discord"></i></a>
-                <a href="https://www.youtube.com/@lagochagaming" target="_blank" class="social-icon" title="YouTube"><i class="fab fa-youtube"></i></a>
+                <a href="https://kick.com/lagochagaming" target="_blank" rel="noopener noreferrer" class="social-icon kick-icon" title="Kick">K</a>
+                <a href="https://www.tiktok.com/@lagochagaming11" target="_blank" rel="noopener noreferrer" class="social-icon" title="TikTok"><i class="fab fa-tiktok"></i></a>
+                <a href="https://www.instagram.com/oscurostefany" target="_blank" rel="noopener noreferrer" class="social-icon" title="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="https://discord.com/invite/svrteKBbeh" target="_blank" rel="noopener noreferrer" class="social-icon" title="Discord"><i class="fab fa-discord"></i></a>
+                <a href="https://www.youtube.com/@lagochagaming" target="_blank" rel="noopener noreferrer" class="social-icon" title="YouTube"><i class="fab fa-youtube"></i></a>
             </div>
             <p class="footer-copyright">&copy; 2026 LAGOCHAGAMING - ALL RIGHTS RESERVED</p>
         </div>

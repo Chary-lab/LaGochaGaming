@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# No hay paginas privadas ni areas de administracion en el sitio publico.
+Disallow: /admin
+Disallow: /config
+
+Sitemap: https://lagochagaming.com/sitemap.xml

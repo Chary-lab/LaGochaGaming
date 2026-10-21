@@ -25,6 +25,156 @@ if (window.supabase) {
     window.supabaseReady = false;
 }
 
+// === HELPERS COMPARTIDOS ===
+
+// Única fuente de verdad del escapado de HTML para todo el sitio.
+window.escapeHtml = function escapeHtml(s) {
+    return String(s ?? '').replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+};
+
+window.escapeAttr = function escapeAttr(s) {
+    return String(s ?? '').replace(/["'<>]/g, c => ({
+        '"': '&quot;', "'": '&#39;', '<': '&lt;', '>': '&gt;'
+    }[c]));
+};
+
+const ADMIN_EMAIL = 'gocha@admin.com';
+let _adminEmailCache = null;
+
+window.esAdminActual = async function esAdminActual() {
+    if (_adminEmailCache !== null) return _adminEmailCache;
+    try {
+        if (!window.supabase) return false;
+        const { data } = await window.supabase.auth.getSession();
+        const session = data && data.session;
+        _adminEmailCache = session && session.user ? (session.user.email || '') : '';
+    } catch (e) {
+        _adminEmailCache = '';
+    }
+    return _adminEmailCache === ADMIN_EMAIL;
+};
+
+// Se llama tras iniciar o cerrar sesión para que la caché no quede obsoleta.
+window.refrescarCacheAdmin = function refrescarCacheAdmin() {
+    _adminEmailCache = null;
+};
+
+// Confeti reutilizable. Acepta el id de un canvas existente o, si no se pasa,
+// crea uno efímero a pantalla completa que se elimina al terminar.
+window.lanzarConfetti = function lanzarConfetti(canvasId, opciones = {}) {
+    const colores = ['#ff66b2', '#00f2fe', '#ffffff', '#ffeb3b', '#4caf50', '#9b59b6'];
+    const cantidad = opciones.cantidad || 150;
+
+    let canvas = canvasId ? document.getElementById(canvasId) : null;
+    let efimero = false;
+    if (!canvas) {
+        canvas = document.createElement('canvas');
+        canvas.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:99999;';
+        document.body.appendChild(canvas);
+        efimero = true;
+    }
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+        if (efimero) canvas.remove();
+        return;
+    }
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const particulas = [];
+    for (let i = 0; i < cantidad; i++) {
+        particulas.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height - canvas.height,
+            size: Math.random() * 8 + 4,
+            color: colores[Math.floor(Math.random() * colores.length)],
+            speedY: Math.random() * 5 + 2,
+            speedX: Math.random() * 4 - 2,
+            rotation: Math.random() * 360
+        });
+    }
+
+    function render() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let terminado = true;
+        particulas.forEach(p => {
+            p.y += p.speedY;
+            p.x += p.speedX;
+            p.rotation += 2;
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate((p.rotation * Math.PI) / 180);
+            ctx.fillStyle = p.color;
+            ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+            ctx.restore();
+            if (p.y < canvas.height) terminado = false;
+        });
+        if (!terminado) {
+            requestAnimationFrame(render);
+        } else {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (efimero) canvas.remove();
+        }
+    }
+
+    render();
+};
+
+// === TRAMPA DE FOCO PARA MODALES ===
+
+const SELECTOR_FOCALIZABLE = [
+    'a[href]', 'button:not([disabled])', 'input:not([disabled]):not([type="hidden"])',
+    'select:not([disabled])', 'textarea:not([disabled])', '[tabindex]:not([tabindex="-1"])'
+].join(',');
+
+let _trampaFoco = null;
+
+window.activarTrampaFoco = function activarTrampaFoco(modal, elementoInicial) {
+    if (!modal) return;
+    window.desactivarTrampaFoco();
+
+    const focoPrevio = document.activeElement;
+
+    const alTeclear = (evento) => {
+        if (evento.key !== 'Tab') return;
+        const focalizables = Array.from(modal.querySelectorAll(SELECTOR_FOCALIZABLE))
+            .filter(el => el.offsetWidth > 0 || el.offsetHeight > 0 || el === document.activeElement);
+        if (focalizables.length === 0) {
+            evento.preventDefault();
+            return;
+        }
+        const primero = focalizables[0];
+        const ultimo = focalizables[focalizables.length - 1];
+        if (evento.shiftKey && document.activeElement === primero) {
+            evento.preventDefault();
+            ultimo.focus();
+        } else if (!evento.shiftKey && document.activeElement === ultimo) {
+            evento.preventDefault();
+            primero.focus();
+        }
+    };
+
+    document.addEventListener('keydown', alTeclear);
+    _trampaFoco = { alTeclear, focoPrevio, modal };
+
+    const inicial = elementoInicial || modal.querySelector(SELECTOR_FOCALIZABLE);
+    if (inicial && typeof inicial.focus === 'function') inicial.focus();
+};
+
+window.desactivarTrampaFoco = function desactivarTrampaFoco(restaurarFoco = true) {
+    if (!_trampaFoco) return;
+    document.removeEventListener('keydown', _trampaFoco.alTeclear);
+    const focoPrevio = _trampaFoco.focoPrevio;
+    _trampaFoco = null;
+    if (restaurarFoco && focoPrevio && typeof focoPrevio.focus === 'function' && document.contains(focoPrevio)) {
+        focoPrevio.focus();
+    }
+};
+
 // === MODO CLARO / OSCURO ===
 
 window.initTema = function initTema() {
@@ -77,6 +227,7 @@ window.cerrarSesionAdminGlobal = async function cerrarSesionAdminGlobal() {
             await window.supabase.auth.signOut();
         } catch (e) {}
     }
+    window.refrescarCacheAdmin?.();
 
     document.body.classList.remove('admin-mode-active');
 
@@ -100,7 +251,7 @@ window.actualizarUsuarioNavComunidad = function actualizarUsuarioNavComunidad() 
     const navUserInfo = document.getElementById('nav-user-info');
 
     if (apodo && navUserInfo) {
-        const apodoSeguro = String(apodo).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        const apodoSeguro = window.escapeHtml(apodo);
         navUserInfo.style.display = 'inline-flex';
         navUserInfo.innerHTML = `
             <i class="fa-solid fa-user nav-user-icon"></i>
@@ -116,13 +267,7 @@ window.actualizarUsuarioNavComunidad = function actualizarUsuarioNavComunidad() 
 };
 
 window.validarSesionStreamer = async function validarSesionStreamer() {
-    try {
-        if (!window.supabase) return false;
-        const { data: { session } } = await window.supabase.auth.getSession();
-        return session ? session.user.email === 'gocha@admin.com' : false;
-    } catch (e) {
-        return false;
-    }
+    return window.esAdminActual();
 };
 
  // === COMPONENTES UI GLOBALES (toast, confirm modal, menú móvil) ===
@@ -155,6 +300,23 @@ window.insertarComponentesUIGlobales = function insertarComponentesUIGlobales() 
         document.body.appendChild(modal);
     }
     insertarToastStream();
+    insertarAlertaStream();
+};
+
+// Overlay de "en vivo" para las 5 páginas: se inserta una sola vez desde aquí
+// para evitar markup duplicado en cada HTML.
+window.insertarAlertaStream = function insertarAlertaStream() {
+    if (document.getElementById('stream-alert')) return;
+    const alerta = document.createElement('div');
+    alerta.id = 'stream-alert';
+    alerta.className = 'stream-alert-overlay';
+    alerta.setAttribute('aria-live', 'polite');
+    alerta.setAttribute('aria-label', 'Alerta de stream en vivo');
+    alerta.innerHTML = `
+        <i class="fa-solid fa-tower-broadcast"></i>
+        <span id="stream-alert-text">¡LA GOCHA ESTÁ EN DIRECTO! 🎉</span>
+    `;
+    document.body.appendChild(alerta);
 };
 
 window.insertarToastStream = function insertarToastStream() {
@@ -216,16 +378,17 @@ window.mostrarConfirmacionModal = function mostrarConfirmacionModal({ titulo, me
     };
 
     modal.style.display = 'flex';
-    btnCanc.focus();
     btnConf.onclick = null;
     btnCanc.onclick = null;
     btnConf.onclick = onConfirm;
     btnCanc.onclick = cerrarConfirmModal;
+    window.activarTrampaFoco(modal, btnCanc);
 };
 
 function cerrarConfirmModal() {
     const modal = document.getElementById('gochi-confirm-modal');
     if (modal) modal.style.display = 'none';
+    window.desactivarTrampaFoco();
 }
 
 // Cierra con Escape o clic en el fondo cualquier modal visible que tenga un botón de cierre.
@@ -243,13 +406,6 @@ function cerrarModalVisible() {
 
 document.addEventListener('keydown', (evento) => {
     if (evento.key === 'Escape') cerrarModalVisible();
-});
-
-document.addEventListener('click', (evento) => {
-    if (!evento.target.classList.contains('gochi-modal-overlay')) return;
-
-    const botonCerrar = evento.target.querySelector('[data-action="close-login"], #gochi-confirm-cancelar');
-    if (botonCerrar) botonCerrar.click();
 });
 
 // === MENÚ MÓVIL ===
@@ -277,6 +433,7 @@ window.inicializarNavLinks = function inicializarNavLinks() {
             link.addEventListener('click', (e) => {
                 e.preventDefault();
             });
+            link.setAttribute('aria-current', 'page');
         }
         // Cerrar menú móvil tras clickear un enlace
         link.addEventListener('click', () => {
@@ -444,32 +601,25 @@ function iniciarPollingStreamGlobal() {
     });
 }
 
- // Event listener para cerrar toast manualmente (delegación)
+ // Delegación única: cierre del toast de stream y de los modales por clic en el fondo.
 document.addEventListener('click', (event) => {
-    if (event.target.classList.contains('stream-toast-close')) {
-        cerrarToastStream();
-    }
     if (event.target.closest('.stream-toast-close')) {
         cerrarToastStream();
     }
+
     if (!event.target.classList.contains('gochi-modal-overlay')) return;
 
     const botonCerrar = event.target.querySelector('[data-action="close-login"], #gochi-confirm-cancelar');
     if (botonCerrar) botonCerrar.click();
 });
 
-// Event listener para cerrar toast manualmente
+// Inicialización única: main.js se carga con `defer`, así que el DOM ya está
+// parseado cuando llega aquí.
 document.addEventListener('DOMContentLoaded', () => {
-    // Iniciar polling global
-    iniciarPollingStreamGlobal();
+    try { iniciarPollingStreamGlobal(); } catch (e) { console.error('iniciarPollingStreamGlobal:', e); }
     try { insertarComponentesUIGlobales(); } catch (e) { console.error('insertarComponentesUIGlobales:', e); }
     try { initTema(); } catch (e) { console.error('initTema:', e); }
     try { inicializarMenuMovil(); } catch (e) { console.error('inicializarMenuMovil:', e); }
     try { inicializarNavLinks(); } catch (e) { console.error('inicializarNavLinks:', e); }
     try { actualizarUsuarioNavComunidad(); } catch (e) { console.error('actualizarUsuarioNavComunidad:', e); }
 });
-try { insertarComponentesUIGlobales(); } catch (e) { console.error('insertarComponentesUIGlobales:', e); }
-try { initTema(); } catch (e) { console.error('initTema:', e); }
-try { inicializarMenuMovil(); } catch (e) { console.error('inicializarMenuMovil:', e); }
-try { inicializarNavLinks(); } catch (e) { console.error('inicializarNavLinks:', e); }
-try { actualizarUsuarioNavComunidad(); } catch (e) { console.error('actualizarUsuarioNavComunidad:', e); }

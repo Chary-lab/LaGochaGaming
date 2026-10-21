@@ -7,16 +7,27 @@
     <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="192x192" href="img/android-chrome-192x192.png">
     <link rel="icon" type="image/png" sizes="512x512" href="img/android-chrome-512x512.png">
-    <meta name="theme-color" content="#ffffff">
+    <meta name="theme-color" content="#ff66b2">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GochiSorteo | LaGochaGaming</title>
+    <meta name="description" content="Participa en los sorteos de La Gocha y gana premiosincreíbles. El ganador se sortea en el servidor: lo que ves es lo que se sortea.">
+    <link rel="canonical" href="https://lagochagaming.com/sorteo">
     <meta property="og:title" content="GochiSorteo | LaGochaGaming">
     <meta property="og:description" content="Participa en los sorteos de La Gocha y gana premios increíbles.">
-    <meta property="og:image" content="img/3.jpg">
+    <meta property="og:image" content="https://lagochagaming.com/img/3.jpg">
+    <meta property="og:url" content="https://lagochagaming.com/sorteo">
     <meta property="og:type" content="website">
+    <meta property="og:site_name" content="LaGochaGaming">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="GochiSorteo | LaGochaGaming">
+    <meta name="twitter:description" content="Participa en los sorteos de La Gocha y gana premios increíbles. El ganador se sortea en el servidor: lo que ves es lo que se sortea.">
+    <meta name="twitter:image" content="https://lagochagaming.com/img/3.jpg">    <link rel="manifest" href="manifest.webmanifest">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" crossorigin="anonymous" />
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="dns-prefetch" href="https://kick.com">
     <style>
         .sorteo-layout {
             max-width: 1500px;
@@ -91,28 +102,15 @@
             flex-wrap: wrap;
         }
         .tab-btn {
-            background: var(--card-bg-subtle);
-            color: var(--text-muted);
-            border: 1px solid var(--border-color);
             padding: 12px 22px;
-            border-radius: 10px;
             font-weight: bold;
             font-size: 0.95rem;
-            cursor: pointer;
-            transition: background-color 0.2s, color 0.2s, border-color 0.2s;
             display: flex;
             align-items: center;
             gap: 8px;
         }
-        .tab-btn:hover {
-            color: var(--text-main);
-            border-color: var(--accent-color);
-        }
         .tab-btn.active {
-            background: var(--accent-color);
             color: #fff;
-            border-color: var(--accent-color);
-            box-shadow: var(--glow);
         }
 
         .banner-sorteo-activo {
@@ -458,7 +456,7 @@
                 <a href="./#stream" class="">Directo</a>
                 <a href="./#clips" class="">Clips</a>
                 <a href="cine" class="">🍿 GochiWatch</a>
-                <a href="sorteo" class="nav-active">🎁 Sorteo</a>
+                <a href="sorteo" class="nav-active" aria-current="page">🎁 Sorteo</a>
                 <a href="galeria" class="">📸 Galería</a>
                 <a href="comunidad" class="">💬 Comunidad</a>
             </div>
@@ -474,7 +472,7 @@
     <div class="sorteo-layout">
         <!-- SECCIÓN IZQUIERDA: HISTORIAL Y GANADORES -->
         <div class="sidebar-ganadores">
-            <h3><i class="fa-solid fa-trophy"></i> Top Ganadores</h3>
+            <h3><i class="fa-solid fa-trophy"></i> &Uacute;ltimos Ganadores</h3>
             <p class="sidebar-ganadores-lead">
                 Registro histórico con los últimos ganadores afortunados de los sorteos oficiales de la comunidad.
             </p>
@@ -965,6 +963,22 @@
             count.innerText = listaPublica.length;
         }
 
+        // Indice aleatorio con crypto.getRandomValues y rejection sampling
+        // (evita el sesgo de Math.random y permite auditar el sorteo).
+        function indiceAleatorioSeguro(max) {
+            if (!Number.isFinite(max) || max <= 0) return 0;
+            if (window.crypto && typeof window.crypto.getRandomValues === 'function') {
+                const rango = 0x100000000;
+                const limite = rango - (rango % max);
+                const buffer = new Uint32Array(1);
+                do {
+                    window.crypto.getRandomValues(buffer);
+                } while (buffer[0] >= limite);
+                return buffer[0] % max;
+            }
+            return Math.floor(Math.random() * max);
+        }
+
         function girarRuletaPublica() {
             if (ruletaGirando) return;
             if (listaPublica.length === 0) {
@@ -974,15 +988,15 @@
             ruletaGirando = true;
             let display = document.getElementById('ruleta-display-publico');
             let counter = 0;
-            let interval = setInterval(() => {
-                let randomIndex = Math.floor(Math.random() * listaPublica.length);
-                display.innerText = `@${listaPublica[randomIndex]}`;
+            let intervalo = setInterval(() => {
+                let randomIndex = indiceAleatorioSeguro(listaPublica.length);
+                display.innerText = `@${escapeHtml(listaPublica[randomIndex])}`;
                 counter++;
                 if (counter > 25) {
-                    clearInterval(interval);
-                    let ganadorFinal = listaPublica[Math.floor(Math.random() * listaPublica.length)];
+                    clearInterval(intervalo);
+                    let ganadorFinal = listaPublica[indiceAleatorioSeguro(listaPublica.length)];
                     display.innerHTML = `🎉 ¡@${escapeHtml(ganadorFinal)}! 🎉`;
-                    lanzarConfeti('confetti-canvas-publico');
+                    lanzarConfetti('confetti-canvas-publico');
                     ruletaGirando = false;
                 }
             }, 50);
@@ -1068,35 +1082,71 @@
             mostrarFeedback('feedback-streamer-direct', '🧹 Tómbola vaciada y registros limpiados.');
         }
 
-        function girarRuletaStreamer() {
+        async function girarRuletaStreamer() {
             if (ruletaGirando) return;
             if (listaStreamerOnline.length === 0) {
                 mostrarFeedback('feedback-streamer-direct', '⚠️ No hay participantes inscritos.', true);
                 return;
             }
+            if (!(await validarSesionStreamer())) {
+                streamerAutenticado = false;
+                salirModoStreamer();
+                mostrarFeedback('feedback-streamer-direct', '❌ Sesión expirada.', true);
+                return;
+            }
+
             ruletaGirando = true;
+            mostrarFeedback('feedback-streamer-direct', '🎲 Sorteando en el servidor...');
 
-            // CREAR ARRAY PONDERADO (Bingo virtual)
-            let bolillero = [];
-            listaStreamerOnline.forEach(p => {
-                const peso = p.peso || 1;
-                for(let i = 0; i < peso; i++) {
-                    bolillero.push(p.username);
+            // El resultado se decide en el servidor (B3). La animacion es solo cosmetico.
+            let ganadorFinal = null;
+            let sorteoServidor = false;
+            try {
+                const { data, error } = await supabase.rpc('sortear_ganador_sorteo');
+                if (error) throw error;
+                if (data && data.ok && data.ganador) {
+                    ganadorFinal = data.ganador;
+                    sorteoServidor = true;
+                } else if (data && data.error === 'sin_participantes') {
+                    ruletaGirando = false;
+                    mostrarFeedback('feedback-streamer-direct', '⚠️ No hay participantes en la tombola.', true);
+                    return;
+                } else if (data && data.error === 'sin_permiso') {
+                    ruletaGirando = false;
+                    mostrarFeedback('feedback-streamer-direct', '❌ Tu sesión no tiene permiso para sortear.', true);
+                    return;
                 }
-            });
+            } catch (err) {
+                console.error(err);
+                mostrarFeedback('feedback-streamer-direct', '⚠️ El servidor no respondió; se usará el sorteo local (no queda registrado).', true);
+            }
 
-            let display = document.getElementById('ruleta-display-streamer');
+            // Fallback local honesto: solo si el servidor no pudo decidir.
+            if (!ganadorFinal) {
+                const bolillero = [];
+                listaStreamerOnline.forEach(p => {
+                    const peso = Number(p.peso) || 1;
+                    for (let i = 0; i < peso; i++) bolillero.push(p.username);
+                });
+                ganadorFinal = bolillero[indiceAleatorioSeguro(bolillero.length)];
+            }
+
+            const display = document.getElementById('ruleta-display-streamer');
             let counter = 0;
-            let interval = setInterval(() => {
-                let randomIndex = Math.floor(Math.random() * bolillero.length);
-                display.innerText = `@${bolillero[randomIndex]}`;
+            let intervalo = setInterval(() => {
+                const idx = indiceAleatorioSeguro(listaStreamerOnline.length);
+                display.innerText = `@${escapeHtml(listaStreamerOnline[idx].username)}`;
                 counter++;
                 if (counter > 25) {
-                    clearInterval(interval);
-                    let ganadorFinal = bolillero[Math.floor(Math.random() * bolillero.length)];
+                    clearInterval(intervalo);
                     display.innerHTML = `🎉 ¡@${escapeHtml(ganadorFinal)}! 🎉`;
-                    lanzarConfeti('confetti-canvas-streamer');
-                    guardarGanadorOficial(ganadorFinal);
+                    lanzarConfetti('confetti-canvas-streamer');
+                    if (sorteoServidor) {
+                        // El servidor ya inserto el ganador en ganadores_sorteo.
+                        cargarTopGanadores();
+                    } else {
+                        guardarGanadorOficial(ganadorFinal);
+                    }
                     ruletaGirando = false;
                 }
             }, 50);
@@ -1130,59 +1180,17 @@
             } catch (err) { console.error('Error:', err); }
         }
 
-        function lanzarConfeti(canvasId) {
-            const canvas = document.getElementById(canvasId);
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            const particles = [];
-            const colors = ['#ff66b2', '#00f2fe', '#ffffff', '#ffeb3b', '#4caf50'];
-            for (let i = 0; i < 150; i++) {
-                particles.push({
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height - canvas.height,
-                    size: Math.random() * 8 + 4,
-                    color: colors[Math.floor(Math.random() * colors.length)],
-                    speedY: Math.random() * 5 + 2,
-                    speedX: Math.random() * 4 - 2,
-                    rotation: Math.random() * 360
-                });
-            }
-            function render() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                let finished = true;
-                particles.forEach(p => {
-                    p.y += p.speedY; p.x += p.speedX; p.rotation += 2;
-                    ctx.save();
-                    ctx.translate(p.x, p.y);
-                    ctx.rotate((p.rotation * Math.PI) / 180);
-                    ctx.fillStyle = p.color;
-                    ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
-                    ctx.restore();
-                    if (p.y < canvas.height) finished = false;
-                });
-                if (!finished) requestAnimationFrame(render);
-                else ctx.clearRect(0, 0, canvas.width, canvas.height);
-            }
-            render();
-        }
-
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text ?? '';
-            return div.innerHTML;
-        }
+        // El confeti se lanza con window.lanzarConfetti (main.js).
     </script>
 
     <footer class="main-footer">
         <div class="footer-container">
             <div class="footer-social-icons">
-                <a href="https://kick.com/lagochagaming" target="_blank" class="social-icon kick-icon" title="Kick">K</a>
-                <a href="https://www.tiktok.com/@lagochagaming11" target="_blank" class="social-icon" title="TikTok"><i class="fab fa-tiktok"></i></a>
-                <a href="https://www.instagram.com/oscurostefany" target="_blank" class="social-icon" title="Instagram"><i class="fab fa-instagram"></i></a>
-                <a href="https://discord.com/invite/svrteKBbeh" target="_blank" class="social-icon" title="Discord"><i class="fab fa-discord"></i></a>
-                <a href="https://www.youtube.com/@lagochagaming" target="_blank" class="social-icon" title="YouTube"><i class="fab fa-youtube"></i></a>
+                <a href="https://kick.com/lagochagaming" target="_blank" rel="noopener noreferrer" class="social-icon kick-icon" title="Kick">K</a>
+                <a href="https://www.tiktok.com/@lagochagaming11" target="_blank" rel="noopener noreferrer" class="social-icon" title="TikTok"><i class="fab fa-tiktok"></i></a>
+                <a href="https://www.instagram.com/oscurostefany" target="_blank" rel="noopener noreferrer" class="social-icon" title="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="https://discord.com/invite/svrteKBbeh" target="_blank" rel="noopener noreferrer" class="social-icon" title="Discord"><i class="fab fa-discord"></i></a>
+                <a href="https://www.youtube.com/@lagochagaming" target="_blank" rel="noopener noreferrer" class="social-icon" title="YouTube"><i class="fab fa-youtube"></i></a>
             </div>
             <p class="footer-copyright">&copy; 2026 LAGOCHAGAMING - ALL RIGHTS RESERVED</p>
         </div>

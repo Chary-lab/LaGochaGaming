@@ -7,16 +7,36 @@
     <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="192x192" href="img/android-chrome-192x192.png">
     <link rel="icon" type="image/png" sizes="512x512" href="img/android-chrome-512x512.png">
-    <meta name="theme-color" content="#ffffff">
+    <meta name="theme-color" content="#ff66b2">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LaGochaGaming | Sitio Oficial</title>
+    <meta name="description" content="LaGochaGaming: stream de Kick, clips, galería de fotos, GochiWatch y comunidad con chat en vivo. Únete a la comunidad y sube de rango.">
+    <link rel="canonical" href="https://lagochagaming.com/">
+
     <meta property="og:title" content="LaGochaGaming | Sitio Oficial">
     <meta property="og:description" content="Streamer de Kick y Creadora de contenido. ¡Únete a la comunidad!">
-    <meta property="og:image" content="img/3.jpg">
+    <meta property="og:image" content="https://lagochagaming.com/img/3.jpg">
+    <meta property="og:url" content="https://lagochagaming.com/">
     <meta property="og:type" content="website">
+    <meta property="og:site_name" content="LaGochaGaming">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="LaGochaGaming | Sitio Oficial">
+    <meta name="twitter:description" content="Streamer de Kick y Creadora de contenido. ¡Únete a la comunidad!">
+    <meta name="twitter:image" content="https://lagochagaming.com/img/3.jpg">
+
+    <link rel="manifest" href="manifest.webmanifest">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <!-- Conexiones anticipadas a recursos de terceros -->
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://player.kick.com" crossorigin>
+    <link rel="dns-prefetch" href="https://kick.com">
+    <link rel="dns-prefetch" href="https://www.juicer.io">
+    <link rel="dns-prefetch" href="https://www.youtube.com">
     <style>
         .btn-eliminar-muro {
             background: #ff4d4d;
@@ -113,6 +133,15 @@
             gap: 8px;
             align-items: center;
         }
+        .muro-autor-rango {
+            display: inline-flex;
+            align-items: center;
+            margin-left: 6px;
+            vertical-align: middle;
+        }
+        .muro-autor-rango:empty {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -123,7 +152,7 @@
             <div class="logo">LAGOCHA<span>GAMING</span></div>
             <button class="mobile-menu-toggle-btn" aria-label="Abrir menú"><i class="fa-solid fa-bars"></i></button>
             <div class="nav-links">
-                <a href="./" class="nav-active">Inicio</a>
+                <a href="./" class="nav-active" aria-current="page">Inicio</a>
                 <a href="./#stream" class="">Directo</a>
                 <a href="./#clips" class="">Clips</a>
                 <a href="cine" class="">🍿 GochiWatch</a>
@@ -138,12 +167,7 @@
         </nav>
     </header>
 
-    <!-- TOAST DE STREAM EN VIVO se inserta dinámicamente desde main.js -->
-
-    <div id="stream-alert" class="stream-alert-overlay" aria-live="polite" aria-label="Alerta de stream en vivo">
-        <i class="fa-solid fa-tower-broadcast"></i>
-        <span id="stream-alert-text">¡LA GOCHA ESTÁ EN DIRECTO! 🎉</span>
-    </div>
+    <!-- TOAST Y ALERTA DE STREAM EN VIVO se insertan dinámicamente desde main.js -->
 
     <!-- SECCIÓN HERO -->
     <header class="hero-section" id="inicio">
@@ -153,7 +177,7 @@
             <h1 class="hero-title">LAGOCHAGAMING</h1>
             <p class="hero-bio">Me llamo Stefany pero todos o la mayoría me dicen La Gocha o Gochita, a veces parezco esquizofrénica con mis locuras pero soy muy pana. Créeme que siempre que entres a mi stream te vas a reír muchísimo. Me gusta mucho hablar, reírme y hacerlos reír, ¡y también jugar! Todo es humor, pásatela bien y ¡no se te olvide seguirme en todas mes redes sociales y unirte a la comunidad de Discord!</p>
             <div class="hero-buttons">
-                <a href="https://kick.com/lagochagaming" target="_blank" class="btn-primary">ÚNETE AL STREAM</a>
+                <a href="https://kick.com/lagochagaming" target="_blank" rel="noopener noreferrer" class="btn-primary">ÚNETE AL STREAM</a>
                 <div class="follower-widget">
                     <span class="kick-dot"></span>
                     <span id="kick-followers-count">10K</span> followers
@@ -164,12 +188,14 @@
 
     <main class="main-container" id="stream">
         <div class="video-container">
-            <iframe src="https://player.kick.com/lagochagaming?autoplay=true&muted=true" frameborder="0" scrolling="no" allowfullscreen="true"></iframe>
+            <iframe src="https://player.kick.com/lagochagaming?autoplay=true&muted=true" frameborder="0" scrolling="no" allowfullscreen="true" title="Stream de LaGochaGaming en Kick" loading="lazy"></iframe>
         </div>
         <aside class="chat-sidebar chat-sidebar-box">
             <iframe src="https://kick.com/popout/lagochagaming/chat"
                     frameborder="0"
                     scrolling="no"
+                    title="Chat del stream de Kick"
+                    loading="lazy"
                     class="chat-iframe">
             </iframe>
         </aside>
@@ -181,33 +207,33 @@
     <div class="youtube-grid">
         <div class="video-card">
             <div class="video-thumb clip-thumb clip-thumb-1">
-                <a href="https://kick.com/lagochagaming/clips/clip_01JR9VN6J99XGBBECCH9P7693B" target="_blank" class="clip-overlay">
+                <a href="https://kick.com/lagochagaming/clips/clip_01JR9VN6J99XGBBECCH9P7693B" target="_blank" rel="noopener noreferrer" class="clip-overlay">
                     <div class="clip-play">
                         <i class="fa-solid fa-play clip-play-icon"></i>
                     </div>
                 </a>
             </div>
-            <a href="https://kick.com/lagochagaming/clips/clip_01JR9VN6J99XGBBECCH9P7693B" target="_blank" class="watch-btn">Dándole celos a mi novio</a>
+            <a href="https://kick.com/lagochagaming/clips/clip_01JR9VN6J99XGBBECCH9P7693B" target="_blank" rel="noopener noreferrer" class="watch-btn">Dándole celos a mi novio</a>
         </div>
         <div class="video-card">
             <div class="video-thumb clip-thumb clip-thumb-2">
-                <a href="https://kick.com/lagochagaming/clips/clip_01JQZEQXE9VJH7NTD69YCG5PXT" target="_blank" class="clip-overlay">
+                <a href="https://kick.com/lagochagaming/clips/clip_01JQZEQXE9VJH7NTD69YCG5PXT" target="_blank" rel="noopener noreferrer" class="clip-overlay">
                     <div class="clip-play">
                         <i class="fa-solid fa-play clip-play-icon"></i>
                     </div>
                 </a>
             </div>
-            <a href="https://kick.com/lagochagaming/clips/clip_01JQZEQXE9VJH7NTD69YCG5PXT" target="_blank" class="watch-btn">Mamá chiss prendiooo</a>
+            <a href="https://kick.com/lagochagaming/clips/clip_01JQZEQXE9VJH7NTD69YCG5PXT" target="_blank" rel="noopener noreferrer" class="watch-btn">Mamá chiss prendiooo</a>
         </div>
         <div class="video-card">
             <div class="video-thumb clip-thumb clip-thumb-3">
-                <a href="https://kick.com/lagochagaming/clips/clip_01JT26P6TW7CS2CPJJ3TRP9WTY" target="_blank" class="clip-overlay">
+                <a href="https://kick.com/lagochagaming/clips/clip_01JT26P6TW7CS2CPJJ3TRP9WTY" target="_blank" rel="noopener noreferrer" class="clip-overlay">
                     <div class="clip-play">
                         <i class="fa-solid fa-play clip-play-icon"></i>
                     </div>
                 </a>
             </div>
-            <a href="https://kick.com/lagochagaming/clips/clip_01JT26P6TW7CS2CPJJ3TRP9WTY" target="_blank" class="watch-btn">Será que no me has visto</a>
+            <a href="https://kick.com/lagochagaming/clips/clip_01JT26P6TW7CS2CPJJ3TRP9WTY" target="_blank" rel="noopener noreferrer" class="watch-btn">Será que no me has visto</a>
         </div>
     </div>
     </section>
@@ -269,12 +295,11 @@
     <footer class="main-footer">
         <div class="footer-container">
             <div class="footer-social-icons">
-                <a href="https://kick.com/lagochagaming" target="_blank" class="social-icon kick-icon" title="Kick">K</a>
-                
-    <a href="https://www.tiktok.com/@lagochagaming11" target="_blank" class="social-icon" title="TikTok"><i class="fab fa-tiktok"></i></a>
-            <a href="https://www.instagram.com/oscurostefany" target="_blank" class="social-icon" title="Instagram"><i class="fab fa-instagram"></i></a>
-                <a href="https://discord.com/invite/svrteKBbeh" target="_blank" class="social-icon" title="Discord"><i class="fab fa-discord"></i></a>
-                <a href="https://www.youtube.com/@lagochagaming" target="_blank" class="social-icon" title="YouTube"><i class="fab fa-youtube"></i></a>
+                <a href="https://kick.com/lagochagaming" target="_blank" rel="noopener noreferrer" class="social-icon kick-icon" title="Kick">K</a>
+                <a href="https://www.tiktok.com/@lagochagaming11" target="_blank" rel="noopener noreferrer" class="social-icon" title="TikTok"><i class="fab fa-tiktok"></i></a>
+                <a href="https://www.instagram.com/oscurostefany" target="_blank" rel="noopener noreferrer" class="social-icon" title="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="https://discord.com/invite/svrteKBbeh" target="_blank" rel="noopener noreferrer" class="social-icon" title="Discord"><i class="fab fa-discord"></i></a>
+                <a href="https://www.youtube.com/@lagochagaming" target="_blank" rel="noopener noreferrer" class="social-icon" title="YouTube"><i class="fab fa-youtube"></i></a>
             </div>
             <p class="footer-copyright">&copy; 2026 LAGOCHAGAMING - ALL RIGHTS RESERVED</p>
         </div>
@@ -287,25 +312,92 @@
         const LIMITE_POR_PAGINA = 12;
         let adminAutenticado = false;
 
+        // Rango de comunidad por apodo (cacheado): solo se piden las columnas
+        // públicas apodo/rango, nunca datos sensibles.
+        const rangoMuroCache = new Map();
+
+        async function obtenerRangosMuro(apodos) {
+            const pendientes = [...new Set(apodos.filter(Boolean))]
+                .filter(apodo => !rangoMuroCache.has(apodo));
+            if (pendientes.length === 0) return;
+
+            try {
+                const { data, error } = await supabase
+                    .from('usuarios_comunidad')
+                    .select('apodo, rango')
+                    .in('apodo', pendientes);
+                if (error) throw error;
+                pendientes.forEach(apodo => rangoMuroCache.set(apodo, null));
+                (data || []).forEach(u => rangoMuroCache.set(u.apodo, u.rango));
+            } catch (e) {
+                console.warn('No se pudieron cargar los rangos del muro:', e);
+            }
+        }
+
+        const RANGOS_MURO = {
+            semilla:  { emoji: '🌱', nombre: 'Semilla' },
+            gota:     { emoji: '💧', nombre: 'Gota' },
+            flor:     { emoji: '🌸', nombre: 'Flor' },
+            estrella: { emoji: '⭐', nombre: 'Estrella' },
+            leyenda:  { emoji: '👑', nombre: 'Leyenda' }
+        };
+
+        function badgeRangoMuro(apodo) {
+            const rango = rangoMuroCache.get(apodo);
+            if (!rango) return '';
+            const info = RANGOS_MURO[String(rango).toLowerCase()];
+            if (!info) return '';
+            return `<span class="rango-badge rango-solo-icono rango-${String(rango).toLowerCase()}" title="${escapeAttr(info.nombre)}">${info.emoji}</span>`;
+        }
+
+        function construirTarjetaMuro(msg) {
+            const card = document.createElement('div');
+            card.className = 'muro-card';
+            card.id = `muro-card-${msg.id}`;
+            const fecha = new Date(msg.created_at).toLocaleString('es-ES', {
+                day: '2-digit', month: '2-digit', year: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+            });
+            card.innerHTML = `
+                <div class="muro-card-header">
+                    <span class="muro-autor">${escapeHtml(msg.autor)}<span class="muro-autor-rango" data-autor="${escapeAttr(msg.autor)}"></span></span>
+                    <div class="muro-card-actions">
+                        <button type="button" class="btn-eliminar-muro" data-id="${msg.id}" title="Eliminar saludo" aria-label="Eliminar saludo">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                        <span class="muro-fecha">${fecha}</span>
+                    </div>
+                </div>
+                <p class="muro-texto">${escapeHtml(msg.mensaje)}</p>
+            `;
+            return card;
+        }
+
+        // Inserta el badge de rango en las tarjetas recién pintadas.
+        async function pintarRangosMuro(tarjetas) {
+            const apodos = tarjetas.map(t => t.dataset.autor).filter(Boolean);
+            if (apodos.length === 0) return;
+            await obtenerRangosMuro(apodos);
+            tarjetas.forEach(t => { t.innerHTML = badgeRangoMuro(t.dataset.autor); });
+        }
+
 document.addEventListener('DOMContentLoaded', async () => {
-    let session = null;
     if (window.supabase) {
         try {
-            const { data } = await supabase.auth.getSession();
-            session = data.session;
+            adminAutenticado = await window.esAdminActual();
         } catch (e) {
             console.error('Error obteniendo sesión:', e);
         }
     } else {
         mostrarToast('Supabase no está disponible en este entorno', true);
     }
-    if (session && session.user.email === 'gocha@admin.com') {
-        adminAutenticado = true;
+    if (adminAutenticado) {
         document.body.classList.add('admin-mode-active');
     }
 
         // El polling del stream está centralizado en main.js (iniciarPollingStreamGlobal)
         cargarMensajes(true);
+        iniciarRealtimeMuro();
 
         document.getElementById('muro-form').addEventListener('submit', (e) => {
             e.preventDefault();
@@ -342,12 +434,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             const desde = paginaActualMuro * LIMITE_POR_PAGINA;
-            const hasta = desde + LIMITE_POR_PAGINA - 1;
+            // Se pide una fila extra: con ella sabemos si hay más sin pagar
+            // un count completo de la tabla en cada carga.
+            const hasta = desde + LIMITE_POR_PAGINA;
 
             try {
-                const { data, error, count } = await supabase
+                const { data, error } = await supabase
                     .from('muro_saludos')
-                    .select('id, autor, mensaje, created_at, estado', { count: 'exact' })
+                    .select('id, autor, mensaje, created_at, estado')
+                    .eq('estado', 'aprobado')
                     .order('created_at', { ascending: false })
                     .range(desde, hasta);
 
@@ -358,45 +453,59 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 const container = document.getElementById('muro-mensajes-container');
                 const btnCargarMas = document.getElementById('btn-cargar-mas-muro');
+                const filas = data || [];
+                const hayMas = filas.length > LIMITE_POR_PAGINA;
 
-                if (reiniciar && (!data || data.length === 0)) {
+                if (reiniciar && filas.length === 0) {
                     container.innerHTML = '<p class="muro-empty">Aún no hay saludos. ¡Sé el primero en escribir uno! 💖</p>';
                     btnCargarMas.style.display = 'none';
                     return;
                 }
 
-                data.forEach(msg => {
-                    const card = document.createElement('div');
-                    card.className = 'muro-card';
-                    card.id = `muro-card-${msg.id}`;
-                    const fecha = new Date(msg.created_at).toLocaleString('es-ES', {
-                        day: '2-digit', month: '2-digit', year: 'numeric',
-                        hour: '2-digit', minute: '2-digit'
-                    });
-                    card.innerHTML = `
-                        <div class="muro-card-header">
-                            <span class="muro-autor">${escapeHtml(msg.autor)}</span>
-                            <div class="muro-card-actions">
-                                <button type="button" class="btn-eliminar-muro" data-id="${msg.id}" title="Eliminar saludo" aria-label="Eliminar saludo">
-                                    <i class="fa-solid fa-trash-can"></i>
-                                </button>
-                                <span class="muro-fecha">${fecha}</span>
-                            </div>
-                        </div>
-                        <p class="muro-texto">${escapeHtml(msg.mensaje)}</p>
-                    `;
-                    container.appendChild(card);
+                const fragment = document.createDocumentFragment();
+                const tarjetas = [];
+                filas.slice(0, LIMITE_POR_PAGINA).forEach(msg => {
+                    const card = construirTarjetaMuro(msg);
+                    fragment.appendChild(card);
+                    tarjetas.push(card.querySelector('.muro-autor-rango'));
                 });
+                container.appendChild(fragment);
+                pintarRangosMuro(tarjetas.filter(Boolean));
 
                 paginaActualMuro++;
 
-                if (hasta + 1 < count) {
-                    btnCargarMas.style.display = 'inline-block';
-                } else {
-                    btnCargarMas.style.display = 'none';
-                }
+                btnCargarMas.style.display = hayMas ? 'inline-block' : 'none';
             } catch (err) {
                 console.error('Error:', err);
+            }
+        }
+
+        // Realtime: los saludos nuevos aparecen sin recargar la página.
+        function iniciarRealtimeMuro() {
+            if (!window.supabase) return;
+            try {
+                supabase.channel('muro_saludos_realtime')
+                    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'muro_saludos' }, (payload) => {
+                        const nuevo = payload.new;
+                        if (!nuevo || nuevo.estado !== 'aprobado') return;
+
+                        const container = document.getElementById('muro-mensajes-container');
+                        if (!container) return;
+
+                        // Si el saludo es nuestro, ya se pintó al enviarlo.
+                        if (document.getElementById(`muro-card-${nuevo.id}`)) return;
+
+                        const vacio = container.querySelector('.muro-empty');
+                        if (vacio) vacio.remove();
+
+                        const card = construirTarjetaMuro(nuevo);
+                        container.insertBefore(card, container.firstChild);
+                        const rangoEl = card.querySelector('.muro-autor-rango');
+                        if (rangoEl) pintarRangosMuro([rangoEl]);
+                    })
+                    .subscribe();
+            } catch (e) {
+                console.warn('Realtime del muro no disponible:', e);
             }
         }
 
@@ -473,12 +582,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }
 
-        // formatNumber ahora está en main.js
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
+        // escapeHtml / escapeAttr viven en main.js (fuente única del sitio)
 
         // Detección de fallo de YouTube (load/error + timeout) sin manejadores inline
         const ytIframe = document.getElementById('yt-iframe');
