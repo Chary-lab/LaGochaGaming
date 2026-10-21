@@ -589,6 +589,8 @@ body.light-mode .hero-bio {
       gap: 6px;
       flex-wrap: wrap;
       margin-top: 8px;
+      /* deja hueco a la derecha para no quedar bajo la esquina de reacción */
+      padding-right: 52px;
   }
 
   .reaccion-badge {

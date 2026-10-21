@@ -1179,12 +1179,16 @@
                         }
                     }
 
-                    // Actualizar badges visibles debajo del mensaje (si existen)
+                    // Badges visibles debajo del mensaje: una insignia por cada
+                    // emoji con reacciones, para que se vean independientes.
                     if (badgesContainer) {
                         badgesContainer.innerHTML = '';
+                        let totalChips = 0;
                         REACCIONES.forEach(emoji => {
                             const usuarios = msgCache[emoji] || [];
                             const count = usuarios.length;
+                            if (count === 0) return;
+                            totalChips++;
                             const mia = obtenerMiReaccionLocal(msgIdStr) === emoji;
 
                             const badge = document.createElement('span');
@@ -1201,6 +1205,7 @@
                             badge.onmouseleave = ocultarTooltipReaccion;
                             badgesContainer.appendChild(badge);
                         });
+                        badgesContainer.style.display = totalChips > 0 ? 'flex' : 'none';
                     }
                 } catch (e) {}
             }
@@ -1336,7 +1341,14 @@
                 // Burbuja de reacciones al hover
                 const burbuja = crearBurbujaReacciones(msgId);
 
-                container.append(headerDiv, mensajeDiv, reaccionEsquina, burbuja);
+                // Contenedor de reacciones independientes (una insignia por emoji).
+                // Sin este elemento los chips nunca se renderizaban: solo se veía
+                // la esquina, que muestra un único emoji.
+                const badgesCont = document.createElement('div');
+                badgesCont.className = 'reacciones-badges';
+                badgesCont.style.display = 'none';
+
+                container.append(headerDiv, mensajeDiv, badgesCont, reaccionEsquina, burbuja);
                 return container;
             }
 
@@ -1359,6 +1371,16 @@
                 cargarReaccionesDeSupabase(mensajes);
                 chatMensajes.scrollTop = chatMensajes.scrollHeight;
                 chatInicializado = true;
+            }
+
+            // Recarga las reacciones de los mensajes visibles desde el servidor.
+            // Necesario cuando Realtime no aporta la fila completa (DELETE).
+            function recargarReaccionesVisibles() {
+                if (!chatMensajes) return;
+                const ids = [...chatMensajes.querySelectorAll('.chat-msg-container')]
+                    .map(c => ({ id: Number(c.dataset.msgid) }))
+                    .filter(m => Number.isFinite(m.id));
+                if (ids.length) cargarReaccionesDeSupabase(ids);
             }
 
             // Cargar reacciones de Supabase para una lista de mensajes
@@ -1385,6 +1407,12 @@
                     }
                     const cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
                     const miCache = JSON.parse(localStorage.getItem('gochi_chat_mi_reaccion_v2') || '{}');
+
+                    // Reconstruir desde el servidor: si solo se añadieran las filas
+                    // recibidas, las reacciones cambiadas o borradas quedaban fantasma.
+                    ids.forEach(id => { cache[id] = {}; });
+                    const conMiReaccion = new Set();
+
                     data.forEach(r => {
                         if (!cache[r.message_id]) cache[r.message_id] = {};
                         if (!cache[r.message_id][r.emoji]) cache[r.message_id][r.emoji] = [];
@@ -1395,8 +1423,21 @@
                         // Si el usuario logueado es quien reaccionó, guardarlo en mi reaccion
                         if (userId && r.user_id === userId) {
                             miCache[r.message_id] = r.emoji;
+                            conMiReaccion.add(r.message_id);
                         }
                     });
+
+                    // Conservar la reacción optimista propia si el servidor aún no la refleja
+                    ids.forEach(id => {
+                        const miEmoji = miCache[id];
+                        if (!miEmoji || conMiReaccion.has(id)) return;
+                        if (!cache[id]) cache[id] = {};
+                        if (!cache[id][miEmoji]) cache[id][miEmoji] = [];
+                        if (!cache[id][miEmoji].includes(userNickname)) {
+                            cache[id][miEmoji].push(userNickname);
+                        }
+                    });
+
                     localStorage.setItem('gochi_chat_reacciones_cache', JSON.stringify(cache));
                     localStorage.setItem('gochi_chat_mi_reaccion_v2', JSON.stringify(miCache));
                     // Actualizar UI de los mensajes ya renderizados
@@ -1570,21 +1611,28 @@ if (chatForm) {
                             actualizarUIReacciones(r.message_id);
                         })
                         .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'message_reactions' }, payload => {
-                            const r = payload.old;
-                            const cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
-                            const nombre = r.apodo || r.user_id;
-                            if (cache[r.message_id]?.[r.emoji]) {
-                                cache[r.message_id][r.emoji] = cache[r.message_id][r.emoji].filter(u => u !== nombre);
-                                if (cache[r.message_id][r.emoji].length === 0) delete cache[r.message_id][r.emoji];
-                                if (Object.keys(cache[r.message_id]).length === 0) delete cache[r.message_id];
-                                localStorage.setItem('gochi_chat_reacciones_cache', JSON.stringify(cache));
+                            const r = payload.old || {};
+                            // Realtime solo envía la clave primaria en los DELETE:
+                            // no sabemos qué mensaje/emoji se quitó, así que se
+                            // recargan las reacciones visibles desde el servidor.
+                            if (r.message_id != null && r.emoji) {
+                                const cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
+                                const nombre = r.apodo || r.user_id;
+                                if (cache[r.message_id]?.[r.emoji]) {
+                                    cache[r.message_id][r.emoji] = cache[r.message_id][r.emoji].filter(u => u !== nombre);
+                                    if (cache[r.message_id][r.emoji].length === 0) delete cache[r.message_id][r.emoji];
+                                    if (Object.keys(cache[r.message_id]).length === 0) delete cache[r.message_id];
+                                    localStorage.setItem('gochi_chat_reacciones_cache', JSON.stringify(cache));
+                                }
+                                if (userId && r.user_id === userId) {
+                                    const miCache = JSON.parse(localStorage.getItem('gochi_chat_mi_reaccion_v2') || '{}');
+                                    if (miCache[r.message_id] === r.emoji) delete miCache[r.message_id];
+                                    localStorage.setItem('gochi_chat_mi_reaccion_v2', JSON.stringify(miCache));
+                                }
+                                actualizarUIReacciones(r.message_id);
+                            } else {
+                                recargarReaccionesVisibles();
                             }
-                            if (userId && r.user_id === userId) {
-                                const miCache = JSON.parse(localStorage.getItem('gochi_chat_mi_reaccion_v2') || '{}');
-                                if (miCache[r.message_id] === r.emoji) delete miCache[r.message_id];
-                                localStorage.setItem('gochi_chat_mi_reaccion_v2', JSON.stringify(miCache));
-                            }
-                            actualizarUIReacciones(r.message_id);
                         })
                         .subscribe();
                 } catch (e) {
