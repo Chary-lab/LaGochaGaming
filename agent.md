@@ -221,10 +221,10 @@ Todo lo siguiente está implementado y revisado contra la BD real de Supabase:
 2. ✅ Imágenes: `fono.png` 2.05 MB → `fono.webp` 69 KB; favicons comprimidos; CSS actualizado.
 3. ✅ `galeria.html:770` — `await cargarTopGlobal()` antes del mapeo, incondicional.
 
-### 🟠 Alto (próxima iteración)
+### 🟠 Alto (próxima iteración) — **TODO RESUELTO**
 4. ✅ Canonical — **YA EXISTE** en `cine.html`, `comunidad.html`, `galeria.html`, `sorteo.html`.
-5. Verificar contraste modo claro (WCAG AA) — **EN PROCESO** (`--text-muted` ajustado a `#5e6e82`).
-6. Polling stream — **CORRECTO**: necesario en 5 páginas para `navbar.live-glow` global.
+5. ✅ Contraste WCAG AA — `--text-muted` ajustado a `#5e6e82` (4.91:1 sobre blanco, pasa AA).
+6. ✅ Polling stream — **CORRECTO**: necesario en 5 páginas para `navbar.live-glow` global.
 
 ### 🟡 Medio (deuda técnica)
 7. Extraer navbar/footer a partials (SSI/Edge Function) o componente compartido.
@@ -239,4 +239,4 @@ Todo lo siguiente está implementado y revisado contra la BD real de Supabase:
 
 ---
 
-*Última actualización: 2026-10-22. Fases 1 (sorteo), 2a (grid/lightbox), 2b (moderación) y 2c (chat comunidad) implementadas con stores Alpine aislados. Críticos resueltos: muro saludos, imágenes WebP, badges TOP galería, canonical verificado, contraste WCAG AA ajustado. Pendiente: sorteo real, sesión admin real, realtime chat/moderación dos pestañas. Frontend (5 HTML, `main.js`, `style.css`) y BD Supabase (`cydiyaacnyydprgffmkq`) verificados.*
+*Última actualización: 2026-10-22. Fases 1 (sorteo), 2a (grid/lightbox), 2b (moderación) y 2c (chat comunidad) implementadas con stores Alpine aislados. **Críticos y Alta resueltos**: muro saludos, imágenes WebP, badges TOP galería, canonical verificado, contraste WCAG AA (4.91:1), polling stream confirmado. Pendiente: sorteo real, sesión admin real, realtime chat/moderación dos pestañas. Frontend (5 HTML, `main.js`, `style.css`) y BD Supabase (`cydiyaacnyydprgffmkq`) verificados.*
