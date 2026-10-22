@@ -9,6 +9,7 @@
 **LaGochaGaming** es un sitio web estático (5 páginas HTML + `main.js` + `style.css`) para una streamer de Kick, con backend **Supabase**. Dominio: `lagochagaming.com`. Idioma: español.
 
 - Stack: HTML5, CSS3 (variables CSS, modo claro/oscuro), Vanilla JS, Font Awesome 6.6.0, Supabase JS SDK v2 (CDN), YouTube IFrame API.
+- Excepción aprobada (2026-10-21): Alpine.js 3.17.5 para la fase piloto en `sorteo.html` (implementada, ver §12).
 - Sin framework de build, sin Node, sin `.env`. Sitio estático: abrir `index.html` en el navegador o servir con servidor estático.
 - Supabase proyecto: `cydiyaacnyydprgffmkq` (región `us-west-2`, Postgres 17). URL: `https://cydiyaacnyydprgffmkq.supabase.co`.
 - Anon key hardcodeada en `main.js:13`. Admin email: `gocha@admin.com`.
@@ -164,14 +165,14 @@ Todo lo siguiente está implementado y revisado contra la BD real de Supabase:
 - 7 tablas publicadas en `supabase_realtime`.
 - Extensión `unaccent` instalada.
 
-**Estado: no hay pendientes críticos.** Frontend y BD están al día con los planes de auditoría.
+**Estado: no hay pendientes críticos.** Frontend y BD están al día con los planes de auditoría. Piloto Alpine (Fase 0 + Fase 1) ejecutado en `sorteo.html`; pendiente un sorteo real de validación en directo (ver §12).
 
 ---
 
 ## 10. Cómo trabajar en este proyecto (checklist por sesión)
 
 1. Leer `agent.md` (este archivo) y, si toca una página específica, leer esa página + `main.js` + `style.css`.
-2. No crear archivos de build, no usar frameworks, no añadir dependencias npm.
+2. No crear archivos de build ni añadir dependencias npm. Alpine.js 3.17.5 está aprobado como excepción para la fase piloto (solo `sorteo.html`); no introducir otros frameworks ni ampliar a otras páginas sin aprobación.
 3. Antes de editar JS/HTML, verificar que no exista ya un helper en `main.js` (escapeHtml, lanzarConfetti, esAdminActual, etc.).
 4. Mantener consistencia con clases CSS existentes de `style.css`.
 5. Supabase: credenciales hardcodeadas, no tocar sin necesidad. Cualquier cambio de RLS/RPC requiere migración SQL en Supabase, no solo frontend.
@@ -180,12 +181,28 @@ Todo lo siguiente está implementado y revisado contra la BD real de Supabase:
 
 ---
 
-## 11. Planes existentes en .kilo/plans (referencia, ya aplicados)
+## 11. Planes existentes en .kilo/plans (aplicados y pendientes)
 
 - `auditoria-base-datos-supabase.md`: auditoría DB-frontend.
 - `modernizacion-leyenda-rangos-auditoria.md`: bugs B1-B12, seguridad M1, gamificación M3, sorteo/likes M4, rendimiento M2, SEO/a11y Fase 4.
 - `muro-anti-impersonacion-plan.md`: muro anti-suplantación + sorteo multiticket (ambos aplicados).
+- Aplicado (Fase 0 + Fase 1): `alpine-adopcion-gradual-v2.md` (piloto Alpine en `sorteo.html`; pendiente validación con un sorteo real antes de la Fase 2).
 
 ---
 
-*Última actualización: tras revisión completa de frontend (5 HTML, main.js, style.css) y base de datos Supabase (proyecto cydiyaacnyydprgffmkq). Todo implementado y verificado.*
+## 12. Alpine.js (fase piloto)
+
+- Estado: excepción aprobada el 2026-10-21 e implementada (Fase 0 + Fase 1); pendiente un sorteo real sin incidencias antes de la Fase 2.
+- Alcance ejecutado: solo `sorteo.html` y la lista de participantes online (store `sorteo.participantes`); `listaPublica` (modo manual) sigue en vanilla.
+- Alpine se carga con `defer` después de `main.js`, versión fijada 3.17.5 y SRI verificado (55.935 bytes); es la única página que lo carga.
+- Store registrado en `alpine:init` dentro del script inline de la página; no hay stores globales en `main.js`.
+- Estado en `Alpine.store`; render con `x-for`/`x-text`; no se manipula el DOM de nodos gestionados por Alpine.
+- Preferir `x-text`; `x-html` solo con `escapeHtml`/`escapeAttr`.
+- Acceso desde JS con `obtenerStoreSorteo()` y guarda de `null`; si Alpine o el store faltan, la lista muestra aviso, el contador muestra `—` y el modo manual sigue operativo.
+- Tema, toasts, modales, auth, helpers globales y Realtime base siguen en vanilla.
+- Una página y una sección por iteración; no abrir otra página hasta cerrar el piloto.
+- Plan: `.kilo/plans/alpine-adopcion-gradual-v2.md`.
+
+---
+
+*Última actualización: 2026-10-21. Piloto Alpine (Fase 0 + Fase 1) implementado en `sorteo.html`: lista de participantes online con store `sorteo` y `<template x-for>`, render manual eliminado y fallback visible. Validado en Chrome headless (Alpine 3.17.5, SRI, reactividad y CDN bloqueado); queda pendiente un sorteo real antes de abrir la Fase 2. El resto del frontend (5 HTML, `main.js`, `style.css`) y la base de datos Supabase (proyecto `cydiyaacnyydprgffmkq`) siguen verificados.*
