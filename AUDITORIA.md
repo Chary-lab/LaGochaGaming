@@ -36,7 +36,7 @@
 | **Imágenes sin optimizar** | ~~**Alta**~~ ✅ **RESUELTO** | `img/fono.png` = **2.05 MB** → **`fono.webp` 69 KB**; `android-chrome-512x512.png` = 539 KB → **112 KB**, `android-chrome-192x192.png` = 93 KB → **24 KB**, `apple-touch-icon.png` = 83 KB → **22 KB**. CSS actualizado a `fono.webp`. |
 | **Font Awesome 6.6.0 completo** | **Media** | ~78 KB CSS + fuentes. Considerar subset (solo iconos usados) o SVG inline. |
 | Sin lazy-loading en hero | **Baja** | `background-image: url('img/fono.png')` en CSS carga siempre. |
-| Polling stream cada 90s en **todas** las páginas | **Baja** | Incluye páginas que no usan stream (galería, sorteo, comunidad). Desactivar donde no se usa. |
+| Polling stream cada 90s en **todas** las páginas | **Correcto** | Necesario en todas para **navbar glow** (`.navbar.live-glow`) que indica "EN VIVO" globalmente. `verificarEstadoStream()` actualiza la navbar compartida. |
 
 ### 2.3 Accesibilidad (a11y)
 
@@ -123,7 +123,7 @@
 ### 🟠 Alto (Próxima iteración)
 4. **Añadir `canonical` a las 4 páginas faltantes** (cine, comunidad, galería, sorteo).
 5. **Verificar contraste modo claro** (WCAG AA) — ajustar `--text-muted` o `--card-bg` si necesario.
-6. **Desactivar polling stream en páginas que no lo usan** — en `cine.html`, `galeria.html`, `sorteo.html`, `comunidad.html` no llamar `iniciarPollingStreamGlobal()` o condicionar en `main.js`.
+6. ~~**Desactivar polling stream en páginas que no lo usan**~~ — **INCORRECTO**: el polling **SÍ se usa en las 5 páginas** para el **navbar glow** (`.navbar.live-glow` en `main.js:528/534`) que indica "EN VIVO" en la barra de navegación global compartida. El `verificarEstadoStream()` actualiza este glow en todas las páginas. **No tocar**.
 
 ### 🟡 Medio (Deuda técnica)
 7. **Extraer navbar/footer a partials** (SSI/Edge Function) o componente compartido.

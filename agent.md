@@ -72,7 +72,7 @@ Ubicación: `main.js:1-625`. Se carga con `defer` en todas las páginas.
 - `window.initTema()` / `window.toggleTema()` — modo claro/oscuro (localStorage `gochi_tema`)
 - `window.mostrarToast(msg, esError)` / `window.mostrarConfirmacionModal({...})`
 - `window.insertarComponentesUIGlobales()` — inserta toast, modal confirm, alerta stream, toast stream
-- `window.iniciarPollingStreamGlobal()` — polling Kick API cada 90s con backoff y caché 60s
+- `window.iniciarPollingStreamGlobal()` — polling Kick API cada 90s con backoff y caché 60s; **necesario en las 5 páginas** para `navbar.live-glow` (indicador "EN VIVO" en navbar global) vía `verificarEstadoStream()` (`main.js:528/534`)
 - `window.validarSesionStreamer()` → `esAdminActual()`
 - `window.cerrarSesionAdminGlobal()` — signOut + limpia UI admin
 - `window.cerrarSesion()` — cierra sesión de comunidad (RPC + localStorage)
@@ -226,7 +226,7 @@ Todo lo siguiente está implementado y revisado contra la BD real de Supabase:
 ### 🟠 Alto (próxima iteración)
 4. Añadir `canonical` a `cine.html`, `comunidad.html`, `galeria.html`, `sorteo.html`.
 5. Verificar contraste modo claro (WCAG AA: `--text-muted` sobre `--card-bg`).
-6. Desactivar polling stream en páginas que no lo usan (cine, galería, sorteo, comunidad).
+6. ~~Desactivar polling stream~~ — **INCORRECTO**: polling **SÍ necesario en 5 páginas** para `navbar.live-glow` (indicador global "EN VIVO") vía `verificarEstadoStream()`.
 
 ### 🟡 Medio (deuda técnica)
 7. Extraer navbar/footer a partials (SSI/Edge Function) o componente compartido.
