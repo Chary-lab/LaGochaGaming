@@ -492,8 +492,21 @@
                 <h3 class="chat-sidebar-subtitle">
                     <i class="fa-solid fa-trophy"></i> Top Comunidad
                 </h3>
-                <div id="leaderboard-list" class="leaderboard-scroll" aria-live="polite" aria-label="Ranking de puntos de la comunidad">
-                    <div class="chat-empty-note">Cargando ranking...</div>
+                <div id="leaderboard-list" class="leaderboard-scroll" aria-live="polite" aria-label="Ranking de puntos de la comunidad" x-data="{}">
+                    <template x-for="(user, index) in $store.ranking.usuarios" :key="user.apodo">
+                        <div class="leaderboard-item" :class="{ 'leaderboard-item-first': index === 0 }">
+                            <span class="leaderboard-user">
+                                <span x-text="user.medalla + ' ' + user.apodo"></span>
+                                <span class="rango-badge leaderboard-badge" :class="'rango-' + user.rangoClave">
+                                    <span x-text="user.rangoEmoji"></span><span x-text="user.rangoNombre"></span>
+                                </span>
+                            </span>
+                            <span class="leaderboard-points"><span x-text="user.puntos"></span> pts</span>
+                        </div>
+                    </template>
+                    <div class="chat-empty-note" x-show="$store.ranking.cargando">Cargando ranking...</div>
+                    <div class="chat-empty-note" x-show="!$store.ranking.cargando && !$store.ranking.error && !$store.ranking.usuarios.length" x-cloak>Sin participantes aún</div>
+                    <div class="chat-empty-note" x-show="$store.ranking.error" x-text="$store.ranking.error" x-cloak></div>
                 </div>
             </div>
 
@@ -515,7 +528,7 @@
 
             <div id="chat-mensajes" class="chat-messages" x-data="{}">
                 <template x-for="msg in $store.chat.mensajes" :key="msg.id">
-                    <div class="chat-msg-container" :data-msgid="msg.id" x-init="window.inicializarMensajeChat?.($el, msg)">
+                    <div class="chat-msg-container" :data-msgid="msg.id" @mouseleave="window.ocultarTooltipReaccion?.()">
                         <div class="chat-msg-header">
                             <span class="chat-msg-autor" x-text="msg.autor || 'Anónimo'"></span>
                             <span class="chat-msg-meta">
@@ -524,8 +537,26 @@
                             </span>
                         </div>
                         <div class="chat-msg-texto" x-text="msg.mensaje"></div>
-                        <div class="reacciones-badges" x-ignore style="display: none;"></div>
-                        <div class="chat-msg-burbuja" x-ignore></div>
+                        <div class="reacciones-badges" x-show="$store.reacciones.chips(msg.id).length" x-cloak>
+                            <template x-for="chip in $store.reacciones.chips(msg.id)" :key="chip.emoji">
+                                <span class="reaccion-badge" :class="{ mia: chip.mia }"
+                                      @click.stop="window.establecerReaccionUsuario?.(msg.id, chip.emoji)"
+                                      @mouseenter="window.mostrarTooltipReaccion?.($event.currentTarget, chip.emoji, chip.usuarios)"
+                                      @mouseleave="window.ocultarTooltipReaccion?.()">
+                                    <span class="emoji" x-text="chip.emoji"></span>
+                                    <span class="count" x-text="chip.count"></span>
+                                </span>
+                            </template>
+                        </div>
+                        <div class="chat-msg-burbuja" role="group" aria-label="Reacciones rápidas">
+                            <template x-for="emoji in $store.reacciones.emojis" :key="emoji">
+                                <button type="button" class="btn-burbuja"
+                                        :class="{ mia: $store.reacciones.miReaccion(msg.id) === emoji }"
+                                        :title="emoji" :aria-label="'Reaccionar con ' + emoji"
+                                        @click.stop.prevent="window.establecerReaccionUsuario?.(msg.id, emoji)"
+                                        x-text="emoji"></button>
+                            </template>
+                        </div>
                     </div>
                 </template>
                 <div class="chat-msg-vacio" x-show="$store.chat.cargando">Cargando mensajes de la comunidad...</div>
@@ -677,17 +708,99 @@
         // Funciones globales para los botones de login/registro (llamadas desde HTML)
         let _modalModo = 'login'; // 'login' o 'registro'
 
+        const REACCIONES = ['👍', '❤️', '😂', '🔥', '😀', '🙏'];
+
         document.addEventListener('alpine:init', () => {
             window.Alpine.store('chat', {
                 mensajes: [],
                 cargando: true,
                 error: ''
             });
+
+            window.Alpine.store('ranking', {
+                usuarios: [],
+                cargando: true,
+                error: ''
+            });
+
+            window.Alpine.store('reacciones', {
+                cache: {},
+                mias: {},
+                emojis: REACCIONES,
+                cargar() {
+                    try {
+                        this.cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
+                    } catch (e) { this.cache = {}; }
+                    try {
+                        this.mias = JSON.parse(localStorage.getItem('gochi_chat_mi_reaccion_v2') || '{}');
+                    } catch (e) { this.mias = {}; }
+                },
+                persistir() {
+                    try {
+                        localStorage.setItem('gochi_chat_reacciones_cache', JSON.stringify(this.cache));
+                        localStorage.setItem('gochi_chat_mi_reaccion_v2', JSON.stringify(this.mias));
+                    } catch (e) {}
+                },
+                miReaccion(msgId) {
+                    return this.mias[String(msgId)] || null;
+                },
+                agregarReaccion(msgId, emoji, usuario) {
+                    const id = String(msgId);
+                    if (!this.cache[id]) this.cache[id] = {};
+                    if (!this.cache[id][emoji]) this.cache[id][emoji] = [];
+                    if (!this.cache[id][emoji].includes(usuario)) this.cache[id][emoji].push(usuario);
+                },
+                quitarReaccion(msgId, emoji, usuario) {
+                    const id = String(msgId);
+                    if (!this.cache[id] || !this.cache[id][emoji]) return;
+                    this.cache[id][emoji] = this.cache[id][emoji].filter(u => u !== usuario);
+                    if (this.cache[id][emoji].length === 0) delete this.cache[id][emoji];
+                    if (Object.keys(this.cache[id]).length === 0) delete this.cache[id];
+                },
+                aplicarReaccion(msgId, emoji, usuario) {
+                    const id = String(msgId);
+                    const previa = this.miReaccion(id);
+                    if (previa) this.quitarReaccion(id, previa, usuario);
+                    const quiereBorrar = previa === emoji;
+                    if (!quiereBorrar) this.agregarReaccion(id, emoji, usuario);
+                    if (quiereBorrar) delete this.mias[id];
+                    else this.mias[id] = emoji;
+                    return { previa, quiereBorrar };
+                },
+                chips(msgId) {
+                    const id = String(msgId);
+                    const msgCache = this.cache[id] || {};
+                    const miReaccion = this.mias[id] || null;
+                    return this.emojis
+                        .filter(emoji => (msgCache[emoji] || []).length > 0)
+                        .map(emoji => ({
+                            emoji,
+                            usuarios: msgCache[emoji],
+                            count: msgCache[emoji].length,
+                            mia: miReaccion === emoji
+                        }));
+                }
+            });
+
+            const storeReacciones = window.Alpine.store('reacciones');
+            if (storeReacciones) storeReacciones.cargar();
         });
 
         function obtenerStoreChat() {
             return window.Alpine && typeof window.Alpine.store === 'function'
                 ? window.Alpine.store('chat')
+                : null;
+        }
+
+        function obtenerStoreReacciones() {
+            return window.Alpine && typeof window.Alpine.store === 'function'
+                ? window.Alpine.store('reacciones')
+                : null;
+        }
+
+        function obtenerStoreRanking() {
+            return window.Alpine && typeof window.Alpine.store === 'function'
+                ? window.Alpine.store('ranking')
                 : null;
         }
 
@@ -1318,7 +1431,6 @@
             }
 
             // Reacciones del chat (tiempo real vía Supabase + panel burbuja al hover)
-            const REACCIONES = ['👍', '❤️', '😂', '🔥', '😀', '🙏'];
             const MAX_MENSAJES_DOM = 100;
             const STREAK_STORAGE_KEY = 'gochi_chat_streak';
             const STREAK_TIMEOUT_MS = 300000;
@@ -1353,23 +1465,6 @@
                 return pend.emoji;
             }
 
-// Toggle de reacción: same emoji -> delete, different emoji -> upsert
-            function obtenerMiReaccionLocal(msgId) {
-                try {
-                    const data = JSON.parse(localStorage.getItem('gochi_chat_mi_reaccion_v2') || '{}');
-                    return data[msgId] || null;
-                } catch (e) { return null; }
-            }
-
-            function guardarMiReaccionLocal(msgId, emoji) {
-                try {
-                    const data = JSON.parse(localStorage.getItem('gochi_chat_mi_reaccion_v2') || '{}');
-                    if (emoji === null) { delete data[msgId]; }
-                    else { data[msgId] = emoji; }
-                    localStorage.setItem('gochi_chat_mi_reaccion_v2', JSON.stringify(data));
-                } catch (e) {}
-            }
-
             // Toggle de reacción: el servidor decide borrar vs upsert. UI optimista con rollback.
             async function establecerReaccionUsuario(msgId, emoji) {
                 const msgIdStr = String(msgId);
@@ -1379,29 +1474,14 @@
                     return;
                 }
 
-                const miReaccionActual = obtenerMiReaccionLocal(msgIdStr);
+                const store = obtenerStoreReacciones();
+                if (!store) return;
 
-                // Estado optimista (antes de saber la respuesta del servidor)
-                const prevMiReaccion = miReaccionActual;
-                const cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
-                const prevCache = JSON.parse(JSON.stringify(cache));
-
-                // Aplicar optimista: quitar del emoji anterior, poner/quitar el nuevo
-                if (cache[msgIdStr] && cache[msgIdStr][prevMiReaccion]) {
-                    cache[msgIdStr][prevMiReaccion] = cache[msgIdStr][prevMiReaccion].filter(u => u !== userNickname);
-                    if (cache[msgIdStr][prevMiReaccion].length === 0) delete cache[msgIdStr][prevMiReaccion];
-                }
-                const quiereBorrar = (prevMiReaccion === emoji);
-                if (!quiereBorrar) {
-                    if (!cache[msgIdStr]) cache[msgIdStr] = {};
-                    if (!cache[msgIdStr][emoji]) cache[msgIdStr][emoji] = [];
-                    if (!cache[msgIdStr][emoji].includes(userNickname)) cache[msgIdStr][emoji].push(userNickname);
-                    if (Object.keys(cache[msgIdStr]).length === 0) delete cache[msgIdStr];
-                }
-                localStorage.setItem('gochi_chat_reacciones_cache', JSON.stringify(cache));
-                guardarMiReaccionLocal(msgIdStr, quiereBorrar ? null : emoji);
+                const prevCache = JSON.parse(JSON.stringify(store.cache));
+                const prevMias = JSON.parse(JSON.stringify(store.mias));
+                const { quiereBorrar } = store.aplicarReaccion(msgIdStr, emoji, userNickname);
+                store.persistir();
                 guardarPendienteLocal(msgIdStr, quiereBorrar ? null : emoji);
-                actualizarUIReacciones(msgIdStr);
 
                 try {
                     const { data: resultado, error } = await supabase.rpc('establecer_reaccion', { p_token: token, p_message_id: msgIdStr, p_emoji: emoji });
@@ -1413,10 +1493,10 @@
                     guardarPendienteLocal(msgIdStr, null);
                 } catch (err) {
                     // Rollback completo
-                    localStorage.setItem('gochi_chat_reacciones_cache', JSON.stringify(prevCache));
-                    guardarMiReaccionLocal(msgIdStr, prevMiReaccion);
+                    store.cache = prevCache;
+                    store.mias = prevMias;
+                    store.persistir();
                     guardarPendienteLocal(msgIdStr, null);
-                    actualizarUIReacciones(msgIdStr);
                     const codigo = err && err.message ? err.message : '';
                     if (codigo === 'sin_sesion') {
                         mostrarToast('Sesión expirada. Inicia sesión de nuevo.', true);
@@ -1426,9 +1506,11 @@
                 }
             }
 
+            window.establecerReaccionUsuario = establecerReaccionUsuario;
+
             // Tooltip: quiénes reaccionaron con un emoji
             let tooltipReaccionEl = null;
-            function mostrarTooltipReaccion(target, msgId, emoji, usuarios) {
+            function mostrarTooltipReaccion(target, emoji, usuarios) {
                 if (!usuarios || usuarios.length === 0) return;
 
                 if (!tooltipReaccionEl) {
@@ -1455,6 +1537,9 @@
             function ocultarTooltipReaccion() {
                 if (tooltipReaccionEl) tooltipReaccionEl.classList.remove('visible');
             }
+
+            window.mostrarTooltipReaccion = mostrarTooltipReaccion;
+            window.ocultarTooltipReaccion = ocultarTooltipReaccion;
 
             async function eliminarMensajeChat(msgId) {
                 if (!adminAutenticado) return;
@@ -1488,88 +1573,6 @@
                             mostrarToast('Error inesperado al eliminar.', true);
                         }
                     }
-                });
-            }
-
-            // Actualizar badges de un mensaje concreto
-            function actualizarUIReacciones(msgId, contenedor) {
-                const container = contenedor || document.querySelector(`.chat-msg-container[data-msgid="${msgId}"]`);
-                if (!container) return;
-
-                const badgesContainer = container.querySelector('.reacciones-badges');
-
-                const msgIdStr = String(msgId);
-                marcarMiReaccionEnBurbuja(container.querySelector('.chat-msg-burbuja'), msgIdStr);
-                // Leer cache local para mostrar inmediatamente
-                try {
-                    const cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
-                    const msgCache = cache[msgIdStr] || {};
-
-                    // Badges visibles debajo del mensaje: una insignia por cada
-                    // emoji con reacciones, para que se vean independientes.
-                    if (badgesContainer) {
-                        badgesContainer.innerHTML = '';
-                        let totalChips = 0;
-                        REACCIONES.forEach(emoji => {
-                            const usuarios = msgCache[emoji] || [];
-                            const count = usuarios.length;
-                            if (count === 0) return;
-                            totalChips++;
-                            const mia = obtenerMiReaccionLocal(msgIdStr) === emoji;
-
-                            const badge = document.createElement('span');
-                            badge.className = 'reaccion-badge' + (mia ? ' mia' : '');
-                            badge.dataset.emoji = emoji;
-                            badge.innerHTML = `<span class="emoji">${emoji}</span><span class="count">${count}</span>`;
-                            badge.onclick = (e) => {
-                                e.stopPropagation();
-                                establecerReaccionUsuario(msgIdStr, emoji);
-                            };
-                            badge.onmouseenter = (e) => {
-                                if (count > 0) mostrarTooltipReaccion(e.currentTarget, msgIdStr, emoji, usuarios);
-                            };
-                            badge.onmouseleave = ocultarTooltipReaccion;
-                            badgesContainer.appendChild(badge);
-                        });
-                        badgesContainer.style.display = totalChips > 0 ? 'flex' : 'none';
-                    }
-                } catch (e) {}
-            }
-
-            // Crear panel burbuja de reacción (aparece al hacer hover sobre el mensaje)
-            function crearBurbujaReacciones(msgId) {
-                const msgIdStr = String(msgId);
-                const container = document.createElement('div');
-                container.className = 'chat-msg-burbuja';
-                container.setAttribute('role', 'group');
-                container.setAttribute('aria-label', 'Reacciones rápidas');
-
-                REACCIONES.forEach(emoji => {
-                    const btn = document.createElement('button');
-                    btn.type = 'button';
-                    btn.className = 'btn-burbuja';
-                    btn.textContent = emoji;
-                    btn.title = emoji;
-                    btn.setAttribute('aria-label', 'Reaccionar con ' + emoji);
-                    btn.addEventListener('click', async (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        await establecerReaccionUsuario(msgIdStr, emoji);
-                        actualizarUIReacciones(msgIdStr);
-                    });
-                    container.appendChild(btn);
-                });
-
-                marcarMiReaccionEnBurbuja(container, msgIdStr);
-                return container;
-            }
-
-            // Resalta en la burbuja la reacción elegida por el usuario actual
-            function marcarMiReaccionEnBurbuja(burbuja, msgIdStr) {
-                if (!burbuja) return;
-                const miReaccion = obtenerMiReaccionLocal(msgIdStr);
-                burbuja.querySelectorAll('.btn-burbuja').forEach(btn => {
-                    btn.classList.toggle('mia', btn.textContent === miReaccion);
                 });
             }
 
@@ -1614,22 +1617,6 @@
                 return streakData.count;
             }
 
-            // Alpine clona el mensaje y este inicializador monta sus reacciones.
-            // La burbuja y los badges son islas x-ignore: Alpine no las gestiona.
-            function inicializarMensajeChat(el, msg) {
-                if (!el || !msg) return;
-                const msgIdStr = String(msg.id);
-                el.addEventListener('mouseleave', () => {
-                    actualizarUIReacciones(msgIdStr, el);
-                    ocultarTooltipReaccion();
-                });
-                const burbuja = el.querySelector('.chat-msg-burbuja');
-                if (burbuja) burbuja.replaceWith(crearBurbujaReacciones(msgIdStr));
-                actualizarUIReacciones(msgIdStr, el);
-            }
-
-            window.inicializarMensajeChat = inicializarMensajeChat;
-
             function renderizarMensajes(mensajes) {
                 const store = obtenerStoreChat();
                 if (!store) return;
@@ -1658,6 +1645,8 @@
             // Cargar reacciones de Supabase para una lista de mensajes
             async function cargarReaccionesDeSupabase(mensajes) {
                 if (!mensajes || mensajes.length === 0) return;
+                const store = obtenerStoreReacciones();
+                if (!store) return;
                 try {
                     const ids = mensajes.map(m => Number(m.id)).filter(id => Number.isFinite(id));
                     if (ids.length === 0) return;
@@ -1667,25 +1656,18 @@
                         .in('message_id', ids);
                     if (error) {
                         console.warn('[REACCIÓN] Supabase reacciones falló (¿tabla ausente?), usando cache localStorage:', error.message);
-                        // Usar cache local existente para actualizar UI
-                        const cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
-                        mensajes.forEach(m => {
-                            const msgId = m.id;
-                            if (msgId && cache[msgId]) {
-                                actualizarUIReacciones(msgId);
-                            }
-                        });
                         return;
                     }
-                    const cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
-                    const miCache = JSON.parse(localStorage.getItem('gochi_chat_mi_reaccion_v2') || '{}');
+
+                    const cache = JSON.parse(JSON.stringify(store.cache));
+                    const mias = JSON.parse(JSON.stringify(store.mias));
 
                     // Reconstruir desde el servidor: si solo se añadieran las filas
                     // recibidas, las reacciones cambiadas o borradas quedaban fantasma.
                     ids.forEach(id => { cache[id] = {}; });
                     const conMiReaccion = new Set();
 
-                    data.forEach(r => {
+                    (data || []).forEach(r => {
                         if (!cache[r.message_id]) cache[r.message_id] = {};
                         if (!cache[r.message_id][r.emoji]) cache[r.message_id][r.emoji] = [];
                         const nombre = r.apodo || r.user_id;
@@ -1694,7 +1676,7 @@
                         }
                         // Si el usuario logueado es quien reaccionó, guardarlo en mi reaccion
                         if (userId && r.user_id === userId) {
-                            miCache[r.message_id] = r.emoji;
+                            mias[r.message_id] = r.emoji;
                             conMiReaccion.add(r.message_id);
                         }
                     });
@@ -1718,18 +1700,12 @@
                     ids.forEach(id => {
                         if (conMiReaccion.has(id)) return;
                         if (pendientes[id] && Date.now() - (pendientes[id].ts || 0) <= PENDIENTE_TTL_MS) return;
-                        if (miCache[id]) delete miCache[id];
+                        if (mias[id]) delete mias[id];
                     });
 
-                    localStorage.setItem('gochi_chat_reacciones_cache', JSON.stringify(cache));
-                    localStorage.setItem('gochi_chat_mi_reaccion_v2', JSON.stringify(miCache));
-                    // Actualizar UI de los mensajes ya renderizados
-                    mensajes.forEach(m => {
-                        const msgId = m.id;
-                        if (msgId && cache[msgId]) {
-                            actualizarUIReacciones(msgId);
-                        }
-                    });
+                    store.cache = cache;
+                    store.mias = mias;
+                    store.persistir();
                 } catch (e) { console.error('Error cargando reacciones:', e); }
             }
 
@@ -1877,45 +1853,27 @@ if (chatForm) {
                     canalReacciones = supabase.channel('public:message_reactions')
                         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'message_reactions' }, payload => {
                             const r = payload.new;
-                            const cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
-                            if (!cache[r.message_id]) cache[r.message_id] = {};
-                            if (!cache[r.message_id][r.emoji]) cache[r.message_id][r.emoji] = [];
-                            const nombre = r.apodo || r.user_id;
-                            if (!cache[r.message_id][r.emoji].includes(nombre)) {
-                                cache[r.message_id][r.emoji].push(nombre);
-                            }
-                            localStorage.setItem('gochi_chat_reacciones_cache', JSON.stringify(cache));
+                            const store = obtenerStoreReacciones();
+                            if (!store || !r) return;
+                            store.agregarReaccion(r.message_id, r.emoji, r.apodo || r.user_id);
                             if (userId && r.user_id === userId) {
-                                const miCache = JSON.parse(localStorage.getItem('gochi_chat_mi_reaccion_v2') || '{}');
-                                miCache[r.message_id] = r.emoji;
-                                localStorage.setItem('gochi_chat_mi_reaccion_v2', JSON.stringify(miCache));
+                                store.mias[String(r.message_id)] = r.emoji;
                             }
-                            actualizarUIReacciones(r.message_id);
+                            store.persistir();
                         })
                         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'message_reactions' }, payload => {
                             const old = payload.old;
                             const r = payload.new;
-                            const cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
-                            // quitar del emoji anterior
-                            if (cache[old.message_id]?.[old.emoji]) {
-                                const oldNombre = old.apodo || old.user_id;
-                                cache[old.message_id][old.emoji] = cache[old.message_id][old.emoji].filter(u => u !== oldNombre);
-                                if (cache[old.message_id][old.emoji].length === 0) delete cache[old.message_id][old.emoji];
+                            const store = obtenerStoreReacciones();
+                            if (!store || !r) return;
+                            if (old && old.message_id != null && old.emoji) {
+                                store.quitarReaccion(old.message_id, old.emoji, old.apodo || old.user_id);
                             }
-                            // agregar al nuevo
-                            if (!cache[r.message_id]) cache[r.message_id] = {};
-                            if (!cache[r.message_id][r.emoji]) cache[r.message_id][r.emoji] = [];
-                            const nombre = r.apodo || r.user_id;
-                            if (!cache[r.message_id][r.emoji].includes(nombre)) {
-                                cache[r.message_id][r.emoji].push(nombre);
-                            }
-                            localStorage.setItem('gochi_chat_reacciones_cache', JSON.stringify(cache));
+                            store.agregarReaccion(r.message_id, r.emoji, r.apodo || r.user_id);
                             if (userId && r.user_id === userId) {
-                                const miCache = JSON.parse(localStorage.getItem('gochi_chat_mi_reaccion_v2') || '{}');
-                                miCache[r.message_id] = r.emoji;
-                                localStorage.setItem('gochi_chat_mi_reaccion_v2', JSON.stringify(miCache));
+                                store.mias[String(r.message_id)] = r.emoji;
                             }
-                            actualizarUIReacciones(r.message_id);
+                            store.persistir();
                         })
                         .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'message_reactions' }, payload => {
                             const r = payload.old || {};
@@ -1923,20 +1881,13 @@ if (chatForm) {
                             // no sabemos qué mensaje/emoji se quitó, así que se
                             // recargan las reacciones visibles desde el servidor.
                             if (r.message_id != null && r.emoji) {
-                                const cache = JSON.parse(localStorage.getItem('gochi_chat_reacciones_cache') || '{}');
-                                const nombre = r.apodo || r.user_id;
-                                if (cache[r.message_id]?.[r.emoji]) {
-                                    cache[r.message_id][r.emoji] = cache[r.message_id][r.emoji].filter(u => u !== nombre);
-                                    if (cache[r.message_id][r.emoji].length === 0) delete cache[r.message_id][r.emoji];
-                                    if (Object.keys(cache[r.message_id]).length === 0) delete cache[r.message_id];
-                                    localStorage.setItem('gochi_chat_reacciones_cache', JSON.stringify(cache));
+                                const store = obtenerStoreReacciones();
+                                if (!store) return;
+                                store.quitarReaccion(r.message_id, r.emoji, r.apodo || r.user_id);
+                                if (userId && r.user_id === userId && store.mias[String(r.message_id)] === r.emoji) {
+                                    delete store.mias[String(r.message_id)];
                                 }
-                                if (userId && r.user_id === userId) {
-                                    const miCache = JSON.parse(localStorage.getItem('gochi_chat_mi_reaccion_v2') || '{}');
-                                    if (miCache[r.message_id] === r.emoji) delete miCache[r.message_id];
-                                    localStorage.setItem('gochi_chat_mi_reaccion_v2', JSON.stringify(miCache));
-                                }
-                                actualizarUIReacciones(r.message_id);
+                                store.persistir();
                             } else {
                                 recargarReaccionesVisibles();
                             }
@@ -2073,8 +2024,14 @@ if (chatForm) {
 
 // Cargar leaderboard público
             async function cargarLeaderboard() {
-                const leaderboardEl = document.getElementById('leaderboard-list');
-                if (!leaderboardEl) return;
+                const store = obtenerStoreRanking();
+                if (!store) {
+                    const leaderboardEl = document.getElementById('leaderboard-list');
+                    if (leaderboardEl) {
+                        leaderboardEl.innerHTML = '<div class="chat-empty-note">Ranking no disponible. Recarga la página.</div>';
+                    }
+                    return;
+                }
                 try {
                     const { data, error } = await supabase
                         .from('usuarios_comunidad')
@@ -2082,28 +2039,39 @@ if (chatForm) {
                         .order('puntos', { ascending: false })
                         .limit(10);
 
-                    if (error || !data || data.length === 0) {
-                        leaderboardEl.innerHTML = '<div class="chat-empty-note">Sin participantes aún</div>';
+                    if (error) {
+                        store.usuarios = [];
+                        store.error = 'Error al cargar ranking';
+                        store.cargando = false;
+                        return;
+                    }
+                    if (!data || data.length === 0) {
+                        store.usuarios = [];
+                        store.error = '';
+                        store.cargando = false;
                         return;
                     }
 
-                    let html = '';
-                    data.forEach((user, index) => {
+                    store.usuarios = data.map((user, index) => {
                         const medalla = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`;
-                        
-                        // Agregar badge de rango (siempre se muestra, incluso semilla)
-                        const { clave: rangoLower, emoji, nombre: rangoNombre } = datosRango(user.rango);
-                        const rangoBadge = `<span class="rango-badge rango-${rangoLower} leaderboard-badge"><span>${emoji}</span><span>${rangoNombre}</span></span>`;
-                        
-                        html += `<div class="leaderboard-item${index === 0 ? ' leaderboard-item-first' : ''}">
-                            <span class="leaderboard-user">${medalla} ${escapeHtml(user.apodo)}${rangoBadge}</span>
-                            <span class="leaderboard-points">${user.puntos} pts</span>
-                        </div>`;
+                        // Badge de rango (siempre se muestra, incluso semilla)
+                        const { clave, emoji, nombre } = datosRango(user.rango);
+                        return {
+                            apodo: user.apodo,
+                            puntos: user.puntos,
+                            medalla: medalla,
+                            rangoClave: clave,
+                            rangoEmoji: emoji,
+                            rangoNombre: nombre
+                        };
                     });
-                    leaderboardEl.innerHTML = html;
+                    store.error = '';
+                    store.cargando = false;
                 } catch (e) {
                     console.error('Error leaderboard:', e);
-                    leaderboardEl.innerHTML = '<div class="chat-empty-note">Error al cargar ranking</div>';
+                    store.usuarios = [];
+                    store.error = 'Error al cargar ranking';
+                    store.cargando = false;
                 }
             }
 

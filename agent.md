@@ -9,7 +9,7 @@
 **LaGochaGaming** es un sitio web estático (5 páginas HTML + `main.js` + `style.css`) para una streamer de Kick, con backend **Supabase**. Dominio: `lagochagaming.com`. Idioma: español.
 
 - Stack: HTML5, CSS3 (variables CSS, modo claro/oscuro), Vanilla JS, Font Awesome 6.6.0, Supabase JS SDK v2 (CDN), YouTube IFrame API.
-- Excepción aprobada (2026-10-21): Alpine.js 3.17.5 para la fase piloto (implementada en `sorteo.html`, `galeria.html` y el chat de `comunidad.html`, ver §12).
+- Excepción aprobada (2026-10-21): Alpine.js 3.17.5 para la fase piloto (implementada en `sorteo.html`, `galeria.html` y chat, reacciones y ranking de `comunidad.html`, ver §12).
 - Sin framework de build, sin Node, sin `.env`. Sitio estático: abrir `index.html` en el navegador o servir con servidor estático.
 - Supabase proyecto: `cydiyaacnyydprgffmkq` (región `us-west-2`, Postgres 17). URL: `https://cydiyaacnyydprgffmkq.supabase.co`.
 - Anon key hardcodeada en `main.js:13`. Admin email: `gocha@admin.com`.
@@ -157,7 +157,7 @@ Todo lo siguiente está implementado y revisado contra la BD real de Supabase:
 - Galería: `incrementar_likes` 3 args en `toggleLike()`; `publicar_foto_galeria` en `saveToSupabaseTable()`; `actualizar_autor_galeria` en `guardarAutorImagen()`; top-3 global por likes en `cargarTopGlobal()`; realtime en `iniciarRealtimeGaleria()`.
 - Galería (Alpine 2a/2b): grid público y lightbox con store `galeria` (`fotos`, `lightbox`); panel de moderación con `pendientes`, `pendientesEstado` y `errorPendientes`; aprobar/rechazar actualizan el store y hacen rollback si falla la petición; realtime cubre INSERT/UPDATE/DELETE y refresca pendientes solo con admin.
 - Sorteo: `verificarHandleKick` en `sorteo.html:898-926`; `registrar_participante_sorteo` con `p_kick_user_id` en `sorteo.html:960-962`; `asignar_peso_sorteo` RPC en `sorteo.html:1084-1086`; `sortear_ganador_sorteo` en servidor en `sorteo.html:1176`; sorteo local honesto como fallback en `sorteo.html:1196-1202`.
-- Comunidad: chat descendente y render con store Alpine `chat` en `cargarMensajesChat()`/`renderizarMensajes()` (2c); reacciones del chat intactas en islas `x-ignore` (`actualizarUIReacciones()`, `crearBurbujaReacciones()`); multiplicador y progreso de rangos en `aplicarEstadoRango()`/`actualizarProgresoRangos()`; `escapeHtml`/`escapeAttr` de `main.js` como fuente única; un solo listener de clic para modales en `main.js`; planificador de puntos autocorregible en `iniciarPlanificadorPuntos()`; caché de rangos en memoria 30s en `obtenerRangosCache()`.
+- Comunidad: chat descendente y render con store Alpine `chat` en `cargarMensajesChat()`/`renderizarMensajes()` (2c); reacciones con store Alpine `reacciones` (`cache`, `mias`, `chips()`, `aplicarReaccion()`) sin manipulación directa del DOM (2d); leaderboard con store Alpine `ranking` (`usuarios`, `cargando`, `error`) renderizado con `x-for` (2e); multiplicador y progreso de rangos en `aplicarEstadoRango()`/`actualizarProgresoRangos()`; `escapeHtml`/`escapeAttr` de `main.js` como fuente única; un solo listener de clic para modales en `main.js`; planificador de puntos autocorregible en `iniciarPlanificadorPuntos()`; caché de rangos en memoria 30s en `obtenerRangosCache()`.
 - SEO: meta tags completos (og:, twitter:, canonical) en todas las páginas.
 
 **Base de datos Supabase (verificado en proyecto `cydiyaacnyydprgffmkq`):**
@@ -168,7 +168,7 @@ Todo lo siguiente está implementado y revisado contra la BD real de Supabase:
 - 7 tablas publicadas en `supabase_realtime`.
 - Extensión `unaccent` instalada.
 
-**Estado: no hay pendientes críticos.** Frontend y BD están al día con los planes de auditoría. Alpine ejecutado en `sorteo.html` (Fases 0-1) y `galeria.html` (Fase 2a); pendiente un sorteo real de validación en directo (ver §12).
+**Estado: no hay pendientes críticos.** Frontend y BD están al día con los planes de auditoría. Alpine ejecutado en `sorteo.html` (Fases 0-1), `galeria.html` (Fases 2a-2b) y `comunidad.html` (Fases 2c-2e); pendiente la validación en producción (ver §12).
 
 ---
 
@@ -191,23 +191,23 @@ Todo lo siguiente está implementado y revisado contra la BD real de Supabase:
 - `auditoria-base-datos-supabase.md`: auditoría DB-frontend.
 - `modernizacion-leyenda-rangos-auditoria.md`: bugs B1-B12, seguridad M1, gamificación M3, sorteo/likes M4, rendimiento M2, SEO/a11y Fase 4.
 - `muro-anti-impersonacion-plan.md`: muro anti-suplantación + sorteo multiticket (ambos aplicados).
-- Aplicado (Fase 0 + Fase 1 + Fase 2a + Fase 2b + Fase 2c): `alpine-adopcion-gradual-v2.md` (Alpine en `sorteo.html`, galería —grid/lightbox y moderación— y chat de `comunidad.html`; pendiente validación con un sorteo real y decisión sobre 2d/2e).
+- Aplicado (Fase 0 + Fase 1 + Fase 2a + Fase 2b + Fase 2c + Fase 2d + Fase 2e): `alpine-adopcion-gradual-v2.md` (Alpine en `sorteo.html`, galería —grid/lightbox y moderación— y chat, reacciones y ranking de `comunidad.html`; pendiente validación en producción y decisión sobre Fase 3).
 
 ---
 
 ## 12. Alpine.js (fase piloto)
 
-- Estado: excepción aprobada el 2026-10-21. Fase 0 + Fase 1 (piloto en `sorteo.html`), Fase 2a (grid y lightbox), Fase 2b (moderación) y Fase 2c (chat de comunidad) implementadas; el sorteo real de validación sigue pendiente.
+- Estado: excepción aprobada el 2026-10-21. Fase 0 + Fase 1 (piloto en `sorteo.html`), Fase 2a (grid y lightbox), Fase 2b (moderación), Fase 2c (chat de comunidad), Fase 2d (reacciones del chat) y Fase 2e (leaderboard) implementadas; la validación en producción sigue pendiente.
 - Alcance ejecutado en `sorteo.html`: lista de participantes online (store `sorteo.participantes`); `listaPublica` (modo manual) sigue en vanilla.
 - Alcance ejecutado en `galeria.html`: grid público y lightbox (store `galeria` con `fotos` y `lightbox`), y panel de moderación (store con `pendientes`, `pendientesEstado`, `errorPendientes`). Likes, aprobación, rechazo y cambio de autor actualizan el store; el estado de likes vive en `fotos` para no tocar DOM gestionado por Alpine. Subida y login admin siguen en vanilla.
-- Alcance ejecutado en `comunidad.html`: lista de mensajes del chat (store `chat` con `mensajes`, `cargando`, `error`), envío optimista, Realtime INSERT/DELETE y recorte a 100 mensajes en el store. Autor, fecha, texto y botón de borrado se renderizan con Alpine. Las reacciones (chips y burbuja) siguen en vanilla dentro de islas `x-ignore` hasta la Fase 2d; login/registro, presencia, rangos y leaderboard siguen en vanilla.
+- Alcance ejecutado en `comunidad.html`: lista de mensajes del chat (store `chat` con `mensajes`, `cargando`, `error`), envío optimista, Realtime INSERT/DELETE y recorte a 100 mensajes en el store. Autor, fecha, texto y botón de borrado se renderizan con Alpine. Reacciones con store `reacciones` (`cache`, `mias`, `emojis`, `chips()`, `aplicarReaccion()`): chips y burbuja por `x-for`, click vía `window.establecerReaccionUsuario(msgId, emoji)`, tooltip vía `window.mostrarTooltipReaccion`; Realtime muta el store y persiste en localStorage. Leaderboard con store `ranking` (`usuarios`, `cargando`, `error`) renderizado con `x-for`. Login/registro, presencia y rangos siguen en vanilla.
 - Alpine se carga con `defer` después de `main.js`, versión fijada 3.17.5 y SRI verificado (55.935 bytes); lo cargan `sorteo.html`, `galeria.html` y `comunidad.html`.
 - Stores registrados en `alpine:init` dentro del script inline de cada página; no hay stores globales en `main.js`.
 - Estado en `Alpine.store`; render con `x-for`/`x-text`; no se manipula el DOM de nodos gestionados por Alpine. Aprobar/rechazar son optimistas con rollback y las acciones de admin se prueban contra auth/RLS.
 - Preferir `x-text`; `x-html` solo con `escapeHtml`/`escapeAttr`.
-- Acceso desde JS con `obtenerStoreSorteo()`/`obtenerStoreGaleria()`/`obtenerStoreChat()` y guarda de `null`; si Alpine o el store faltan, cada página muestra su aviso y el resto de funciones sigue operativo.
+- Acceso desde JS con `obtenerStoreSorteo()`/`obtenerStoreGaleria()`/`obtenerStoreChat()`/`obtenerStoreReacciones()`/`obtenerStoreRanking()` y guarda de `null`; si Alpine o el store faltan, cada página muestra su aviso y el resto de funciones sigue operativo.
 - Tema, toasts, modales, auth, helpers globales y Realtime base siguen en vanilla.
-- Una página y una sección por iteración; siguiente subfase: 2d (reacciones del chat) o 2e (leaderboard y rangos), a decidir.
+- Fase 2 completa (2a-2e). Pendiente: validación en producción (sorteo real, reacciones con dos usuarios, sesión admin real, Realtime en dos pestañas) y decidir si se aborda la Fase 3 (modales globales).
 - Plan: `.kilo/plans/alpine-adopcion-gradual-v2.md`.
 
 ---
@@ -239,4 +239,4 @@ Todo lo siguiente está implementado y revisado contra la BD real de Supabase:
 
 ---
 
-*Última actualización: 2026-10-22. Fases 1 (sorteo), 2a (grid/lightbox), 2b (moderación) y 2c (chat comunidad) implementadas con stores Alpine aislados. **Críticos y Alta resueltos**: muro saludos, imágenes WebP, badges TOP galería, canonical verificado, contraste WCAG AA (4.91:1), polling stream confirmado. **Media #8 resuelto**: CSS inline → style.css (3 utilidades). 7/9/10 no aplicables. Pendiente: sorteo real, sesión admin real, realtime chat/moderación dos pestañas. Frontend (5 HTML, `main.js`, `style.css`) y BD Supabase (`cydiyaacnyydprgffmkq`) verificados.*
+*Última actualización: 2026-10-22. Fases 1 (sorteo), 2a (grid/lightbox), 2b (moderación), 2c (chat comunidad), 2d (reacciones) y 2e (leaderboard) implementadas con stores Alpine aislados. **Críticos y Alta resueltos**: muro saludos, imágenes WebP, badges TOP galería, canonical verificado, contraste WCAG AA (4.91:1), polling stream confirmado. **Media #8 resuelto**: CSS inline → style.css (3 utilidades). 7/9/10 no aplicables. Pendiente: validación en producción (sorteo real, reacciones con dos usuarios, sesión admin real, realtime chat/moderación dos pestañas) y decisión sobre Fase 3. Frontend (5 HTML, `main.js`, `style.css`) y BD Supabase (`cydiyaacnyydprgffmkq`) verificados.*
