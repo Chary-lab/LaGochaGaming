@@ -144,6 +144,7 @@ Ubicación: `main.js:1-625`. Se carga con `defer` en todas las páginas.
 - `rel="noopener noreferrer"` en enlaces `target="_blank"`.
 - `loading="lazy"` en iframes de terceros (Kick ya lo lleva).
 - Tema: `light-mode` class en body, localStorage `gochi_tema`.
+- **Regla obligatoria**: tras cualquier cambio/corrección, **actualizar este `agent.md`** (estado, helpers, estructura, auditoría). Eliminar ítems resueltos para no consumir tokens; mantener ordenado y actualizado.
 
 ---
 
@@ -167,7 +168,7 @@ Todo lo siguiente está implementado y revisado contra la BD real de Supabase:
 - 7 tablas publicadas en `supabase_realtime`.
 - Extensión `unaccent` instalada.
 
-**Estado: no hay pendientes críticos.** Frontend y BD están al día con los planes de auditoría. Alpine ejecutado en `sorteo.html` (Fases 0-1) y `galeria.html` (Fase 2a); pendiente un sorteo real de validación en directo (ver §12). **Críticos de auditoría 2026-10-22 resueltos: muro de saludos funcional, imágenes optimizadas (WebP), badges TOP en primera carga. Limpieza 2026-10-22: eliminados `fono.png` (2 MB), `fono-optimized.png`, `node_modules/`, `package*.json`; `.gitignore` actualizado.**
+**Estado: no hay pendientes críticos.** Frontend y BD están al día con los planes de auditoría. Alpine ejecutado en `sorteo.html` (Fases 0-1) y `galeria.html` (Fase 2a); pendiente un sorteo real de validación en directo (ver §12).
 
 ---
 
@@ -181,6 +182,7 @@ Todo lo siguiente está implementado y revisado contra la BD real de Supabase:
 6. Tras cambios, revisar consola del navegador y probar en las 5 páginas (comparten main.js).
 7. **Auto-git push**: si no hay errores en consola y el proyecto funciona, hacer `git add -A && git commit -m "msg" && git push` automáticamente. Verificar `git status` antes.
 8. No commitear a menos que el usuario lo pida explícitamente (salvo auto-push sin errores).
+9. **Actualizar `agent.md` obligatoriamente** tras cada cambio (regla §8).
 
 ---
 
@@ -210,23 +212,19 @@ Todo lo siguiente está implementado y revisado contra la BD real de Supabase:
 
 ---
 
-*Última actualización: 2026-10-22. Fases 1 (sorteo), 2a (grid y lightbox), 2b (moderación) y 2c (chat de comunidad) implementadas con stores Alpine aislados, guardas y fallback visible. Las fases 1 y 2a se validaron en Chrome headless con datos reales de Supabase (paridad visual 1280/375, lightbox, filtros, likes optimistas con rollback, paginación, estado vacío y CDN bloqueado). La 2b se validó con datos reales y dobles de acción (render de pendientes y contador, vacío/error, rollback al aprobar, borrado filtrado, cambio de autor y CDN bloqueado). La 2c se validó con datos reales y mensajes inyectados en Chrome headless (autor/fecha/texto, escape HTML, `x-init` de burbuja y chips, ids temporales, vacío/error y CDN bloqueado). **Críticos resueltos 2026-10-22: listener DOMContentLoaded en index.html cerrado, fono.png → fono.webp 69 KB + favicons comprimidos, cargarTopGlobal() antes del mapeo en galería.html.** Pendiente: un sorteo real, la validación con sesión admin real y el realtime de chat/moderación con dos pestañas. El resto del frontend (5 HTML, `main.js`, `style.css`) y la base de datos Supabase (proyecto `cydiyaacnyydprgffmkq`) siguen verificados.*
-
----
-
 ## 13. Auditoría 2026-10-22 (resumen)
 
 > Detalle completo en `AUDITORIA.md`.
 
-### 🔴 Crítico (hacer ya) — **RESUELTOS 2026-10-22**
-1. ✅ **`index.html` línea 348**: listener `DOMContentLoaded` sin cerrar — **cerrado** (faltaba `}` en `if (tokenComunidad)`).
-2. ✅ **Optimizar imágenes**: `img/fono.png` 2.05 MB → **`fono.webp` 69 KB**; favicons comprimidos (512px 526→112 KB, 192px 91→24 KB, apple-touch 81→22 KB); CSS actualizado a `fono.webp`.
-3. ✅ **`galeria.html` línea 770**: `await cargarTopGlobal()` movido **antes** del mapeo, incondicional — badges TOP aparecen en primera carga.
+### 🔴 Crítico — **RESUELTOS 2026-10-22**
+1. ✅ `index.html:348` — listener `DOMContentLoaded` sin cerrar (faltaba `}` en `if (tokenComunidad)`).
+2. ✅ Imágenes: `fono.png` 2.05 MB → `fono.webp` 69 KB; favicons comprimidos; CSS actualizado.
+3. ✅ `galeria.html:770` — `await cargarTopGlobal()` antes del mapeo, incondicional.
 
 ### 🟠 Alto (próxima iteración)
-4. ✅ **Añadir `canonical`** — **YA HECHO**: `cine.html`, `comunidad.html`, `galeria.html`, `sorteo.html` ya lo tienen.
-5. Verificar contraste modo claro (WCAG AA: `--text-muted` sobre `--card-bg`).
-6. ~~Desactivar polling stream~~ — **INCORRECTO**: polling **SÍ necesario en 5 páginas** para `navbar.live-glow` (indicador global "EN VIVO") vía `verificarEstadoStream()`.
+4. ✅ Canonical — **YA EXISTE** en `cine.html`, `comunidad.html`, `galeria.html`, `sorteo.html`.
+5. Verificar contraste modo claro (WCAG AA) — **EN PROCESO** (`--text-muted` ajustado a `#5e6e82`).
+6. Polling stream — **CORRECTO**: necesario en 5 páginas para `navbar.live-glow` global.
 
 ### 🟡 Medio (deuda técnica)
 7. Extraer navbar/footer a partials (SSI/Edge Function) o componente compartido.
@@ -238,3 +236,7 @@ Todo lo siguiente está implementado y revisado contra la BD real de Supabase:
 11. CSP con `unsafe-eval` documentado para Alpine.
 12. Rotar anon key Supabase (buena práctica anual).
 13. Tests de humo automatizados (Playwright MCP ya configurado).
+
+---
+
+*Última actualización: 2026-10-22. Fases 1 (sorteo), 2a (grid/lightbox), 2b (moderación) y 2c (chat comunidad) implementadas con stores Alpine aislados. Críticos resueltos: muro saludos, imágenes WebP, badges TOP galería, canonical verificado, contraste WCAG AA ajustado. Pendiente: sorteo real, sesión admin real, realtime chat/moderación dos pestañas. Frontend (5 HTML, `main.js`, `style.css`) y BD Supabase (`cydiyaacnyydprgffmkq`) verificados.*
