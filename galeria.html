@@ -759,13 +759,9 @@
 
                 const imagenesPublicas = data ? data : [];
 
-                // Ordenar según la pestaña seleccionada de manera segura (sobre lo ya traído del servidor)
-                if (filtroActual === 'populares') {
-                    await cargarTopGlobal();
-                } else {
-                    // Las medallas TOP solo aplican a la vista de populares.
-                    topGaleriaGlobal = new Map();
-                }
+                // Cargar top global ANTES de mapear para que los badges TOP
+                // estén disponibles en la primera renderización (independiente del filtro).
+                await cargarTopGlobal();
 
                 const userLikes = JSON.parse(localStorage.getItem('gocha_user_likes') || '[]');
                 const horaAhora = new Date().getTime();

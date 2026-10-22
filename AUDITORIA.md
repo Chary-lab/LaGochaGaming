@@ -33,7 +33,7 @@
 | Caché de stream 60s + backoff exponencial | **Correcto** | `main.js:474-507` bien implementado. |
 | Caché de rangos 30s en memoria (`comunidad.html`) | **Correcto** | `obtenerRangosCache` evita consultas repetidas a Supabase. |
 | Caché de verificación Kick 30min (`sorteo.html`) | **Correcto** | `sessionStorage` con TTL en `verificarHandleKick`. |
-| **Imágenes sin optimizar** | **Alta** | `img/fono.png` = **2.05 MB**, `android-chrome-512x512.png` = **539 KB**, `android-chrome-192x192.png` = **93 KB**, `apple-touch-icon.png` = **83 KB**. Convertir a WebP/AVIF y comprimir. |
+| **Imágenes sin optimizar** | ~~**Alta**~~ ✅ **RESUELTO** | `img/fono.png` = **2.05 MB** → **`fono.webp` 69 KB**; `android-chrome-512x512.png` = 539 KB → **112 KB**, `android-chrome-192x192.png` = 93 KB → **24 KB**, `apple-touch-icon.png` = 83 KB → **22 KB**. CSS actualizado a `fono.webp`. |
 | **Font Awesome 6.6.0 completo** | **Media** | ~78 KB CSS + fuentes. Considerar subset (solo iconos usados) o SVG inline. |
 | Sin lazy-loading en hero | **Baja** | `background-image: url('img/fono.png')` en CSS carga siempre. |
 | Polling stream cada 90s en **todas** las páginas | **Baja** | Incluye páginas que no usan stream (galería, sorteo, comunidad). Desactivar donde no se usa. |
@@ -64,10 +64,10 @@
 
 | # | Archivo | Línea | Problema | Impacto |
 |---|---------|-------|----------|---------|
-| 1 | `index.html` | 348 | `document.addEventListener('DOMContentLoaded', async () => {` y cierre en línea 583 con `});` pero **falta el `});` final del event listener** (línea 610 cierra el `<script>` pero el listener queda abierto) | **Alto** — Rompe el muro de saludos en navegadores estrictos |
+| 1 | `index.html` | 348 | `document.addEventListener('DOMContentLoaded', async () => {` y cierre en línea 583 con `});` pero **falta el `});` final del event listener** (línea 610 cierra el `<script>` pero el listener queda abierto) | ~~**Alto**~~ ✅ **RESUELTO** — Faltaba `}` en `if (tokenComunidad)`; cerrado correctamente |
 | 2 | `cine.html` | 377 | `cargarEstadoCine()` usa `window.supabase` pero no verifica `window.supabaseReady` | **Medio** — Puede fallar si Supabase tarda en inicializarse |
 | 3 | `comunidad.html` | 1971 | `obtenerRangosCache` hace `select('apodo, rango')` pero tabla tiene `apodo_norm` generado; consultar por `apodo` puede no usar índice único | **Bajo** — Rendimiento |
-| 4 | `galeria.html` | 770 | `loadApprovedImages` llama `cargarTopGlobal()` dentro del `if (filtroActual === 'populares')` pero **no espera a que termine** antes de mapear fotos | **Medio** — Badges TOP pueden no aparecer en primera carga |
+| 4 | `galeria.html` | 770 | `loadApprovedImages` llama `cargarTopGlobal()` dentro del `if (filtroActual === 'populares')` pero **no espera a que termine** antes de mapear fotos | ~~**Medio**~~ ✅ **RESUELTO** — `await cargarTopGlobal()` movido antes del mapeo, incondicional |
 | 5 | `sorteo.html` | 943 | `verificarHandleKick` cachea solo si `kickUserId` existe; fallos de red se cachean como válidos implícitamente | **Bajo** — Puede permitir usuarios inexistentes temporalmente |
 
 ### 2.6 SEO y Metadatos
@@ -115,10 +115,10 @@
 
 ## 4. Plan de Acción Recomendado (Priorizado)
 
-### 🔴 Crítico (Hacer ya)
-1. **Fix `index.html` línea 348** — Cerrar correctamente el `DOMContentLoaded` listener.
-2. **Optimizar imágenes** — `fono.png` 2MB → WebP <200KB; favicons comprimidos (usar `sharp`, `imagemin`, o herramienta online).
-3. **Fix `galeria.html` línea 770** — `await cargarTopGlobal()` antes de mapear fotos.
+### 🔴 Crítico (Hacer ya) — **RESUELTOS 2026-10-22**
+1. ✅ **Fix `index.html` línea 348** — Cerrado correctamente el `DOMContentLoaded` listener (faltaba `}` en `if (tokenComunidad)`).
+2. ✅ **Optimizar imágenes** — `fono.png` 2MB → **`fono.webp` 69 KB**; favicons comprimidos (512px 539→112 KB, 192px 93→24 KB, apple-touch 83→22 KB); CSS actualizado.
+3. ✅ **Fix `galeria.html` línea 770** — `await cargarTopGlobal()` movido **antes** del mapeo, incondicional — badges TOP aparecen en primera carga.
 
 ### 🟠 Alto (Próxima iteración)
 4. **Añadir `canonical` a las 4 páginas faltantes** (cine, comunidad, galería, sorteo).
@@ -148,4 +148,4 @@
 
 ---
 
-*Generado automáticamente durante auditoría 2026-10-22. Actualizar tras cada corrección.*
+*Generado automáticamente durante auditoría 2026-10-22. Actualizado 2026-10-22: 3 críticos resueltos (muro saludos, imágenes WebP, badges TOP galería).*

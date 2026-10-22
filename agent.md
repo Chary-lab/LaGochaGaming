@@ -30,7 +30,7 @@ D:\Gocha\
 ├── galería.html        # Galería: subida, likes, moderación (aprobar/rechazar), lightbox, cambio de autor
 ├── sorteo.html         # GochiSorteo: modo manual y modo streamer, ruleta, participantes, ganadores
 ├── manifest.webmanifest, sitemap.xml, robots.txt, CNAME
-├── img/                # favicons + 1.jpg, 2.jpg, 3.jpg, fono.png
+├── img/                # favicons + 1.jpg, 2.jpg, 3.jpg, fono.png, fono.webp, fono-optimized.png
 ├── .kilo/              # Config de Kilo (plans, skills)
 │   ├── plans/
 │   │   ├── auditoria-base-datos-supabase.md
@@ -166,7 +166,7 @@ Todo lo siguiente está implementado y revisado contra la BD real de Supabase:
 - 7 tablas publicadas en `supabase_realtime`.
 - Extensión `unaccent` instalada.
 
-**Estado: no hay pendientes críticos.** Frontend y BD están al día con los planes de auditoría. Alpine ejecutado en `sorteo.html` (Fases 0-1) y `galeria.html` (Fase 2a); pendiente un sorteo real de validación en directo (ver §12).
+**Estado: no hay pendientes críticos.** Frontend y BD están al día con los planes de auditoría. Alpine ejecutado en `sorteo.html` (Fases 0-1) y `galeria.html` (Fase 2a); pendiente un sorteo real de validación en directo (ver §12). **Críticos de auditoría 2026-10-22 resueltos: muro de saludos funcional, imágenes optimizadas (WebP), badges TOP en primera carga.**
 
 ---
 
@@ -178,7 +178,8 @@ Todo lo siguiente está implementado y revisado contra la BD real de Supabase:
 4. Mantener consistencia con clases CSS existentes de `style.css`.
 5. Supabase: credenciales hardcodeadas, no tocar sin necesidad. Cualquier cambio de RLS/RPC requiere migración SQL en Supabase, no solo frontend.
 6. Tras cambios, revisar consola del navegador y probar en las 5 páginas (comparten main.js).
-7. No commitear a menos que el usuario lo pida explícitamente.
+7. **Auto-git push**: si no hay errores en consola y el proyecto funciona, hacer `git add -A && git commit -m "msg" && git push` automáticamente. Verificar `git status` antes.
+8. No commitear a menos que el usuario lo pida explícitamente (salvo auto-push sin errores).
 
 ---
 
@@ -208,7 +209,7 @@ Todo lo siguiente está implementado y revisado contra la BD real de Supabase:
 
 ---
 
-*Última actualización: 2026-10-22. Fases 1 (sorteo), 2a (grid y lightbox), 2b (moderación) y 2c (chat de comunidad) implementadas con stores Alpine aislados, guardas y fallback visible. Las fases 1 y 2a se validaron en Chrome headless con datos reales de Supabase (paridad visual 1280/375, lightbox, filtros, likes optimistas con rollback, paginación, estado vacío y CDN bloqueado). La 2b se validó con datos reales y dobles de acción (render de pendientes y contador, vacío/error, rollback al aprobar, borrado filtrado, cambio de autor y CDN bloqueado). La 2c se validó con datos reales y mensajes inyectados en Chrome headless (autor/fecha/texto, escape HTML, `x-init` de burbuja y chips, ids temporales, vacío/error y CDN bloqueado). Pendiente: un sorteo real, la validación con sesión admin real y el realtime de chat/moderación con dos pestañas. El resto del frontend (5 HTML, `main.js`, `style.css`) y la base de datos Supabase (proyecto `cydiyaacnyydprgffmkq`) siguen verificados.*
+*Última actualización: 2026-10-22. Fases 1 (sorteo), 2a (grid y lightbox), 2b (moderación) y 2c (chat de comunidad) implementadas con stores Alpine aislados, guardas y fallback visible. Las fases 1 y 2a se validaron en Chrome headless con datos reales de Supabase (paridad visual 1280/375, lightbox, filtros, likes optimistas con rollback, paginación, estado vacío y CDN bloqueado). La 2b se validó con datos reales y dobles de acción (render de pendientes y contador, vacío/error, rollback al aprobar, borrado filtrado, cambio de autor y CDN bloqueado). La 2c se validó con datos reales y mensajes inyectados en Chrome headless (autor/fecha/texto, escape HTML, `x-init` de burbuja y chips, ids temporales, vacío/error y CDN bloqueado). **Críticos resueltos 2026-10-22: listener DOMContentLoaded en index.html cerrado, fono.png → fono.webp 69 KB + favicons comprimidos, cargarTopGlobal() antes del mapeo en galería.html.** Pendiente: un sorteo real, la validación con sesión admin real y el realtime de chat/moderación con dos pestañas. El resto del frontend (5 HTML, `main.js`, `style.css`) y la base de datos Supabase (proyecto `cydiyaacnyydprgffmkq`) siguen verificados.*
 
 ---
 
@@ -216,10 +217,10 @@ Todo lo siguiente está implementado y revisado contra la BD real de Supabase:
 
 > Detalle completo en `AUDITORIA.md`.
 
-### 🔴 Crítico (hacer ya)
-1. **`index.html` línea 348**: listener `DOMContentLoaded` sin cerrar — rompe muro de saludos.
-2. **Optimizar imágenes**: `img/fono.png` 2.05 MB → WebP <200 KB; favicons comprimidos.
-3. **`galeria.html` línea 770**: `await cargarTopGlobal()` antes de mapear fotos (badges TOP no aparecen en primera carga).
+### 🔴 Crítico (hacer ya) — **RESUELTOS 2026-10-22**
+1. ✅ **`index.html` línea 348**: listener `DOMContentLoaded` sin cerrar — **cerrado** (faltaba `}` en `if (tokenComunidad)`).
+2. ✅ **Optimizar imágenes**: `img/fono.png` 2.05 MB → **`fono.webp` 69 KB**; favicons comprimidos (512px 526→112 KB, 192px 91→24 KB, apple-touch 81→22 KB); CSS actualizado a `fono.webp`.
+3. ✅ **`galeria.html` línea 770**: `await cargarTopGlobal()` movido **antes** del mapeo, incondicional — badges TOP aparecen en primera carga.
 
 ### 🟠 Alto (próxima iteración)
 4. Añadir `canonical` a `cine.html`, `comunidad.html`, `galeria.html`, `sorteo.html`.
