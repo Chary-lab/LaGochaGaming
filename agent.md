@@ -165,7 +165,7 @@ Todo lo siguiente está implementado y revisado contra la BD real de Supabase:
 - 7 tablas publicadas en `supabase_realtime`.
 - Extensión `unaccent` instalada.
 
-**Estado: no hay pendientes críticos.** Frontend y BD están al día con los planes de auditoría. Piloto Alpine (Fase 0 + Fase 1) ejecutado en `sorteo.html`; pendiente un sorteo real de validación en directo (ver §12).
+**Estado: no hay pendientes críticos.** Frontend y BD están al día con los planes de auditoría. Alpine ejecutado en `sorteo.html` (Fases 0-1) y `galeria.html` (Fase 2a); pendiente un sorteo real de validación en directo (ver §12).
 
 ---
 
@@ -186,23 +186,24 @@ Todo lo siguiente está implementado y revisado contra la BD real de Supabase:
 - `auditoria-base-datos-supabase.md`: auditoría DB-frontend.
 - `modernizacion-leyenda-rangos-auditoria.md`: bugs B1-B12, seguridad M1, gamificación M3, sorteo/likes M4, rendimiento M2, SEO/a11y Fase 4.
 - `muro-anti-impersonacion-plan.md`: muro anti-suplantación + sorteo multiticket (ambos aplicados).
-- Aplicado (Fase 0 + Fase 1): `alpine-adopcion-gradual-v2.md` (piloto Alpine en `sorteo.html`; pendiente validación con un sorteo real antes de la Fase 2).
+- Aplicado (Fase 0 + Fase 1 + Fase 2a): `alpine-adopcion-gradual-v2.md` (Alpine en `sorteo.html` y grid/lightbox de `galeria.html`; pendiente validación con un sorteo real y decisión sobre 2b/2c).
 
 ---
 
 ## 12. Alpine.js (fase piloto)
 
-- Estado: excepción aprobada el 2026-10-21 e implementada (Fase 0 + Fase 1); pendiente un sorteo real sin incidencias antes de la Fase 2.
-- Alcance ejecutado: solo `sorteo.html` y la lista de participantes online (store `sorteo.participantes`); `listaPublica` (modo manual) sigue en vanilla.
-- Alpine se carga con `defer` después de `main.js`, versión fijada 3.17.5 y SRI verificado (55.935 bytes); es la única página que lo carga.
-- Store registrado en `alpine:init` dentro del script inline de la página; no hay stores globales en `main.js`.
+- Estado: excepción aprobada el 2026-10-21. Fase 0 + Fase 1 (piloto en `sorteo.html`) y Fase 2a (galería) implementadas; el sorteo real de validación sigue pendiente.
+- Alcance ejecutado en `sorteo.html`: lista de participantes online (store `sorteo.participantes`); `listaPublica` (modo manual) sigue en vanilla.
+- Alcance ejecutado en `galeria.html`: grid público y lightbox (store `galeria` con `fotos` y `lightbox`). El estado de likes (contador y `liked`) vive en `fotos` para no tocar DOM gestionado por Alpine; moderación y panel de pendientes siguen en vanilla.
+- Alpine se carga con `defer` después de `main.js`, versión fijada 3.17.5 y SRI verificado (55.935 bytes); solo lo cargan `sorteo.html` y `galeria.html`.
+- Stores registrados en `alpine:init` dentro del script inline de cada página; no hay stores globales en `main.js`.
 - Estado en `Alpine.store`; render con `x-for`/`x-text`; no se manipula el DOM de nodos gestionados por Alpine.
 - Preferir `x-text`; `x-html` solo con `escapeHtml`/`escapeAttr`.
-- Acceso desde JS con `obtenerStoreSorteo()` y guarda de `null`; si Alpine o el store faltan, la lista muestra aviso, el contador muestra `—` y el modo manual sigue operativo.
+- Acceso desde JS con `obtenerStoreSorteo()`/`obtenerStoreGaleria()` y guarda de `null`; si Alpine o el store faltan, cada página muestra su aviso y el resto de funciones sigue operativo.
 - Tema, toasts, modales, auth, helpers globales y Realtime base siguen en vanilla.
-- Una página y una sección por iteración; no abrir otra página hasta cerrar el piloto.
+- Una página y una sección por iteración; siguiente subfase: 2b (moderación y estados de galería; el estado de likes ya vive en el store) o 2c (chat de comunidad), a decidir.
 - Plan: `.kilo/plans/alpine-adopcion-gradual-v2.md`.
 
 ---
 
-*Última actualización: 2026-10-21. Piloto Alpine (Fase 0 + Fase 1) implementado en `sorteo.html`: lista de participantes online con store `sorteo` y `<template x-for>`, render manual eliminado y fallback visible. Validado en Chrome headless (Alpine 3.17.5, SRI, reactividad y CDN bloqueado); queda pendiente un sorteo real antes de abrir la Fase 2. El resto del frontend (5 HTML, `main.js`, `style.css`) y la base de datos Supabase (proyecto `cydiyaacnyydprgffmkq`) siguen verificados.*
+*Última actualización: 2026-10-21. Fase 1 (lista de participantes en `sorteo.html`) y Fase 2a (grid público y lightbox en `galeria.html`) implementadas con stores Alpine aislados, guardas y fallback visible. Validado en Chrome headless con datos reales de Supabase (paridad visual 1280/375, lightbox, filtros, likes optimistas con rollback, paginación, estado vacío y CDN bloqueado). Pendiente: un sorteo real y la validación con sesión admin real. El resto del frontend (5 HTML, `main.js`, `style.css`) y la base de datos Supabase (proyecto `cydiyaacnyydprgffmkq`) siguen verificados.*

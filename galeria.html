@@ -93,6 +93,10 @@
             text-align: center;
         }
 
+        [x-cloak] {
+            display: none !important;
+        }
+
         .gallery-card-title {
             overflow: hidden;
             text-overflow: ellipsis;
@@ -467,7 +471,35 @@
             </div>
         </div>
 
-        <div class="gallery-grid" id="galleryGrid"></div>
+        <div class="gallery-grid" id="galleryGrid" x-data="{}">
+            <template x-for="foto in $store.galeria.fotos" :key="foto.id">
+                <div class="gallery-card" tabindex="-1">
+                    <template x-for="badge in foto.badges" :key="badge.texto">
+                        <span :class="'badge-tag ' + badge.clase" x-text="badge.texto"></span>
+                    </template>
+                    <img :src="foto.image_url" :alt="foto.alt" loading="lazy" @click="window.abrirLightbox(foto, $el.closest('.gallery-card'))">
+                    <div class="gallery-card-info">
+                        <div class="gallery-card-texto">
+                            <span class="gallery-card-title" :title="foto.title" x-text="foto.title"></span>
+                            <span class="gallery-card-autor" :title="'Subido por ' + foto.autor">
+                                <span class="autor-avatar" x-text="foto.inicial"></span><span x-text="foto.autor"></span>
+                            </span>
+                        </div>
+                        <div class="gallery-card-actions">
+                            <button class="btn-eliminar-publica" data-action="delete-image" :data-image-id="foto.id" title="Borrar foto de la galería" aria-label="Borrar foto de la galería">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                            <button :class="foto.liked ? 'like-btn liked' : 'like-btn'" data-action="toggle-like" :data-image-id="foto.id" aria-label="Me gusta">
+                                <i :class="(foto.liked ? 'fas' : 'far') + ' fa-heart'"></i>
+                                <span x-text="foto.likes"></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </template>
+            <p class="gallery-empty" x-show="!$store.galeria.fotos.length" x-cloak>No hay imágenes públicas aprobadas aún. ¡Sé el primero en subir una! 📸</p>
+        </div>
+        <p id="galeria-no-disponible" class="gallery-empty" hidden>Galería no disponible. Recarga la página.</p>
     </div>
 
     <!-- MODAL DE INICIO DE SESIÓN ADMIN -->
@@ -502,6 +534,15 @@
         </div>
     </footer>
 
+    <div id="lightbox" x-data="{}"
+         :style="{ display: $store.galeria.lightbox.abierta ? 'flex' : 'none' }"
+         role="dialog" aria-modal="true"
+         :aria-label="$store.galeria.lightbox.foto ? ($store.galeria.lightbox.foto.title || 'Foto de la galería') : 'Foto de la galería'">
+        <template x-if="$store.galeria.lightbox.foto">
+            <img :src="$store.galeria.lightbox.foto.image_url" :alt="$store.galeria.lightbox.foto.title || 'Foto'" tabindex="-1">
+        </template>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         let adminAutenticado = false;
@@ -511,6 +552,19 @@
         const AUTOR_POR_DEFECTO = 'LaGochaGaming';
         let topGaleriaGlobal = new Map(); // id -> posición (1..3) del top de likes
         let focoPrevioLightbox = null;
+
+        document.addEventListener('alpine:init', () => {
+            window.Alpine.store('galeria', {
+                fotos: [],
+                lightbox: { abierta: false, foto: null }
+            });
+        });
+
+        function obtenerStoreGaleria() {
+            return window.Alpine && typeof window.Alpine.store === 'function'
+                ? window.Alpine.store('galeria')
+                : null;
+        }
 
         // Muestra u oculta los controles que solo puede usar el admin:
         // campo de autor al subir y aviso de sesión de comunidad requerida.
@@ -524,6 +578,11 @@
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
+            if (!obtenerStoreGaleria()) {
+                const aviso = document.getElementById('galeria-no-disponible');
+                if (aviso) aviso.hidden = false;
+            }
+
             loadApprovedImages();
 
             if (window.supabase) {
@@ -569,15 +628,13 @@
                 case 'login-admin': iniciarSesionAdmin(); break;
                 case 'close-login': cerrarModalPin(); break;
                 case 'delete-image': if (imageId) eliminarImagenPublica(imageId); break;
-                case 'toggle-like': if (imageId) toggleLike(imageId, Number(trigger.dataset.likes || 0)); break;
+                case 'toggle-like': if (imageId) toggleLike(imageId); break;
                 case 'approve-image': if (imageId) aprobarImagen(imageId); break;
                 case 'save-author': if (imageId) guardarAutorImagen(imageId); break;
             }
         });
 
-        const lightbox = document.createElement('div');
-        lightbox.id = 'lightbox';
-        document.body.appendChild(lightbox);
+        const lightbox = document.getElementById('lightbox');
 
         // ===================================================
         // 1. CAMBIAR PESTAÑAS / FILTROS DE LA GALERÍA
@@ -616,8 +673,39 @@
             }
         }
 
+        function mapearFotoGaleria(image, userLikes, horaAhora) {
+            const posicionTop = topGaleriaGlobal.get(image.id);
+            const fechaFoto = image.created_at ? new Date(image.created_at).getTime() : 0;
+            const autor = (image.autor || 'Anónimo').trim() || 'Anónimo';
+            const badges = [];
+
+            if (posicionTop === 1) {
+                badges.push({ texto: '👑 TOP 1', clase: 'badge-top1' });
+            } else if (posicionTop) {
+                badges.push({ texto: `🔥 TOP ${posicionTop}`, clase: 'badge-top3' });
+            }
+
+            if (fechaFoto > 0 && (horaAhora - fechaFoto) < (48 * 60 * 60 * 1000)) {
+                badges.push({ texto: '✨ NUEVO', clase: 'badge-nuevo' });
+            }
+
+            return {
+                id: image.id,
+                image_url: image.image_url,
+                title: image.title || 'Sin título',
+                alt: image.title || 'Foto Gocha',
+                autor: autor,
+                inicial: autor.charAt(0).toUpperCase(),
+                badges: badges,
+                likes: Number(image.likes) || 0,
+                liked: userLikes.includes(String(image.id))
+            };
+        }
+
         async function loadApprovedImages() {
             if (!window.supabase) return;
+            const store = obtenerStoreGaleria();
+            if (!store) return;
             try {
                 const desde = paginaActualGaleria * LIMITE_GALERIA;
                 const hasta = desde + LIMITE_GALERIA - 1;
@@ -638,14 +726,8 @@
                 }
 
                 const galleryGrid = document.getElementById('galleryGrid');
-                if (paginaActualGaleria === 0) galleryGrid.innerHTML = '';
 
                 const imagenesPublicas = data ? data : [];
-
-                if (paginaActualGaleria === 0 && imagenesPublicas.length === 0) {
-                    galleryGrid.innerHTML = '<p class="gallery-empty">No hay imágenes públicas aprobadas aún. ¡Sé el primero en subir una! 📸</p>';
-                    return;
-                }
 
                 // Ordenar según la pestaña seleccionada de manera segura (sobre lo ya traído del servidor)
                 if (filtroActual === 'populares') {
@@ -657,59 +739,9 @@
 
                 const userLikes = JSON.parse(localStorage.getItem('gocha_user_likes') || '[]');
                 const horaAhora = new Date().getTime();
+                const fotos = imagenesPublicas.map((image) => mapearFotoGaleria(image, userLikes, horaAhora));
 
-                imagenesPublicas.forEach((image) => {
-                    const cantLikes = Number(image.likes) || 0;
-                    const idStr = String(image.id);
-                    const isLiked = userLikes.includes(idStr);
-
-                    const fechaFoto = image.created_at ? new Date(image.created_at).getTime() : 0;
-                    const esNueva = fechaFoto > 0 && (horaAhora - fechaFoto) < (48 * 60 * 60 * 1000);
-
-                    let badgeHTML = '';
-                    const posicionTop = topGaleriaGlobal.get(image.id);
-                    if (posicionTop === 1) {
-                        badgeHTML = `<span class="badge-tag badge-top1">👑 TOP 1</span>`;
-                    } else if (posicionTop) {
-                        badgeHTML = `<span class="badge-tag badge-top3">🔥 TOP ${posicionTop}</span>`;
-                    }
-
-                    if (esNueva) {
-                        badgeHTML += `<span class="badge-tag badge-nuevo">✨ NUEVO</span>`;
-                    }
-
-                    const galleryCard = document.createElement('div');
-                    galleryCard.className = 'gallery-card';
-                    // Foco programatico al cerrar el lightbox (no entra en el orden de tabulacion).
-                    galleryCard.tabIndex = -1;
-                    const autor = (image.autor || 'Anónimo').trim() || 'Anónimo';
-                    const inicialAutor = autor.charAt(0).toUpperCase();
-                    galleryCard.innerHTML = `
-                        ${badgeHTML}
-                        <img src="${escapeAttr(image.image_url)}" alt="${escapeAttr(image.title || 'Foto Gocha')}" loading="lazy">
-                        <div class="gallery-card-info">
-                            <div class="gallery-card-texto">
-                                <span class="gallery-card-title" title="${escapeAttr(image.title || 'Sin título')}">${escapeHtml(image.title || 'Sin título')}</span>
-                                <span class="gallery-card-autor" title="Subido por ${escapeAttr(autor)}">
-                                    <span class="autor-avatar">${escapeHtml(inicialAutor)}</span>${escapeHtml(autor)}
-                                </span>
-                            </div>
-                            <div class="gallery-card-actions">
-                                <button class="btn-eliminar-publica" data-action="delete-image" data-image-id="${image.id}" title="Borrar foto de la galería" aria-label="Borrar foto de la galería">
-                                    <i class="fa-solid fa-trash-can"></i>
-                                </button>
-                                <button class="like-btn ${isLiked ? 'liked' : ''}" id="like-btn-${image.id}" data-action="toggle-like" data-image-id="${image.id}" data-likes="${cantLikes}" aria-label="Me gusta">
-                                    <i class="${isLiked ? 'fas' : 'far'} fa-heart"></i>
-                                    <span id="like-count-${image.id}">${cantLikes}</span>
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                    galleryCard.querySelector('img').addEventListener('click', () => {
-                        abrirLightbox(image, galleryCard);
-                    });
-                    galleryGrid.appendChild(galleryCard);
-                });
+                store.fotos = paginaActualGaleria === 0 ? fotos : store.fotos.concat(fotos);
 
                 // Mostrar u ocultar botón "cargar más"
                 const btnCargarMas = document.getElementById('btn-cargar-mas-galeria');
@@ -743,7 +775,7 @@
         // ===================================================
         // 3. SISTEMA DE LIKES (requiere sesión de comunidad)
         // ===================================================
-        async function toggleLike(imageId, currentLikes) {
+        async function toggleLike(imageId) {
             if (!window.supabase) return;
 
             const token = localStorage.getItem('comunidad_session_token');
@@ -752,35 +784,19 @@
                 return;
             }
 
-            let userLikes = JSON.parse(localStorage.getItem('gocha_user_likes') || '[]');
+            const store = obtenerStoreGaleria();
             const idStr = String(imageId);
+            const foto = store ? store.fotos.find(f => String(f.id) === idStr) : null;
+            if (!foto) return;
+
+            let userLikes = JSON.parse(localStorage.getItem('gocha_user_likes') || '[]');
             const idNumerico = isNaN(imageId) ? imageId : Number(imageId);
             const isLiked = userLikes.includes(idStr);
             const delta = isLiked ? -1 : 1;
 
-            const btn = document.getElementById(`like-btn-${imageId}`);
-            const countSpan = document.getElementById(`like-count-${imageId}`);
-
-            // El contador del DOM es la fuente de verdad: data-likes se queda
-            // desactualizado despues del primer like.
-            const baseLikes = countSpan ? (Number(countSpan.textContent) || 0) : (Number(currentLikes) || 0);
-
-            // Estado optimista
-            const prevLikes = baseLikes;
+            const prevLikes = Number(foto.likes) || 0;
+            const prevLiked = !!foto.liked;
             const prevUserLikes = [...userLikes];
-            const prevBtnClasses = btn ? btn.className : '';
-            const prevBtnIcon = btn ? btn.querySelector('i')?.className : '';
-
-            const icono = btn ? btn.querySelector('i') : null;
-            if (btn && countSpan) {
-                if (!isLiked) {
-                    btn.classList.add('liked');
-                    if (icono) icono.className = 'fas fa-heart';
-                } else {
-                    btn.classList.remove('liked');
-                    if (icono) icono.className = 'far fa-heart';
-                }
-            }
 
             if (isLiked) {
                 userLikes = userLikes.filter(id => id !== idStr);
@@ -788,17 +804,13 @@
                 userLikes.push(idStr);
             }
             localStorage.setItem('gocha_user_likes', JSON.stringify(userLikes));
-            if (countSpan) countSpan.innerText = Math.max(0, baseLikes + delta);
+            foto.liked = !isLiked;
+            foto.likes = Math.max(0, prevLikes + delta);
 
             const revertir = () => {
-                if (countSpan) countSpan.innerText = Math.max(0, prevLikes);
                 localStorage.setItem('gocha_user_likes', JSON.stringify(prevUserLikes));
-                if (btn) {
-                    btn.className = prevBtnClasses;
-                    const ico = btn.querySelector('i');
-                    if (ico) ico.className = prevBtnIcon;
-                    if (isLiked) btn.classList.add('liked'); else btn.classList.remove('liked');
-                }
+                foto.likes = prevLikes;
+                foto.liked = prevLiked;
             };
 
             try {
@@ -817,7 +829,8 @@
                     revertir();
                     return;
                 }
-                if (countSpan) countSpan.innerText = data.likes;
+                const likesServidor = Number(data.likes);
+                if (Number.isFinite(likesServidor)) foto.likes = likesServidor;
             } catch (e) {
                 console.error(e);
                 revertir();
@@ -828,21 +841,27 @@
         // LIGHTBOX: Escape para cerrar y foco restaurado
         // ===================================================
         function abrirLightbox(image, tarjetaOrigen) {
+            const store = obtenerStoreGaleria();
+            if (!store) return;
+
             focoPrevioLightbox = tarjetaOrigen || document.activeElement;
-            lightbox.innerHTML = `<img src="${escapeAttr(image.image_url)}" alt="${escapeAttr(image.title || 'Foto')}">`;
-            lightbox.style.display = 'flex';
-            lightbox.setAttribute('role', 'dialog');
-            lightbox.setAttribute('aria-modal', 'true');
-            lightbox.setAttribute('aria-label', image.title || 'Foto de la galería');
-            const img = lightbox.querySelector('img');
-            if (img) img.setAttribute('tabindex', '-1');
-            if (img) img.focus();
+            store.lightbox.foto = { image_url: image.image_url, title: image.title || 'Foto de la galería' };
+            store.lightbox.abierta = true;
+
+            if (window.Alpine && typeof window.Alpine.nextTick === 'function') {
+                window.Alpine.nextTick(() => {
+                    const img = lightbox.querySelector('img');
+                    if (img) img.focus();
+                });
+            }
         }
 
         function cerrarLightbox() {
-            if (lightbox.style.display === 'none') return;
-            lightbox.style.display = 'none';
-            lightbox.innerHTML = '';
+            const store = obtenerStoreGaleria();
+            if (!store || !store.lightbox.abierta) return;
+
+            store.lightbox.abierta = false;
+            store.lightbox.foto = null;
             if (focoPrevioLightbox && typeof focoPrevioLightbox.focus === 'function' && document.contains(focoPrevioLightbox)) {
                 focoPrevioLightbox.focus();
             }
@@ -854,7 +873,9 @@
         });
 
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && lightbox.style.display !== 'none') cerrarLightbox();
+            if (e.key !== 'Escape') return;
+            const store = obtenerStoreGaleria();
+            if (store && store.lightbox.abierta) cerrarLightbox();
         });
 
         // ===================================================
@@ -1256,5 +1277,8 @@
         // escapeHtml / escapeAttr viven en main.js (fuente única del sitio)
     </script>
     <script src="main.js" defer></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.17.5/dist/cdn.min.js"
+            integrity="sha384-FYLKjwG3aohNhNZoVG8sY/5ntunm+MqylL90Q+rT3OM7AwV9/BKFjk/RjoIpIgsI"
+            crossorigin="anonymous"></script>
 </body>
 </html>
