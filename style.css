@@ -1284,6 +1284,11 @@ body.light-mode .hero-bio {
      box-shadow: var(--glow);
  }
 
+ /* --- UTILIDADES COMPARTIDAS (antes duplicadas en <style> inline) --- */
+ [x-cloak] { display: none !important; }
+ .gallery-empty { color: var(--text-muted); grid-column: 1 / -1; text-align: center; }
+ .cargar-mas-container { text-align: center; margin-top: 25px; }
+
  /* Accesibilidad: respeta la preferencia de movimiento reducido */
  @media (prefers-reduced-motion: reduce) {
      *, *::before, *::after {
