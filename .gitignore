@@ -1,5 +1,17 @@
+# Dependencias y build (sitio estático sin build)
+node_modules/
+package.json
+package-lock.json
+
+# Playwright traces (generados en tests)
+.playwright-mcp/
+
+# Config local Kilo
 .kilo/
 .clinerules
 AGENTS.md
 README.md
 kilo.jsonc
+
+# Imágenes originales no optimizadas (opcional, si se regeneran)
+# img/fono.png

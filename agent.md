@@ -30,7 +30,7 @@ D:\Gocha\
 ├── galería.html        # Galería: subida, likes, moderación (aprobar/rechazar), lightbox, cambio de autor
 ├── sorteo.html         # GochiSorteo: modo manual y modo streamer, ruleta, participantes, ganadores
 ├── manifest.webmanifest, sitemap.xml, robots.txt, CNAME
-├── img/                # favicons + 1.jpg, 2.jpg, 3.jpg, fono.png, fono.webp, fono-optimized.png
+├── img/                # favicons + 1.jpg, 2.jpg, 3.jpg, fono.webp (hero, 69 KB)
 ├── .kilo/              # Config de Kilo (plans, skills)
 │   ├── plans/
 │   │   ├── auditoria-base-datos-supabase.md
@@ -39,7 +39,8 @@ D:\Gocha\
 │   └── skills/
 │       ├── frontend-clean-editor/
 │       └── lagochagaming-dev/
-└── .gitignore          # ignora .kilo/, AGENTS.md, README.md, kilo.jsonc
+├── .playwright-mcp/    # Traces de Playwright (gitignored)
+├── .gitignore          # ignora .kilo/, .playwright-mcp/, node_modules/, package*.json, AGENTS.md, README.md, kilo.jsonc
 ```
 
 ---
@@ -166,7 +167,7 @@ Todo lo siguiente está implementado y revisado contra la BD real de Supabase:
 - 7 tablas publicadas en `supabase_realtime`.
 - Extensión `unaccent` instalada.
 
-**Estado: no hay pendientes críticos.** Frontend y BD están al día con los planes de auditoría. Alpine ejecutado en `sorteo.html` (Fases 0-1) y `galeria.html` (Fase 2a); pendiente un sorteo real de validación en directo (ver §12). **Críticos de auditoría 2026-10-22 resueltos: muro de saludos funcional, imágenes optimizadas (WebP), badges TOP en primera carga.**
+**Estado: no hay pendientes críticos.** Frontend y BD están al día con los planes de auditoría. Alpine ejecutado en `sorteo.html` (Fases 0-1) y `galeria.html` (Fase 2a); pendiente un sorteo real de validación en directo (ver §12). **Críticos de auditoría 2026-10-22 resueltos: muro de saludos funcional, imágenes optimizadas (WebP), badges TOP en primera carga. Limpieza 2026-10-22: eliminados `fono.png` (2 MB), `fono-optimized.png`, `node_modules/`, `package*.json`; `.gitignore` actualizado.**
 
 ---
 
