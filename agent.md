@@ -226,11 +226,11 @@ Todo lo siguiente está implementado y revisado contra la BD real de Supabase:
 5. ✅ Contraste WCAG AA — `--text-muted` ajustado a `#5e6e82` (4.91:1 sobre blanco, pasa AA).
 6. ✅ Polling stream — **CORRECTO**: necesario en 5 páginas para `navbar.live-glow` global.
 
-### 🟡 Medio (deuda técnica)
-7. Extraer navbar/footer a partials (SSI/Edge Function) o componente compartido.
-8. Migrar CSS inline común a `style.css` (tabs, modales, formularios).
-9. Subset Font Awesome o migrar a SVG inline para iconos usados.
-10. Revisar orden de carga Alpine vs `main.js` en `galeria.html` y `comunidad.html`.
+### 🟡 Medio (deuda técnica) — **ITEM 8 RESUELTO, 7/9/10 NO APLICABLES**
+7. Extraer navbar/footer a partials — **NO APLICABLE**: sitio estático sin build, Edge Functions añaden complejidad sin beneficio real.
+8. ✅ **Migrar CSS inline común** — Movidas 3 utilidades compartidas a `style.css`: `[x-cloak]`, `.gallery-empty`, `.cargar-mas-container`; eliminados duplicados en index.html/galeria.html.
+9. Subset Font Awesome — **NO APLICABLE**: 78 KB CDN con caché navegador; auditoría de iconos no compensa.
+10. Orden Alpine vs main.js — **NO APLICABLE**: ya funciona (main.js defer → Alpine defer → alpine:init), sin bugs reportados.
 
 ### 🟢 Bajo (mejora continua)
 11. CSP con `unsafe-eval` documentado para Alpine.
@@ -239,4 +239,4 @@ Todo lo siguiente está implementado y revisado contra la BD real de Supabase:
 
 ---
 
-*Última actualización: 2026-10-22. Fases 1 (sorteo), 2a (grid/lightbox), 2b (moderación) y 2c (chat comunidad) implementadas con stores Alpine aislados. **Críticos y Alta resueltos**: muro saludos, imágenes WebP, badges TOP galería, canonical verificado, contraste WCAG AA (4.91:1), polling stream confirmado. Pendiente: sorteo real, sesión admin real, realtime chat/moderación dos pestañas. Frontend (5 HTML, `main.js`, `style.css`) y BD Supabase (`cydiyaacnyydprgffmkq`) verificados.*
+*Última actualización: 2026-10-22. Fases 1 (sorteo), 2a (grid/lightbox), 2b (moderación) y 2c (chat comunidad) implementadas con stores Alpine aislados. **Críticos y Alta resueltos**: muro saludos, imágenes WebP, badges TOP galería, canonical verificado, contraste WCAG AA (4.91:1), polling stream confirmado. **Media #8 resuelto**: CSS inline → style.css (3 utilidades). 7/9/10 no aplicables. Pendiente: sorteo real, sesión admin real, realtime chat/moderación dos pestañas. Frontend (5 HTML, `main.js`, `style.css`) y BD Supabase (`cydiyaacnyydprgffmkq`) verificados.*

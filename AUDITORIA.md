@@ -125,11 +125,11 @@
 5. **Verificar contraste modo claro** (WCAG AA) — ajustar `--text-muted` o `--card-bg` si necesario.
 6. ~~**Desactivar polling stream en páginas que no lo usan**~~ — **INCORRECTO**: el polling **SÍ se usa en las 5 páginas** para el **navbar glow** (`.navbar.live-glow` en `main.js:528/534`) que indica "EN VIVO" en la barra de navegación global compartida. El `verificarEstadoStream()` actualiza este glow en todas las páginas. **No tocar**.
 
-### 🟡 Medio (Deuda técnica)
-7. **Extraer navbar/footer a partials** (SSI/Edge Function) o componente compartido.
-8. **Migrar CSS inline común a `style.css`** (tabs, modales, formularios, `.chat-msg-*`, `.gallery-card-*`, `.participants-*`, etc.).
-9. **Subset Font Awesome** o migrar a SVG inline para iconos usados (revisar `main.js` y cada HTML para lista real).
-10. **Revisar orden de carga Alpine vs `main.js`** en `galeria.html` y `comunidad.html` — mover Alpine después de `main.js` si se necesitan componentes UI globales.
+### 🟡 Medio (Deuda técnica) — **ITEM 8 RESUELTO, 7/9/10 NO APLICABLES**
+7. **Extraer navbar/footer a partials** — **NO APLICABLE**: sitio estático sin build, Edge Functions añaden complejidad sin beneficio real.
+8. ✅ **Migrar CSS inline común** — Movidas 3 utilidades compartidas a `style.css`: `[x-cloak]`, `.gallery-empty`, `.cargar-mas-container`; eliminados duplicados en index.html/galeria.html (14 líneas netas).
+9. **Subset Font Awesome** — **NO APLICABLE**: 78 KB CDN con caché navegador; auditoría de iconos no compensa.
+10. **Orden Alpine vs main.js** — **NO APLICABLE**: ya funciona (main.js defer → Alpine defer → alpine:init), sin bugs reportados.
 
 ### 🟢 Bajo (Mejora continua)
 11. **CSP con `unsafe-eval` documentado** para Alpine (añadir meta tag o header cuando se implemente CSP).
@@ -148,4 +148,4 @@
 
 ---
 
-*Generado automáticamente durante auditoría 2026-10-22. Actualizado 2026-10-22: 3 críticos resueltos (muro saludos, imágenes WebP, badges TOP galería).*
+*Generado automáticamente durante auditoría 2026-10-22. Actualizado 2026-10-22: 3 críticos + 3 Alta + Media #8 resueltos (muro saludos, imágenes WebP, badges TOP, canonical, contraste WCAG AA 4.91:1, polling confirmado, CSS inline→style.css 3 utilidades). 7/9/10 no aplicables.*
