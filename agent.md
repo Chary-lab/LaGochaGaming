@@ -209,3 +209,30 @@ Todo lo siguiente está implementado y revisado contra la BD real de Supabase:
 ---
 
 *Última actualización: 2026-10-22. Fases 1 (sorteo), 2a (grid y lightbox), 2b (moderación) y 2c (chat de comunidad) implementadas con stores Alpine aislados, guardas y fallback visible. Las fases 1 y 2a se validaron en Chrome headless con datos reales de Supabase (paridad visual 1280/375, lightbox, filtros, likes optimistas con rollback, paginación, estado vacío y CDN bloqueado). La 2b se validó con datos reales y dobles de acción (render de pendientes y contador, vacío/error, rollback al aprobar, borrado filtrado, cambio de autor y CDN bloqueado). La 2c se validó con datos reales y mensajes inyectados en Chrome headless (autor/fecha/texto, escape HTML, `x-init` de burbuja y chips, ids temporales, vacío/error y CDN bloqueado). Pendiente: un sorteo real, la validación con sesión admin real y el realtime de chat/moderación con dos pestañas. El resto del frontend (5 HTML, `main.js`, `style.css`) y la base de datos Supabase (proyecto `cydiyaacnyydprgffmkq`) siguen verificados.*
+
+---
+
+## 13. Auditoría 2026-10-22 (resumen)
+
+> Detalle completo en `AUDITORIA.md`.
+
+### 🔴 Crítico (hacer ya)
+1. **`index.html` línea 348**: listener `DOMContentLoaded` sin cerrar — rompe muro de saludos.
+2. **Optimizar imágenes**: `img/fono.png` 2.05 MB → WebP <200 KB; favicons comprimidos.
+3. **`galeria.html` línea 770**: `await cargarTopGlobal()` antes de mapear fotos (badges TOP no aparecen en primera carga).
+
+### 🟠 Alto (próxima iteración)
+4. Añadir `canonical` a `cine.html`, `comunidad.html`, `galeria.html`, `sorteo.html`.
+5. Verificar contraste modo claro (WCAG AA: `--text-muted` sobre `--card-bg`).
+6. Desactivar polling stream en páginas que no lo usan (cine, galería, sorteo, comunidad).
+
+### 🟡 Medio (deuda técnica)
+7. Extraer navbar/footer a partials (SSI/Edge Function) o componente compartido.
+8. Migrar CSS inline común a `style.css` (tabs, modales, formularios).
+9. Subset Font Awesome o migrar a SVG inline para iconos usados.
+10. Revisar orden de carga Alpine vs `main.js` en `galeria.html` y `comunidad.html`.
+
+### 🟢 Bajo (mejora continua)
+11. CSP con `unsafe-eval` documentado para Alpine.
+12. Rotar anon key Supabase (buena práctica anual).
+13. Tests de humo automatizados (Playwright MCP ya configurado).
