@@ -152,7 +152,8 @@ Todo lo siguiente está implementado y revisado contra la BD real de Supabase:
 
 **Frontend (5 páginas + main.js + style.css):**
 - Muro: `publicar_saludo_muro` 3 args (`p_autor`, `p_mensaje`, `p_token`) en `index.html:515`; filtro `estado='aprobado'` en `index.html:418`; `LIMITE+1` sin `count:'exact'` en `index.html:430`; realtime con filtro de estado en `index.html:459`; badge de rango server-side en `index.html:317-323`; prefill del autor con `readOnly` en `index.html:385-398`; manejo de errores con `resultado.ok` en `index.html:504-512`.
-- Galería: `incrementar_likes` 3 args en `galería.html:805-809`; `publicar_foto_galeria` en `galería.html:1193`; `actualizar_autor_galeria` en `galería.html:1234`; top-3 global por likes en `galería.html:599-606`; realtime en `galería.html:863-883`.
+- Galería: `incrementar_likes` 3 args en `toggleLike()`; `publicar_foto_galeria` en `saveToSupabaseTable()`; `actualizar_autor_galeria` en `guardarAutorImagen()`; top-3 global por likes en `cargarTopGlobal()`; realtime en `iniciarRealtimeGaleria()`.
+- Galería (Alpine 2a/2b): grid público y lightbox con store `galeria` (`fotos`, `lightbox`); panel de moderación con `pendientes`, `pendientesEstado` y `errorPendientes`; aprobar/rechazar actualizan el store y hacen rollback si falla la petición; realtime cubre INSERT/UPDATE/DELETE y refresca pendientes solo con admin.
 - Sorteo: `verificarHandleKick` en `sorteo.html:898-926`; `registrar_participante_sorteo` con `p_kick_user_id` en `sorteo.html:960-962`; `asignar_peso_sorteo` RPC en `sorteo.html:1084-1086`; `sortear_ganador_sorteo` en servidor en `sorteo.html:1176`; sorteo local honesto como fallback en `sorteo.html:1196-1202`.
 - Comunidad: chat orden descendente en `comunidad.html:1250`; multiplicador y progreso de rangos en `comunidad.html:932-983`; `escapeHtml`/`escapeAttr` de `main.js` como fuente única en `comunidad.html:1095` y `galería.html:1256`; un solo listener de clic para modales en `main.js:605-614`; planificador de puntos autocorregible en `comunidad.html:2177-2194`; caché de rangos en memoria 30s en `comunidad.html:1937-1968`.
 - SEO: meta tags completos (og:, twitter:, canonical) en todas las páginas.
@@ -186,24 +187,24 @@ Todo lo siguiente está implementado y revisado contra la BD real de Supabase:
 - `auditoria-base-datos-supabase.md`: auditoría DB-frontend.
 - `modernizacion-leyenda-rangos-auditoria.md`: bugs B1-B12, seguridad M1, gamificación M3, sorteo/likes M4, rendimiento M2, SEO/a11y Fase 4.
 - `muro-anti-impersonacion-plan.md`: muro anti-suplantación + sorteo multiticket (ambos aplicados).
-- Aplicado (Fase 0 + Fase 1 + Fase 2a): `alpine-adopcion-gradual-v2.md` (Alpine en `sorteo.html` y grid/lightbox de `galeria.html`; pendiente validación con un sorteo real y decisión sobre 2b/2c).
+- Aplicado (Fase 0 + Fase 1 + Fase 2a + Fase 2b): `alpine-adopcion-gradual-v2.md` (Alpine en `sorteo.html`, grid/lightbox y panel de moderación de `galeria.html`; pendiente validación con un sorteo real y decisión sobre 2c).
 
 ---
 
 ## 12. Alpine.js (fase piloto)
 
-- Estado: excepción aprobada el 2026-10-21. Fase 0 + Fase 1 (piloto en `sorteo.html`) y Fase 2a (galería) implementadas; el sorteo real de validación sigue pendiente.
+- Estado: excepción aprobada el 2026-10-21. Fase 0 + Fase 1 (piloto en `sorteo.html`), Fase 2a (grid y lightbox) y Fase 2b (moderación) implementadas; el sorteo real de validación sigue pendiente.
 - Alcance ejecutado en `sorteo.html`: lista de participantes online (store `sorteo.participantes`); `listaPublica` (modo manual) sigue en vanilla.
-- Alcance ejecutado en `galeria.html`: grid público y lightbox (store `galeria` con `fotos` y `lightbox`). El estado de likes (contador y `liked`) vive en `fotos` para no tocar DOM gestionado por Alpine; moderación y panel de pendientes siguen en vanilla.
+- Alcance ejecutado en `galeria.html`: grid público y lightbox (store `galeria` con `fotos` y `lightbox`), y panel de moderación (store con `pendientes`, `pendientesEstado`, `errorPendientes`). Likes, aprobación, rechazo y cambio de autor actualizan el store; el estado de likes vive en `fotos` para no tocar DOM gestionado por Alpine. Subida y login admin siguen en vanilla.
 - Alpine se carga con `defer` después de `main.js`, versión fijada 3.17.5 y SRI verificado (55.935 bytes); solo lo cargan `sorteo.html` y `galeria.html`.
 - Stores registrados en `alpine:init` dentro del script inline de cada página; no hay stores globales en `main.js`.
-- Estado en `Alpine.store`; render con `x-for`/`x-text`; no se manipula el DOM de nodos gestionados por Alpine.
+- Estado en `Alpine.store`; render con `x-for`/`x-text`; no se manipula el DOM de nodos gestionados por Alpine. Aprobar/rechazar son optimistas con rollback y las acciones de admin se prueban contra auth/RLS.
 - Preferir `x-text`; `x-html` solo con `escapeHtml`/`escapeAttr`.
 - Acceso desde JS con `obtenerStoreSorteo()`/`obtenerStoreGaleria()` y guarda de `null`; si Alpine o el store faltan, cada página muestra su aviso y el resto de funciones sigue operativo.
 - Tema, toasts, modales, auth, helpers globales y Realtime base siguen en vanilla.
-- Una página y una sección por iteración; siguiente subfase: 2b (moderación y estados de galería; el estado de likes ya vive en el store) o 2c (chat de comunidad), a decidir.
+- Una página y una sección por iteración; siguiente subfase: 2c (chat de comunidad) o 2d (reacciones), a decidir.
 - Plan: `.kilo/plans/alpine-adopcion-gradual-v2.md`.
 
 ---
 
-*Última actualización: 2026-10-21. Fase 1 (lista de participantes en `sorteo.html`) y Fase 2a (grid público y lightbox en `galeria.html`) implementadas con stores Alpine aislados, guardas y fallback visible. Validado en Chrome headless con datos reales de Supabase (paridad visual 1280/375, lightbox, filtros, likes optimistas con rollback, paginación, estado vacío y CDN bloqueado). Pendiente: un sorteo real y la validación con sesión admin real. El resto del frontend (5 HTML, `main.js`, `style.css`) y la base de datos Supabase (proyecto `cydiyaacnyydprgffmkq`) siguen verificados.*
+*Última actualización: 2026-10-22. Fase 1 (lista de participantes en `sorteo.html`), Fase 2a (grid público y lightbox) y Fase 2b (panel de moderación, estados y rollback en `galeria.html`) implementadas con stores Alpine aislados, guardas y fallback visible. Las fases 1 y 2a se validaron en Chrome headless con datos reales de Supabase (paridad visual 1280/375, lightbox, filtros, likes optimistas con rollback, paginación, estado vacío y CDN bloqueado). La 2b se validó en Chrome headless con datos reales y dobles de acción (render de pendientes y contador, estado vacío/error, rollback al aprobar, borrado filtrado del store, cambio de autor, guardas y CDN bloqueado). Pendiente: un sorteo real, la validación con sesión admin real y la prueba de realtime de moderación con dos pestañas. El resto del frontend (5 HTML, `main.js`, `style.css`) y la base de datos Supabase (proyecto `cydiyaacnyydprgffmkq`) siguen verificados.*

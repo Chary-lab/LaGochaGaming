@@ -428,9 +428,32 @@
         </div>
 
         <!-- PANEL DE MODERACIÓN -->
-        <div id="panelPendientes" class="panel-pendientes">
-            <h3><i class="fa-solid fa-clock-rotate-left"></i> Imágenes Pendientes por Aprobar (<span id="cantPendientes">0</span>)</h3>
-            <div class="gallery-grid" id="gridPendientes"></div>
+        <div id="panelPendientes" class="panel-pendientes" x-data="{}">
+            <h3><i class="fa-solid fa-clock-rotate-left"></i> Imágenes Pendientes por Aprobar (<span id="cantPendientes" x-text="$store.galeria.pendientesEstado === 'error' ? '?' : $store.galeria.pendientes.length">0</span>)</h3>
+            <div class="gallery-grid" id="gridPendientes">
+                <template x-for="foto in $store.galeria.pendientes" :key="foto.id">
+                    <div class="gallery-card gallery-card-pending">
+                        <img :src="foto.image_url" :alt="foto.alt" loading="lazy">
+                        <div class="gallery-card-info gallery-card-info-column">
+                            <span class="gallery-card-title-full" x-text="foto.title"></span>
+                            <div class="autor-editable" title="Autor de la foto">
+                                <span class="autor-avatar" x-text="foto.inicial"></span>
+                                <input type="text" class="autor-input" maxlength="30" :value="foto.autor" :data-image-id="foto.id" aria-label="Autor de la foto">
+                                <button class="btn-guardar-autor" data-action="save-author" :data-image-id="foto.id" title="Guardar autor" aria-label="Guardar autor">
+                                    <i class="fa-solid fa-check"></i>
+                                </button>
+                            </div>
+                            <div class="gallery-card-pending-actions">
+                                <button class="btn-aprobar" data-action="approve-image" :data-image-id="foto.id"><i class="fa-solid fa-check"></i> Aprobar</button>
+                                <button class="btn-rechazar" data-action="delete-image" :data-image-id="foto.id"><i class="fa-solid fa-xmark"></i> Rechazar</button>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+                <p class="gallery-empty" x-show="$store.galeria.pendientesEstado === 'lista' && !$store.galeria.pendientes.length" x-cloak>¡No hay fotos pendientes por moderar! 🎉</p>
+                <p class="gallery-empty" x-show="$store.galeria.pendientesEstado === 'error'" x-text="$store.galeria.errorPendientes" x-cloak></p>
+            </div>
+            <p id="pendientes-no-disponibles" class="gallery-empty" hidden>Moderación no disponible. Recarga la página.</p>
         </div>
 
         <!-- SUBIDA DE IMÁGENES -->
@@ -556,7 +579,10 @@
         document.addEventListener('alpine:init', () => {
             window.Alpine.store('galeria', {
                 fotos: [],
-                lightbox: { abierta: false, foto: null }
+                lightbox: { abierta: false, foto: null },
+                pendientes: [],
+                pendientesEstado: 'inicial',
+                errorPendientes: ''
             });
         });
 
@@ -581,6 +607,10 @@
             if (!obtenerStoreGaleria()) {
                 const aviso = document.getElementById('galeria-no-disponible');
                 if (aviso) aviso.hidden = false;
+                const avisoPendientes = document.getElementById('pendientes-no-disponibles');
+                if (avisoPendientes) avisoPendientes.hidden = false;
+                const count = document.getElementById('cantPendientes');
+                if (count) count.textContent = '—';
             }
 
             loadApprovedImages();
@@ -887,15 +917,31 @@
                 supabase.channel('galeria_realtime')
                     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'galeria' }, (payload) => {
                         const nueva = payload.new;
-                        if (!nueva || nueva.estado !== 'aprobado') return;
+                        if (!nueva) return;
+                        if (nueva.estado === 'pendiente') {
+                            if (adminAutenticado) loadPendingImages();
+                            return;
+                        }
+                        if (nueva.estado !== 'aprobado') return;
                         paginaActualGaleria = 0;
                         loadApprovedImages();
                     })
                     .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'galeria' }, (payload) => {
                         const fila = payload.new;
-                        if (!fila || fila.estado !== 'aprobado') return;
+                        if (!fila) return;
+                        if (fila.estado === 'pendiente') {
+                            if (adminAutenticado) loadPendingImages();
+                            return;
+                        }
+                        if (fila.estado !== 'aprobado') return;
                         paginaActualGaleria = 0;
                         loadApprovedImages();
+                        if (adminAutenticado) loadPendingImages();
+                    })
+                    .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'galeria' }, () => {
+                        paginaActualGaleria = 0;
+                        loadApprovedImages();
+                        if (adminAutenticado) loadPendingImages();
                     })
                     .subscribe();
             } catch (e) {
@@ -906,56 +952,47 @@
         // ===================================================
         // 4. MODERACIÓN Y APROBACIÓN DE FOTOS
         // ===================================================
+        function mapearPendienteGaleria(image) {
+            const autor = (image.autor || 'Anónimo').trim() || 'Anónimo';
+            return {
+                id: image.id,
+                image_url: image.image_url,
+                title: image.title || 'Sin título',
+                alt: image.title || 'Foto pendiente',
+                autor: autor,
+                inicial: autor.charAt(0).toUpperCase()
+            };
+        }
+
         async function loadPendingImages() {
             if (!adminAutenticado) return;
             if (!window.supabase) return;
-            const gridPendientes = document.getElementById('gridPendientes');
-            const cantSpan = document.getElementById('cantPendientes');
+            const store = obtenerStoreGaleria();
+            if (!store) return;
+
+            store.pendientesEstado = 'cargando';
+            store.errorPendientes = '';
+
             try {
-                const { data, error } = await supabase.from('galeria').select('id, image_url, title, estado, autor').eq('estado', 'pendiente');
+                const { data, error } = await supabase
+                    .from('galeria')
+                    .select('id, image_url, title, estado, autor')
+                    .eq('estado', 'pendiente')
+                    .order('created_at', { ascending: true });
+
                 if (error) {
                     console.error('Error cargando imágenes pendientes:', error);
-                    gridPendientes.innerHTML = '<p class="gallery-empty">Error al cargar las pendientes: ' + escapeHtml(error.message) + '</p>';
-                    cantSpan.innerText = '?';
+                    store.errorPendientes = 'Error al cargar las pendientes: ' + error.message;
+                    store.pendientesEstado = 'error';
                     return;
                 }
 
-                const pendientes = data || [];
-                gridPendientes.innerHTML = '';
-                cantSpan.innerText = pendientes.length;
-
-                if (pendientes.length === 0) {
-                    gridPendientes.innerHTML = '<p class="gallery-empty">¡No hay fotos pendientes por moderar! 🎉</p>';
-                    return;
-                }
-
-                pendientes.forEach(image => {
-                    const autor = (image.autor || 'Anónimo').trim() || 'Anónimo';
-                    const inicialAutor = autor.charAt(0).toUpperCase();
-                    const card = document.createElement('div');
-                    card.className = 'gallery-card gallery-card-pending';
-                    card.innerHTML = `
-                        <img src="${escapeAttr(image.image_url)}" alt="${escapeAttr(image.title || 'Foto pendiente')}" loading="lazy">
-                        <div class="gallery-card-info gallery-card-info-column">
-                            <span class="gallery-card-title-full">${escapeHtml(image.title)}</span>
-                            <div class="autor-editable" title="Autor de la foto">
-                                <span class="autor-avatar">${escapeHtml(inicialAutor)}</span>
-                                <input type="text" class="autor-input" maxlength="30" value="${escapeAttr(autor)}" data-image-id="${image.id}" aria-label="Autor de la foto">
-                                <button class="btn-guardar-autor" data-action="save-author" data-image-id="${image.id}" title="Guardar autor" aria-label="Guardar autor">
-                                    <i class="fa-solid fa-check"></i>
-                                </button>
-                            </div>
-                            <div class="gallery-card-pending-actions">
-                                <button class="btn-aprobar" data-action="approve-image" data-image-id="${image.id}"><i class="fa-solid fa-check"></i> Aprobar</button>
-                                <button class="btn-rechazar" data-action="delete-image" data-image-id="${image.id}"><i class="fa-solid fa-xmark"></i> Rechazar</button>
-                            </div>
-                        </div>
-                    `;
-                    gridPendientes.appendChild(card);
-                });
+                store.pendientes = (data || []).map(mapearPendienteGaleria);
+                store.pendientesEstado = 'lista';
             } catch (err) {
                 console.error('Error:', err);
-                if (gridPendientes) gridPendientes.innerHTML = '<p class="gallery-empty">Error inesperado al cargar las pendientes.</p>';
+                store.errorPendientes = 'Error inesperado al cargar las pendientes.';
+                store.pendientesEstado = 'error';
             }
         }
 
@@ -966,14 +1003,26 @@
                 mostrarToast('Tu sesión ha expirado.', true);
                 return;
             }
+            const store = obtenerStoreGaleria();
+            const idStr = String(id);
+            const indice = store ? store.pendientes.findIndex(p => String(p.id) === idStr) : -1;
+            const pendiente = indice >= 0 ? store.pendientes[indice] : null;
+            if (store && indice >= 0) store.pendientes.splice(indice, 1);
             try {
                 const idNumerico = isNaN(id) ? id : Number(id);
                 const { error } = await supabase.from('galeria').update({ estado: 'aprobado' }).eq('id', idNumerico);
-                if (error) { mostrarToast(`Error: ${error.message}`, true); return; }
+                if (error) {
+                    if (store && pendiente) store.pendientes.splice(indice, 0, pendiente);
+                    mostrarToast(`Error: ${error.message}`, true);
+                    return;
+                }
                 mostrarToast('¡Imagen aprobada con éxito!');
                 loadPendingImages();
                 loadApprovedImages();
-            } catch (e) { console.error(e); }
+            } catch (e) {
+                if (store && pendiente) store.pendientes.splice(indice, 0, pendiente);
+                console.error(e);
+            }
         }
 
         async function eliminarImagenPublica(id) {
@@ -993,6 +1042,12 @@
                         const idNumerico = isNaN(id) ? id : Number(id);
                         const { error } = await supabase.from('galeria').delete().eq('id', idNumerico);
                         if (error) { mostrarToast(`Error: ${error.message}`, true); return; }
+                        const store = obtenerStoreGaleria();
+                        if (store) {
+                            const idStr = String(id);
+                            store.fotos = store.fotos.filter(f => String(f.id) !== idStr);
+                            store.pendientes = store.pendientes.filter(p => String(p.id) !== idStr);
+                        }
                         mostrarToast('Imagen eliminada de la galería.');
                         loadPendingImages();
                         loadApprovedImages();
@@ -1016,6 +1071,7 @@
                     btnLogout.style.display = 'inline-flex';
                     btn.innerHTML = '<i class="fa-solid fa-lock-open"></i> Ocultar Moderación';
                     btn.classList.add('active');
+                    loadPendingImages();
                 } else {
                     panel.style.display = 'none';
                     btnLogout.style.display = 'none';
@@ -1266,6 +1322,14 @@
                     return;
                 }
                 mostrarToast('Autor actualizado a ' + resultado.autor);
+                const store = obtenerStoreGaleria();
+                const pendiente = store
+                    ? store.pendientes.find(p => String(p.id) === String(imageId))
+                    : null;
+                if (pendiente) {
+                    pendiente.autor = resultado.autor;
+                    pendiente.inicial = resultado.autor.charAt(0).toUpperCase();
+                }
                 loadPendingImages();
                 loadApprovedImages();
             } catch (e) {
