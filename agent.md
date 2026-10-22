@@ -224,7 +224,7 @@ Todo lo siguiente está implementado y revisado contra la BD real de Supabase:
 3. ✅ **`galeria.html` línea 770**: `await cargarTopGlobal()` movido **antes** del mapeo, incondicional — badges TOP aparecen en primera carga.
 
 ### 🟠 Alto (próxima iteración)
-4. Añadir `canonical` a `cine.html`, `comunidad.html`, `galeria.html`, `sorteo.html`.
+4. ✅ **Añadir `canonical`** — **YA HECHO**: `cine.html`, `comunidad.html`, `galeria.html`, `sorteo.html` ya lo tienen.
 5. Verificar contraste modo claro (WCAG AA: `--text-muted` sobre `--card-bg`).
 6. ~~Desactivar polling stream~~ — **INCORRECTO**: polling **SÍ necesario en 5 páginas** para `navbar.live-glow` (indicador global "EN VIVO") vía `verificarEstadoStream()`.
 

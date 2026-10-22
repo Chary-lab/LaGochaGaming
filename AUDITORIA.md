@@ -76,7 +76,7 @@
 |----------|---------|
 | Meta tags completos (OG, Twitter, canonical) en todas las páginas | ✅ |
 | `sitemap.xml`, `robots.txt`, `manifest.webmanifest`, `CNAME` | ✅ |
-| **`index.html` tiene canonical pero otras páginas no** | ⚠️ Añadir `<link rel="canonical" href="https://lagochagaming.com/...">` a cine, comunidad, galería, sorteo |
+| **`index.html` tiene canonical pero otras páginas no** | ✅ **YA EXISTEN** | `cine.html`, `comunidad.html`, `galeria.html`, `sorteo.html` ya tienen `<link rel="canonical">` apuntando a sus URLs respectivas. Auditoría desactualizada. |
 | Sin `hreflang` | Solo español, no crítico |
 
 ### 2.7 Plan Piloto Alpine.js (estado actual)
@@ -121,7 +121,7 @@
 3. ✅ **Fix `galeria.html` línea 770** — `await cargarTopGlobal()` movido **antes** del mapeo, incondicional — badges TOP aparecen en primera carga.
 
 ### 🟠 Alto (Próxima iteración)
-4. **Añadir `canonical` a las 4 páginas faltantes** (cine, comunidad, galería, sorteo).
+4. ✅ **Añadir `canonical` a las 4 páginas** — **YA HECHO**: `cine.html`, `comunidad.html`, `galeria.html`, `sorteo.html` ya lo tienen.
 5. **Verificar contraste modo claro** (WCAG AA) — ajustar `--text-muted` o `--card-bg` si necesario.
 6. ~~**Desactivar polling stream en páginas que no lo usan**~~ — **INCORRECTO**: el polling **SÍ se usa en las 5 páginas** para el **navbar glow** (`.navbar.live-glow` en `main.js:528/534`) que indica "EN VIVO" en la barra de navegación global compartida. El `verificarEstadoStream()` actualiza este glow en todas las páginas. **No tocar**.
 
