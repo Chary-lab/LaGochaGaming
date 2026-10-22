@@ -513,11 +513,25 @@
                 <span>Chat Comunitario (Offline / Online)</span>
             </div>
 
-            <div id="chat-mensajes" class="chat-messages">
-                <!-- Los mensajes se cargarán dinámicamente aquí -->
-                <div class="chat-msg-vacio">
-                    Cargando mensajes de la comunidad...
-                </div>
+            <div id="chat-mensajes" class="chat-messages" x-data="{}">
+                <template x-for="msg in $store.chat.mensajes" :key="msg.id">
+                    <div class="chat-msg-container" :data-msgid="msg.id" x-init="window.inicializarMensajeChat?.($el, msg)">
+                        <div class="chat-msg-header">
+                            <span class="chat-msg-autor" x-text="msg.autor || 'Anónimo'"></span>
+                            <span class="chat-msg-meta">
+                                <span class="chat-msg-fecha" x-text="msg.fecha"></span>
+                                <button type="button" class="btn-eliminar-chat" aria-label="Eliminar mensaje"><i class="fa-solid fa-trash-can"></i></button>
+                            </span>
+                        </div>
+                        <div class="chat-msg-texto" x-text="msg.mensaje"></div>
+                        <div class="reacciones-badges" x-ignore style="display: none;"></div>
+                        <div class="chat-msg-burbuja" x-ignore></div>
+                    </div>
+                </template>
+                <div class="chat-msg-vacio" x-show="$store.chat.cargando">Cargando mensajes de la comunidad...</div>
+                <div class="chat-msg-vacio" x-show="!$store.chat.cargando && !$store.chat.error && !$store.chat.mensajes.length" x-cloak>¡Sé el primero en escribir!</div>
+                <div class="chat-empty-error" x-show="$store.chat.error" x-text="$store.chat.error" x-cloak></div>
+                <div id="chat-no-disponible" class="chat-empty-error" hidden>Chat no disponible. Recarga la página.</div>
             </div>
 
             <!-- ÁREA DE CHAT: Login/Registro cuando no hay sesión, Formulario cuando hay sesión -->
@@ -656,9 +670,26 @@
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="main.js" defer></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.17.5/dist/cdn.min.js"
+            integrity="sha384-FYLKjwG3aohNhNZoVG8sY/5ntunm+MqylL90Q+rT3OM7AwV9/BKFjk/RjoIpIgsI"
+            crossorigin="anonymous"></script>
     <script>
         // Funciones globales para los botones de login/registro (llamadas desde HTML)
         let _modalModo = 'login'; // 'login' o 'registro'
+
+        document.addEventListener('alpine:init', () => {
+            window.Alpine.store('chat', {
+                mensajes: [],
+                cargando: true,
+                error: ''
+            });
+        });
+
+        function obtenerStoreChat() {
+            return window.Alpine && typeof window.Alpine.store === 'function'
+                ? window.Alpine.store('chat')
+                : null;
+        }
 
         function abrirModalComunidad(modo) {
             _modalModo = modo;
@@ -1240,7 +1271,31 @@
                 if (nicknameModalError) { nicknameModalError.textContent = traducir(verif.error); nicknameModalError.style.display = 'block'; }
             }
 
+            function mapearMensajeChat(msg) {
+                const id = msg.id ?? 'tmp-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7);
+                const fecha = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                return {
+                    id: id,
+                    autor: msg.autor || 'Anónimo',
+                    mensaje: msg.mensaje || '',
+                    created_at: msg.created_at,
+                    fecha: fecha
+                };
+            }
+
+            function scrollAlFinalChat() {
+                if (!chatMensajes) return;
+                const desplazar = () => { chatMensajes.scrollTop = chatMensajes.scrollHeight; };
+                if (window.Alpine && typeof window.Alpine.nextTick === 'function') {
+                    window.Alpine.nextTick(desplazar);
+                } else {
+                    desplazar();
+                }
+            }
+
             async function cargarMensajesChat() {
+                const store = obtenerStoreChat();
+                if (!store) return;
                 try {
                     // Se piden los mensajes mas recientes primero (indice sobre created_at)
                     // y luego se invierte el array para pintarlos de mas antiguo a mas nuevo.
@@ -1249,9 +1304,17 @@
                         .select('id, autor, mensaje, created_at')
                         .order('created_at', { ascending: false })
                         .limit(50);
-                    if (error) { chatMensajes.innerHTML = '<div class="chat-empty-error">Error al cargar el chat.</div>'; return; }
+                    if (error) {
+                        store.error = 'Error al cargar el chat.';
+                        store.cargando = false;
+                        return;
+                    }
                     renderizarMensajes((data || []).reverse());
-                } catch (e) { console.error(e); }
+                } catch (e) {
+                    console.error(e);
+                    store.error = 'Error al cargar el chat.';
+                    store.cargando = false;
+                }
             }
 
             // Reacciones del chat (tiempo real vía Supabase + panel burbuja al hover)
@@ -1415,8 +1478,10 @@
                                 mostrarToast('Error al eliminar el mensaje.', true);
                                 return;
                             }
-                            const el = document.querySelector(`.chat-msg-container[data-msgid="${msgId}"]`);
-                            if (el) el.remove();
+                            const store = obtenerStoreChat();
+                            if (store) {
+                                store.mensajes = store.mensajes.filter(m => String(m.id) !== String(msgId));
+                            }
                             mostrarToast('Eliminado.');
                         } catch (e) {
                             console.error('Error eliminando mensaje:', e);
@@ -1427,8 +1492,8 @@
             }
 
             // Actualizar badges de un mensaje concreto
-            function actualizarUIReacciones(msgId) {
-                const container = document.querySelector(`.chat-msg-container[data-msgid="${msgId}"]`);
+            function actualizarUIReacciones(msgId, contenedor) {
+                const container = contenedor || document.querySelector(`.chat-msg-container[data-msgid="${msgId}"]`);
                 if (!container) return;
 
                 const badgesContainer = container.querySelector('.reacciones-badges');
@@ -1549,90 +1614,43 @@
                 return streakData.count;
             }
 
-            // Construye el DOM de un mensaje (usado por carga inicial y Realtime)
-            function crearMensajeElemento(msg) {
-                const fecha = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                const msgId = msg.id ?? 'tmp-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7);
-
-                const container = document.createElement('div');
-                container.className = 'chat-msg-container';
-                container.dataset.msgid = msgId;
-                container.addEventListener('mouseleave', function () {
-                    const id = this.dataset.msgid;
-                    if (id) actualizarUIReacciones(id);
+            // Alpine clona el mensaje y este inicializador monta sus reacciones.
+            // La burbuja y los badges son islas x-ignore: Alpine no las gestiona.
+            function inicializarMensajeChat(el, msg) {
+                if (!el || !msg) return;
+                const msgIdStr = String(msg.id);
+                el.addEventListener('mouseleave', () => {
+                    actualizarUIReacciones(msgIdStr, el);
                     ocultarTooltipReaccion();
                 });
-
-                const headerDiv = document.createElement('div');
-                headerDiv.className = 'chat-msg-header';
-
-                const autorSpan = document.createElement('span');
-                autorSpan.className = 'chat-msg-autor';
-                autorSpan.textContent = msg.autor || 'Anónimo';
-
-                const fechaSpan = document.createElement('span');
-                fechaSpan.className = 'chat-msg-fecha';
-                fechaSpan.textContent = fecha;
-
-                const metaDiv = document.createElement('span');
-                metaDiv.className = 'chat-msg-meta';
-                metaDiv.appendChild(fechaSpan);
-
-                if (adminAutenticado) {
-                    const btnEliminar = document.createElement('button');
-                    btnEliminar.className = 'btn-eliminar-chat';
-                    btnEliminar.setAttribute('aria-label', 'Eliminar mensaje');
-                    btnEliminar.innerHTML = '<i class="fa-solid fa-trash-can"></i>';
-                    metaDiv.appendChild(btnEliminar);
-                }
-
-                headerDiv.append(autorSpan, metaDiv);
-
-                const mensajeDiv = document.createElement('div');
-                mensajeDiv.className = 'chat-msg-texto';
-                mensajeDiv.textContent = msg.mensaje || '';
-
-                // Burbuja de reacciones al hover
-                const burbuja = crearBurbujaReacciones(msgId);
-
-                // Contenedor de reacciones independientes (una insignia por emoji).
-                // Antes solo se pintaba un badge de esquina con un único emoji, así
-                // que las reacciones distintas entre usuarios no se veían.
-                const badgesCont = document.createElement('div');
-                badgesCont.className = 'reacciones-badges';
-                badgesCont.style.display = 'none';
-
-                container.append(headerDiv, mensajeDiv, badgesCont, burbuja);
-                return container;
+                const burbuja = el.querySelector('.chat-msg-burbuja');
+                if (burbuja) burbuja.replaceWith(crearBurbujaReacciones(msgIdStr));
+                actualizarUIReacciones(msgIdStr, el);
             }
 
+            window.inicializarMensajeChat = inicializarMensajeChat;
+
             function renderizarMensajes(mensajes) {
-                chatMensajes.replaceChildren();
+                const store = obtenerStoreChat();
+                if (!store) return;
 
-                if (!mensajes || mensajes.length === 0) {
-                    const vacio = document.createElement('div');
-                    vacio.className = 'chat-msg-vacio';
-                    vacio.textContent = '¡Sé el primero en escribir!';
-                    chatMensajes.appendChild(vacio);
-                    return;
-                }
-
-                const fragment = document.createDocumentFragment();
-                mensajes.forEach(msg => fragment.appendChild(crearMensajeElemento(msg)));
-                chatMensajes.appendChild(fragment);
-
-                // Cargar reacciones de Supabase para estos mensajes
-                cargarReaccionesDeSupabase(mensajes);
-                chatMensajes.scrollTop = chatMensajes.scrollHeight;
+                const normalizados = (mensajes || []).map(mapearMensajeChat);
+                store.mensajes = normalizados;
+                store.cargando = false;
+                store.error = '';
                 chatInicializado = true;
+
+                cargarReaccionesDeSupabase(normalizados);
+                scrollAlFinalChat();
             }
 
             // Recarga las reacciones de los mensajes visibles desde el servidor.
             // Necesario cuando Realtime no aporta la fila completa (DELETE).
             function recargarReaccionesVisibles() {
-                if (!chatMensajes) return;
-                const ids = [...chatMensajes.querySelectorAll('.chat-msg-container')]
-                    .map(c => ({ id: Number(c.dataset.msgid) }))
+                const store = obtenerStoreChat();
+                if (!store) return;
+                const ids = store.mensajes
+                    .map(m => ({ id: Number(m.id) }))
                     .filter(m => Number.isFinite(m.id));
                 if (ids.length) cargarReaccionesDeSupabase(ids);
             }
@@ -1641,7 +1659,7 @@
             async function cargarReaccionesDeSupabase(mensajes) {
                 if (!mensajes || mensajes.length === 0) return;
                 try {
-                    const ids = mensajes.map(m => m.id).filter(Boolean);
+                    const ids = mensajes.map(m => Number(m.id)).filter(id => Number.isFinite(id));
                     if (ids.length === 0) return;
                     const { data, error } = await supabase
                         .from('message_reactions')
@@ -1715,14 +1733,12 @@
                 } catch (e) { console.error('Error cargando reacciones:', e); }
             }
 
-            // Limpiar mensajes antiguos (mantener máximo 100 en DOM)
+            // Limpiar mensajes antiguos (mantener máximo 100 en el store)
             function limpiarMensajesAntiguos() {
-                const mensajes = chatMensajes.querySelectorAll('.chat-msg-container');
-                if (mensajes.length > MAX_MENSAJES_DOM) {
-                    const eliminar = mensajes.length - MAX_MENSAJES_DOM;
-                    for (let i = 0; i < eliminar; i++) {
-                        if (mensajes[i]) mensajes[i].remove();
-                    }
+                const store = obtenerStoreChat();
+                if (!store) return;
+                if (store.mensajes.length > MAX_MENSAJES_DOM) {
+                    store.mensajes = store.mensajes.slice(-MAX_MENSAJES_DOM);
                 }
             }
 
@@ -1730,13 +1746,17 @@
             // Se usa tanto para el evento de Realtime como para el render optimista
             // del emisor, de modo que el mensaje se ve siempre aunque el realtime tarde.
             function insertarMensajeEnChat(msg, desplazarAlFinal = true) {
-                if (!msg) return;
-                if (msg.id != null && chatMensajes.querySelector(`.chat-msg-container[data-msgid="${msg.id}"]`)) return;
-                const placeholder = chatMensajes.querySelector('.chat-msg-vacio');
-                if (placeholder) placeholder.remove();
-                chatMensajes.appendChild(crearMensajeElemento(msg));
+                const store = obtenerStoreChat();
+                if (!store || !msg) return;
+                const idStr = String(msg.id);
+                if (msg.id != null && store.mensajes.some(m => String(m.id) === idStr)) return;
+                const normalizado = mapearMensajeChat(msg);
+                store.mensajes.push(normalizado);
+                store.cargando = false;
+                store.error = '';
                 chatInicializado = true;
-                if (desplazarAlFinal) chatMensajes.scrollTop = chatMensajes.scrollHeight;
+                cargarReaccionesDeSupabase([normalizado]);
+                if (desplazarAlFinal) scrollAlFinalChat();
             }
 
 if (chatForm) {
@@ -1832,29 +1852,23 @@ if (chatForm) {
                 // Escuchar nuevos mensajes del chat
                 supabase.channel('public:comunidad_chat').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'comunidad_chat' }, payload => {
                     const nuevoMsg = payload.new;
+                    if (!nuevoMsg) return;
+                    const store = obtenerStoreChat();
+                    if (!store) return;
                     // Si el emisor ya lo pintó de forma optimista, no lo duplicamos
-                    if (nuevoMsg && nuevoMsg.id != null && chatMensajes.querySelector(`.chat-msg-container[data-msgid="${nuevoMsg.id}"]`)) return;
-
-                    if (!chatInicializado || chatMensajes.querySelector('.chat-msg-vacio')) {
-                        chatMensajes.replaceChildren();
-                        chatInicializado = true;
-                    }
+                    if (nuevoMsg.id != null && store.mensajes.some(m => String(m.id) === String(nuevoMsg.id))) return;
 
                     const estaCercaDelFondo = chatMensajes.scrollHeight - chatMensajes.scrollTop - chatMensajes.clientHeight < 100;
                     insertarMensajeEnChat(nuevoMsg, estaCercaDelFondo);
-
-                    // Cargar reacciones de Supabase para este mensaje nuevo
-                    cargarReaccionesDeSupabase([nuevoMsg]);
 
                     // Limpiar mensajes antiguos si supera el límite
                     limpiarMensajesAntiguos();
                 })
                 .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'comunidad_chat' }, payload => {
-                    const msgId = String(payload.old.id);
-                    const container = document.querySelector(`.chat-msg-container[data-msgid="${msgId}"]`);
-                    if (container) {
-                        container.remove();
-                    }
+                    const store = obtenerStoreChat();
+                    if (!store) return;
+                    const msgId = String(payload.old?.id);
+                    store.mensajes = store.mensajes.filter(m => String(m.id) !== msgId);
                 })
                 .subscribe();
 
@@ -2094,6 +2108,12 @@ if (chatForm) {
             }
 
 // Inicializar
+            if (!obtenerStoreChat()) {
+                const aviso = document.getElementById('chat-no-disponible');
+                if (aviso) aviso.hidden = false;
+                const cargando = chatMensajes.querySelector('.chat-msg-vacio');
+                if (cargando) cargando.hidden = true;
+            }
             cargarEscaleraRangos();
             cargarMensajesChat();
             iniciarRealtimeChat();
