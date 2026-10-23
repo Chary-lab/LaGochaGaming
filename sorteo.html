@@ -655,7 +655,7 @@
                 try {
                     const { data } = await supabase.auth.getSession();
                     const session = data.session;
-                    if (session && session.user.email === 'gocha@admin.com') {
+                    if (session && session.user?.app_metadata?.role === 'admin') {
                         streamerAutenticado = true;
                     }
                 } catch (e) {

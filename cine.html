@@ -336,7 +336,7 @@
                 if (window.supabase) {
                     const { data } = await window.supabase.auth.getSession();
                     const session = data.session;
-                    if (session && session.user.email === 'gocha@admin.com') {
+                    if (session && session.user?.app_metadata?.role === 'admin') {
                         streamerCineAutenticado = true;
                         activarModoStreamerUI();
                     }
