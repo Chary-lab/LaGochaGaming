@@ -8,7 +8,7 @@
 
 **LaGochaGaming** es un sitio web estático (5 páginas HTML + `main.js` + `style.css`) para una streamer de Kick, con backend **Supabase**. Dominio: `lagochagaming.com`. Idioma: español.
 
-- Stack: HTML5, CSS3 (variables CSS, modo claro/oscuro), Vanilla JS, Font Awesome 6.6.0, Supabase JS SDK v2 (CDN), YouTube IFrame API.
+- Stack: HTML5, CSS3 (variables CSS, modo claro/oscuro), Vanilla JS, Bootstrap 6.0.0-alpha.1 (CSS + ESM JS bundle, type="module"), Font Awesome 6.6.0, Supabase JS SDK v2 (CDN), YouTube IFrame API.
 - Excepción aprobada (2026-10-21): Alpine.js 3.17.5 para la fase piloto (implementada en `sorteo.html`, `galeria.html` y chat, reacciones y ranking de `comunidad.html`, ver §12).
 - Sin framework de build, sin Node, sin `.env`. Sitio estático: abrir `index.html` en el navegador o servir con servidor estático.
 - Supabase proyecto: `cydiyaacnyydprgffmkq` (región `us-west-2`, Postgres 17). URL: `https://cydiyaacnyydprgffmkq.supabase.co`.
@@ -211,4 +211,4 @@ Todo lo siguiente está implementado y revisado contra la BD real de Supabase:
 
 ---
 
-*Última actualización: 2026-10-22. Fases 1 (sorteo), 2a (grid/lightbox), 2b (moderación), 2c (chat comunidad), 2d (reacciones) y 2e (leaderboard) implementadas con stores Alpine aislados. **Críticos y Alta resueltos**: muro saludos, imágenes WebP, badges TOP galería, canonical verificado, contraste WCAG AA (4.91:1), polling stream confirmado. **Media #8 resuelto**: CSS inline → style.css (3 utilidades). 7/9/10 no aplicables. Pendiente: validación en producción (sorteo real, reacciones con dos usuarios, sesión admin real, realtime chat/moderación dos pestañas) y decisión sobre Fase 3. Frontend (5 HTML, `main.js`, `style.css`) y BD Supabase (`cydiyaacnyydprgffmkq`) verificados.*
+*Última actualización: 2026-10-23. Integrado Bootstrap 6.0.0-alpha.1 (CSS + JS ESM) en las 5 páginas; navbar compartido migrado a clases Bootstrap con colapso nativo. `AUDITORIA.md` eliminado para nueva auditoría.*
