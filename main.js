@@ -613,111 +613,6 @@ document.addEventListener('click', (event) => {
     if (botonCerrar) botonCerrar.click();
 });
 
-// === TRACKING DE VISITAS POR PAÍS ===
-
-const VISITAS_LS_KEY = 'gochi_visitas_panel_oculto';
-
-function paisDesdeIdioma() {
-    try {
-        const lang = navigator.language || navigator.userLanguage || '';
-        const parts = lang.split('-');
-        if (parts.length >= 2) return parts[1].toUpperCase();
-    } catch (e) {}
-    return null;
-}
-
-async function detectarPais() {
-    let pais = paisDesdeIdioma();
-    if (pais) return pais;
-    try {
-        const res = await fetch('https://ipapi.co/json/', { cache: 'no-store' });
-        if (res.ok) {
-            const j = await res.json();
-            if (j && j.country_code) return String(j.country_code).toUpperCase();
-        }
-    } catch (e) {}
-    return 'Desconocido';
-}
-
-function banderaPais(code) {
-    if (!code || code === 'Desconocido' || code.length !== 2) return '🌐';
-    try {
-        const cp = [...code.toUpperCase()].map(c => 127397 + c.charCodeAt(0));
-        return String.fromCodePoint(...cp);
-    } catch (e) { return '🌐'; }
-}
-
-window.registrarVisitaActual = async function registrarVisitaActual() {
-    if (!window.supabase) return;
-    try {
-        const pagina = (location.pathname.split('/').pop() || 'index').replace('.html', '') || 'index';
-        // Evitar contar múltiples veces al mismo usuario en la misma sesión
-        const clave = 'gochi_visita_' + pagina;
-        if (sessionStorage.getItem(clave)) return;
-        sessionStorage.setItem(clave, '1');
-
-        const pais = await detectarPais();
-        await window.supabase.rpc('registrar_visita', { p_pais: pais, p_pagina: pagina });
-    } catch (e) { /* silencioso */ }
-};
-
-window.insertarPanelVisitas = async function insertarPanelVisitas() {
-    if (document.getElementById('panel-visitas-paises')) return;
-    const esAdmin = await window.esAdminActual();
-    if (!esAdmin) return;
-
-    const panel = document.createElement('aside');
-    panel.id = 'panel-visitas-paises';
-    panel.className = 'visitas-panel';
-    panel.setAttribute('aria-label', 'Visitas por país');
-    panel.innerHTML = `
-        <div class="visitas-panel-header">
-            <span class="visitas-panel-titulo"><i class="fa-solid fa-globe"></i> Visitas por país</span>
-            <button type="button" id="visitas-panel-toggle" class="visitas-panel-toggle" aria-label="Ocultar panel"><i class="fa-solid fa-chevron-right"></i></button>
-        </div>
-        <div class="visitas-panel-body" id="visitas-panel-body"></div>
-    `;
-    document.body.appendChild(panel);
-
-    const oculto = localStorage.getItem(VISITAS_LS_KEY) === '1';
-    if (oculto) panel.classList.add('colapsado');
-
-    const toggle = panel.querySelector('#visitas-panel-toggle');
-    toggle.addEventListener('click', () => {
-        panel.classList.toggle('colapsado');
-        localStorage.setItem(VISITAS_LS_KEY, panel.classList.contains('colapsado') ? '1' : '0');
-        const icon = toggle.querySelector('i');
-        if (icon) icon.className = 'fa-solid ' + (panel.classList.contains('colapsado') ? 'fa-chevron-left' : 'fa-chevron-right');
-    });
-
-    await cargarVisitasPanel();
-    // refrescar cada 60s
-    setInterval(cargarVisitasPanel, 60000);
-};
-
-async function cargarVisitasPanel() {
-    const body = document.getElementById('visitas-panel-body');
-    if (!body || !window.supabase) return;
-    try {
-        const { data, error } = await window.supabase.rpc('conteo_visitas_por_pais', { p_limit: 5 });
-        if (error) { body.innerHTML = '<p class="visitas-empty">Sin datos</p>'; return; }
-        const rows = data || [];
-        if (!rows.length) { body.innerHTML = '<p class="visitas-empty">Sin visitas aún</p>'; return; }
-        const max = Math.max(...rows.map(r => Number(r.total) || 0), 1);
-        body.innerHTML = rows.map(r => {
-            const pct = Math.round((Number(r.total) / max) * 100);
-            return `<div class="visita-row">
-                <span class="visita-bandera">${banderaPais(r.pais)}</span>
-                <span class="visita-pais">${window.escapeHtml(r.pais)}</span>
-                <span class="visita-total">${r.total}</span>
-                <div class="visita-barra-wrap"><div class="visita-barra" style="width:${pct}%"></div></div>
-            </div>`;
-        }).join('');
-    } catch (e) { body.innerHTML = '<p class="visitas-empty">Error</p>'; }
-}
-
-// === FIN TRACKING ===
-
 document.addEventListener('DOMContentLoaded', () => {
     try { iniciarPollingStreamGlobal(); } catch (e) { console.error('iniciarPollingStreamGlobal:', e); }
     try { insertarComponentesUIGlobales(); } catch (e) { console.error('insertarComponentesUIGlobales:', e); }
@@ -725,7 +620,5 @@ document.addEventListener('DOMContentLoaded', () => {
     try { inicializarMenuMovil(); } catch (e) { console.error('inicializarMenuMovil:', e); }
     try { inicializarNavLinks(); } catch (e) { console.error('inicializarNavLinks:', e); }
     try { actualizarUsuarioNavComunidad(); } catch (e) { console.error('actualizarUsuarioNavComunidad:', e); }
-    try { window.registrarVisitaActual(); } catch (e) { console.error('registrarVisitaActual:', e); }
-    try { window.insertarPanelVisitas(); } catch (e) { console.error('insertarPanelVisitas:', e); }
 });
 
