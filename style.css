@@ -64,7 +64,7 @@ body.comunidad-page {
 body.light-mode .navbar { background: rgba(240,253,244,0.75); }
 .logo { font-size: 22px; font-weight: 900; letter-spacing: 2px; color: var(--text-main); flex-shrink: 0; min-width: 160px; }
 .logo span { background: var(--gradient); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
-.nav-links { display: flex; gap: 6px; align-items: center; justify-content: center; flex: 1; flex-wrap: wrap; }
+.nav-links { display: flex; flex-direction: row; gap: 6px; align-items: center; justify-content: center; flex: 1; flex-wrap: wrap; }
 .nav-links a { text-decoration: none; color: var(--text-muted); text-transform: uppercase; font-weight: 600; font-size: 12px; padding: 8px 14px; border-radius: 999px; transition: all 0.25s ease; position: relative; white-space: nowrap; }
 .nav-links a:hover { color: var(--text-main); background: var(--card-bg-subtle); }
 .nav-active { background: var(--gradient) !important; color: #0f1f1a !important; font-weight: 700; box-shadow: var(--glow); }
