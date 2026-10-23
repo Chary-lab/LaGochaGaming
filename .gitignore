@@ -1,17 +1,15 @@
-# Dependencias y build (sitio estático sin build)
-node_modules/
-package.json
-package-lock.json
-
-# Playwright traces (generados en tests)
-.playwright-mcp/
-
-# Config local Kilo
-.kilo/
-.clinerules
-AGENTS.md
-README.md
-kilo.jsonc
-
-# Imágenes originales no optimizadas (opcional, si se regeneran)
-# img/fono.png
+# Ignorar todo por defecto
+*
+# Mantener archivos esenciales
+!.gitignore
+!CNAME
+!*.html
+!*.css
+!*.js
+!manifest.webmanifest
+!robots.txt
+!sitemap.xml
+# Ignorar directorios de assets y docs
+img/
+*.md
+EOF
