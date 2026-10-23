@@ -15,6 +15,8 @@
     --glow-tiktok: 0 0 15px rgba(103, 232, 249, 0.35);
     --gradient: linear-gradient(135deg, #5eead4 0%, #a7f3d0 50%, #f9a8d4 100%);
     --btn-text: #0f172a;
+    --font-body: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    --font-display: 'Poppins', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
     --navbar-height: 65px;
 }
 
@@ -43,7 +45,7 @@ body.light-mode .chat-box-container {
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
     border: 1px solid rgba(0, 0, 0, 0.06);
 }
-body { background-color: var(--bg-color); color: var(--text-main); font-family: 'Segoe UI', sans-serif; overflow-x: hidden; margin: 0; transition: background-color 0.3s ease, color 0.3s ease; }
+body { background-color: var(--bg-color); color: var(--text-main); font-family: var(--font-body); overflow-x: hidden; margin: 0; transition: background-color 0.3s ease, color 0.3s ease; }
 
 /* Mayor margen en el body para más espacio vertical */
 body.comunidad-page {
@@ -64,7 +66,7 @@ body.comunidad-page {
 #global-header { min-height: 65px; }
 .navbar { height: var(--navbar-height); background: rgba(15,31,26,0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: space-between; padding: 0 30px; position: fixed; top: 0; width: 100%; max-width: 100%; box-sizing: border-box; z-index: 1000; border-bottom: 1px solid var(--border-color); transition: background-color 0.3s ease; gap: 16px; }
 body.light-mode .navbar { background: rgba(240,253,244,0.75); }
-.logo { font-size: 22px; font-weight: 900; letter-spacing: 2px; color: var(--text-main); flex-shrink: 0; min-width: 160px; }
+.logo { font-family: var(--font-display); font-size: 22px; font-weight: 900; letter-spacing: 2px; color: var(--text-main); flex-shrink: 0; min-width: 160px; }
 .logo span { background: var(--gradient); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
 .nav-links { display: flex; flex-direction: row; gap: 6px; align-items: center; justify-content: center; flex: 1; flex-wrap: wrap; }
 .nav-links a { text-decoration: none; color: var(--text-muted); text-transform: uppercase; font-weight: 600; font-size: 12px; padding: 8px 14px; border-radius: 999px; transition: all 0.25s ease; position: relative; white-space: nowrap; }
