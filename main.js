@@ -650,8 +650,13 @@ function banderaPais(code) {
 window.registrarVisitaActual = async function registrarVisitaActual() {
     if (!window.supabase) return;
     try {
-        const pais = await detectarPais();
         const pagina = (location.pathname.split('/').pop() || 'index').replace('.html', '') || 'index';
+        // Evitar contar múltiples veces al mismo usuario en la misma sesión
+        const clave = 'gochi_visita_' + pagina;
+        if (sessionStorage.getItem(clave)) return;
+        sessionStorage.setItem(clave, '1');
+
+        const pais = await detectarPais();
         await window.supabase.rpc('registrar_visita', { p_pais: pais, p_pagina: pagina });
     } catch (e) { /* silencioso */ }
 };
