@@ -9,7 +9,9 @@
 !manifest.webmanifest
 !robots.txt
 !sitemap.xml
-# Ignorar directorios de assets y docs
-img/
+!_headers
+# Permitir carpeta de imágenes
+!img/
+!img/*
+# Ignorar documentación
 *.md
-EOF
