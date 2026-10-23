@@ -490,26 +490,30 @@
 
         <div class="gallery-grid" id="galleryGrid" x-data="{}">
             <template x-for="foto in $store.galeria.fotos" :key="foto.id">
-                <div class="gallery-card" tabindex="-1">
+                <div class="gallery-card" tabindex="0" role="button" aria-label="Ver foto: {{ foto.title }}" @click="window.abrirLightbox(foto, $el)" @keydown.enter="window.abrirLightbox(foto, $el)" @keydown.space.prevent="window.abrirLightbox(foto, $el)">
                     <template x-for="badge in foto.badges" :key="badge.texto">
                         <span :class="'badge-tag ' + badge.clase" x-text="badge.texto"></span>
                     </template>
-                    <img :src="foto.image_url" :alt="foto.alt" loading="lazy" @click="window.abrirLightbox(foto, $el.closest('.gallery-card'))">
+                    <div class="gallery-card-image-wrap">
+                        <img :src="foto.image_url" :alt="foto.alt" loading="lazy">
+                    </div>
                     <div class="gallery-card-info">
-                        <div class="gallery-card-texto">
-                            <span class="gallery-card-title" :title="foto.title" x-text="foto.title"></span>
-                            <span class="gallery-card-autor" :title="'Subido por ' + foto.autor">
-                                <span class="autor-avatar" x-text="foto.inicial"></span><span x-text="foto.autor"></span>
-                            </span>
-                        </div>
-                        <div class="gallery-card-actions">
-                            <button class="btn-eliminar-publica" data-action="delete-image" :data-image-id="foto.id" title="Borrar foto de la galería" aria-label="Borrar foto de la galería">
-                                <i class="fa-solid fa-trash-can"></i>
-                            </button>
-                            <button :class="foto.liked ? 'like-btn liked' : 'like-btn'" data-action="toggle-like" :data-image-id="foto.id" aria-label="Me gusta">
-                                <i :class="(foto.liked ? 'fas' : 'far') + ' fa-heart'"></i>
-                                <span x-text="foto.likes"></span>
-                            </button>
+                        <div class="gallery-card-info-row">
+                            <div class="gallery-card-texto">
+                                <span class="gallery-card-title" :title="foto.title" x-text="foto.title"></span>
+                                <span class="gallery-card-autor" :title="'Subido por ' + foto.autor">
+                                    <span class="autor-avatar" x-text="foto.inicial"></span><span x-text="foto.autor"></span>
+                                </span>
+                            </div>
+                            <div class="gallery-card-actions">
+                                <button class="btn-eliminar-publica" data-action="delete-image" :data-image-id="foto.id" title="Borrar foto de la galería" aria-label="Borrar foto de la galería">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                                <button :class="foto.liked ? 'like-btn liked' : 'like-btn'" data-action="toggle-like" :data-image-id="foto.id" aria-label="Me gusta">
+                                    <i :class="(foto.liked ? 'fas' : 'far') + ' fa-heart'"></i>
+                                    <span x-text="foto.likes"></span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -551,12 +555,45 @@
         </div>
     </footer>
 
-    <div id="lightbox" x-data="{}"
-         :style="{ display: $store.galeria.lightbox.abierta ? 'flex' : 'none' }"
+    <div id="lightbox" x-data="{ }"
+         x-show="$store.galeria.lightbox.abierta"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 scale-95"
+         x-transition:enter-end="opacity-100 scale-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100 scale-100"
+         x-transition:leave-end="opacity-0 scale-95"
          role="dialog" aria-modal="true"
-         :aria-label="$store.galeria.lightbox.foto ? ($store.galeria.lightbox.foto.title || 'Foto de la galería') : 'Foto de la galería'">
+         :aria-label="$store.galeria.lightbox.foto ? ($store.galeria.lightbox.foto.title || 'Foto de la galería') : 'Foto de la galería'"
+         @click.away="window.cerrarLightbox()"
+         @keydown.escape="window.cerrarLightbox()"
+         @keydown.left="window.prevLightbox()"
+         @keydown.right="window.nextLightbox()"
+         :class="{ abierta: $store.galeria.lightbox.abierta }">
+        <div class="lightbox-backdrop" @click="window.cerrarLightbox()"></div>
+        <button class="lightbox-close-fixed" @click="window.cerrarLightbox()" aria-label="Cerrar vista previa"><i class="fa-solid fa-xmark"></i></button>
+
         <template x-if="$store.galeria.lightbox.foto">
-            <img :src="$store.galeria.lightbox.foto.image_url" :alt="$store.galeria.lightbox.foto.title || 'Foto'" tabindex="-1">
+            <div class="lightbox-stage">
+                <div class="lightbox-nav-side prev" @click.stop="window.prevLightbox()">
+                    <button class="lightbox-btn-prev" aria-label="Foto anterior"><i class="fa-solid fa-chevron-left"></i></button>
+                </div>
+                <div class="lightbox-image-wrap">
+                    <img :src="$store.galeria.lightbox.foto.image_url" :alt="$store.galeria.lightbox.foto.title || 'Foto'" tabindex="0">
+                </div>
+                <div class="lightbox-nav-side next" @click.stop="window.nextLightbox()">
+                    <button class="lightbox-btn-next" aria-label="Foto siguiente"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+                <p class="lightbox-caption" x-text="$store.galeria.lightbox.foto.title || 'Foto de la galería'"></p>
+                <div class="lightbox-controls">
+                    <button class="lightbox-btn-prev" @click.stop="window.prevLightbox()" aria-label="Foto anterior"><i class="fa-solid fa-chevron-left"></i></button>
+                    <button class="lightbox-btn-close" @click="window.cerrarLightbox()" aria-label="Cerrar vista previa"><i class="fa-solid fa-xmark"></i></button>
+                    <button class="lightbox-btn-next" @click.stop="window.nextLightbox()" aria-label="Foto siguiente"><i class="fa-solid fa-chevron-right"></i></button>
+                    <button class="lightbox-btn-like" :class="fotoLiked() ? 'liked' : ''" @click.stop="toggleLightboxLike()" aria-label="Me gusta">
+                        <i :class="fotoLiked() ? 'fas' : 'far' + ' fa-heart'"></i>
+                    </button>
+                </div>
+            </div>
         </template>
     </div>
 
@@ -571,13 +608,13 @@
         let focoPrevioLightbox = null;
 
         document.addEventListener('alpine:init', () => {
-            window.Alpine.store('galeria', {
-                fotos: [],
-                lightbox: { abierta: false, foto: null },
-                pendientes: [],
-                pendientesEstado: 'inicial',
-                errorPendientes: ''
-            });
+        window.Alpine.store('galeria', {
+            fotos: [],
+            lightbox: { abierta: false, foto: null, index: 0 },
+            pendientes: [],
+            pendientesEstado: 'inicial',
+            errorPendientes: ''
+        });
         });
 
         function obtenerStoreGaleria() {
@@ -865,12 +902,18 @@
             if (!store) return;
 
             focoPrevioLightbox = tarjetaOrigen || document.activeElement;
-            store.lightbox.foto = { image_url: image.image_url, title: image.title || 'Foto de la galería' };
+            store.lightbox.foto = { id: image.id, image_url: image.image_url, title: image.title || 'Foto de la galería' };
             store.lightbox.abierta = true;
+
+            // Sincronizar índice de la foto actual para navegación prev/next
+            const idx = store.fotos.findIndex(f => String(f.id) === String(image.id));
+            store.lightbox.index = idx >= 0 ? idx : 0;
+
+            document.addEventListener('keydown', handleLightboxKeydown);
 
             if (window.Alpine && typeof window.Alpine.nextTick === 'function') {
                 window.Alpine.nextTick(() => {
-                    const img = lightbox.querySelector('img');
+                    const img = lightbox.querySelector('.lightbox-image-wrap img');
                     if (img) img.focus();
                 });
             }
@@ -882,15 +925,72 @@
 
             store.lightbox.abierta = false;
             store.lightbox.foto = null;
+            lightbox.classList.remove('abierta');
+            document.removeEventListener('keydown', handleLightboxKeydown);
             if (focoPrevioLightbox && typeof focoPrevioLightbox.focus === 'function' && document.contains(focoPrevioLightbox)) {
                 focoPrevioLightbox.focus();
             }
             focoPrevioLightbox = null;
         }
 
-        lightbox.addEventListener('click', (e) => {
-            if (e.target === lightbox || e.target.tagName === 'IMG') cerrarLightbox();
-        });
+        function handleLightboxKeydown(e) {
+            if (e.key === 'Escape') { cerrarLightbox(); return; }
+            if (e.key === 'ArrowLeft') { prevLightbox(); return; }
+            if (e.key === 'ArrowRight') { nextLightbox(); return; }
+        }
+
+        function getLightboxFotoIndex() {
+            const store = obtenerStoreGaleria();
+            return store ? (store.lightbox.index || 0) : 0;
+        }
+
+        function setLightboxFotoIndex(idx) {
+            const store = obtenerStoreGaleria();
+            if (store) store.lightbox.index = idx;
+        }
+
+        function prevLightbox() {
+            const store = obtenerStoreGaleria();
+            if (!store || !store.fotos.length) return;
+            let idx = getLightboxFotoIndex();
+            idx = idx <= 0 ? store.fotos.length - 1 : idx - 1;
+            setLightboxFotoIndex(idx);
+            const f = store.fotos[idx];
+            if (f) {
+                store.lightbox.foto = { id: f.id, image_url: f.image_url, title: f.title || 'Foto de la galería' };
+            }
+        }
+
+        function nextLightbox() {
+            const store = obtenerStoreGaleria();
+            if (!store || !store.fotos.length) return;
+            let idx = getLightboxFotoIndex();
+            idx = idx >= store.fotos.length - 1 ? 0 : idx + 1;
+            setLightboxFotoIndex(idx);
+            const f = store.fotos[idx];
+            if (f) {
+                store.lightbox.foto = { id: f.id, image_url: f.image_url, title: f.title || 'Foto de la galería' };
+            }
+        }
+
+        function fotoLiked() {
+            const store = obtenerStoreGaleria();
+            if (!store || !store.lightbox.foto) return false;
+            const idStr = String(store.lightbox.foto.id || '');
+            // Buscar el like en la lista de fotos
+            const f = store.fotos.find(x => String(x.id) === idStr);
+            return f ? !!f.liked : false;
+        }
+
+        function toggleLightboxLike() {
+            const store = obtenerStoreGaleria();
+            if (!store || !store.lightbox.foto) return;
+            const idStr = String(store.lightbox.foto.id || '');
+            const f = store.fotos.find(x => String(x.id) === idStr);
+            if (f) {
+                toggleLike(String(f.id));
+            }
+        }
 
         document.addEventListener('keydown', (e) => {
             if (e.key !== 'Escape') return;
