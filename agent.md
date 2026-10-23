@@ -1,214 +1,161 @@
-# AGENT.md — Contexto del proyecto LaGochaGaming
+# agent.md — Resumen consolidado de auditoría (LaGochaGaming)
 
-> Archivo de contexto para sesiones. Léelo al iniciar cada sesión. No es sustituto de leer un archivo específico cuando sea necesario. Todo está implementado y revisado: frontend + Supabase al día.
-
----
-
-## 1. Visión general
-
-**LaGochaGaming** es un sitio web estático (5 páginas HTML + `main.js` + `style.css`) para una streamer de Kick, con backend **Supabase**. Dominio: `lagochagaming.com`. Idioma: español.
-
-- Stack: HTML5, CSS3 (variables CSS, modo claro/oscuro), Vanilla JS, Bootstrap 6.0.0-alpha.1 (CSS + ESM JS bundle, type="module"), Font Awesome 6.6.0, Supabase JS SDK v2 (CDN), YouTube IFrame API.
-- Excepción aprobada (2026-10-21): Alpine.js 3.17.5 para la fase piloto (implementada en `sorteo.html`, `galeria.html` y chat, reacciones y ranking de `comunidad.html`, ver §12).
-- Sin framework de build, sin Node, sin `.env`. Sitio estático: abrir `index.html` en el navegador o servir con servidor estático.
-- Supabase proyecto: `cydiyaacnyydprgffmkq` (región `us-west-2`, Postgres 17). URL: `https://cydiyaacnyydprgffmkq.supabase.co`.
-- Anon key hardcodeada en `main.js:13`. Admin email: `gocha@admin.com`.
-- Bucket Storage: `fotos-galeria` (carpeta `gallery/`).
-- Publicación Realtime: `supabase_realtime` con 7 tablas.
+**Proyecto:** LaGochaGaming
+**Fecha:** 2026-10-23
+**Fuentes:** auditoria-web.md, auditoria-bd.md (ningún archivo modificado en las auditorías)
 
 ---
 
-## 2. Estructura de archivos
+## 1. Estado de la base de datos (Supabase)
 
-```
-D:\Gocha\
-├── index.html          # Inicio: hero, stream Kick, clips, feed social, YouTube, muro de saludos
-├── main.js             # Lógica GLOBAL compartida por las 5 páginas (Supabase, tema, menú, toasts, modales, polling stream, helpers)
-├── style.css           # CSS global (1295 líneas): variables, componentes, utilidades, animaciones, rangos
-├── cine.html           # GochiWatch: reproductor sincronizado + panel streamer + chat Kick
-├── comunidad.html      # Chat comunidad: login/registro (apodo+PIN), mensajes, usuarios online, leaderboard, rangos, perfil
-├── galería.html        # Galería: subida, likes, moderación (aprobar/rechazar), lightbox, cambio de autor
-├── sorteo.html         # GochiSorteo: modo manual y modo streamer, ruleta, participantes, ganadores
-├── manifest.webmanifest, sitemap.xml, robots.txt, CNAME
-├── img/                # favicons + 1.jpg, 2.jpg, 3.jpg, fono.webp (hero, 69 KB)
-├── .kilo/              # Config de Kilo (plans, skills)
-│   ├── plans/
-│   │   ├── auditoria-base-datos-supabase.md
-│   │   ├── modernizacion-leyenda-rangos-auditoria.md
-│   │   └── muro-anti-impersonacion-plan.md
-│   └── skills/
-│       ├── frontend-clean-editor/
-│       └── lagochagaming-dev/
-├── .playwright-mcp/    # Traces de Playwright (gitignored)
-├── .gitignore          # ignora .kilo/, .playwright-mcp/, node_modules/, package*.json, AGENTS.md, README.md, kilo.jsonc
-```
+**Proyecto:** `cydiyaacnyydprgffmkq` · Región `us-west-2` · Postgres `17.11` · Estado `ACTIVE_HEALTHY`
 
----
+### Esquema público — 10 tablas
 
-## 3. Páginas y responsabilidades clave
+| Tabla | Filas aprox. | PK | Observaciones |
+|---|---|---|---|
+| comunidad_chat | 1 | id bigint | Chat de comunidad |
+| comunidad_sesiones | 1 | token text | RLS habilitado **sin políticas** |
+| config_sorteo | — | id int | Configuración de sorteo |
+| galeria | 8 | id bigint | Fotos de galería |
+| ganadores_sorteo | — | id bigint | Ganadores |
+| message_reactions | 0 | id bigint (seq) | Reacciones a mensajes |
+| muro_saludos | 57 | id bigint | Muro de saludos |
+| participantes_en_vivo | — | id int (seq) | Participantes en vivo |
+| sync_cine | — | id bigint | Sync de cine |
+| usuarios_comunidad | 1 | id bigint | Usuarios de comunidad |
 
-| Archivo | Qué hace | Auth requerida |
-|---------|----------|----------------|
-| `index.html` | Home: stream, clips, muro de saludos (`muro_saludos`), redes | Admin (`gocha@admin.com`) para eliminar saludos |
-| `comunidad.html` | Chat en vivo, usuarios online, leaderboard, tienda de puntos, rangos, perfil | Comunidad (apodo+PIN) |
-| `cine.html` | Reproductor sincronizado de video, cámara Kick, panel streamer | Supabase Auth admin |
-| `galería.html` | Subida y visualización de fotos, likes, moderación pendiente | Comunidad para subir/like; Admin para moderar |
-| `sorteo.html` | Sorteos: modo manual (local) y modo streamer (servidor), participantes, ganadores | Admin para abrir/cerrar/vaciar/bonus; Comunidad para participar |
+Columnas destacadas: `usuarios_comunidad` (apodo, apodo_norm, pin_hash, puntos, rango, ultimo_punto); `galeria` (title, image_url, thumb_url, estado default 'pendiente', likes, autor, created_at); `comunidad_sesiones` (token, usuario_id FK, creado_en, expira_en default +30 días, ultimo_mensaje_en, ultimo_punto_en).
 
----
+### Claves foráneas
+Todas las FK tienen índice de soporte:
+- comunidad_sesiones.usuario_id → usuarios_comunidad.id (CASCADE)
+- message_reactions.message_id → comunidad_chat.id (CASCADE)
+- muro_saludos.usuario_id → usuarios_comunidad.id (SET NULL)
 
-## 4. main.js — fuente única de verdad
+### Índices
+4 índices reportados como no usados (candidatos a eliminar con `DROP INDEX CONCURRENTLY` tras confirmar patrones de consulta):
+- `idx_galeria_estado_created` (galeria)
+- `idx_galeria_estado_likes` (galeria)
+- `idx_chat_created` (comunidad_chat)
+- `idx_usuarios_puntos` (usuarios_comunidad)
 
-Ubicación: `main.js:1-625`. Se carga con `defer` en todas las páginas.
+### RLS y políticas
+Patrón consistente: lectura pública (`anon, authenticated` SELECT true) y escritura solo admin (`es_admin()`) en tablas de contenido.
+**Problema:** `comunidad_sesiones` tiene RLS habilitado pero 0 políticas → nadie puede leer/escribir vía PostgREST. Puede ser intencional (acceso solo vía RPCs SECURITY DEFINER), pero conviene verificar/documentar.
 
-**Supabase** (`main.js:12-26`): `window.supabase`, `window.supabaseReady`, `SUPABASE_URL`, `SUPABASE_KEY`.
+### Funciones RPC (27 en public)
+- SECURITY DEFINER (14): `actualizar_autor_galeria`, `asignar_peso_sorteo`, `cerrar_sesion_comunidad`, `enviar_mensaje_chat`, `establecer_reaccion`, `incrementar_likes` (2 sobrecargas), `incrementar_puntos_comunidad`, `login_comunidad`, `publicar_foto_galeria` (2 sobrecargas), `publicar_saludo_muro`, `registrar_comunidad`, `registrar_participante_sorteo`, `sortear_ganador_sorteo`, `validar_sesion_comunidad`.
+- SECURITY INVOKER (13): `apodo_norm`, `calcular_rango`, `es_admin`, `handle_sorteo_valido`, `multiplicador_rango`, `nombre_valido`, `obtener_rangos`, `patron_bloqueado`, `patron_simbolos`, `unaccent_texto`, `usuarios_rango_trg`.
 
-**Helpers globales** (usar estos, no duplicar):
-- `window.escapeHtml(s)` / `window.escapeAttr(s)` — única fuente de escapado HTML
-- `window.esAdminActual()` — cachea sesión Supabase; admin si `gocha@admin.com`
-- `window.refrescarCacheAdmin()` — invalida caché tras login/logout
-- `window.lanzarConfetti(canvasId, opciones)` — confeti reutilizable
-- `window.activarTrampaFoco(modal, el)` / `window.desactivarTrampaFoco()` — accesibilidad modales
-- `window.initTema()` / `window.toggleTema()` — modo claro/oscuro (localStorage `gochi_tema`)
-- `window.mostrarToast(msg, esError)` / `window.mostrarConfirmacionModal({...})`
-- `window.insertarComponentesUIGlobales()` — inserta toast, modal confirm, alerta stream, toast stream
-- `window.iniciarPollingStreamGlobal()` — polling Kick API cada 90s con backoff y caché 60s; **necesario en las 5 páginas** para `navbar.live-glow` (indicador "EN VIVO" en navbar global) vía `verificarEstadoStream()` (`main.js:528/534`)
-- `window.validarSesionStreamer()` → `esAdminActual()`
-- `window.cerrarSesionAdminGlobal()` — signOut + limpia UI admin
-- `window.cerrarSesion()` — cierra sesión de comunidad (RPC + localStorage)
-- `window.actualizarUsuarioNavComunidad()` — muestra apodo en navbar
+### Triggers
+- `trg_usuarios_rango` — BEFORE INSERT/UPDATE on `usuarios_comunidad` → `usuarios_rango_trg()` (recalcula rango automáticamente).
 
-**Patrón de clicks globales** (`main.js:605-614`): delegación para cerrar toast y modales por clic en fondo.
+### Storage
+Bucket `fotos-galeria`: público, límite 5 MB, MIME: png, jpeg, webp, gif, avif.
 
-**ADMIN_EMAIL** = `'gocha@admin.com'` (línea 43).
+### Extensiones (6)
+`supabase_vault`, `unaccent`, `uuid-ossp`, `pgcrypto`, `plpgsql`, `pg_stat_statements`.
+
+### Migraciones
+28 migraciones aplicadas. Última: `20261023075705_eliminar_visitas_tracking` (se eliminó la tabla de tracking de visitas). Historial coherente con el esquema actual.
+
+### Edge Functions
+Ninguna desplegada.
 
 ---
 
-## 5. Sistema de autenticación (dos sistemas separados)
+## 2. Estado del frontend (Web)
 
-1. **Supabase Auth (admin)**: email/password. Admin = `gocha@admin.com`. Se usa en cine, sorteo, galería (moderación) y index (muro eliminar). `window.esAdminActual()`.
-2. **Sistema Comunidad (apodo + PIN)**: tablas `usuarios_comunidad`, `comunidad_sesiones`, `comunidad_chat`. RPCs: `registrar_comunidad`, `login_comunidad`, `validar_sesion_comunidad`, `cerrar_sesion_comunidad`, `enviar_mensaje_chat`, `establecer_reaccion`, `incrementar_puntos_comunidad`. Tokens en localStorage: `comunidad_session_token`, `comunidad_nickname`, `comunidad_user_id`.
+**Alcance:** `index.html`, `galeria.html`, `comunidad.html`, `cine.html`, `sorteo.html`, `main.js` (624 líneas), `style.css` (1223 líneas).
 
----
+### Rendimiento
+- Bootstrap 6.0.0-alpha.1 (CSS + JS bundle, ~200 KB) cargado en las 5 páginas aunque casi no se usa. Recomendación: eliminar o usar solo utilidades necesarias.
+- Font Awesome 6.6.0 CSS completo en todas las páginas. Recomendación: subset de iconos o SVG inline.
+- Google Fonts (Inter 3 pesos + Poppins 3 pesos) con `display=swap` (OK). Considerar self-hosting para evitar FOUT/CLS.
+- Supabase SDK `@supabase/supabase-js@2` sin versión fijada → puede romper por cambios de versión.
+- Iframes con `loading="lazy"` (bien). Kick stream con `autoplay=true&muted=1`.
+- CLS: imágenes de galería (`<img loading="lazy">`) sin `width`/`height` explícitos → layout shift.
+- `style.css` incluye estilos específicos de cada página que se descargan aunque no se usen. Bloques `<style>` inline repetidos en cada HTML (galeria ~380, comunidad ~450, cine ~175, sorteo ~450 líneas) que no se cachean y duplican reglas.
+- `main.js` carga con `defer` en todas las páginas (OK).
+- Polling del stream cada 90 s con `setInterval`, se pausa con `visibilitychange` y backoff exponencial hasta 5 min (bien).
+- `verificarEstadoStream` hace `fetch` a `kick.com/api/v2/channels/lagochagaming` → posible CORS/rate limit, manejado con backoff.
+- Confeti (`lanzarConfetti`) crea canvas por llamada con `requestAnimationFrame` hasta que caen las partículas → posible jank en móvil.
+- Imágenes de clips usan CSS `background-image` con `img/1.jpg`, `img/2.jpg`, `img/3.jpg` sin dimensiones ni formatos modernos (WebP/AVIF).
 
-## 6. Tablas y RPCs de Supabase (estado actual — todo aplicado)
+### Bugs y errores detectados
+- `sorteo.html`: typo en meta description `premiosincreíbles` (falta espacio); línea 25 concatena `<meta ...><link rel="manifest"...>` sin salto de línea.
+- `index.html` línea 182: `allowfullscreen="true"` deprecated (usar `allowfullscreen` o `allow="fullscreen"`).
+- `index.html` líneas 185-191: `frameborder="0"` y `scrolling="no"` deprecated (usar CSS).
+- `comunidad.html`: falta enlace a favicons en `<head>` (inconsistencia con otras páginas).
+- `main.js` 463-464: aborta request anterior sin capturar si el abort lanza (menor).
+- `main.js` polling: comentario dice 60s pero intervalo es 90000 (90s). Inconsistencia en documentación.
+- `galeria.html`: depende de Alpine.js con `defer`; si Alpine ya inicializó (caché), el store no se registra y se muestra "Galería no disponible" (tiene fallback).
+- `sorteo.html`: mismo patrón con store 'sorteo' (fallback "Lista no disponible").
+- `cine.html` línea 281: YouTube IFrame API con `defer`; `onYouTubeIframeAPIReady` en script inline sin defer. Frágil.
+- `index.html` línea 300: Bootstrap JS como `type="module"` → modo estricto, no expone globals; puede romper plugins UMD.
+- `index.html` línea 597-611: **Bug real** — detección de fallo de YouTube con `setTimeout` de 10 s y acceso a `contentWindow` cross-origin → siempre lanza excepción → el fallback se muestra tras 10 s **aunque el video cargue correctamente**.
+- Modales: trampa de foco y cierre por Escape implementados (bien).
+- Falta skip-link "Saltar al contenido" en las 5 páginas.
+- Menú móvil no cierra con Escape.
+- Canvas de confeti en `sorteo.html` sin `aria-hidden`.
+- Algunos `<button>` sin `type` (default submit) dentro de formularios → posible envío accidental.
+- Errores de consola probables: parpadeo en `galeria.html` línea 426 y `sorteo.html` línea 574 (`x-text` con texto inicial `0`); `comunidad.html` línea 499 (`x-data="{}"` puede crear scope vacío).
 
-| Tabla | Columnas clave | Uso | Páginas |
-|-------|---------------|-----|---------|
-| `muro_saludos` | id, autor, mensaje, created_at, estado, verificado, rango, usuario_id, autor_norm (generated) | Saludos del muro | index.html |
-| `usuarios_comunidad` | id, apodo, pin_hash, puntos, ultima_actividad, rango, apodo_norm (generated, unique) | Perfiles comunidad | comunidad.html |
-| `comunidad_sesiones` | token (PK), usuario_id, creado_en, expira_en, ultimo_mensaje_en, ultimo_punto_en | Sesiones comunidad | comunidad.html |
-| `comunidad_chat` | id, autor, mensaje, created_at | Mensajes del chat | comunidad.html |
-| `message_reactions` | id, message_id, user_id, emoji, created_at, apodo | Reacciones del chat | comunidad.html |
-| `participantes_en_vivo` | id, username (unique), kick_user_id (unique), peso, created_at | Participantes sorteo | sorteo.html |
-| `config_sorteo` | id, abierto | Config sorteo abierto/cerrado | sorteo.html |
-| `ganadores_sorteo` | id, nombre, created_at | Historial ganadores | sorteo.html |
-| `galeria` | id, title, image_url, estado, likes, created_at, autor | Fotos galería | galería.html |
-| `sync_cine` | id, video_url, estado, tiempo, updated_at | Reproductor sincronizado | cine.html |
+### Seguridad frontend
+- `SUPABASE_KEY` (anon) expuesta en `main.js` (esperado para cliente, asegurar RLS en BD).
+- `ADMIN_EMAIL = 'gocha@admin.com'` hardcodeado y verificado solo por email de sesión → si alguien crea cuenta con ese email en Supabase Auth, tendría permisos de admin.
+- `validarSesionStreamer` solo llama a `esAdminActual()` → cualquier sesión autenticada con ese email pasa.
 
-**RPCs frecuentes**: `publicar_saludo_muro` (3 args), `registrar_participante_sorteo`, `sortear_ganador_sorteo`, `asignar_peso_sorteo`, `incrementar_likes` (3 args), `obtener_rangos`, `multiplicador_rango`, `calcular_rango`, `incrementar_puntos_comunidad`, `enviar_mensaje_chat`, `establecer_reaccion`, `registrar_comunidad`, `login_comunidad`, `validar_sesion_comunidad`, `cerrar_sesion_comunidad`, `publicar_foto_galeria`, `actualizar_autor_galeria`, `apodo_norm`, `nombre_valido`, `handle_sorteo_valido`, `es_admin`, `patron_bloqueado`, `patron_simbolos`, `unaccent_texto`, `usuarios_rango_trg`.
-
-**Índices**: PKs en todas las tablas; UNIQUE en `usuarios_comunidad.apodo`, `usuarios_comunidad.apodo_norm`, `participantes_en_vivo.username`, `participantes_en_vivo.kick_user_id`, `message_reactions(message_id, user_id)`; compuestos `idx_muro_created`, `idx_muro_autor_norm_created`, `idx_muro_usuario_created`, `idx_galeria_estado_created`, `idx_galeria_estado_likes`, `idx_usuarios_puntos`, `idx_chat_created`, `idx_sesiones_expira`, `idx_sesiones_usuario`, `idx_message_reactions_msg_emoji`.
-
-**Realtime** (`supabase_realtime`): `muro_saludos`, `galeria`, `sync_cine`, `participantes_en_vivo`, `config_sorteo`, `comunidad_chat`, `message_reactions`.
-
-**Extensión**: `unaccent` instalada.
-
----
-
-## 7. Rangos y gamificación (comunidad)
-
-| Rango | Puntos | Multiplicador | Emoji |
-|-------|--------|---------------|-------|
-| Semilla | 0-49 | ×1 | 🌱 |
-| Gota | 50-199 | ×2 | 💧 |
-| Flor | 200-499 | ×3 | 🌸 |
-| Estrella | 500-999 | ×4 | ⭐ |
-| Leyenda | 1000+ | ×5 | 👑 |
-
-- 1 crédito cada 5 min conectado, multiplicado por el rango actual.
-- Fuente de verdad SQL: `calcular_rango()`, `multiplicador_rango()`, `obtener_rangos()`. Fallback JS en `comunidad.html`.
-- Puntos automáticos: `incrementar_puntos_comunidad` cada 300s (pestaña visible) + ajuste por `visibilitychange` al volver.
-
----
-
-## 8. Convenciones y reglas del proyecto
-
-- **Sin comentarios en el código** (regla del sistema Kilo) a menos que se pida.
-- Nombres de clases y variables en español (proyecto hispanohablante).
-- Las 5 páginas comparten `main.js` y `style.css`; cada página tiene su `<style>` inline para lo específico.
-- Patrón `data-action` para delegación de clicks en comunidad, galería, sorteo, cine.
-- Modales usan `gochi-modal-overlay` + `gochi-modal-box` de style.css.
-- Toast: `gochi-toast-center` + `mostrarToast()`.
-- Realtime en: `muro_saludos` (index), `galeria` (galería), `sync_cine` (cine), `participantes_en_vivo` + `config_sorteo` (sorteo), `comunidad_chat` + `message_reactions` (comunidad).
-- `rel="noopener noreferrer"` en enlaces `target="_blank"`.
-- `loading="lazy"` en iframes de terceros (Kick ya lo lleva).
-- Tema: `light-mode` class en body, localStorage `gochi_tema`.
-- **Regla obligatoria**: tras cualquier cambio/corrección, **actualizar este `agent.md`** (estado, helpers, estructura, auditoría). Eliminar ítems resueltos para no consumir tokens; mantener ordenado y actualizado.
+### Inconsistencias entre páginas
+- `index.html` y `galeria.html` cargan Supabase sin `defer`; `cine.html` y `sorteo.html` con `defer`; `comunidad.html` sin defer. Orden inconsistente → race conditions con `main.js` (defer).
+- `comunidad.html` carga Alpine con SRI integrity; otras páginas no usan Alpine.
+- `index.html` tiene `referrerpolicy="no-referrer"` en Font Awesome; otras no.
+- `cine.html` Font Awesome sin `referrerpolicy`.
 
 ---
 
-## 9. Qué YA está resuelto (no tocar)
+## 3. Problemas encontrados (consolidado)
 
-Todo lo siguiente está implementado y revisado contra la BD real de Supabase:
+### Base de datos
+1. `comunidad_sesiones`: RLS habilitado sin políticas (nadie accede vía PostgREST).
+2. `publicar_foto_galeria` no fija `search_path` → riesgo de hijacking de esquema.
+3. 13 funciones SECURITY DEFINER ejecutables por `anon` vía `/rest/v1/rpc/...`; revisar que ninguna exponga datos sensibles sin validación de token (especialmente `sortear_ganador_sorteo`, `asignar_peso_sorteo`, `actualizar_autor_galeria`).
+4. Protección contra contraseñas filtradas (HaveIBeenPwned) deshabilitada en Auth.
+5. 4 índices no usados (candidatos a eliminar).
 
-**Frontend (5 páginas + main.js + style.css):**
-- Muro: `publicar_saludo_muro` 3 args (`p_autor`, `p_mensaje`, `p_token`) en `index.html:515`; filtro `estado='aprobado'` en `index.html:418`; `LIMITE+1` sin `count:'exact'` en `index.html:430`; realtime con filtro de estado en `index.html:459`; badge de rango server-side en `index.html:317-323`; prefill del autor con `readOnly` en `index.html:385-398`; manejo de errores con `resultado.ok` en `index.html:504-512`.
-- Galería: `incrementar_likes` 3 args en `toggleLike()`; `publicar_foto_galeria` en `saveToSupabaseTable()`; `actualizar_autor_galeria` en `guardarAutorImagen()`; top-3 global por likes en `cargarTopGlobal()`; realtime en `iniciarRealtimeGaleria()`.
-- Galería (Alpine 2a/2b): grid público y lightbox con store `galeria` (`fotos`, `lightbox`); panel de moderación con `pendientes`, `pendientesEstado` y `errorPendientes`; aprobar/rechazar actualizan el store y hacen rollback si falla la petición; realtime cubre INSERT/UPDATE/DELETE y refresca pendientes solo con admin.
-- Sorteo: `verificarHandleKick` en `sorteo.html:898-926`; `registrar_participante_sorteo` con `p_kick_user_id` en `sorteo.html:960-962`; `asignar_peso_sorteo` RPC en `sorteo.html:1084-1086`; `sortear_ganador_sorteo` en servidor en `sorteo.html:1176`; sorteo local honesto como fallback en `sorteo.html:1196-1202`.
-- Comunidad: chat descendente y render con store Alpine `chat` en `cargarMensajesChat()`/`renderizarMensajes()` (2c); reacciones con store Alpine `reacciones` (`cache`, `mias`, `chips()`, `aplicarReaccion()`) sin manipulación directa del DOM (2d); leaderboard con store Alpine `ranking` (`usuarios`, `cargando`, `error`) renderizado con `x-for` (2e); multiplicador y progreso de rangos en `aplicarEstadoRango()`/`actualizarProgresoRangos()`; `escapeHtml`/`escapeAttr` de `main.js` como fuente única; un solo listener de clic para modales en `main.js`; planificador de puntos autocorregible en `iniciarPlanificadorPuntos()`; caché de rangos en memoria 30s en `obtenerRangosCache()`.
-- SEO: meta tags completos (og:, twitter:, canonical) en todas las páginas.
-
-**Base de datos Supabase (verificado en proyecto `cydiyaacnyydprgffmkq`):**
-- 10 tablas con todas las columnas esperadas (incl. `autor_norm`, `apodo_norm`, `verificado`, `rango`, `kick_user_id`, `peso`, etc.).
-- 28 funciones presentes (incl. todas las RPCs listadas arriba).
-- 34 políticas RLS en todas las tablas, con `es_admin()` para operaciones de admin y lectura pública para `anon`/`authenticated`.
-- 23 índices, incluyendo únicos en `apodo_norm`, `apodo`, `username`, `kick_user_id`.
-- 7 tablas publicadas en `supabase_realtime`.
-- Extensión `unaccent` instalada.
-
-**Estado: no hay pendientes críticos.** Frontend y BD están al día con los planes de auditoría. Alpine ejecutado en `sorteo.html` (Fases 0-1), `galeria.html` (Fases 2a-2b) y `comunidad.html` (Fases 2c-2e);.
+### Frontend
+1. **Bug crítico:** fallback de YouTube en `index.html` siempre se muestra tras 10 s aunque el video cargue.
+2. Tipografía/markup: typo `premiosincreíbles`, meta+link concatenados sin salto de línea, `allowfullscreen="true"` deprecated, `frameborder`/`scrolling` deprecated, falta favicon en `comunidad.html`.
+3. Rendimiento: Bootstrap pesado y poco usado, Font Awesome completo, Supabase SDK sin versión fijada, CLS en imágenes de galería, CSS inline no cacheable, confeti pesado en móvil, imágenes sin WebP/AVIF ni dimensiones.
+4. Accesibilidad: falta skip-link, menú móvil no cierra con Escape, canvas confeti sin `aria-hidden`, botones sin `type` dentro de formularios.
+5. Seguridad: `ADMIN_EMAIL` hardcodeado, verificación de admin solo por email de sesión (riesgo de suplantación).
+6. Inconsistencias de carga de scripts (`defer` mixto), SRI solo en `comunidad.html`, `referrerpolicy` inconsistente.
+7. Errores de consola probables en galería, sorteo y comunidad (Alpine stores).
 
 ---
 
-## 10. Cómo trabajar en este proyecto (checklist por sesión)
+## 4. Pendientes / Recomendaciones priorizadas
 
-1. Leer `agent.md` (este archivo) y, si toca una página específica, leer esa página + `main.js` + `style.css`.
-2. No crear archivos de build ni añadir dependencias npm. Alpine.js 3.17.5 está aprobado como excepción para la fase piloto (solo `sorteo.html`); no introducir otros frameworks ni ampliar a otras páginas sin aprobación.
-3. Antes de editar JS/HTML, verificar que no exista ya un helper en `main.js` (escapeHtml, lanzarConfetti, esAdminActual, etc.).
-4. Mantener consistencia con clases CSS existentes de `style.css`.
-5. Supabase: credenciales hardcodeadas, no tocar sin necesidad. Cualquier cambio de RLS/RPC requiere migración SQL en Supabase, no solo frontend.
-6. Tras cambios, revisar consola del navegador y probar en las 5 páginas (comparten main.js).
-7. **Auto-git push**: si no hay errores en consola y el proyecto funciona, hacer `git add -A && git commit -m "msg" && git push` automáticamente. Verificar `git status` antes.
-8. No commitear a menos que el usuario lo pida explícitamente (salvo auto-push sin errores).
-9. **Actualizar `agent.md` obligatoriamente** tras cada cambio (regla §8).
+### Base de datos (prioridad)
+1. Activar leaked password protection en Auth (configuración de proyecto, no SQL).
+2. Fijar `search_path` en `publicar_foto_galeria` y auditar otras funciones SECURITY DEFINER.
+3. Decidir sobre `comunidad_sesiones`: añadir políticas RLS mínimas o documentar acceso exclusivamente por RPC.
+4. Revisar EXECUTE en funciones SECURITY DEFINER: revocar `EXECUTE` a `anon`/`authenticated` en las que no deban ser públicas (especialmente funciones de admin).
+5. Evaluar eliminar los 4 índices no usados tras confirmar patrones de consulta reales.
 
----
-
-## 11. Planes existentes en .kilo/plans (aplicados y pendientes)
-
-- `auditoria-base-datos-supabase.md`: auditoría DB-frontend.
-- `modernizacion-leyenda-rangos-auditoria.md`: bugs B1-B12, seguridad M1, gamificación M3, sorteo/likes M4, rendimiento M2, SEO/a11y Fase 4.
-- `muro-anti-impersonacion-plan.md`: muro anti-suplantación + sorteo multiticket (ambos aplicados).
-- Aplicado (Fase 0 + Fase 1 + Fase 2a + Fase 2b + Fase 2c + Fase 2d + Fase 2e): `alpine-adopcion-gradual-v2.md` Alpine en `sorteo.html`, galería —grid/lightbox y moderación— y chat, reacciones y ranking de `comunidad.html`; fase 3 excluida.
-
----
-
-## 12. Alpine.js (fase piloto)
-
-- Estado: excepción aprobada el 2026-10-21. Fase 0 + Fase 1 (piloto en `sorteo.html`), Fase 2a (grid y lightbox), Fase 2b (moderación), Fase 2c (chat de comunidad), Fase 2d (reacciones del chat) y Fase 2e (leaderboard) implementadas; la validación en producción sigue pendiente.
-- Alcance ejecutado en `sorteo.html`: lista de participantes online (store `sorteo.participantes`); `listaPublica` (modo manual) sigue en vanilla.
-- Alcance ejecutado en `galeria.html`: grid público y lightbox (store `galeria` con `fotos` y `lightbox`), y panel de moderación (store con `pendientes`, `pendientesEstado`, `errorPendientes`). Likes, aprobación, rechazo y cambio de autor actualizan el store; el estado de likes vive en `fotos` para no tocar DOM gestionado por Alpine. Subida y login admin siguen en vanilla.
-- Alcance ejecutado en `comunidad.html`: lista de mensajes del chat (store `chat` con `mensajes`, `cargando`, `error`), envío optimista, Realtime INSERT/DELETE y recorte a 100 mensajes en el store. Autor, fecha, texto y botón de borrado se renderizan con Alpine. Reacciones con store `reacciones` (`cache`, `mias`, `emojis`, `chips()`, `aplicarReaccion()`): chips y burbuja por `x-for`, click vía `window.establecerReaccionUsuario(msgId, emoji)`, tooltip vía `window.mostrarTooltipReaccion`; Realtime muta el store y persiste en localStorage. Leaderboard con store `ranking` (`usuarios`, `cargando`, `error`) renderizado con `x-for`. Login/registro, presencia y rangos siguen en vanilla.
-- Alpine se carga con `defer` después de `main.js`, versión fijada 3.17.5 y SRI verificado (55.935 bytes); lo cargan `sorteo.html`, `galeria.html` y `comunidad.html`.
-- Stores registrados en `alpine:init` dentro del script inline de cada página; no hay stores globales en `main.js`.
-- Estado en `Alpine.store`; render con `x-for`/`x-text`; no se manipula el DOM de nodos gestionados por Alpine. Aprobar/rechazar son optimistas con rollback y las acciones de admin se prueban contra auth/RLS.
-- Preferir `x-text`; `x-html` solo con `escapeHtml`/`escapeAttr`.
-- Acceso desde JS con `obtenerStoreSorteo()`/`obtenerStoreGaleria()`/`obtenerStoreChat()`/`obtenerStoreReacciones()`/`obtenerStoreRanking()` y guarda de `null`; si Alpine o el store faltan, cada página muestra su aviso y el resto de funciones sigue operativo.
-- Tema, toasts, modales, auth, helpers globales y Realtime base siguen en vanilla.
-- Fase 2 completa (2a-2e).
+### Frontend (prioridad)
+1. Corregir fallback de YouTube en `index.html` (lógica de detección siempre muestra fallback tras 10 s).
+2. Fijar versión de Supabase SDK (`@supabase/supabase-js@2.x.x`).
+3. Eliminar o justificar Bootstrap (alpha, pesado, poco usado).
+4. Añadir `width`/`height` a imágenes para evitar CLS.
+5. Mover CSS inline de cada página a archivos cacheables (`style.css` o CSS por página).
+6. Corregir typo `premiosincreíbles` en `sorteo.html`.
+7. Cambiar `allowfullscreen="true"` por `allowfullscreen`.
+8. Hardening admin: verificar email confirmado o usar custom claim en vez de comparar email.
+9. Unificar carga de scripts (`defer` consistente) entre páginas.
+10. Optimizar confeti (limitar partículas, usar `requestIdleCallback`).
 
 ---
 
-*Última actualización: 2026-10-23. Integrado Bootstrap 6.0.0-alpha.1 (CSS + JS ESM) en las 5 páginas; navbar compartido migrado a clases Bootstrap con colapso nativo. `AUDITORIA.md` eliminado para nueva auditoría.*
+**Notas:** Ninguna auditoría modificó archivos. Este resumen es de solo lectura y sirve como base de trabajo para el equipo de desarrollo.
