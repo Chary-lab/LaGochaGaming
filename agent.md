@@ -2,7 +2,7 @@
 
 **Proyecto:** LaGochaGaming
 **Fecha:** 2026-10-23
-**Fuentes:** auditoria-web.md, auditoria-bd.md (ningún archivo modificado en las auditorías)
+**Fuentes:** auditoria-web.md, auditoria-bd.md, auditoria-sg.md (ningún archivo modificado en las auditorías)
 
 ---
 
@@ -107,11 +107,12 @@ Ninguna desplegada.
 - `ADMIN_EMAIL = 'gocha@admin.com'` hardcodeado y verificado solo por email de sesión → si alguien crea cuenta con ese email en Supabase Auth, tendría permisos de admin.
 - `validarSesionStreamer` solo llama a `esAdminActual()` → cualquier sesión autenticada con ese email pasa.
 
-### Inconsistencias entre páginas
-- `index.html` y `galeria.html` cargan Supabase sin `defer`; `cine.html` y `sorteo.html` con `defer`; `comunidad.html` sin defer. Orden inconsistente → race conditions con `main.js` (defer).
-- `comunidad.html` carga Alpine con SRI integrity; otras páginas no usan Alpine.
-- `index.html` tiene `referrerpolicy="no-referrer"` en Font Awesome; otras no.
-- `cine.html` Font Awesome sin `referrerpolicy`.
+### Seguridad (auditoría-sg.md)
+- **Secretos:** `SUPABASE_KEY` (anon) expuesta en `main.js` (esperado; depende de RLS). `ADMIN_EMAIL = 'gocha@admin.com'` hardcodeado y verificado solo por email de sesión → riesgo de elevación si alguien registra ese email. Sin claves `service_role` ni secretos de terceros en el repo. Sin `.env` versionado.
+- **Auth/autorización:** admin detectado solo por email (sin verificar confirmación ni custom claim). `auth_leaked_password_protection` deshabilitado. 13 funciones SECURITY DEFINER ejecutables por `anon` (incl. admin: `sortear_ganador_sorteo`, `asignar_peso_sorteo`, `actualizar_autor_galeria`). Sin rate limiting en `login_comunidad`/`registrar_comunidad` (brute force de PIN). Sin MFA para admin.
+- **RLS:** `comunidad_sesiones` con RLS sin políticas (acceso solo por RPC). Riesgo de exposición de `pin_hash` vía SELECT público de `usuarios_comunidad`. `publicar_foto_galeria` sin `search_path` fijo (schema hijacking). Storage valida solo extensión/MIME.
+- **XSS:** `escapeHtml`/`escapeAttr` aplicados en la mayoría de `innerHTML`; riesgo residual en `bannerArea`, `onlineUsersListEl`, `overlay` (verificar que todos los campos se escapen). Sin CSP → cualquier XSS es explotable.
+- **Cabeceras HTTP:** ausencia total de CSP, HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy. Configurar en hosting.
 
 ---
 
@@ -124,14 +125,17 @@ Ninguna desplegada.
 4. Protección contra contraseñas filtradas (HaveIBeenPwned) deshabilitada en Auth.
 5. 4 índices no usados (candidatos a eliminar).
 
-### Frontend
-1. **Bug crítico:** fallback de YouTube en `index.html` siempre se muestra tras 10 s aunque el video cargue.
-2. Tipografía/markup: typo `premiosincreíbles`, meta+link concatenados sin salto de línea, `allowfullscreen="true"` deprecated, `frameborder`/`scrolling` deprecated, falta favicon en `comunidad.html`.
-3. Rendimiento: Bootstrap pesado y poco usado, Font Awesome completo, Supabase SDK sin versión fijada, CLS en imágenes de galería, CSS inline no cacheable, confeti pesado en móvil, imágenes sin WebP/AVIF ni dimensiones.
-4. Accesibilidad: falta skip-link, menú móvil no cierra con Escape, canvas confeti sin `aria-hidden`, botones sin `type` dentro de formularios.
-5. Seguridad: `ADMIN_EMAIL` hardcodeado, verificación de admin solo por email de sesión (riesgo de suplantación).
-6. Inconsistencias de carga de scripts (`defer` mixto), SRI solo en `comunidad.html`, `referrerpolicy` inconsistente.
-7. Errores de consola probables en galería, sorteo y comunidad (Alpine stores).
+### Seguridad
+1. Admin detectado solo por email hardcodeado (`gocha@admin.com`) → elevación de privilegios si alguien registra ese email.
+2. Funciones admin SECURITY DEFINER (`sortear_ganador_sorteo`, `asignar_peso_sorteo`, `actualizar_autor_galeria`) ejecutables por `anon`.
+3. Ausencia total de cabeceras de seguridad (CSP, HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy).
+4. `publicar_foto_galeria` sin `search_path` fijo (schema hijacking).
+5. Leaked password protection deshabilitada en Auth.
+6. `pin_hash` potencialmente expuesto vía SELECT público de `usuarios_comunidad`.
+7. Sin rate limiting en `login_comunidad`/`registrar_comunidad` (brute force de PIN).
+8. XSS residual en `innerHTML` con datos de BD; sin CSP.
+9. Storage valida solo extensión/MIME (no magic bytes).
+10. Sin MFA para admin.
 
 ---
 
@@ -144,18 +148,18 @@ Ninguna desplegada.
 4. Revisar EXECUTE en funciones SECURITY DEFINER: revocar `EXECUTE` a `anon`/`authenticated` en las que no deban ser públicas (especialmente funciones de admin).
 5. Evaluar eliminar los 4 índices no usados tras confirmar patrones de consulta reales.
 
-### Frontend (prioridad)
-1. Corregir fallback de YouTube en `index.html` (lógica de detección siempre muestra fallback tras 10 s).
-2. Fijar versión de Supabase SDK (`@supabase/supabase-js@2.x.x`).
-3. Eliminar o justificar Bootstrap (alpha, pesado, poco usado).
-4. Añadir `width`/`height` a imágenes para evitar CLS.
-5. Mover CSS inline de cada página a archivos cacheables (`style.css` o CSS por página).
-6. Corregir typo `premiosincreíbles` en `sorteo.html`.
-7. Cambiar `allowfullscreen="true"` por `allowfullscreen`.
-8. Hardening admin: verificar email confirmado o usar custom claim en vez de comparar email.
-9. Unificar carga de scripts (`defer` consistente) entre páginas.
-10. Optimizar confeti (limitar partículas, usar `requestIdleCallback`).
+### Seguridad (prioridad)
+1. Usar custom claim `role=admin` en JWT en vez de comparar email; verificar email confirmado.
+2. Revocar `EXECUTE` a `anon`/`authenticated` en funciones admin SECURITY DEFINER.
+3. Configurar cabeceras de seguridad en hosting (CSP, HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy).
+4. Fijar `search_path` en `publicar_foto_galeria` y auditar otras funciones SECURITY DEFINER.
+5. Activar leaked password protection en Auth.
+6. Revocar SELECT en `pin_hash` (o exponer vía vista) en `usuarios_comunidad`.
+7. Añadir rate limiting en `login_comunidad`/`registrar_comunidad`.
+8. Auditar cada `innerHTML` con datos de BD; migrar a `textContent`/DOM; añadir CSP.
+9. Validar magic bytes en uploads a Storage.
+10. Activar MFA para cuentas admin.
 
 ---
 
-**Notas:** Ninguna auditoría modificó archivos. Este resumen es de solo lectura y sirve como base de trabajo para el equipo de desarrollo.
+**Notas:** Ninguna auditoría modificó archivos. Este resumen es de solo lectura y sirve como base de trabajo para el equipo de desarrollo. Fuentes: auditoria-web.md, auditoria-bd.md, auditoria-sg.md.
