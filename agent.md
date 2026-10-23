@@ -168,7 +168,7 @@ Todo lo siguiente está implementado y revisado contra la BD real de Supabase:
 - 7 tablas publicadas en `supabase_realtime`.
 - Extensión `unaccent` instalada.
 
-**Estado: no hay pendientes críticos.** Frontend y BD están al día con los planes de auditoría. Alpine ejecutado en `sorteo.html` (Fases 0-1), `galeria.html` (Fases 2a-2b) y `comunidad.html` (Fases 2c-2e); pendiente la validación en producción (ver §12).
+**Estado: no hay pendientes críticos.** Frontend y BD están al día con los planes de auditoría. Alpine ejecutado en `sorteo.html` (Fases 0-1), `galeria.html` (Fases 2a-2b) y `comunidad.html` (Fases 2c-2e);.
 
 ---
 
@@ -191,7 +191,7 @@ Todo lo siguiente está implementado y revisado contra la BD real de Supabase:
 - `auditoria-base-datos-supabase.md`: auditoría DB-frontend.
 - `modernizacion-leyenda-rangos-auditoria.md`: bugs B1-B12, seguridad M1, gamificación M3, sorteo/likes M4, rendimiento M2, SEO/a11y Fase 4.
 - `muro-anti-impersonacion-plan.md`: muro anti-suplantación + sorteo multiticket (ambos aplicados).
-- Aplicado (Fase 0 + Fase 1 + Fase 2a + Fase 2b + Fase 2c + Fase 2d + Fase 2e): `alpine-adopcion-gradual-v2.md` (Alpine en `sorteo.html`, galería —grid/lightbox y moderación— y chat, reacciones y ranking de `comunidad.html`; pendiente validación en producción y decisión sobre Fase 3).
+- Aplicado (Fase 0 + Fase 1 + Fase 2a + Fase 2b + Fase 2c + Fase 2d + Fase 2e): `alpine-adopcion-gradual-v2.md` Alpine en `sorteo.html`, galería —grid/lightbox y moderación— y chat, reacciones y ranking de `comunidad.html`; fase 3 excluida.
 
 ---
 
@@ -207,35 +207,7 @@ Todo lo siguiente está implementado y revisado contra la BD real de Supabase:
 - Preferir `x-text`; `x-html` solo con `escapeHtml`/`escapeAttr`.
 - Acceso desde JS con `obtenerStoreSorteo()`/`obtenerStoreGaleria()`/`obtenerStoreChat()`/`obtenerStoreReacciones()`/`obtenerStoreRanking()` y guarda de `null`; si Alpine o el store faltan, cada página muestra su aviso y el resto de funciones sigue operativo.
 - Tema, toasts, modales, auth, helpers globales y Realtime base siguen en vanilla.
-- Fase 2 completa (2a-2e). Pendiente: validación en producción (sorteo real, reacciones con dos usuarios, sesión admin real, Realtime en dos pestañas) y decidir si se aborda la Fase 3 (modales globales).
-- Plan: `.kilo/plans/alpine-adopcion-gradual-v2.md`.
-
----
-
-## 13. Auditoría 2026-10-22 (resumen)
-
-> Detalle completo en `AUDITORIA.md`.
-
-### 🔴 Crítico — **RESUELTOS 2026-10-22**
-1. ✅ `index.html:348` — listener `DOMContentLoaded` sin cerrar (faltaba `}` en `if (tokenComunidad)`).
-2. ✅ Imágenes: `fono.png` 2.05 MB → `fono.webp` 69 KB; favicons comprimidos; CSS actualizado.
-3. ✅ `galeria.html:770` — `await cargarTopGlobal()` antes del mapeo, incondicional.
-
-### 🟠 Alto (próxima iteración) — **TODO RESUELTO**
-4. ✅ Canonical — **YA EXISTE** en `cine.html`, `comunidad.html`, `galeria.html`, `sorteo.html`.
-5. ✅ Contraste WCAG AA — `--text-muted` ajustado a `#5e6e82` (4.91:1 sobre blanco, pasa AA).
-6. ✅ Polling stream — **CORRECTO**: necesario en 5 páginas para `navbar.live-glow` global.
-
-### 🟡 Medio (deuda técnica) — **ITEM 8 RESUELTO, 7/9/10 NO APLICABLES**
-7. Extraer navbar/footer a partials — **NO APLICABLE**: sitio estático sin build, Edge Functions añaden complejidad sin beneficio real.
-8. ✅ **Migrar CSS inline común** — Movidas 3 utilidades compartidas a `style.css`: `[x-cloak]`, `.gallery-empty`, `.cargar-mas-container`; eliminados duplicados en index.html/galeria.html.
-9. Subset Font Awesome — **NO APLICABLE**: 78 KB CDN con caché navegador; auditoría de iconos no compensa.
-10. Orden Alpine vs main.js — **NO APLICABLE**: ya funciona (main.js defer → Alpine defer → alpine:init), sin bugs reportados.
-
-### 🟢 Bajo (mejora continua)
-11. CSP con `unsafe-eval` documentado para Alpine.
-12. Rotar anon key Supabase (buena práctica anual).
-13. Tests de humo automatizados (Playwright MCP ya configurado).
+- Fase 2 completa (2a-2e).
 
 ---
 
