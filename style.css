@@ -14,6 +14,7 @@
     --glow-2: 0 0 20px rgba(167, 243, 208, 0.4);
     --glow-tiktok: 0 0 15px rgba(103, 232, 249, 0.35);
     --gradient: linear-gradient(135deg, #5eead4 0%, #a7f3d0 50%, #f9a8d4 100%);
+    --btn-text: #0f172a;
     --navbar-height: 65px;
 }
 
@@ -29,6 +30,7 @@ body.light-mode {
     --text-main: #064e3b;
     --text-muted: #3f7a65;
     --border-color: rgba(5, 150, 105, 0.16);
+    --btn-text: #ffffff;
     --glow: 0 6px 20px rgba(5, 150, 105, 0.14);
     --glow-2: 0 6px 20px rgba(16, 185, 129, 0.12);
     --glow-tiktok: 0 4px 16px rgba(8, 145, 178, 0.14);
@@ -123,19 +125,19 @@ body.light-mode .hero-bio {
 .hero-bio { font-size: 1.05rem; line-height: 1.7; color: var(--text-muted); max-width: 850px; margin-bottom: 30px; }
 .hero-buttons { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
 
-.btn-primary { display: inline-block; box-sizing: border-box; padding: 12px 30px; background: var(--accent-color); color: #fff; text-decoration: none; border: none; border-radius: 8px; font-family: inherit; font-weight: 900; font-size: 0.95rem; text-transform: uppercase; box-shadow: var(--glow); cursor: pointer; transition: transform 0.2s, filter 0.2s; }
+.btn-primary { display: inline-block; box-sizing: border-box; padding: 12px 30px; background: var(--accent-color); color: var(--btn-text); text-decoration: none; border: none; border-radius: 8px; font-family: inherit; font-weight: 900; font-size: 0.95rem; text-transform: uppercase; box-shadow: var(--glow); cursor: pointer; transition: transform 0.2s, filter 0.2s; }
 .btn-primary:hover { filter: brightness(1.1); transform: translateY(-2px); }
 .btn-primary:focus-visible { outline: 2px solid var(--accent-color); outline-offset: 3px; }
 .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; filter: none; }
-.btn-danger { background: #ff4d4d; }
-.btn-danger-dark { background: #c0392b; }
-.btn-success { background: #2ecc71; }
-.btn-muted { background: var(--text-muted); color: #fff; }
+.btn-danger { background: #dc2626; color: #fff; }
+.btn-danger-dark { background: #b91c1c; color: #fff; }
+.btn-success { background: #15803d; color: #fff; }
+.btn-muted { background: var(--text-muted); color: var(--btn-text); }
 .btn-sm { padding: 8px 16px; font-size: 0.85rem; }
 .btn-admin-mode { background: var(--card-bg-subtle); color: var(--text-muted); border: 1px solid var(--border-color); padding: 8px 16px; border-radius: 8px; font-family: inherit; font-weight: bold; font-size: 0.85rem; cursor: pointer; transition: background-color 0.2s, color 0.2s, border-color 0.2s; display: inline-flex; align-items: center; gap: 6px; }
 .btn-admin-mode:hover { color: var(--text-main); border-color: var(--accent-color); }
 .btn-admin-mode:focus-visible { outline: 2px solid var(--accent-color); outline-offset: 2px; }
-.btn-admin-mode.active { background: var(--accent-color); color: #fff; border-color: var(--accent-color); box-shadow: var(--glow); }
+.btn-admin-mode.active { background: var(--accent-color); color: var(--btn-text); border-color: var(--accent-color); box-shadow: var(--glow); }
 .btn-admin-logout { background: #c0392b; border-color: #c0392b; color: #fff; }
 .btn-admin-logout:hover { background: #d64535; border-color: #d64535; color: #fff; }
 
