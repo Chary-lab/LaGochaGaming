@@ -1281,7 +1281,14 @@
                     const card = document.createElement('div');
                     card.className = 'ganador-card-side';
                     const fecha = new Date(g.created_at).toLocaleString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-                    card.innerHTML = `<div class="ganador-nombre">🎉 ${escapeHtml(g.nombre)}</div><div class="ganador-fecha">${fecha}</div>`;
+                    const nombreDiv = document.createElement('div');
+                    nombreDiv.className = 'ganador-nombre';
+                    nombreDiv.textContent = `🎉 ${g.nombre || ''}`;
+                    const fechaDiv = document.createElement('div');
+                    fechaDiv.className = 'ganador-fecha';
+                    fechaDiv.textContent = fecha;
+                    card.appendChild(nombreDiv);
+                    card.appendChild(fechaDiv);
                     grid.appendChild(card);
                 });
             } catch (err) { console.error('Error:', err); }

@@ -1205,7 +1205,21 @@
                 return;
             }
 
-            uploadFeedback.innerHTML = '<p class="upload-progress">⏳ Subiendo imagen...</p>';
+            // Validar magic bytes (no confiar solo en MIME del cliente)
+            const buf = await file.arrayBuffer();
+            const bytes = new Uint8Array(buf.slice(0, 12));
+            const hex = [...bytes].map(b => b.toString(16).padStart(2,'0')).join('');
+            const magicOk =
+              hex.startsWith('89504e47') || // PNG
+              hex.startsWith('ffd8ff') ||   // JPEG
+              hex.startsWith('47494638') || // GIF
+              hex.startsWith('52494646') || // WEBP (RIFF)
+              hex.startsWith('000000') ;    // AVIF/HEIC (ftyp)
+            if (!magicOk) {
+              uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ El archivo no es una imagen válida.</p>';
+              uploadInput.value = '';
+              return;
+            }
 
             // La carpeta "gallery/" es obligatoria: la policy de Storage solo permite
             // subir dentro de esa ruta y el RPC publicar_foto_galeria valida la URL.

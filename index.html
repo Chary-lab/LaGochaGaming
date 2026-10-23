@@ -331,18 +331,35 @@
                 day: '2-digit', month: '2-digit', year: 'numeric',
                 hour: '2-digit', minute: '2-digit'
             });
-            card.innerHTML = `
-                <div class="muro-card-header">
-                    <span class="muro-autor">${escapeHtml(msg.autor)}${badgeRangoMuro(msg)}</span>
-                    <div class="muro-card-actions">
-                        <button type="button" class="btn-eliminar-muro" data-id="${msg.id}" title="Eliminar saludo" aria-label="Eliminar saludo">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                        <span class="muro-fecha">${fecha}</span>
-                    </div>
-                </div>
-                <p class="muro-texto">${escapeHtml(msg.mensaje)}</p>
-            `;
+            const header = document.createElement('div');
+            header.className = 'muro-card-header';
+            const autorSpan = document.createElement('span');
+            autorSpan.className = 'muro-autor';
+            autorSpan.textContent = msg.autor || '';
+            autorSpan.appendChild(document.createRange().createContextualFragment(badgeRangoMuro(msg)));
+            const actions = document.createElement('div');
+            actions.className = 'muro-card-actions';
+            const btnEliminar = document.createElement('button');
+            btnEliminar.type = 'button';
+            btnEliminar.className = 'btn-eliminar-muro';
+            btnEliminar.dataset.id = msg.id;
+            btnEliminar.title = 'Eliminar saludo';
+            btnEliminar.setAttribute('aria-label', 'Eliminar saludo');
+            const icon = document.createElement('i');
+            icon.className = 'fa-solid fa-trash-can';
+            btnEliminar.appendChild(icon);
+            const fechaSpan = document.createElement('span');
+            fechaSpan.className = 'muro-fecha';
+            fechaSpan.textContent = fecha;
+            actions.appendChild(btnEliminar);
+            actions.appendChild(fechaSpan);
+            header.appendChild(autorSpan);
+            header.appendChild(actions);
+            const textoP = document.createElement('p');
+            textoP.className = 'muro-texto';
+            textoP.textContent = msg.mensaje || '';
+            card.appendChild(header);
+            card.appendChild(textoP);
             return card;
         }
 

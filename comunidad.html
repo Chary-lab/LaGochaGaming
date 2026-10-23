@@ -1613,7 +1613,7 @@
                 if (streakBadge) {
                     if (streakData.count > 1) {
                         streakBadge.style.display = 'inline-flex';
-                        streakBadge.innerHTML = `🔥 Racha: ${streakData.count}`;
+                        streakBadge.textContent = `🔥 Racha: ${streakData.count}`;
                     } else {
                         streakBadge.style.display = 'none';
                     }
@@ -1953,24 +1953,35 @@ if (chatForm) {
 
                 // Marcar como que ya recibimos presencia al menos una vez
                 onlineUsersListEl.dataset.loaded = 'true';
-                let html = '';
-                
                 // Cargar rangos de todos los usuarios (caché 30 s)
                 const nicknames = Object.values(estadoPresencia).map(arr => (arr[0] || {}).nickname).filter(Boolean);
                 const rangosMap = await obtenerRangosCache(nicknames);
-                
+
+                onlineUsersListEl.textContent = '';
                 for (const [key, presenceArray] of Object.entries(estadoPresencia)) {
                     const datos = presenceArray[0] || {};
-                    const nickSafe = (datos.nickname || 'Anónimo').toString().replace(/[&<>"\']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
-                    const initial = nickSafe.charAt(0).toUpperCase();
-                    
-                    // Solo icono de rango (sin texto)
+                    const nick = (datos.nickname || 'Anónimo').toString();
+                    const initial = nick.charAt(0).toUpperCase();
+
                     const { clave: rangoLower, emoji, nombre: rangoNombre } = datosRango(rangosMap[datos.nickname]);
-                    const badgeHTML = `<span class="rango-badge rango-solo-icono rango-${rangoLower}" title="${rangoNombre}">${emoji}</span>`;
-                    
-                    html += `<div class="user-item"><div class="user-icon">${initial}</div><div class="user-name">${nickSafe}${badgeHTML}</div></div>`;
+
+                    const userItem = document.createElement('div');
+                    userItem.className = 'user-item';
+                    const userIcon = document.createElement('div');
+                    userIcon.className = 'user-icon';
+                    userIcon.textContent = initial;
+                    const userName = document.createElement('div');
+                    userName.className = 'user-name';
+                    userName.textContent = nick;
+                    const badge = document.createElement('span');
+                    badge.className = `rango-badge rango-solo-icono rango-${rangoLower}`;
+                    badge.title = rangoNombre || '';
+                    badge.textContent = emoji || '';
+                    userName.appendChild(badge);
+                    userItem.appendChild(userIcon);
+                    userItem.appendChild(userName);
+                    onlineUsersListEl.appendChild(userItem);
                 }
-                onlineUsersListEl.innerHTML = html;
             }
 
             // El estado del canal se actualiza desde window.actualizarEstadoStreamPagina,
