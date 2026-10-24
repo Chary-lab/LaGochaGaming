@@ -44,17 +44,24 @@ const ADMIN_EMAIL = 'gocha@admin.com';
 let _adminEmailCache = null;
 
 window.esAdminActual = async function esAdminActual() {
-    if (_adminEmailCache !== null) return _adminEmailCache;
     try {
         if (!window.supabase) return false;
         const { data } = await window.supabase.auth.getSession();
         const session = data && data.session;
-        _adminEmailCache = session && session.user ? (session.user.email || '') : '';
+        const email = session && session.user ? (session.user.email || '') : '';
+        _adminEmailCache = email;
     } catch (e) {
         _adminEmailCache = '';
     }
     return _adminEmailCache === ADMIN_EMAIL;
 };
+
+// Mantener la caché sincronizada con cambios de sesión (login/logout en otra pestaña/página).
+if (window.supabase && typeof window.supabase.auth?.onAuthStateChange === 'function') {
+    window.supabase.auth.onAuthStateChange(() => {
+        window.refrescarCacheAdmin();
+    });
+}
 
 // Se llama tras iniciar o cerrar sesión para que la caché no quede obsoleta.
 window.refrescarCacheAdmin = function refrescarCacheAdmin() {
