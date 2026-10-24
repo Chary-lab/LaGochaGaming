@@ -6,7 +6,7 @@
 
 **Repo:** github.com/Chary-lab/LaGochaGaming · **Prod:** lagochagaming.com (GitHub Pages, rama `main`, sin build)
 **Supabase:** `cydiyaacnyydprgffmkq` · `us-west-2` · Postgres 17.11
-**Versión:** v1.2.10 · **Actualizado:** 2026-10-24 · **BD:** verificado vía PostgREST `anon` el 2026-10-24; `es_admin()` y 22 políticas leídas por SQL el 2026-10-24 (catálogo completo sin revisar)
+**Versión:** v1.2.11 · **Actualizado:** 2026-10-24 · **BD:** verificada por PostgREST `anon` y por SQL el 2026-10-24 (35 migraciones, políticas y permisos leídos)
 
 **Regla de oro:** 5 HTML + `main.js` + `style.css`. Sin frameworks nuevos, sin npm, sin bundler, sin archivos extra.
 
@@ -94,21 +94,23 @@ Patrón: todo se expone en `window.*` (no hay módulos ES). `main.js` se carga c
 
 ---
 
-## 4. Base de datos (verificado por PostgREST con `anon`; catálogo sin acceso)
+## 4. Base de datos (verificado por PostgREST `anon` y por SQL el 2026-10-24)
 
-Tablas (11): `comunidad_chat`, `comunidad_sesiones`, `config_sorteo`, `galeria`, `ganadores_sorteo`, `message_reactions`, `muro_saludos`, `participantes_en_vivo`, `sync_cine`, `usuarios_comunidad`, `donaciones`.
+Tablas (10): `comunidad_chat`, `comunidad_sesiones`, `config_sorteo`, `galeria`, `ganadores_sorteo`, `message_reactions`, `muro_saludos`, `participantes_en_vivo`, `sync_cine`, `usuarios_comunidad`.
 
-- **Filas visibles (2026-10-24):** `galeria` 11 (todas aprobadas), `muro_saludos` 55, `usuarios_comunidad` 2, `message_reactions` 1, `comunidad_chat` 1, `config_sorteo` 1 (`abierto=false`), `sync_cine` 1 (`pause`), `ganadores_sorteo` 0, `participantes_en_vivo` 0, `donaciones` 0, `comunidad_sesiones` 0 visibles (RLS).
+- **Filas visibles (2026-10-24):** `galeria` 11 (todas aprobadas), `muro_saludos` 55, `usuarios_comunidad` 2, `message_reactions` 1, `comunidad_chat` 1, `config_sorteo` 1 (`abierto=false`), `sync_cine` 1 (`pause`), `ganadores_sorteo` 0, `participantes_en_vivo` 0, `comunidad_sesiones` 0 visibles (RLS).
 - **Columnas revocadas para `anon`:** `usuarios_comunidad.pin_hash`, `apodo_norm`, `ultimo_punto` (HTTP 401). `id`, `apodo`, `puntos`, `rango` sí se leen.
-- **RLS:** `PATCH` de `anon` sobre filas existentes de `galeria`, `config_sorteo`, `sync_cine`, `comunidad_chat` y `muro_saludos` devuelve `[]` (bloqueado). `INSERT`/`DELETE` no probados para no alterar datos.
-- **`comunidad_sesiones`:** 0 filas visibles; RLS sin políticas según auditoría previa → solo RPC `SECURITY DEFINER` (intencional).
-- **RPC:** `es_admin()` es `sql STABLE`, `SECURITY INVOKER`, `search_path=''` y su cuerpo es `select coalesce(auth.email() = 'gocha@admin.com', false)`; **22 políticas RLS** de 9 tablas + `storage.objects` dependen de ella. `obtener_rangos()` público; `actualizar_autor_galeria` → 401 (no ejecutable por `anon`). `sortear_ganador_sorteo` y `asignar_peso_sorteo` sin verificar.
+- **RLS escrituras:** `anon` no tiene `INSERT`/`UPDATE`/`DELETE` en `galeria` ni `muro_saludos` (HTTP 401, `42501`); todo pasa por RPC `SECURITY DEFINER`. `authenticated` (admin) conserva `UPDATE`/`DELETE` directos para moderar.
+- **RLS lectura:** `galeria` y `muro_saludos` filtran por `estado = 'aprobado' or es_admin()`; el resto de tablas públicas usa `true` (chat, config, ganadores, participantes, reacciones, sync, usuarios). Probado: una fila `pendiente` no se ve por `anon` ni por id directo.
+- **`comunidad_sesiones`:** 0 filas visibles; RLS sin políticas → solo RPC `SECURITY DEFINER` (intencional).
+- **RPC:** `es_admin()` es `sql STABLE`, `SECURITY INVOKER`, `search_path=''` y su cuerpo es `select coalesce(auth.email() = 'gocha@admin.com', false)`; **22 políticas RLS** de 9 tablas + `storage.objects` dependen de ella. `sortear_ganador_sorteo()` y `asignar_peso_sorteo(text,int)` son `SECURITY DEFINER`, comprueban `es_admin()` y **`anon` no puede ejecutarlas** (solo `authenticated`/`service_role`). `incrementar_likes(p_token,p_image_id,p_delta)` valida sesión de comunidad y `delta ∈ {-1,1}`. `publicar_foto_galeria` y `publicar_saludo_muro` validan sesión, URL de Storage, límites y rate limit.
 - **Auth:** `disable_signup=false`, `mailer_autoconfirm=false`, solo proveedor email. Sin MFA.
 - **Auth comunidad:** `login_comunidad`, `registrar_comunidad`, `validar_sesion_comunidad`, `cerrar_sesion_comunidad`; rate limit `registrar_intento_auth` (5/15 min, según auditoría previa).
-- **Migraciones:** 28 (última `20261023075705_eliminar_visitas_tracking`), sin Edge Functions. Sin re-verificar.
+- **Migraciones:** 35 (última `20261024224108_eliminar_sobrecarga_ambigua_publicar_foto`), sin Edge Functions.
 - **Storage:** bucket `fotos-galeria` público, 5 MB, png/jpeg/webp/gif/avif.
-- **Pendiente de verificar (requiere `service_role`/SQL):** políticas completas, triggers, `search_path`, índices (`idx_galeria_estado_created`, `idx_galeria_estado_likes`, `idx_chat_created`, `idx_usuarios_puntos`), Advisors y RLS de `donaciones`.
-- **Donaciones:** el código se revirtió en v1.1.1, pero la tabla sigue en `public` vacía. No reintroducir sin pedido; decidir si se elimina.
+- **Índices:** los 4 "sin uso" (`idx_galeria_estado_created`, `idx_galeria_estado_likes`, `idx_chat_created`, `idx_usuarios_puntos`) tienen 0 scans **porque las tablas tienen 1–11 filas**; los 4 coinciden con consultas reales (orden por `created_at`/`likes`/`puntos`) y ocupan 64 KB en total. Se mantienen a propósito: borrarlos no ahorra nada y quita cobertura cuando las tablas crezcan.
+- **Eliminado (v1.2.11):** tabla `donaciones` (0 filas, 0 referencias, 3 políticas, una de ellas `INSERT` público) y la RPC `obtener_donaciones_recientes()`; sobrecarga `incrementar_likes(bigint,int)` (sin control de sesión); sobrecarga `publicar_foto_galeria(text,text,text)` (causaba `PGRST203` y rompía la subida de usuarios de comunidad).
+- **Pendiente de verificar:** triggers, `search_path` del resto de funciones, Advisors y políticas completas de `usuarios_comunidad`/`comunidad_chat`.
 
 ---
 
@@ -128,12 +130,12 @@ Tablas (11): `comunidad_chat`, `comunidad_sesiones`, `config_sorteo`, `galeria`,
 
 1. **Admin por email (residual):** el cliente ya no compara emails (v1.2.9): `esAdminActual()` llama a `es_admin()` y exige sesión + email confirmado. Pero la RPC sigue decidiendo por `auth.email()`, así que la autorización depende de un email y no de un rol. Siguiente paso: `app_metadata.role = 'admin'` en la RPC (las 22 políticas se actualizan solas, el cliente no cambia).
 2. **Cabeceras inertes:** `_headers` no lo aplica GitHub Pages (devuelve 404). Producción sin CSP/HSTS reales. Migrar a Cloudflare/Netlify Pages o meta tags.
-3. **BD:** revisar si la policy `SELECT` de `galeria` expone pendientes; decidir `donaciones`; confirmar y borrar los 4 índices sin uso; verificar permisos de `sortear_ganador_sorteo`/`asignar_peso_sorteo`.
+3. **BD restante:** revisar triggers y `search_path` del resto de funciones, Advisors y las políticas completas de `usuarios_comunidad`/`comunidad_chat`. Resuelto en v1.2.11: policy `SELECT` de `galeria`/`muro_saludos` limitada a `aprobado`, `anon` sin escritura directa, `donaciones` y 2 sobrecargas inseguras eliminadas, permisos de las RPC de sorteo verificados.
 4. **Peso:** Bootstrap CSS y Font Awesome completos con uso mínimo; CSS/JS inline duplicado; fuentes de Google; `img/1-3.jpg` 1024×576 (~430 KB).
 5. **A11y restante:** 12 campos sin label/`aria-label`, falta skip-link, menú móvil no cierra con Escape, confeti sin `aria-hidden`; `comunidad.html` salta de `h1` a `h3` (faltan `h2`). Además, `type="password"` sigue fuera de un `<form>` en `comunidad.html:290`, `cine.html:153` y `sorteo.html:191` (mismo aviso de Chrome que tenía galería).
 6. **Detalles menores:** atributos deprecated en iframes; `AGENTS.md:61` sigue describiendo como bug vivo el fallback de YouTube de `index.html` (marcado como corregido en la prioridad antigua).
 
-**Resueltos:** login admin/streamer valida `esAdminActual()` (galería y sorteo, desde v1.0.0); `galeria.html`/`sorteo.html` ya no abren panel con cualquier cuenta. Cine en v1.2.3 (`<source>` vacío, fallback de YouTube, login). v1.2.6/v1.2.7 instrucciones del panel streamer. v1.2.8 `src=""` de `#canal-preview`, `<h1>` en comunidad, typos y metas de `sorteo.html`, 34 botones con `type="button"`, comentario "60s" → 90 s. v1.2.9 `esAdminActual()` migrado a la RPC `es_admin()` (sin email hardcodeado en el cliente, exige email confirmado, caché por usuario). v1.2.10 login admin de `galeria.html` dentro de un `<form>` real (Enter nativo y autofill; fuera el aviso `[DOM] Password field is not contained in a form`).
+**Resueltos:** login admin/streamer valida `esAdminActual()` (galería y sorteo, desde v1.0.0); `galeria.html`/`sorteo.html` ya no abren panel con cualquier cuenta. Cine en v1.2.3 (`<source>` vacío, fallback de YouTube, login). v1.2.6/v1.2.7 instrucciones del panel streamer. v1.2.8 `src=""` de `#canal-preview`, `<h1>` en comunidad, typos y metas de `sorteo.html`, 34 botones con `type="button"`, comentario "60s" → 90 s. v1.2.9 `esAdminActual()` migrado a la RPC `es_admin()` (sin email hardcodeado en el cliente, exige email confirmado, caché por usuario). v1.2.10 login admin de `galeria.html` dentro de un `<form>` real (Enter nativo y autofill; fuera el aviso `[DOM] Password field is not contained in a form`). v1.2.11 (solo BD, 2 migraciones): `SELECT` de `galeria`/`muro_saludos` limitado a `aprobado` + `es_admin()`; `anon` sin `INSERT`/`UPDATE`/`DELETE` directos; eliminadas `donaciones`, `obtener_donaciones_recientes()`, `incrementar_likes(bigint,int)` y la sobrecarga ambigua de `publicar_foto_galeria` que rompía la subida de usuarios de comunidad.
 
 ---
 
