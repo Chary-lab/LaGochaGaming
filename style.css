@@ -223,7 +223,7 @@ body.light-mode .hero-bio {
 .watch-btn { display: inline-block; width: 100%; text-align: center; padding: 10px 24px; background: var(--accent-color); color: white; text-decoration: none; border-radius: 10px; font-weight: bold; font-size: 1rem; box-shadow: var(--glow); transition: filter 0.2s, transform 0.2s; }
 .watch-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
 
-/* Clips m·s grandes en desktop */
+/* Clips mÔøΩs grandes en desktop */
 @media (min-width: 1200px) {
     .youtube-grid { grid-template-columns: repeat(3, 1fr); gap: 32px; }
     .video-card { padding: 26px; }
@@ -673,7 +673,7 @@ body.light-mode #lightbox .lightbox-caption {
     color: var(--text-main);
 }
 
-/* --- PESTA—AS DE FILTRO --- */
+/* --- PESTAÔøΩAS DE FILTRO --- */
 
 .like-btn {
     background: transparent;
@@ -1472,7 +1472,7 @@ body.light-mode #lightbox .lightbox-caption {
   }
 
   .rango-fila.rango-leyenda::after {
-      content: 'M√ùXIMO';
+      content: 'M√ÅXIMO';
       position: absolute;
       top: 6px;
       right: 8px;
@@ -1753,7 +1753,7 @@ body.light-mode #lightbox .lightbox-caption {
  .cargar-mas-container { text-align: center; margin-top: 25px; }
 
  /* Accesibilidad: respeta la preferencia de movimiento reducido */
- /* --- NAVBAR: AJUSTES M”VIL (iconos del men˙ y cambiar tema) --- */
+ /* --- NAVBAR: AJUSTES MÔøΩVIL (iconos del menÔøΩ y cambiar tema) --- */
 @media (max-width: 480px) {
     .navbar {
         padding: 0 12px;
@@ -1845,4 +1845,4 @@ body.light-mode {
     border-left: 4px solid var(--accent-color);
 }
 
-/* (panel de visitas por paÌs eliminado) */
+/* (panel de visitas por paÔøΩs eliminado) */
