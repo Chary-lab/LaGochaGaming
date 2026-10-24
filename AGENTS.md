@@ -6,7 +6,7 @@
 
 **Repo:** github.com/Chary-lab/LaGochaGaming · **Prod:** lagochagaming.com (GitHub Pages, rama `main`, sin build)
 **Supabase:** `cydiyaacnyydprgffmkq` · `us-west-2` · Postgres 17.11
-**Versión:** v1.2.6 · **Actualizado:** 2026-10-24 · **BD:** verificado vía PostgREST `anon` el 2026-10-24 (catálogo/políticas sin verificar)
+**Versión:** v1.2.8 · **Actualizado:** 2026-10-24 · **BD:** verificado vía PostgREST `anon` el 2026-10-24 (catálogo/políticas sin verificar)
 
 **Regla de oro:** 5 HTML + `main.js` + `style.css`. Sin frameworks nuevos, sin npm, sin bundler, sin archivos extra.
 
@@ -16,15 +16,15 @@
 
 | Archivo | Líneas | Qué hay | Abrir cuando… |
 |---|---:|---|---|
-| `index.html` | 554 | Home: hero, stream Kick, clips, feed social, YouTube, muro | Tocar la portada o el stream |
+| `index.html` | 550 | Home: hero, stream Kick, clips, feed social, YouTube, muro | Tocar la portada o el stream |
 | `galeria.html` | 1103 | Galería pública, subida, moderación admin, lightbox | Fotos, likes, aprobación |
-| `comunidad.html` | 1959 | Chat, ranking, online, reacciones, muro, celebración | Chat o usuarios |
-| `cine.html` | ~620 | GochiWatch: YouTube IFrame API, panel streamer, sync_cine | Cine o reproducción |
-| `sorteo.html` | 904 | Sorteo manual/streamer, participantes, ganadores | Sorteos |
+| `comunidad.html` | 1960 | Chat, ranking, online, reacciones, muro, celebración | Chat o usuarios |
+| `cine.html` | 648 | GochiWatch: YouTube IFrame API, panel streamer, sync_cine | Cine o reproducción |
+| `sorteo.html` | 905 | Sorteo manual/streamer, participantes, ganadores | Sorteos |
 | `main.js` | 631 | Helpers globales, admin, tema, toasts, modales, polling | Lógica compartida |
-| `style.css` | 3282 | Tema claro/oscuro, layout, componentes, responsive | Cualquier estilo |
+| `style.css` | 3439 | Tema claro/oscuro, layout, componentes, responsive | Cualquier estilo |
 | `_headers` | 7 | CSP/HSTS/etc. **GitHub Pages lo ignora** | Seguridad/cabeceras |
-| `VERSION` | 1 | Dice `1.0.0` (desactualizado; tag real `v1.2.1`) | Release |
+| `VERSION` | 1 | Dice la versión actual (`1.2.8`) | Release |
 
 - Sin tests automatizados ni build. Verificación = abrir las 5 páginas y revisar consola.
 - Deploy: push a `main` en GitHub Pages. `CNAME` = `lagochagaming.com`.
@@ -64,7 +64,7 @@ Patrón: todo se expone en `window.*` (no hay módulos ES). `main.js` se carga c
 - Alpine store `galeria` (línea ~611) + fallback si Alpine no inicializó.
 - Grid responsive, lightbox, subida a Storage, panel de pendientes/admin.
 - `width`/`height` ya puestos; validación de magic bytes en subida (solo cliente).
-- **Bug:** el login admin (~1200–1207) activa `adminAutenticado` con cualquier cuenta Auth válida; no llama a `esAdminActual()`.
+- **Corregido (desde v1.0.0):** el login admin valida `esAdminActual()` antes de activar `adminAutenticado`.
 - **Riesgo BD:** si la policy `SELECT` de `galeria` es `true`, las fotos `pendiente` son legibles por `anon` aunque la UI no las muestre.
 
 ### `comunidad.html`
@@ -72,8 +72,8 @@ Patrón: todo se expone en `window.*` (no hay módulos ES). `main.js` se carga c
 - Chat con Realtime, scroll inteligente, typing indicator, reacciones accesibles, rate limit visual.
 - Ranking/rango, usuarios online, muro, modal de bienvenida y celebración de rango.
 - Script inline grande: ~738–2378.
-- **Bug:** `#canal-preview` (~639) tiene `src=""` → petición a la propia página e imagen rota.
-- **A11y:** la página no tiene ningún `<h1>`.
+- **Corregido (v1.2.8):** `#canal-preview` ya no tiene `src=""`; el JS asigna `src` solo cuando hay stream.
+- **A11y:** tiene `<h1 class="visually-hidden">` (v1.2.8), pero salta de `h1` a `h3`; faltan `h2`.
 
 ### `cine.html`
 - YouTube IFrame API (`onYouTubeIframeAPIReady`) + Supabase + Realtime con reconexión automática.
@@ -84,12 +84,12 @@ Patrón: todo se expone en `window.*` (no hay módulos ES). `main.js` se carga c
 ### `sorteo.html`
 - Store `sorteo` (~626). Modo streamer para admin, modo manual/público para el resto.
 - Participantes, pesos, ganadores, reglas, banner.
-- **Bug:** el login streamer (~790–797) abre el modo streamer con cualquier cuenta Auth válida.
+- **Corregido (desde v1.0.0):** el login streamer valida `esAdminActual()`.
 - **Sorteo:** el modo streamer usa `sortear_ganador_sorteo` (servidor) con fallback local; el modo público gira en cliente y no se registra. Si el servidor falla, `guardarGanadorOficial()` inserta directo en `ganadores_sorteo` (~1266).
-- **Typos:** línea 14 `premiosincreíbles`; línea 25 `<meta>` y `manifest` pegados. La meta description dice “se sortea en el servidor”, pero el modo público es local.
+- **Corregido (v1.2.8):** typo `premiosincreíbles`, `<meta>` y `manifest` pegados, y la meta description ya no afirma que el modo manual sortee en el servidor.
 
 ### `style.css` — bloques
-- 2–52 variables/tema claro-oscuro · 93–232 hero/layout · 233–265 social · 266–707 galería/lightbox · 708–773 muro · 774–883 UI/toasts/modales · 884–983 navbar/móvil · 984–1796 rangos y badges · 1797–1847 detalles.
+- 2–52 variables/tema claro-oscuro · 93–232 hero/layout · 233–265 social · 266–707 galería/lightbox · 708–773 muro · 774–883 UI/toasts/modales · 884–983 navbar/móvil · 984–1796 rangos y badges · 1797–1858 detalles (`[x-cloak]`, `.visually-hidden` de respaldo).
 
 ---
 
@@ -125,14 +125,14 @@ Tablas (11): `comunidad_chat`, `comunidad_sesiones`, `config_sorteo`, `galeria`,
 
 ## 6. Problemas conocidos (prioridad)
 
-1. **Login admin sin validar rol:** galería y sorteo abren el panel admin/streamer con **cualquier** cuenta Auth válida (`adminAutenticado`/`streamerAutenticado = true` sin `esAdminActual()`). Con registro abierto, cualquiera puede crear cuenta y ver la UI. Las escrituras siguen bloqueadas por RLS/RPC, pero es la prioridad #1. **Cine corregido en v1.2.3.**
-2. **Admin por email:** `main.js:43` (`gocha@admin.com`) y `esAdminActual()` compara solo email. No existe `app_metadata.role` en el frontend. Migrar a claim/RPC y exigir email confirmado.
-3. **Cabeceras inertes:** `_headers` no lo aplica GitHub Pages (devuelve 404). Producción sin CSP/HSTS reales. Migrar a Cloudflare/Netlify Pages o meta tags.
-4. **Markup roto:** `comunidad.html` `img src=""` + sin `<h1>`. **Cine (`<source>`) y fallback de YouTube de `index.html` corregidos en v1.2.3.**
-5. **Peso:** Bootstrap CSS y Font Awesome completos con uso mínimo; CSS/JS inline duplicado; fuentes de Google; `img/1-3.jpg` 1024×576 (~430 KB).
-6. **Detalles:** typos de `sorteo.html`, atributos deprecated en iframes, comentario "60s" vs 90 s, 34 botones sin `type`, `x-cloak` en contadores.
-7. **A11y:** 12 campos sin label/`aria-label`, falta skip-link, menú móvil no cierra con Escape, confeti sin `aria-hidden`.
-8. **BD:** revisar si la policy `SELECT` de `galeria` expone pendientes; decidir `donaciones`; confirmar y borrar los 4 índices sin uso; verificar permisos de `sortear_ganador_sorteo`/`asignar_peso_sorteo`.
+1. **Admin por email:** `main.js:43` (`gocha@admin.com`) y `esAdminActual()` compara solo email. No existe `app_metadata.role` en el frontend. Migrar a claim/RPC y exigir email confirmado.
+2. **Cabeceras inertes:** `_headers` no lo aplica GitHub Pages (devuelve 404). Producción sin CSP/HSTS reales. Migrar a Cloudflare/Netlify Pages o meta tags.
+3. **BD:** revisar si la policy `SELECT` de `galeria` expone pendientes; decidir `donaciones`; confirmar y borrar los 4 índices sin uso; verificar permisos de `sortear_ganador_sorteo`/`asignar_peso_sorteo`.
+4. **Peso:** Bootstrap CSS y Font Awesome completos con uso mínimo; CSS/JS inline duplicado; fuentes de Google; `img/1-3.jpg` 1024×576 (~430 KB).
+5. **A11y restante:** 12 campos sin label/`aria-label`, falta skip-link, menú móvil no cierra con Escape, confeti sin `aria-hidden`; `comunidad.html` salta de `h1` a `h3` (faltan `h2`).
+6. **Detalles menores:** atributos deprecated en iframes; `AGENTS.md:61` sigue describiendo como bug vivo el fallback de YouTube de `index.html` (marcado como corregido en la prioridad antigua).
+
+**Resueltos:** login admin/streamer valida `esAdminActual()` (galería y sorteo, desde v1.0.0); `galeria.html`/`sorteo.html` ya no abren panel con cualquier cuenta. Cine en v1.2.3 (`<source>` vacío, fallback de YouTube, login). v1.2.6/v1.2.7 instrucciones del panel streamer. v1.2.8 `src=""` de `#canal-preview`, `<h1>` en comunidad, typos y metas de `sorteo.html`, 34 botones con `type="button"`, comentario "60s" → 90 s.
 
 ---
 
@@ -158,3 +158,9 @@ Tablas (11): `comunidad_chat`, `comunidad_sesiones`, `config_sorteo`, `galeria`,
 5. Verifica consola en las 5 páginas y actualiza este mapa si cambió la estructura.
 
 Si la tarea exige contexto profundo de BD/seguridad, abre solo la auditoría correspondiente.
+
+---
+
+## 9. Subagentes locales (The Agency)
+
+`.opencode/agents/` contiene 13 subagentes con nombres cortos: `@web`, `@minimos`, `@revisor`, `@tiempo-real`, `@diseno`, `@ux`, `@qa-visual`, `@bd`, `@bd-confiable`, `@seguridad`, `@accesibilidad`, `@rendimiento`, `@orquestador`. Lista, criterios y reinstalación: `.opencode/README.md`. Todos heredan las reglas de este archivo; si un subagente propone frameworks, npm o archivos extra, ignóralo. `@orquestador` puede lanzar al resto (`.opencode/opencode.json` fija `subagent_depth: 2`).

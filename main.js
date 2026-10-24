@@ -576,7 +576,7 @@ function iniciarPollingStreamGlobal() {
         }
     }, 500);
 
-    // Polling cada 60s
+    // Polling cada 90s
     if (window._streamInterval) clearInterval(window._streamInterval);
     window._streamInterval = setInterval(() => {
         if (document.visibilityState === 'visible') {

@@ -11,7 +11,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GochiSorteo | LaGochaGaming</title>
-    <meta name="description" content="Participa en los sorteos de La Gocha y gana premiosincreíbles. El ganador se sortea en el servidor: lo que ves es lo que se sortea.">
+    <meta name="description" content="Sorteos de La Gocha con premios increíbles: el modo streamer sortea en el servidor y el manual gira en tu navegador.">
     <link rel="canonical" href="https://lagochagaming.com/sorteo">
     <meta property="og:title" content="GochiSorteo | LaGochaGaming">
     <meta property="og:description" content="Participa en los sorteos de La Gocha y gana premios increíbles.">
@@ -21,8 +21,9 @@
     <meta property="og:site_name" content="LaGochaGaming">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="GochiSorteo | LaGochaGaming">
-    <meta name="twitter:description" content="Participa en los sorteos de La Gocha y gana premios increíbles. El ganador se sortea en el servidor: lo que ves es lo que se sortea.">
-    <meta name="twitter:image" content="https://lagochagaming.com/img/3.jpg">    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="twitter:description" content="Sorteos de La Gocha con premios increíbles: el modo streamer sortea en el servidor y el manual gira en tu navegador.">
+    <meta name="twitter:image" content="https://lagochagaming.com/img/3.jpg">
+    <link rel="manifest" href="manifest.webmanifest">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
@@ -38,7 +39,7 @@
     <header id="global-header">
         <nav class="navbar navbar-expand-lg">
             <div class="logo navbar-brand">LAGOCHA<span>GAMING</span></div>
-            <button class="mobile-menu-toggle-btn navbar-toggler" aria-label="Abrir menú"><i class="fa-solid fa-bars"></i></button>
+            <button type="button" class="mobile-menu-toggle-btn navbar-toggler" aria-label="Abrir menú"><i class="fa-solid fa-bars"></i></button>
             <div class="nav-links navbar-nav">
                 <a href="./" class="nav-link">Inicio</a>
                 <a href="./#stream" class="nav-link">Directo</a>
@@ -49,7 +50,7 @@
                 <a href="comunidad" class="nav-link">💬 Comunidad</a>
             </div>
             <div class="nav-right ms-auto d-flex align-items-center gap-2">
-                <button id="btn-toggle-tema" class="btn-tema-nav" title="Cambiar tema" aria-label="Cambiar tema claro/oscuro"><i class="fa-solid fa-sun"></i></button>
+                <button type="button" id="btn-toggle-tema" class="btn-tema-nav" title="Cambiar tema" aria-label="Cambiar tema claro/oscuro"><i class="fa-solid fa-sun"></i></button>
                 <div id="nav-user-info"></div>
             </div>
         </nav>
@@ -72,8 +73,8 @@
         <!-- SECCIÓN CENTRAL: CONTROLES DEL SORTEO -->
         <div class="sorteo-container">
             <div class="mode-tabs" role="tablist" aria-label="Modos del sorteo">
-                <button id="tab-manual" class="tab-btn" data-action="tab-manual" role="tab" aria-selected="false" aria-controls="sec-modo-manual"><i class="fa-solid fa-pen-to-square"></i> Modo Manual</button>
-                <button id="tab-streamer" class="tab-btn" data-action="tab-streamer" role="tab" aria-selected="false" aria-controls="sec-modo-streamer"><i class="fa-solid fa-lock"></i> Modo Streamer (Exclusivo)</button>
+                <button type="button" id="tab-manual" class="tab-btn" data-action="tab-manual" role="tab" aria-selected="false" aria-controls="sec-modo-manual"><i class="fa-solid fa-pen-to-square"></i> Modo Manual</button>
+                <button type="button" id="tab-streamer" class="tab-btn" data-action="tab-streamer" role="tab" aria-selected="false" aria-controls="sec-modo-streamer"><i class="fa-solid fa-lock"></i> Modo Streamer (Exclusivo)</button>
             </div>
 
             <div id="banner-estado-sorteo">

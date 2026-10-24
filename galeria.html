@@ -39,7 +39,7 @@
     <header id="global-header">
         <nav class="navbar navbar-expand-lg">
             <div class="logo navbar-brand">LAGOCHA<span>GAMING</span></div>
-            <button class="mobile-menu-toggle-btn navbar-toggler" aria-label="Abrir menú"><i class="fa-solid fa-bars"></i></button>
+            <button type="button" class="mobile-menu-toggle-btn navbar-toggler" aria-label="Abrir menú"><i class="fa-solid fa-bars"></i></button>
             <div class="nav-links navbar-nav">
                 <a href="./" class="nav-link">Inicio</a>
                 <a href="./#stream" class="nav-link">Directo</a>
@@ -50,7 +50,7 @@
                 <a href="comunidad" class="nav-link">💬 Comunidad</a>
             </div>
             <div class="nav-right ms-auto d-flex align-items-center gap-2">
-                <button id="btn-toggle-tema" class="btn-tema-nav" title="Cambiar tema" aria-label="Cambiar tema claro/oscuro"><i class="fa-solid fa-sun"></i></button>
+                <button type="button" id="btn-toggle-tema" class="btn-tema-nav" title="Cambiar tema" aria-label="Cambiar tema claro/oscuro"><i class="fa-solid fa-sun"></i></button>
                 <div id="nav-user-info"></div>
             </div>
         </nav>
@@ -62,10 +62,10 @@
         <div class="admin-controls-panel">
             <h1>Mi Galería</h1>
             <div class="admin-controls-actions">
-                <button id="btn-toggle-admin" class="btn-admin-mode" data-action="toggle-admin" aria-expanded="false" aria-controls="panelPendientes">
+                <button type="button" id="btn-toggle-admin" class="btn-admin-mode" data-action="toggle-admin" aria-expanded="false" aria-controls="panelPendientes">
                     <i class="fa-solid fa-lock"></i> Modo Moderación
                 </button>
-                <button id="btn-logout-galeria" class="btn-admin-mode btn-admin-logout" data-action="logout">
+                <button type="button" id="btn-logout-galeria" class="btn-admin-mode btn-admin-logout" data-action="logout">
                     <i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión Admin
                 </button>
             </div>
@@ -83,13 +83,13 @@
                             <div class="autor-editable" title="Autor de la foto">
                                 <span class="autor-avatar" x-text="foto.inicial"></span>
                                 <input type="text" class="autor-input" maxlength="30" :value="foto.autor" :data-image-id="foto.id" aria-label="Autor de la foto">
-                                <button class="btn-guardar-autor" data-action="save-author" :data-image-id="foto.id" title="Guardar autor" aria-label="Guardar autor">
+                                <button type="button" class="btn-guardar-autor" data-action="save-author" :data-image-id="foto.id" title="Guardar autor" aria-label="Guardar autor">
                                     <i class="fa-solid fa-check"></i>
                                 </button>
                             </div>
                             <div class="gallery-card-pending-actions">
-                                <button class="btn-aprobar" data-action="approve-image" :data-image-id="foto.id"><i class="fa-solid fa-check"></i> Aprobar</button>
-                                <button class="btn-rechazar" data-action="delete-image" :data-image-id="foto.id"><i class="fa-solid fa-xmark"></i> Rechazar</button>
+                                <button type="button" class="btn-aprobar" data-action="approve-image" :data-image-id="foto.id"><i class="fa-solid fa-check"></i> Aprobar</button>
+                                <button type="button" class="btn-rechazar" data-action="delete-image" :data-image-id="foto.id"><i class="fa-solid fa-xmark"></i> Rechazar</button>
                             </div>
                         </div>
                     </div>
@@ -129,10 +129,10 @@
         <div class="filter-tabs-container">
             <h2 class="gallery-public-title">📸 Galería Pública</h2>
             <div class="filter-tabs">
-                <button id="tab-populares" class="tab-filter-btn active" data-action="filter-gallery" data-filter="populares">
+                <button type="button" id="tab-populares" class="tab-filter-btn active" data-action="filter-gallery" data-filter="populares">
                     <i class="fa-solid fa-fire"></i> Más Populares
                 </button>
-                <button id="tab-recientes" class="tab-filter-btn" data-action="filter-gallery" data-filter="recientes">
+                <button type="button" id="tab-recientes" class="tab-filter-btn" data-action="filter-gallery" data-filter="recientes">
                     <i class="fa-solid fa-sparkles"></i> Más Recientes
                 </button>
             </div>
@@ -156,10 +156,10 @@
                                 </span>
                             </div>
                             <div class="gallery-card-actions">
-                                <button class="btn-eliminar-publica" data-action="delete-image" :data-image-id="foto.id" title="Borrar foto de la galería" aria-label="Borrar foto de la galería">
+                                <button type="button" class="btn-eliminar-publica" data-action="delete-image" :data-image-id="foto.id" title="Borrar foto de la galería" aria-label="Borrar foto de la galería">
                                     <i class="fa-solid fa-trash-can"></i>
                                 </button>
-                                <button :class="foto.liked ? 'like-btn liked' : 'like-btn'" data-action="toggle-like" :data-image-id="foto.id" aria-label="Me gusta">
+                                <button type="button" :class="foto.liked ? 'like-btn liked' : 'like-btn'" data-action="toggle-like" :data-image-id="foto.id" aria-label="Me gusta">
                                     <i :class="(foto.liked ? 'fas' : 'far') + ' fa-heart'"></i>
                                     <span x-text="foto.likes"></span>
                                 </button>
@@ -221,25 +221,25 @@
          @keydown.right="window.nextLightbox()"
          :class="{ abierta: $store.galeria.lightbox.abierta }">
         <div class="lightbox-backdrop" @click="window.cerrarLightbox()"></div>
-        <button class="lightbox-close-fixed" @click="window.cerrarLightbox()" aria-label="Cerrar vista previa"><i class="fa-solid fa-xmark"></i></button>
+        <button type="button" class="lightbox-close-fixed" @click="window.cerrarLightbox()" aria-label="Cerrar vista previa"><i class="fa-solid fa-xmark"></i></button>
 
         <template x-if="$store.galeria.lightbox.foto">
             <div class="lightbox-stage">
                 <div class="lightbox-nav-side prev" @click.stop="window.prevLightbox()">
-                    <button class="lightbox-btn-prev" aria-label="Foto anterior"><i class="fa-solid fa-chevron-left"></i></button>
+                    <button type="button" class="lightbox-btn-prev" aria-label="Foto anterior"><i class="fa-solid fa-chevron-left"></i></button>
                 </div>
                 <div class="lightbox-image-wrap">
                     <img :src="$store.galeria.lightbox.foto.image_url" :alt="$store.galeria.lightbox.foto.title || 'Foto'" tabindex="0" width="800" height="600">
                 </div>
                 <div class="lightbox-nav-side next" @click.stop="window.nextLightbox()">
-                    <button class="lightbox-btn-next" aria-label="Foto siguiente"><i class="fa-solid fa-chevron-right"></i></button>
+                    <button type="button" class="lightbox-btn-next" aria-label="Foto siguiente"><i class="fa-solid fa-chevron-right"></i></button>
                 </div>
                 <p class="lightbox-caption" x-text="$store.galeria.lightbox.foto.title || 'Foto de la galería'"></p>
                 <div class="lightbox-controls">
-                    <button class="lightbox-btn-prev" @click.stop="window.prevLightbox()" aria-label="Foto anterior"><i class="fa-solid fa-chevron-left"></i></button>
-                    <button class="lightbox-btn-close" @click="window.cerrarLightbox()" aria-label="Cerrar vista previa"><i class="fa-solid fa-xmark"></i></button>
-                    <button class="lightbox-btn-next" @click.stop="window.nextLightbox()" aria-label="Foto siguiente"><i class="fa-solid fa-chevron-right"></i></button>
-                    <button class="lightbox-btn-like" :class="fotoLiked() ? 'liked' : ''" @click.stop="toggleLightboxLike()" aria-label="Me gusta">
+                    <button type="button" class="lightbox-btn-prev" @click.stop="window.prevLightbox()" aria-label="Foto anterior"><i class="fa-solid fa-chevron-left"></i></button>
+                    <button type="button" class="lightbox-btn-close" @click="window.cerrarLightbox()" aria-label="Cerrar vista previa"><i class="fa-solid fa-xmark"></i></button>
+                    <button type="button" class="lightbox-btn-next" @click.stop="window.nextLightbox()" aria-label="Foto siguiente"><i class="fa-solid fa-chevron-right"></i></button>
+                    <button type="button" class="lightbox-btn-like" :class="fotoLiked() ? 'liked' : ''" @click.stop="toggleLightboxLike()" aria-label="Me gusta">
                         <i :class="fotoLiked() ? 'fas' : 'far' + ' fa-heart'"></i>
                     </button>
                 </div>

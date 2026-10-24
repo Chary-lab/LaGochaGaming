@@ -1749,6 +1749,17 @@ body.light-mode #lightbox .lightbox-caption {
 
  /* --- UTILIDADES COMPARTIDAS (antes duplicadas en <style> inline) --- */
  [x-cloak] { display: none !important; }
+ .visually-hidden:not(caption) {
+     position: absolute !important;
+     width: 1px !important;
+     height: 1px !important;
+     margin: -1px !important;
+     padding: 0 !important;
+     overflow: hidden !important;
+     clip: rect(0, 0, 0, 0) !important;
+     white-space: nowrap !important;
+     border: 0 !important;
+ }
  .gallery-empty { color: var(--text-muted); grid-column: 1 / -1; text-align: center; }
  .cargar-mas-container { text-align: center; margin-top: 25px; }
 

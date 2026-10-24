@@ -43,7 +43,7 @@
     <header id="global-header">
         <nav class="navbar navbar-expand-lg">
             <div class="logo navbar-brand">LAGOCHA<span>GAMING</span></div>
-            <button class="mobile-menu-toggle-btn navbar-toggler" aria-label="Abrir menú"><i class="fa-solid fa-bars"></i></button>
+            <button type="button" class="mobile-menu-toggle-btn navbar-toggler" aria-label="Abrir menú"><i class="fa-solid fa-bars"></i></button>
             <div class="nav-links navbar-nav">
                 <a href="./" class="nav-link">Inicio</a>
                 <a href="./#stream" class="nav-link">Directo</a>
@@ -54,7 +54,7 @@
                 <a href="comunidad" class="nav-link nav-active" aria-current="page">💬 Comunidad</a>
             </div>
             <div class="nav-right ms-auto d-flex align-items-center gap-2">
-                <button id="btn-toggle-tema" class="btn-tema-nav" title="Cambiar tema" aria-label="Cambiar tema claro/oscuro"><i class="fa-solid fa-sun"></i></button>
+                <button type="button" id="btn-toggle-tema" class="btn-tema-nav" title="Cambiar tema" aria-label="Cambiar tema claro/oscuro"><i class="fa-solid fa-sun"></i></button>
                 <div id="nav-user-info"></div>
             </div>
         </nav>
@@ -64,6 +64,7 @@
 
     <!-- CONTENIDO PRINCIPAL COMUNIDAD -->
     <main class="comunidad-layout page-layout">
+        <h1 class="visually-hidden">Comunidad y chat de LaGochaGaming</h1>
         <!-- COLUMNA IZQUIERDA: USUARIOS EN LÍNEA + LEADERBOARD -->
         <section id="online-users" class="online-users-column">
             <h3 class="chat-sidebar-title">
@@ -165,10 +166,10 @@
             <div id="chat-login-area" class="chat-input-area chat-login-area">
                 <div class="chat-login-copy">Inicia sesión o regístrate para participar en el chat</div>
                 <div class="chat-login-actions">
-                    <button id="btn-login-chat" class="btn-primary chat-login-btn">
+                    <button type="button" id="btn-login-chat" class="btn-primary chat-login-btn">
                         <i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión
                     </button>
-                    <button id="btn-registro-chat" class="btn-primary chat-login-btn">
+                    <button type="button" id="btn-registro-chat" class="btn-primary chat-login-btn">
                         <i class="fa-solid fa-user-plus"></i> Registrarse
                     </button>
                 </div>
@@ -202,7 +203,7 @@
                     <div id="viewers-count" class="viewers-count">
                         <i class="fa-solid fa-eye"></i> <span id="viewers-num">0</span> espectadores
                     </div>
-                    <img id="canal-preview" class="canal-preview" src="" alt="Vista previa del canal">
+                    <img id="canal-preview" class="canal-preview" alt="Vista previa del canal" loading="lazy" decoding="async">
                     <div id="canal-info" class="canal-info"></div>
                     <div id="canal-offline" class="canal-offline">
                         <img src="img/3.jpg" alt="Canal offline" class="canal-offline-img">
@@ -282,13 +283,13 @@
     <!-- Nickname Modal -->
     <div id="nickname-modal" role="dialog" aria-modal="true" aria-labelledby="modal-titulo-accion">
         <div id="nickname-modal-content">
-            <button id="nickname-modal-close" aria-label="Cerrar">&times;</button>
+            <button type="button" id="nickname-modal-close" aria-label="Cerrar">&times;</button>
             <h3 id="modal-titulo-accion">¡Bienvenido a la Comunidad!</h3>
             <p id="modal-subtitulo-accion" class="modal-subtitle">Ingresa tu apodo y tu PIN de 4 dígitos.</p>
             <input type="text" id="nickname-modal-input" placeholder="Tu apodo" maxlength="20">
             <input type="password" id="nickname-modal-pin" placeholder="PIN (4 dígitos)" maxlength="4" pattern="[0-9]*" inputmode="numeric">
             <div>
-                <button id="nickname-modal-set-btn" class="btn-primary">Entrar</button>
+                <button type="button" id="nickname-modal-set-btn" class="btn-primary">Entrar</button>
             </div>
             <p id="nickname-modal-error" class="modal-error"></p>
         </div>
