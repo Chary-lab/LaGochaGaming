@@ -77,7 +77,9 @@
             <div class="gallery-grid" id="gridPendientes">
                 <template x-for="foto in $store.galeria.pendientes" :key="foto.id">
                     <div class="gallery-card gallery-card-pending">
-                        <img :src="foto.image_url" :alt="foto.alt" loading="lazy" width="400" height="300">
+                        <div class="gallery-card-image-wrap">
+                            <img :src="foto.image_url" :alt="foto.alt" loading="lazy" width="400" height="300">
+                        </div>
                         <div class="gallery-card-info gallery-card-info-column">
                             <span class="gallery-card-title-full" x-text="foto.title"></span>
                             <div class="autor-editable" title="Autor de la foto">
@@ -286,6 +288,43 @@
             }
         }
 
+        // Sincroniza toda la UI de moderación con adminAutenticado. Se usa al cargar,
+        // al entrar con el formulario y cuando la sesión cambia en otra pestaña.
+        function aplicarEstadoAdmin() {
+            const panel = document.getElementById('panelPendientes');
+            const btnLogout = document.getElementById('btn-logout-galeria');
+            const btn = document.getElementById('btn-toggle-admin');
+            const store = obtenerStoreGaleria();
+
+            if (adminAutenticado) {
+                document.body.classList.add('admin-mode-active');
+                if (panel) panel.style.display = 'block';
+                if (btnLogout) btnLogout.style.display = 'inline-flex';
+                if (btn) {
+                    btn.innerHTML = '<i class="fa-solid fa-lock-open"></i> Ocultar Moderación';
+                    btn.classList.add('active');
+                    btn.setAttribute('aria-expanded', 'true');
+                }
+                actualizarControlesAdmin();
+                loadPendingImages();
+            } else {
+                document.body.classList.remove('admin-mode-active');
+                if (panel) panel.style.display = 'none';
+                if (btnLogout) btnLogout.style.display = 'none';
+                if (btn) {
+                    btn.innerHTML = '<i class="fa-solid fa-lock"></i> Modo Moderación';
+                    btn.classList.remove('active');
+                    btn.setAttribute('aria-expanded', 'false');
+                }
+                if (store) {
+                    store.pendientes = [];
+                    store.pendientesEstado = 'inicial';
+                    store.errorPendientes = '';
+                }
+                actualizarControlesAdmin();
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', async () => {
             if (!obtenerStoreGaleria()) {
                 const aviso = document.getElementById('galeria-no-disponible');
@@ -301,19 +340,10 @@
             if (window.supabase) {
                 try {
                     adminAutenticado = await window.esAdminActual();
-                    if (adminAutenticado) {
-                        document.body.classList.add('admin-mode-active');
-                        document.getElementById('panelPendientes').style.display = 'block';
-                        document.getElementById('btn-logout-galeria').style.display = 'inline-flex';
-                        const btn = document.getElementById('btn-toggle-admin');
-                        btn.innerHTML = '<i class="fa-solid fa-lock-open"></i> Ocultar Moderación';
-                        btn.classList.add('active');
-                        btn.setAttribute('aria-expanded', 'true');
-                        loadPendingImages();
-                    }
                 } catch (e) {
                     console.error('Error obteniendo sesión:', e);
                 }
+                aplicarEstadoAdmin();
             } else {
                 mostrarToast('Supabase no está disponible en este entorno', true);
             }
@@ -322,6 +352,19 @@
                 e.preventDefault();
                 iniciarSesionAdmin();
             });
+
+            // La sesión puede cambiar fuera de esta pestaña (login o logout en otra
+            // página del sitio): reevalúa el rol para no dejar el panel desfasado.
+            if (window.supabase && typeof window.supabase.auth?.onAuthStateChange === 'function') {
+                window.supabase.auth.onAuthStateChange((evento, sesion) => {
+                    if (evento === 'INITIAL_SESSION') return;
+                    if (!sesion && evento !== 'SIGNED_OUT') return;
+                    setTimeout(async () => {
+                        adminAutenticado = await window.esAdminActual();
+                        aplicarEstadoAdmin();
+                    }, 0);
+                });
+            }
 
             // Controles de admin (campo de autor) y aviso de sesión de comunidad
             actualizarControlesAdmin();
@@ -859,15 +902,7 @@
                 adminAutenticado = true;
                 window.refrescarCacheAdmin?.();
                 cerrarModalPin();
-                document.body.classList.add('admin-mode-active');
-                document.getElementById('panelPendientes').style.display = 'block';
-                document.getElementById('btn-logout-galeria').style.display = 'inline-flex';
-                const btn = document.getElementById('btn-toggle-admin');
-                btn.innerHTML = '<i class="fa-solid fa-lock-open"></i> Ocultar Moderación';
-                btn.classList.add('active');
-                btn.setAttribute('aria-expanded', 'true');
-                actualizarControlesAdmin();
-                loadPendingImages();
+                aplicarEstadoAdmin();
                 mostrarToast('¡Modo moderación activado!');
             } catch (e) {
                 feedback.innerText = '❌ No se pudo iniciar sesión';

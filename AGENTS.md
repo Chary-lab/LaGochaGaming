@@ -6,7 +6,7 @@
 
 **Repo:** github.com/Chary-lab/LaGochaGaming · **Prod:** lagochagaming.com (GitHub Pages, rama `main`, sin build)
 **Supabase:** `cydiyaacnyydprgffmkq` · `us-west-2` · Postgres 17.11
-**Versión:** v1.2.11 · **Actualizado:** 2026-10-24 · **BD:** verificada por PostgREST `anon` y por SQL el 2026-10-24 (35 migraciones, políticas y permisos leídos)
+**Versión:** v1.2.12 · **Actualizado:** 2026-10-24 · **BD:** verificada por PostgREST `anon` y por SQL el 2026-10-24 (35 migraciones, políticas y permisos leídos)
 
 **Regla de oro:** 5 HTML + `main.js` + `style.css`. Sin frameworks nuevos, sin npm, sin bundler, sin archivos extra.
 
@@ -66,7 +66,8 @@ Patrón: todo se expone en `window.*` (no hay módulos ES). `main.js` se carga c
 - `width`/`height` ya puestos; validación de magic bytes en subida (solo cliente).
 - **Corregido (desde v1.0.0):** el login admin valida `esAdminActual()` antes de activar `adminAutenticado`.
 - **Corregido (v1.2.10):** el login admin vive en `<form id="form-admin-login">` (submit real, Enter nativo, autofill del gestor de contraseñas); el botón es `#btn-entrar-admin` y el delegado ya no maneja `login-admin`.
-- **Riesgo BD:** si la policy `SELECT` de `galeria` es `true`, las fotos `pendiente` son legibles por `anon` aunque la UI no las muestre.
+- **Corregido (v1.2.12):** la plantilla de pendientes pone el `<img>` dentro de `.gallery-card-image-wrap` como la galería pública. Antes iba suelto y, al ser `.gallery-card img { position:absolute; inset:0 }`, la foto se estiraba sobre toda la tarjeta y tapaba título, autor y los botones Aprobar/Rechazar (`elementFromPoint` devolvía `IMG`, no el botón). También `aplicarEstadoAdmin()` centraliza el estado de moderación (clase `admin-mode-active`, `#panelPendientes`, `#btn-logout-galeria`, `#btn-toggle-admin` y `loadPendingImages()`), y un `onAuthStateChange` lo reevalúa si la sesión cambia fuera de la pestaña. Antes, si la sesión de admin aparecía **después** de cargar (login en otra pestaña o página, sesión restaurada), el panel se quedaba oculto y "Modo Moderación" volvía a pedir login con la sesión ya válida.
+- **BD (v1.2.11):** la policy `SELECT` ya no es `true`; devuelve solo `estado = 'aprobado' or es_admin()`, así que `anon` no ve las `pendiente`.
 
 ### `comunidad.html`
 - Stores `chat`, `ranking`, `reacciones` (~745–760).
@@ -135,7 +136,7 @@ Tablas (10): `comunidad_chat`, `comunidad_sesiones`, `config_sorteo`, `galeria`,
 5. **A11y restante:** 12 campos sin label/`aria-label`, falta skip-link, menú móvil no cierra con Escape, confeti sin `aria-hidden`; `comunidad.html` salta de `h1` a `h3` (faltan `h2`). Además, `type="password"` sigue fuera de un `<form>` en `comunidad.html:290`, `cine.html:153` y `sorteo.html:191` (mismo aviso de Chrome que tenía galería).
 6. **Detalles menores:** atributos deprecated en iframes; `AGENTS.md:61` sigue describiendo como bug vivo el fallback de YouTube de `index.html` (marcado como corregido en la prioridad antigua).
 
-**Resueltos:** login admin/streamer valida `esAdminActual()` (galería y sorteo, desde v1.0.0); `galeria.html`/`sorteo.html` ya no abren panel con cualquier cuenta. Cine en v1.2.3 (`<source>` vacío, fallback de YouTube, login). v1.2.6/v1.2.7 instrucciones del panel streamer. v1.2.8 `src=""` de `#canal-preview`, `<h1>` en comunidad, typos y metas de `sorteo.html`, 34 botones con `type="button"`, comentario "60s" → 90 s. v1.2.9 `esAdminActual()` migrado a la RPC `es_admin()` (sin email hardcodeado en el cliente, exige email confirmado, caché por usuario). v1.2.10 login admin de `galeria.html` dentro de un `<form>` real (Enter nativo y autofill; fuera el aviso `[DOM] Password field is not contained in a form`). v1.2.11 (solo BD, 2 migraciones): `SELECT` de `galeria`/`muro_saludos` limitado a `aprobado` + `es_admin()`; `anon` sin `INSERT`/`UPDATE`/`DELETE` directos; eliminadas `donaciones`, `obtener_donaciones_recientes()`, `incrementar_likes(bigint,int)` y la sobrecarga ambigua de `publicar_foto_galeria` que rompía la subida de usuarios de comunidad.
+**Resueltos:** login admin/streamer valida `esAdminActual()` (galería y sorteo, desde v1.0.0); `galeria.html`/`sorteo.html` ya no abren panel con cualquier cuenta. Cine en v1.2.3 (`<source>` vacío, fallback de YouTube, login). v1.2.6/v1.2.7 instrucciones del panel streamer. v1.2.8 `src=""` de `#canal-preview`, `<h1>` en comunidad, typos y metas de `sorteo.html`, 34 botones con `type="button"`, comentario "60s" → 90 s. v1.2.9 `esAdminActual()` migrado a la RPC `es_admin()` (sin email hardcodeado en el cliente, exige email confirmado, caché por usuario). v1.2.10 login admin de `galeria.html` dentro de un `<form>` real (Enter nativo y autofill; fuera el aviso `[DOM] Password field is not contained in a form`). v1.2.11 (solo BD, 2 migraciones): `SELECT` de `galeria`/`muro_saludos` limitado a `aprobado` + `es_admin()`; `anon` sin `INSERT`/`UPDATE`/`DELETE` directos; eliminadas `donaciones`, `obtener_donaciones_recientes()`, `incrementar_likes(bigint,int)` y la sobrecarga ambigua de `publicar_foto_galeria` que rompía la subida de usuarios de comunidad. v1.2.12 `galeria.html`: la tarjeta de pendientes usa `.gallery-card-image-wrap` (la foto ya no tapa título, autor ni los botones Aprobar/Rechazar) y `aplicarEstadoAdmin()` + `onAuthStateChange` mantienen el panel de moderación y "Modo Moderación" sincronizados con la sesión real aunque el login ocurra en otra pestaña.
 
 ---
 
