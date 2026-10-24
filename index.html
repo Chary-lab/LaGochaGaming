@@ -282,6 +282,40 @@
         </div>
     </section>
 
+    <!-- SECCIÓN DONACIONES -->
+    <section id="donaciones" class="content-section">
+        <h2>💖 Donaciones</h2>
+        <div class="donaciones-header">
+            <button type="button" id="btn-abrir-donacion" class="btn-primary">Donar</button>
+            <a id="link-donar-externo" href="https://paypal.me/PLACEHOLDER" target="_blank" rel="noopener noreferrer" class="btn-primary btn-muted">Donar por PayPal/Ko-fi</a>
+        </div>
+        <div id="donaciones-recientes" class="donaciones-widget"></div>
+        <div id="donaciones-admin-panel" class="donaciones-admin-panel" style="display:none;">
+            <h3>Panel Admin - Donaciones Pendientes</h3>
+            <div id="donaciones-admin-list"></div>
+        </div>
+    </section>
+
+    <!-- MODAL DONACIÓN -->
+    <div id="modal-donacion" class="gochi-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-donacion-titulo">
+        <div class="gochi-modal-box">
+            <h3 id="modal-donacion-titulo">💖 Hacer una donación</h3>
+            <input type="text" id="donante-nombre" class="gochi-modal-input" placeholder="Tu nombre (opcional)" aria-label="Nombre">
+            <input type="number" id="donacion-monto" class="gochi-modal-input" placeholder="Monto (opcional)" aria-label="Monto">
+            <select id="donacion-plataforma" class="gochi-modal-input" aria-label="Plataforma">
+                <option value="paypal">PayPal</option>
+                <option value="kofi">Ko-fi</option>
+                <option value="otro">Otro</option>
+            </select>
+            <textarea id="donacion-mensaje" class="gochi-modal-input" placeholder="Mensaje (opcional)" aria-label="Mensaje"></textarea>
+            <div id="feedback-donacion" class="feedback-msg gochi-modal-feedback" role="status" aria-live="polite"></div>
+            <div class="gochi-modal-actions">
+                <button type="button" id="btn-enviar-donacion" class="btn-primary">Enviar</button>
+                <button type="button" id="btn-cerrar-donacion" class="btn-primary btn-muted">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- FOOTER -->
     <footer class="main-footer">
         <div class="footer-container">
