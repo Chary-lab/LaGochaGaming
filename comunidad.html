@@ -293,7 +293,23 @@
         .chat-msg-fecha { color: var(--text-muted); }
         .chat-msg-meta { display: inline-flex; align-items: center; gap: 8px; }
         .chat-msg-texto { color: var(--text-main); font-size: 0.95rem; overflow-wrap: anywhere; }
-        .chat-msg-vacio { text-align: center; color: var(--text-muted); margin-top: 40px; }
+        .typing-indicator { margin-left: auto; font-size: 0.8rem; color: var(--text-muted); font-style: italic; }
+        .btn-scroll-nuevos {
+            position: absolute;
+            bottom: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 5;
+            padding: 6px 14px;
+            border-radius: 999px;
+            border: 1px solid var(--border-color);
+            background: var(--accent-color);
+            color: #000;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
         .btn-burbuja.mia { background: var(--accent-color); color: #000; }
 
         /* === Componentes locales del panel de comunidad === */
@@ -528,8 +544,10 @@
             <div class="chat-header">
                 <i class="fa-solid fa-comments chat-header-icon"></i>
                 <span>Chat Comunitario (Offline / Online)</span>
+                <span id="typing-indicator" class="typing-indicator" hidden></span>
             </div>
 
+            <button type="button" id="btn-scroll-nuevos" class="btn-scroll-nuevos" hidden>Nuevos mensajes ↓</button>
             <div id="chat-mensajes" class="chat-messages" x-data="{}">
                 <template x-for="msg in $store.chat.mensajes" :key="msg.id">
                     <div class="chat-msg-container" :data-msgid="msg.id" @mouseleave="window.ocultarTooltipReaccion?.()">
@@ -544,7 +562,12 @@
                         <div class="reacciones-badges" x-show="$store.reacciones.chips(msg.id).length" x-cloak>
                             <template x-for="chip in $store.reacciones.chips(msg.id)" :key="chip.emoji">
                                 <span class="reaccion-badge" :class="{ mia: chip.mia }"
+                                      tabindex="0" role="button" :aria-label="'Reaccionar con ' + chip.emoji + ', ' + chip.count + ' reacciones'"
                                       @click.stop="window.establecerReaccionUsuario?.(msg.id, chip.emoji)"
+                                      @keydown.enter.prevent.stop="window.establecerReaccionUsuario?.(msg.id, chip.emoji)"
+                                      @keydown.space.prevent.stop="window.establecerReaccionUsuario?.(msg.id, chip.emoji)"
+                                      @focus="window.mostrarTooltipReaccion?.($event.currentTarget, chip.emoji, chip.usuarios)"
+                                      @blur="window.ocultarTooltipReaccion?.()"
                                       @mouseenter="window.mostrarTooltipReaccion?.($event.currentTarget, chip.emoji, chip.usuarios)"
                                       @mouseleave="window.ocultarTooltipReaccion?.()">
                                     <span class="emoji" x-text="chip.emoji"></span>
@@ -557,7 +580,10 @@
                                 <button type="button" class="btn-burbuja"
                                         :class="{ mia: $store.reacciones.miReaccion(msg.id) === emoji }"
                                         :title="emoji" :aria-label="'Reaccionar con ' + emoji"
+                                        tabindex="0"
                                         @click.stop.prevent="window.establecerReaccionUsuario?.(msg.id, emoji)"
+                                        @keydown.enter.prevent.stop="window.establecerReaccionUsuario?.(msg.id, emoji)"
+                                        @keydown.space.prevent.stop="window.establecerReaccionUsuario?.(msg.id, emoji)"
                                         x-text="emoji"></button>
                             </template>
                         </div>
@@ -935,8 +961,57 @@
 
             const chatForm = document.getElementById('chat-form');
             const chatMensajes = document.getElementById('chat-mensajes');
+            const btnScrollNuevos = document.getElementById('btn-scroll-nuevos');
+            if (btnScrollNuevos) {
+                btnScrollNuevos.addEventListener('click', () => {
+                    if (chatMensajes) chatMensajes.scrollTop = chatMensajes.scrollHeight;
+                    ocultarBotonNuevosMensajes();
+                });
+            }
+            const typingIndicator = document.getElementById('typing-indicator');
+            const typingUsers = new Map();
+            let typingChannel = null;
+            if (window.supabase) {
+                typingChannel = window.supabase.channel('typing-broadcast');
+                typingChannel.on('broadcast', { event: 'typing' }, ({ payload }) => {
+                    if (!payload || !payload.apodo || payload.apodo === userNickname) return;
+                    typingUsers.set(payload.apodo, Date.now());
+                    actualizarTypingIndicator();
+                });
+                typingChannel.subscribe();
+            }
+            function actualizarTypingIndicator() {
+                const ahora = Date.now();
+                for (const [n, ts] of typingUsers) {
+                    if (ahora - ts > 2000) typingUsers.delete(n);
+                }
+                if (!typingIndicator) return;
+                const nombres = Array.from(typingUsers.keys()).slice(0, 3);
+                if (nombres.length === 0) {
+                    typingIndicator.hidden = true;
+                    typingIndicator.textContent = '';
+                } else {
+                    typingIndicator.hidden = false;
+                    typingIndicator.textContent = nombres.join(', ') + ' está escribiendo...';
+                }
+            }
+            setInterval(actualizarTypingIndicator, 500);
             const inputAutor = document.getElementById('chat-autor');
-            const inputMensaje = document.getElementById('chat-mensaje');
+            if (inputMensaje) {
+                const guardarScroll = () => {
+                    try { sessionStorage.setItem('chat_scroll', JSON.stringify({ top: chatMensajes.scrollTop, height: chatMensajes.scrollHeight })); } catch (e) {}
+                };
+                window.addEventListener('beforeunload', guardarScroll);
+                window.addEventListener('pagehide', guardarScroll);
+            }
+                let typingTimer = null;
+                inputMensaje.addEventListener('input', () => {
+                    if (!userNickname || !typingChannel) return;
+                    typingChannel.send({ type: 'broadcast', event: 'typing', payload: { apodo: userNickname } });
+                    clearTimeout(typingTimer);
+                    typingTimer = setTimeout(() => {}, 2000);
+                });
+            }
             const onlineUsersListEl = document.getElementById('online-users-list');
             const userProfilePanel = document.getElementById('user-profile-panel');
             const userInfoDisplay = document.getElementById('user-info-display');
@@ -1401,14 +1476,31 @@
                 };
             }
 
-            function scrollAlFinalChat() {
+            function estaCercaDelFinalChat() {
+                if (!chatMensajes) return true;
+                return chatMensajes.scrollHeight - chatMensajes.scrollTop - chatMensajes.clientHeight <= 80;
+            }
+            function ocultarBotonNuevosMensajes() {
+                const btn = document.getElementById('btn-scroll-nuevos');
+                if (btn) btn.hidden = true;
+            }
+            function mostrarBotonNuevosMensajes() {
+                const btn = document.getElementById('btn-scroll-nuevos');
+                if (btn) btn.hidden = false;
+            }
+            function scrollAlFinalChat(forzar) {
                 if (!chatMensajes) return;
+                if (!forzar && !estaCercaDelFinalChat()) {
+                    mostrarBotonNuevosMensajes();
+                    return;
+                }
                 const desplazar = () => { chatMensajes.scrollTop = chatMensajes.scrollHeight; };
                 if (window.Alpine && typeof window.Alpine.nextTick === 'function') {
                     window.Alpine.nextTick(desplazar);
                 } else {
                     desplazar();
                 }
+                ocultarBotonNuevosMensajes();
             }
 
             async function cargarMensajesChat() {
@@ -1545,6 +1637,9 @@
 
             window.mostrarTooltipReaccion = mostrarTooltipReaccion;
             window.ocultarTooltipReaccion = ocultarTooltipReaccion;
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') ocultarTooltipReaccion();
+            });
 
             async function eliminarMensajeChat(msgId) {
                 if (!adminAutenticado) return;
@@ -1633,7 +1728,17 @@
                 chatInicializado = true;
 
                 cargarReaccionesDeSupabase(normalizados);
-                scrollAlFinalChat();
+                try {
+                    const guardado = JSON.parse(sessionStorage.getItem('chat_scroll') || 'null');
+                    if (guardado && Math.abs(guardado.height - chatMensajes.scrollHeight) < 200) {
+                        chatMensajes.scrollTop = guardado.top;
+                        ocultarBotonNuevosMensajes();
+                    } else {
+                        scrollAlFinalChat(true);
+                    }
+                } catch (e) {
+                    scrollAlFinalChat(true);
+                }
             }
 
             // Recarga las reacciones de los mensajes visibles desde el servidor.
@@ -1653,23 +1758,30 @@
                 const store = obtenerStoreReacciones();
                 if (!store) return;
                 try {
+                    const ahora = Date.now();
                     const ids = mensajes.map(m => Number(m.id)).filter(id => Number.isFinite(id));
-                    if (ids.length === 0) return;
+                    const idsFiltrados = ids.filter(id => {
+                        const ts = store._reaccionTs?.[id];
+                        return !ts || (ahora - ts > 300000);
+                    });
+                    if (idsFiltrados.length === 0) return;
+                    if (!store._reaccionTs) store._reaccionTs = {};
                     const { data, error } = await supabase
                         .from('message_reactions')
                         .select('message_id, emoji, user_id, apodo')
-                        .in('message_id', ids);
+                        .in('message_id', idsFiltrados);
                     if (error) {
                         console.warn('[REACCIÓN] Supabase reacciones falló (¿tabla ausente?), usando cache localStorage:', error.message);
                         return;
                     }
+                    idsFiltrados.forEach(id => { store._reaccionTs[id] = ahora; });
 
                     const cache = JSON.parse(JSON.stringify(store.cache));
                     const mias = JSON.parse(JSON.stringify(store.mias));
 
                     // Reconstruir desde el servidor: si solo se añadieran las filas
                     // recibidas, las reacciones cambiadas o borradas quedaban fantasma.
-                    ids.forEach(id => { cache[id] = {}; });
+                    idsFiltrados.forEach(id => { cache[id] = {}; });
                     const conMiReaccion = new Set();
 
                     (data || []).forEach(r => {
@@ -1690,7 +1802,7 @@
                     // confirmación. Si el servidor ya la refleja, manda el servidor; si no
                     // la refleja y no está pendiente, la reacción ya no existe.
                     const pendientes = obtenerPendientesLocales();
-                    ids.forEach(id => {
+                    idsFiltrados.forEach(id => {
                         const miEmoji = pendienteVigente(pendientes[id]);
                         if (!miEmoji || conMiReaccion.has(id)) return;
                         if (!userNickname) return;
@@ -1702,7 +1814,7 @@
                     });
 
                     // Limpiar el marcador de "mi reacción" si el servidor ya no la tiene
-                    ids.forEach(id => {
+                    idsFiltrados.forEach(id => {
                         if (conMiReaccion.has(id)) return;
                         if (pendientes[id] && Date.now() - (pendientes[id].ts || 0) <= PENDIENTE_TTL_MS) return;
                         if (mias[id]) delete mias[id];
@@ -1756,7 +1868,25 @@ if (chatForm) {
                     if (!mensaje) return;
                     ultimoEnvio = ahora;
                     const btnEnviar = chatForm.querySelector('button[type="submit"]');
-                    if (btnEnviar) btnEnviar.disabled = true;
+                    if (btnEnviar) {
+                        btnEnviar.disabled = true;
+                        let restante = 2.5;
+                        const actualizarTexto = () => {
+                            const s = Math.ceil(restante);
+                            btnEnviar.textContent = 'Enviar (' + s + 's)';
+                        };
+                        actualizarTexto();
+                        const intervalo = setInterval(() => {
+                            restante -= 0.1;
+                            if (restante <= 0) {
+                                clearInterval(intervalo);
+                                btnEnviar.disabled = false;
+                                btnEnviar.textContent = 'Enviar';
+                            } else {
+                                actualizarTexto();
+                            }
+                        }, 100);
+                    }
                     try {
                         const token = localStorage.getItem(STORAGE_KEY_TOKEN);
                         const { data: resultado, error } = await supabase.rpc('enviar_mensaje_chat', { p_token: token, p_mensaje: mensaje });
@@ -1798,7 +1928,6 @@ if (chatForm) {
                         console.error('Error enviando mensaje:', e);
                         mostrarToast('No se pudo enviar el mensaje. Revisa tu conexión.', true);
                     }
-                    if (btnEnviar) btnEnviar.disabled = false;
                 });
             }
 
