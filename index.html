@@ -135,7 +135,7 @@
         }
     </style>
 </head>
-<body>
+<body id="top">
 
     <!-- ALERTA VISUAL DE STREAM EN VIVO -->
     <header id="global-header">
@@ -143,9 +143,9 @@
             <div class="logo navbar-brand">LAGOCHA<span>GAMING</span></div>
             <button class="mobile-menu-toggle-btn navbar-toggler" aria-label="Abrir menú"><i class="fa-solid fa-bars"></i></button>
             <div class="nav-links navbar-nav">
-                <a href="./" class="nav-link nav-active" aria-current="page">Inicio</a>
-                <a href="./#stream" class="nav-link">Directo</a>
-                <a href="./#clips" class="nav-link">Clips</a>
+                <a href="#top" class="nav-link nav-active" aria-current="page" id="nav-inicio">Inicio</a>
+                <a href="#stream" class="nav-link">Directo</a>
+                <a href="#clips" class="nav-link">Clips</a>
                 <a href="cine" class="nav-link">🍿 GochiWatch</a>
                 <a href="sorteo" class="nav-link">🎁 Sorteo</a>
                 <a href="galeria" class="nav-link">📸 Galería</a>
@@ -299,6 +299,22 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0" defer></script>
 
     <script src="main.js" defer></script>
+    <script>
+        // Navegación Inicio: scroll al top
+        document.addEventListener('DOMContentLoaded', () => {
+            const navInicio = document.getElementById('nav-inicio');
+            if (navInicio) {
+                navInicio.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    // Actualizar clase activa
+                    document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('nav-active'));
+                    navInicio.classList.add('nav-active');
+                    navInicio.setAttribute('aria-current', 'page');
+                });
+            }
+        });
+    </script>
     <script>
         let paginaActualMuro = 0;
         const LIMITE_POR_PAGINA = 12;
