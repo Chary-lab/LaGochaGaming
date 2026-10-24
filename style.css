@@ -184,27 +184,64 @@ body.light-mode .hero-bio {
 }
 .content-section h2 { font-size: 1.5rem; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-main); border-left: 4px solid var(--accent-color); padding-left: 10px; }
 
-/* YouTube & Clips Grid */
-.youtube-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-.video-card { background-color: var(--card-bg); border-radius: 14px; padding: 15px; display: flex; flex-direction: column; align-items: center; border: 1px solid var(--border-color); box-shadow: var(--glow); transition: 0.3s; }
-.video-card:hover { border-color: var(--accent-color); transform: translateY(-3px); }
-.video-thumb { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 10px; margin-bottom: 15px; border: 1px solid var(--border-color); overflow: hidden; position: relative; }
+/* Hero Section - ancho completo como el header */
+    .hero-section {
+        position: relative;
+        margin-top: 0 !important;
+        padding: 80px 20px 60px;
+    background-image: linear-gradient(rgba(13, 15, 18, 0.75), rgba(13, 15, 18, 0.85)), url('img/fono.webp');
+    background-size: cover;
+    background-position: center;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: left;
+    width: 100%;
+    }
+
+/* Main Container & Stream - ancho contenido como antes */
+.main-container { display: flex; max-width: 1600px; margin: 15px auto; padding: 0 20px; gap: 15px; height: 52vh; min-height: 400px; }
+.video-container { flex: 0 0 76%; background: #000; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color); }
+.video-container iframe { width: 100%; height: 100%; }
+
+.chat-sidebar { flex: 0 0 24%; background: var(--card-bg); border-radius: 12px; padding: 0; display: flex; align-items: center; justify-content: center; text-align: center; border: 1px solid var(--border-color); overflow: hidden; }
+.chat-iframe { border: none; border-radius: 12px; display: block; width: 100%; height: 100%; }
+
+/* Sections - ancho contenido estructural como antes */
+.content-section { max-width: 1600px; margin: 35px auto; padding: 0 20px; }
+.content-section h2 { font-size: 1.5rem; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-main); border-left: 4px solid var(--accent-color); padding-left: 10px; }
+
+/* Footer - ancho completo como el hero */
+.main-footer { width: 100%; background-color: var(--card-bg); padding: 40px 0; margin-top: 60px; display: flex; justify-content: center; align-items: center; border-top: 1px solid var(--border-color); }
+.footer-container { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; width: 100%; }
+.youtube-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+.video-card { background-color: var(--card-bg); border-radius: 16px; padding: 22px; display: flex; flex-direction: column; align-items: center; border: 1px solid var(--border-color); box-shadow: var(--glow); transition: 0.3s; }
+.video-card:hover { border-color: var(--accent-color); transform: translateY(-4px); box-shadow: var(--glow-2); }
+.video-thumb { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border-color); overflow: hidden; position: relative; }
 .video-thumb iframe { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; border: none !important; }
-.watch-btn { display: inline-block; width: 100%; text-align: center; padding: 8px 20px; background: var(--accent-color); color: white; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 0.9rem; box-shadow: var(--glow); transition: filter 0.2s; }
-.watch-btn:hover { filter: brightness(1.1); }
+.watch-btn { display: inline-block; width: 100%; text-align: center; padding: 10px 24px; background: var(--accent-color); color: white; text-decoration: none; border-radius: 10px; font-weight: bold; font-size: 1rem; box-shadow: var(--glow); transition: filter 0.2s, transform 0.2s; }
+.watch-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+/* Clips m·s grandes en desktop */
+@media (min-width: 1200px) {
+    .youtube-grid { grid-template-columns: repeat(3, 1fr); gap: 32px; }
+    .video-card { padding: 26px; }
+    .watch-btn { font-size: 1.05rem; padding: 12px 28px; }
+}
 
 /* Social Feed (Instagram & TikTok) */
-.social-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 25px; }
-.social-column { background-color: var(--card-bg); border-radius: 16px; padding: 20px; border: 1px solid var(--border-color); box-shadow: var(--glow); display: flex; flex-direction: column; }
+.social-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 32px; }
+.social-column { background-color: var(--card-bg); border-radius: 20px; padding: 28px; border: 1px solid var(--border-color); box-shadow: var(--glow); display: flex; flex-direction: column; }
 .social-column.tiktok-col { border-color: rgba(0, 242, 254, 0.3); box-shadow: var(--glow-tiktok); }
-.social-column h3 { font-size: 1.2rem; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; text-align: center; color: var(--accent-color); }
+.social-column h3 { font-size: 1.3rem; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; text-align: center; color: var(--accent-color); }
 .social-column.tiktok-col h3 { color: var(--accent-tiktok); }
 
 .social-feed-box {
     width: 100%;
-    height: 560px;
+    height: 640px;
     background: var(--card-bg-subtle);
-    border-radius: 12px;
+    border-radius: 16px;
     overflow: hidden !important;
     border: 1px solid var(--border-color);
     position: relative;
@@ -221,8 +258,8 @@ body.light-mode .hero-bio {
 }
 
 /* YouTube Compacto */
-.youtube-wrapper { border-color: var(--border-color); padding: 15px; border-radius: 16px; background-color: var(--card-bg); margin-top: 15px; }
-.youtube-box-compact { width: 100%; aspect-ratio: 16/9; min-height: 240px; border-radius: 12px; overflow: hidden; background: var(--card-bg-subtle); }
+.youtube-wrapper { border-color: var(--border-color); padding: 28px; border-radius: 20px; background-color: var(--card-bg); margin-top: 30px; }
+.youtube-box-compact { width: 100%; aspect-ratio: 16/9; min-height: 360px; border-radius: 16px; overflow: hidden; background: var(--card-bg-subtle); }
 .youtube-iframe-compact { display: block; width: 100%; height: 100%; border: none; }
 .youtube-fallback { display: none; }
 
@@ -668,16 +705,16 @@ body.light-mode #lightbox .lightbox-caption {
 /* Lightbox */
 
 
-/* Muro de Saludos (Centrado y sim√©trico) */
+/* Muro de Saludos - ancho completo como el hero */
 .muro-form-container {
     background-color: var(--card-bg);
     border: 1px solid var(--border-color);
     border-radius: 16px;
     padding: 30px;
     margin: 0 auto 35px auto;
-    max-width: 750px;
     box-shadow: var(--glow);
-}
+    width: 100%;
+    }
 
 .muro-form {
     display: flex;
