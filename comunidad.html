@@ -1009,18 +1009,18 @@ setInterval(actualizarTypingIndicator, 500);
                 try {
                     // Si estamos en modo registro, forzamos crear cuenta nueva
                     if (_modalModo === 'registro') {
-                        const verif = await verificarLogin(nick, pin);
-                        if (verif.ok) {
-                            if (nicknameModalError) { nicknameModalError.textContent = 'Este usuario ya existe. Usa "Iniciar Sesión" si es tu cuenta.'; nicknameModalError.style.display = 'block'; }
-                            return;
-                        }
                         const reg = await registrarUsuario(nick, pin);
                         if (reg.ok && reg.token && reg.usuario) {
                             guardarSesion(reg.usuario.apodo, reg.token, reg.usuario.puntos, reg.usuario.rango, reg.usuario.id);
                             hideNicknameModal();
                             return;
                         }
-                        if (nicknameModalError) { nicknameModalError.textContent = traducir(reg.error); nicknameModalError.style.display = 'block'; }
+                        if (nicknameModalError) {
+                            nicknameModalError.textContent = reg.error === 'apodo_duplicado'
+                                ? 'Este usuario ya existe. Usa "Iniciar Sesión" si es tu cuenta.'
+                                : traducir(reg.error);
+                            nicknameModalError.style.display = 'block';
+                        }
                         return;
                     }
 
