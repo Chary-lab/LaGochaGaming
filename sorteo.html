@@ -573,7 +573,7 @@
                 <div class="participants-box" x-data="{}">
                     <h4 class="participants-title">Participantes Registrados Online (<span id="count-streamer" x-text="$store.sorteo.participantes.length">0</span>)</h4>
                     <ul id="lista-participantes-streamer" class="participants-list">
-                        <template x-for="p in $store.sorteo.participantes" :key="p.username">
+                        <template x-for="p in $store.sorteo.participantes" :key="p.id || p.username">
                             <li class="tag-participante">
                                 <span x-text="'@' + p.username"></span>
                                 <template x-if="Number(p.peso) > 1">
