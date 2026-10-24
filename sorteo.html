@@ -656,6 +656,9 @@
                     const adminOk = await window.esAdminActual?.();
                     if (adminOk) {
                         streamerAutenticado = true;
+                        cambiarTab('streamer');
+                    } else {
+                        cambiarTab('manual');
                     }
                 } catch (e) {
                     console.error('Error obteniendo sesión:', e);
