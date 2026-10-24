@@ -85,17 +85,22 @@
                     <span class="admin-status" id="statusSyncText">🟢 Sincronización activa</span>
                 </div>
 
-                <!-- INSTRUCCIONES RÁPIDAS (solo visible cuando el panel está abierto) -->
+                <!-- INSTRUCCIONES RÁPIDAS (colapsible, oculto por defecto) -->
                 <div class="admin-instructions">
-                    <h4 class="admin-instructions-title"><i class="fa-solid fa-circle-info"></i> Cómo usar este panel</h4>
-                    <ul class="admin-instructions-list">
-                        <li><i class="fa-solid fa-link"></i> <strong>Enlaces permitidos:</strong> YouTube, Google Drive y videos <strong>.mp4</strong> directos.</li>
-                        <li><i class="fa-solid fa-play"></i> <strong>Cargar video:</strong> pega el enlace y haz clic en "Cargar Video". El reproductor cambiará automáticamente.</li>
-                        <li><i class="fa-solid fa-pause"></i> <strong>Apagar:</strong> detiene la reproducción y limpia el reproductor para todos.</li>
-                        <li><i class="fa-solid fa-sync"></i> <strong>Sincronización:</strong> lo que tú reproduces, pausas o buscas se refleja en tiempo real en la pantalla del público.</li>
-                        <li><i class="fa-solid fa-right-from-bracket"></i> <strong>Cerrar Sesión:</strong> sale de este panel y del modo admin.</li>
-                    </ul>
-                    <p class="admin-instructions-tip"><i class="fa-solid fa-lightbulb"></i> <strong>Tip:</strong> con YouTube, copia el enlace de YouTube (no el embed). Con Drive, usa el enlace <code>/d/ID</code>.</p>
+                    <button type="button" class="admin-instructions-toggle" id="btn-toggle-instrucciones" aria-expanded="false" aria-controls="admin-instructions-body">
+                        <i class="fa-solid fa-circle-info"></i> <span>Instrucciones</span>
+                        <i class="fa-solid fa-chevron-down" id="icono-instrucciones"></i>
+                    </button>
+                    <div class="admin-instructions-body" id="admin-instructions-body">
+                        <ul class="admin-instructions-list">
+                            <li><i class="fa-solid fa-link"></i> <strong>Enlaces permitidos:</strong> YouTube, Google Drive y videos <strong>.mp4</strong> directos.</li>
+                            <li><i class="fa-solid fa-play"></i> <strong>Cargar video:</strong> pega el enlace y haz clic en "Cargar Video". El reproductor cambiará automáticamente.</li>
+                            <li><i class="fa-solid fa-pause"></i> <strong>Apagar:</strong> detiene la reproducción y limpia el reproductor para todos.</li>
+                            <li><i class="fa-solid fa-sync"></i> <strong>Sincronización:</strong> lo que tú reproduces, pausas o buscas se refleja en tiempo real en la pantalla del público.</li>
+                            <li><i class="fa-solid fa-right-from-bracket"></i> <strong>Cerrar Sesión:</strong> sale de este panel y del modo admin.</li>
+                        </ul>
+                        <p class="admin-instructions-tip"><i class="fa-solid fa-lightbulb"></i> <strong>Tip:</strong> El reproductor convierte automáticamente los enlaces de YouTube y Drive. Solo pega el link que copias de tu navegador, no hace falta formato especial.</p>
+                    </div>
                 </div>
             </div>
 
@@ -289,6 +294,7 @@
 
             switch (trigger.dataset.action) {
                 case 'toggle-streamer-panel': toggleModoStreamerCine(); break;
+                case 'toggle-instrucciones': toggleInstruccionesPanel(); break;
                 case 'load-video': actualizarUrlPelicula(); break;
                 case 'stop-video': cerrarReproductorTotal(); break;
                 case 'logout-admin': window.cerrarSesionAdminGlobal?.(); break;
@@ -538,6 +544,14 @@
         function ocultarOverlayCarga() {
             const overlay = document.getElementById('cinePlayerOverlay');
             if (overlay) overlay.classList.add('hide');
+        }
+
+        function toggleInstruccionesPanel() {
+            const body = document.getElementById('admin-instructions-body');
+            const btn = document.getElementById('btn-toggle-instrucciones');
+            if (!body || !btn) return;
+            const abierto = body.classList.toggle('open');
+            btn.setAttribute('aria-expanded', abierto ? 'true' : 'false');
         }
 
         function mostrarOverlayCarga(mensagem = 'Esperando video del streamer…', esError = false) {
