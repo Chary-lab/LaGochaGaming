@@ -10,6 +10,7 @@
 !robots.txt
 !sitemap.xml
 !_headers
+!VERSION
 # Permitir carpeta de imágenes
 !img/
 !img/*

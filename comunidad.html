@@ -859,7 +859,7 @@ setInterval(actualizarTypingIndicator, 500);
 
             let adminAutenticado = false;
             try {
-                // La lista de administradores vive en main.js (window.esAdminActual).
+                // El rol de admin lo resuelve la RPC es_admin() desde main.js (window.esAdminActual).
                 adminAutenticado = !!(await window.esAdminActual?.());
                 if (adminAutenticado) {
                     document.body.classList.add('admin-mode-active');

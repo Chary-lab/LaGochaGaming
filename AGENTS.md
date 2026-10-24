@@ -6,7 +6,7 @@
 
 **Repo:** github.com/Chary-lab/LaGochaGaming · **Prod:** lagochagaming.com (GitHub Pages, rama `main`, sin build)
 **Supabase:** `cydiyaacnyydprgffmkq` · `us-west-2` · Postgres 17.11
-**Versión:** v1.2.8 · **Actualizado:** 2026-10-24 · **BD:** verificado vía PostgREST `anon` el 2026-10-24 (catálogo/políticas sin verificar)
+**Versión:** v1.2.9 · **Actualizado:** 2026-10-24 · **BD:** verificado vía PostgREST `anon` el 2026-10-24; `es_admin()` y 22 políticas leídas por SQL el 2026-10-24 (catálogo completo sin revisar)
 
 **Regla de oro:** 5 HTML + `main.js` + `style.css`. Sin frameworks nuevos, sin npm, sin bundler, sin archivos extra.
 
@@ -38,16 +38,16 @@
 |---|---|
 | 12–16 | `SUPABASE_URL`, `SUPABASE_KEY` (anon), `window.supabase` |
 | 31–41 | `escapeHtml`, `escapeAttr` (usar siempre con datos de BD) |
-| 43–69 | `ADMIN_EMAIL`, `esAdminActual()`, `refrescarCacheAdmin()`, `onAuthStateChange` |
-| 73–134 | `lanzarConfetti(canvasId, opciones)` |
-| 136–185 | Trampa de foco para modales (`activarTrampaFoco`, `desactivarTrampaFoco`) |
-| 187–211 | `initTema`, `toggleTema` (persistencia en localStorage) |
-| 213–254 | `cerrarSesion`, `cerrarSesionAdminGlobal` |
-| 256–280 | `actualizarUsuarioNavComunidad`, `validarSesionStreamer` |
-| 282–370 | `insertarComponentesUIGlobales`, alertas/toasts de stream, `mostrarToast` |
-| 371–418 | `mostrarConfirmacionModal` + cierre de modales |
-| 420–452 | `inicializarMenuMovil`, `inicializarNavLinks` |
-| 461–630 | Polling de Kick: `verificarEstadoStream`, backoff, `visibilitychange`, intervalo 90 s |
+| 43–85 | `esAdminActual()` vía RPC `es_admin()` (exige sesión + email confirmado, caché por `user.id`), `onAuthStateChange`, `refrescarCacheAdmin()` |
+| 89–155 | `lanzarConfetti(canvasId, opciones)` |
+| 159–199 | Trampa de foco para modales (`activarTrampaFoco`, `desactivarTrampaFoco`) |
+| 203–225 | `initTema`, `toggleTema` (persistencia en localStorage) |
+| 229–270 | `cerrarSesion`, `cerrarSesionAdminGlobal` |
+| 272–294 | `actualizarUsuarioNavComunidad`, `validarSesionStreamer` |
+| 298–385 | `insertarComponentesUIGlobales`, alertas/toasts de stream, `mostrarToast` |
+| 387–432 | `mostrarConfirmacionModal` + cierre de modales |
+| 436–468 | `inicializarMenuMovil`, `inicializarNavLinks` |
+| 477–646 | Polling de Kick: `verificarEstadoStream`, backoff, `visibilitychange`, intervalo 90 s |
 
 Patrón: todo se expone en `window.*` (no hay módulos ES). `main.js` se carga con `defer` en las 5 páginas; Supabase debe cargarse antes. `DOMContentLoaded` al final inicializa polling, UI global, tema, menú y nav.
 
@@ -101,7 +101,7 @@ Tablas (11): `comunidad_chat`, `comunidad_sesiones`, `config_sorteo`, `galeria`,
 - **Columnas revocadas para `anon`:** `usuarios_comunidad.pin_hash`, `apodo_norm`, `ultimo_punto` (HTTP 401). `id`, `apodo`, `puntos`, `rango` sí se leen.
 - **RLS:** `PATCH` de `anon` sobre filas existentes de `galeria`, `config_sorteo`, `sync_cine`, `comunidad_chat` y `muro_saludos` devuelve `[]` (bloqueado). `INSERT`/`DELETE` no probados para no alterar datos.
 - **`comunidad_sesiones`:** 0 filas visibles; RLS sin políticas según auditoría previa → solo RPC `SECURITY DEFINER` (intencional).
-- **RPC:** `es_admin()` → `false` para `anon`; `obtener_rangos()` público; `actualizar_autor_galeria` → 401 (no ejecutable por `anon`). `sortear_ganador_sorteo` y `asignar_peso_sorteo` sin verificar.
+- **RPC:** `es_admin()` es `sql STABLE`, `SECURITY INVOKER`, `search_path=''` y su cuerpo es `select coalesce(auth.email() = 'gocha@admin.com', false)`; **22 políticas RLS** de 9 tablas + `storage.objects` dependen de ella. `obtener_rangos()` público; `actualizar_autor_galeria` → 401 (no ejecutable por `anon`). `sortear_ganador_sorteo` y `asignar_peso_sorteo` sin verificar.
 - **Auth:** `disable_signup=false`, `mailer_autoconfirm=false`, solo proveedor email. Sin MFA.
 - **Auth comunidad:** `login_comunidad`, `registrar_comunidad`, `validar_sesion_comunidad`, `cerrar_sesion_comunidad`; rate limit `registrar_intento_auth` (5/15 min, según auditoría previa).
 - **Migraciones:** 28 (última `20261023075705_eliminar_visitas_tracking`), sin Edge Functions. Sin re-verificar.
@@ -117,7 +117,7 @@ Tablas (11): `comunidad_chat`, `comunidad_sesiones`, `config_sorteo`, `galeria`,
 - **Lógica compartida:** añade `window.miFuncion = function…` en `main.js`, úsala desde las páginas y pruébala en las 5.
 - **Lógica exclusiva:** script inline de esa página (así está hecho hoy). Mantén el orden: Supabase → `main.js` (`defer`) → Alpine (`defer`).
 - **Datos:** `window.supabase.from(...)` para lecturas; para escrituras sensibles usa RPC `SECURITY DEFINER`, no expongas `service_role`.
-- **Admin:** `window.esAdminActual()` (hoy compara email; ver prioridad 2).
+- **Admin:** `window.esAdminActual()` → RPC `es_admin()` con sesión y email confirmado; nunca compares emails en el cliente. La cuenta admin (`gocha@admin.com`) está confirmada y sin `app_metadata.role`.
 - **Estilos:** usa variables de `:root` y media queries existentes; modo claro/oscuro debe seguir funcionando.
 - **XSS:** todo dato de BD en `innerHTML` pasa por `escapeHtml`/`escapeAttr` o se inserta con `textContent`.
 
@@ -125,14 +125,14 @@ Tablas (11): `comunidad_chat`, `comunidad_sesiones`, `config_sorteo`, `galeria`,
 
 ## 6. Problemas conocidos (prioridad)
 
-1. **Admin por email:** `main.js:43` (`gocha@admin.com`) y `esAdminActual()` compara solo email. No existe `app_metadata.role` en el frontend. Migrar a claim/RPC y exigir email confirmado.
+1. **Admin por email (residual):** el cliente ya no compara emails (v1.2.9): `esAdminActual()` llama a `es_admin()` y exige sesión + email confirmado. Pero la RPC sigue decidiendo por `auth.email()`, así que la autorización depende de un email y no de un rol. Siguiente paso: `app_metadata.role = 'admin'` en la RPC (las 22 políticas se actualizan solas, el cliente no cambia).
 2. **Cabeceras inertes:** `_headers` no lo aplica GitHub Pages (devuelve 404). Producción sin CSP/HSTS reales. Migrar a Cloudflare/Netlify Pages o meta tags.
 3. **BD:** revisar si la policy `SELECT` de `galeria` expone pendientes; decidir `donaciones`; confirmar y borrar los 4 índices sin uso; verificar permisos de `sortear_ganador_sorteo`/`asignar_peso_sorteo`.
 4. **Peso:** Bootstrap CSS y Font Awesome completos con uso mínimo; CSS/JS inline duplicado; fuentes de Google; `img/1-3.jpg` 1024×576 (~430 KB).
 5. **A11y restante:** 12 campos sin label/`aria-label`, falta skip-link, menú móvil no cierra con Escape, confeti sin `aria-hidden`; `comunidad.html` salta de `h1` a `h3` (faltan `h2`).
 6. **Detalles menores:** atributos deprecated en iframes; `AGENTS.md:61` sigue describiendo como bug vivo el fallback de YouTube de `index.html` (marcado como corregido en la prioridad antigua).
 
-**Resueltos:** login admin/streamer valida `esAdminActual()` (galería y sorteo, desde v1.0.0); `galeria.html`/`sorteo.html` ya no abren panel con cualquier cuenta. Cine en v1.2.3 (`<source>` vacío, fallback de YouTube, login). v1.2.6/v1.2.7 instrucciones del panel streamer. v1.2.8 `src=""` de `#canal-preview`, `<h1>` en comunidad, typos y metas de `sorteo.html`, 34 botones con `type="button"`, comentario "60s" → 90 s.
+**Resueltos:** login admin/streamer valida `esAdminActual()` (galería y sorteo, desde v1.0.0); `galeria.html`/`sorteo.html` ya no abren panel con cualquier cuenta. Cine en v1.2.3 (`<source>` vacío, fallback de YouTube, login). v1.2.6/v1.2.7 instrucciones del panel streamer. v1.2.8 `src=""` de `#canal-preview`, `<h1>` en comunidad, typos y metas de `sorteo.html`, 34 botones con `type="button"`, comentario "60s" → 90 s. v1.2.9 `esAdminActual()` migrado a la RPC `es_admin()` (sin email hardcodeado en el cliente, exige email confirmado, caché por usuario).
 
 ---
 

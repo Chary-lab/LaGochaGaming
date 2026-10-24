@@ -40,20 +40,37 @@ window.escapeAttr = function escapeAttr(s) {
     }[c]));
 };
 
-const ADMIN_EMAIL = 'gocha@admin.com';
-let _adminEmailCache = null;
+// El rol de admin lo resuelve el servidor con la RPC es_admin() (evalua auth.email()).
+let _adminCache = null;
 
 window.esAdminActual = async function esAdminActual() {
+    if (!window.supabase) return false;
+
+    let user = null;
     try {
-        if (!window.supabase) return false;
-        const { data } = await window.supabase.auth.getSession();
-        const session = data && data.session;
-        const email = session && session.user ? (session.user.email || '') : '';
-        _adminEmailCache = email;
+        const { data, error } = await window.supabase.auth.getSession();
+        if (error) return false;
+        user = data && data.session ? data.session.user : null;
     } catch (e) {
-        _adminEmailCache = '';
+        return false;
     }
-    return _adminEmailCache === ADMIN_EMAIL;
+
+    if (!user) { _adminCache = null; return false; }
+    if (user.email_confirmed_at === null) return false;
+    if (_adminCache && _adminCache.userId === user.id) return _adminCache.ok;
+
+    let ok = false;
+    let definitivo = false;
+    try {
+        const { data, error } = await window.supabase.rpc('es_admin');
+        if (error) console.warn('No se pudo verificar el rol de admin:', error.message);
+        else { ok = data === true; definitivo = true; }
+    } catch (e) {
+        console.warn('No se pudo verificar el rol de admin:', e);
+    }
+
+    if (definitivo) _adminCache = { userId: user.id, ok: ok };
+    return ok;
 };
 
 // Mantener la caché sincronizada con cambios de sesión (login/logout en otra pestaña/página).
@@ -65,7 +82,7 @@ if (window.supabase && typeof window.supabase.auth?.onAuthStateChange === 'funct
 
 // Se llama tras iniciar o cerrar sesión para que la caché no quede obsoleta.
 window.refrescarCacheAdmin = function refrescarCacheAdmin() {
-    _adminEmailCache = null;
+    _adminCache = null;
 };
 
 // Confeti reutilizable. Acepta el id de un canvas existente o, si no se pasa,
