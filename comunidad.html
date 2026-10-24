@@ -995,21 +995,25 @@
                     typingIndicator.textContent = nombres.join(', ') + ' está escribiendo...';
                 }
             }
-            setInterval(actualizarTypingIndicator, 500);
+setInterval(actualizarTypingIndicator, 500);
             const inputAutor = document.getElementById('chat-autor');
+            let inputMensaje = document.getElementById('chat-mensaje');
             if (inputMensaje) {
                 const guardarScroll = () => {
                     try { sessionStorage.setItem('chat_scroll', JSON.stringify({ top: chatMensajes.scrollTop, height: chatMensajes.scrollHeight })); } catch (e) {}
                 };
                 window.addEventListener('beforeunload', guardarScroll);
                 window.addEventListener('pagehide', guardarScroll);
-            }
+
                 let typingTimer = null;
                 inputMensaje.addEventListener('input', () => {
                     if (!userNickname || !typingChannel) return;
                     typingChannel.send({ type: 'broadcast', event: 'typing', payload: { apodo: userNickname } });
                     clearTimeout(typingTimer);
-                    typingTimer = setTimeout(() => {}, 2000);
+                    typingTimer = setTimeout(() => {
+                        typingUsers.delete(userNickname);
+                        actualizarTypingIndicator();
+                    }, 2000);
                 });
             }
             const onlineUsersListEl = document.getElementById('online-users-list');
