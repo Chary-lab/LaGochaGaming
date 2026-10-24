@@ -522,30 +522,26 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // escapeHtml / escapeAttr viven en main.js (fuente única del sitio)
 
-        // Detección de fallo de YouTube (load/error + timeout) sin manejadores inline
+        // Detección de fallo de YouTube (timeout) sin depender de contentWindow cross-origin
         const ytIframe = document.getElementById('yt-iframe');
         const ytFallback = document.querySelector('.youtube-fallback');
         if (ytIframe && ytFallback) {
+            let cargado = false;
             ytIframe.addEventListener('load', () => {
+                cargado = true;
                 ytIframe.style.display = '';
                 ytFallback.style.display = 'none';
             });
             ytIframe.addEventListener('error', () => {
+                cargado = true;
                 ytIframe.style.display = 'none';
                 ytFallback.style.display = 'block';
             });
+            // Timeout: si no se cargó en 10s, muestra fallback
             setTimeout(() => {
-                if (ytFallback.style.display !== 'block') {
-                    try {
-                        const doc = ytIframe.contentWindow || ytIframe.contentDocument;
-                        if (!doc) {
-                            ytIframe.style.display = 'none';
-                            ytFallback.style.display = 'block';
-                        }
-                    } catch (e) {
-                        ytIframe.style.display = 'none';
-                        ytFallback.style.display = 'block';
-                    }
+                if (!cargado) {
+                    ytIframe.style.display = 'none';
+                    ytFallback.style.display = 'block';
                 }
             }, 10000);
         }

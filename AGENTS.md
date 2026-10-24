@@ -6,7 +6,7 @@
 
 **Repo:** github.com/Chary-lab/LaGochaGaming · **Prod:** lagochagaming.com (GitHub Pages, rama `main`, sin build)
 **Supabase:** `cydiyaacnyydprgffmkq` · `us-west-2` · Postgres 17.11
-**Versión:** v1.2.2 · **Actualizado:** 2026-10-24 · **BD:** verificado vía PostgREST `anon` el 2026-10-24 (catálogo/políticas sin verificar)
+**Versión:** v1.2.3 · **Actualizado:** 2026-10-24 · **BD:** verificado vía PostgREST `anon` el 2026-10-24 (catálogo/políticas sin verificar)
 
 **Regla de oro:** 5 HTML + `main.js` + `style.css`. Sin frameworks nuevos, sin npm, sin bundler, sin archivos extra.
 
@@ -19,7 +19,7 @@
 | `index.html` | 554 | Home: hero, stream Kick, clips, feed social, YouTube, muro | Tocar la portada o el stream |
 | `galeria.html` | 1103 | Galería pública, subida, moderación admin, lightbox | Fotos, likes, aprobación |
 | `comunidad.html` | 1959 | Chat, ranking, online, reacciones, muro, celebración | Chat o usuarios |
-| `cine.html` | 519 | GochiWatch: YouTube IFrame API, panel streamer | Cine o reproducción |
+| `cine.html` | ~620 | GochiWatch: YouTube IFrame API, panel streamer, sync_cine | Cine o reproducción |
 | `sorteo.html` | 904 | Sorteo manual/streamer, participantes, ganadores | Sorteos |
 | `main.js` | 631 | Helpers globales, admin, tema, toasts, modales, polling | Lógica compartida |
 | `style.css` | 3282 | Tema claro/oscuro, layout, componentes, responsive | Cualquier estilo |
@@ -76,9 +76,10 @@ Patrón: todo se expone en `window.*` (no hay módulos ES). `main.js` se carga c
 - **A11y:** la página no tiene ningún `<h1>`.
 
 ### `cine.html`
-- YouTube IFrame API (`onYouTubeIframeAPIReady`) + Supabase.
-- Panel maestro del streamer para cambiar video; el login abre el panel con **cualquier** cuenta Auth (no valida `esAdminActual()`).
-- **Bug:** `<source id="cineVideoSource" src="">` (~234): markup inválido, puede intentar cargar la página como vídeo.
+- YouTube IFrame API (`onYouTubeIframeAPIReady`) + Supabase + Realtime con reconexión automática.
+- Panel maestro del streamer para cambiar video; login **valida `esAdminActual()`** (v1.2.3).
+- Overlay de carga/error (`#cinePlayerOverlay`).
+- **Corregido (v1.2.3):** `<source id="cineVideoSource">` sin `src` vacío; fallback de YouTube en `index.html` (timeout sin `contentWindow`); regex de YouTube expandida; manejo de errores `onError`/`onStateChange`; limpieza de `ytPlayer` al cambiar a MP4.
 
 ### `sorteo.html`
 - Store `sorteo` (~626). Modo streamer para admin, modo manual/público para el resto.
@@ -124,10 +125,10 @@ Tablas (11): `comunidad_chat`, `comunidad_sesiones`, `config_sorteo`, `galeria`,
 
 ## 6. Problemas conocidos (prioridad)
 
-1. **Login admin sin validar rol:** galería, cine y sorteo abren el panel admin/streamer con **cualquier** cuenta Auth válida (`adminAutenticado`/`streamerAutenticado = true` sin `esAdminActual()`). Con registro abierto, cualquiera puede crear cuenta y ver la UI. Las escrituras siguen bloqueadas por RLS/RPC, pero es la prioridad #1.
+1. **Login admin sin validar rol:** galería y sorteo abren el panel admin/streamer con **cualquier** cuenta Auth válida (`adminAutenticado`/`streamerAutenticado = true` sin `esAdminActual()`). Con registro abierto, cualquiera puede crear cuenta y ver la UI. Las escrituras siguen bloqueadas por RLS/RPC, pero es la prioridad #1. **Cine corregido en v1.2.3.**
 2. **Admin por email:** `main.js:43` (`gocha@admin.com`) y `esAdminActual()` compara solo email. No existe `app_metadata.role` en el frontend. Migrar a claim/RPC y exigir email confirmado.
 3. **Cabeceras inertes:** `_headers` no lo aplica GitHub Pages (devuelve 404). Producción sin CSP/HSTS reales. Migrar a Cloudflare/Netlify Pages o meta tags.
-4. **Markup roto:** `comunidad.html` `img src=""` + sin `<h1>`; `cine.html` `<source src="">`; fallback de YouTube de `index.html`.
+4. **Markup roto:** `comunidad.html` `img src=""` + sin `<h1>`. **Cine (`<source>`) y fallback de YouTube de `index.html` corregidos en v1.2.3.**
 5. **Peso:** Bootstrap CSS y Font Awesome completos con uso mínimo; CSS/JS inline duplicado; fuentes de Google; `img/1-3.jpg` 1024×576 (~430 KB).
 6. **Detalles:** typos de `sorteo.html`, atributos deprecated en iframes, comentario "60s" vs 90 s, 34 botones sin `type`, `x-cloak` en contadores.
 7. **A11y:** 12 campos sin label/`aria-label`, falta skip-link, menú móvil no cierra con Escape, confeti sin `aria-hidden`.
