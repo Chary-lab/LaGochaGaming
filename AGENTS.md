@@ -6,7 +6,7 @@
 
 **Repo:** github.com/Chary-lab/LaGochaGaming · **Prod:** lagochagaming.com (GitHub Pages, rama `main`, sin build)
 **Supabase:** `cydiyaacnyydprgffmkq` · `us-west-2` · Postgres 17.11
-**Versión:** v1.2.1 (`a43f220`) · **Actualizado:** 2026-10-24 · **BD:** verificado vía PostgREST `anon` el 2026-10-24 (catálogo/políticas sin verificar)
+**Versión:** v1.2.2 · **Actualizado:** 2026-10-24 · **BD:** verificado vía PostgREST `anon` el 2026-10-24 (catálogo/políticas sin verificar)
 
 **Regla de oro:** 5 HTML + `main.js` + `style.css`. Sin frameworks nuevos, sin npm, sin bundler, sin archivos extra.
 
@@ -16,13 +16,13 @@
 
 | Archivo | Líneas | Qué hay | Abrir cuando… |
 |---|---:|---|---|
-| `index.html` | 647 | Home: hero, stream Kick, clips, feed social, YouTube, muro | Tocar la portada o el stream |
-| `galeria.html` | 1453 | Galería pública, subida, moderación admin, lightbox | Fotos, likes, aprobación |
-| `comunidad.html` | 2393 | Chat, ranking, online, reacciones, muro, celebración | Chat o usuarios |
-| `cine.html` | 660 | GochiWatch: YouTube IFrame API, panel streamer | Cine o reproducción |
-| `sorteo.html` | 1320 | Sorteo manual/streamer, participantes, ganadores | Sorteos |
+| `index.html` | 554 | Home: hero, stream Kick, clips, feed social, YouTube, muro | Tocar la portada o el stream |
+| `galeria.html` | 1103 | Galería pública, subida, moderación admin, lightbox | Fotos, likes, aprobación |
+| `comunidad.html` | 1959 | Chat, ranking, online, reacciones, muro, celebración | Chat o usuarios |
+| `cine.html` | 519 | GochiWatch: YouTube IFrame API, panel streamer | Cine o reproducción |
+| `sorteo.html` | 904 | Sorteo manual/streamer, participantes, ganadores | Sorteos |
 | `main.js` | 631 | Helpers globales, admin, tema, toasts, modales, polling | Lógica compartida |
-| `style.css` | 1848 | Tema claro/oscuro, layout, componentes, responsive | Cualquier estilo |
+| `style.css` | 3282 | Tema claro/oscuro, layout, componentes, responsive | Cualquier estilo |
 | `_headers` | 7 | CSP/HSTS/etc. **GitHub Pages lo ignora** | Seguridad/cabeceras |
 | `VERSION` | 1 | Dice `1.0.0` (desactualizado; tag real `v1.2.1`) | Release |
 
