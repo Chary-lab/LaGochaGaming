@@ -6,7 +6,7 @@
 
 **Repo:** github.com/Chary-lab/LaGochaGaming · **Prod:** lagochagaming.com (GitHub Pages, rama `main`, sin build)
 **Supabase:** `cydiyaacnyydprgffmkq` · `us-west-2` · Postgres 17.11
-**Versión:** v1.2.5 · **Actualizado:** 2026-10-24 · **BD:** verificado vía PostgREST `anon` el 2026-10-24 (catálogo/políticas sin verificar)
+**Versión:** v1.2.6 · **Actualizado:** 2026-10-24 · **BD:** verificado vía PostgREST `anon` el 2026-10-24 (catálogo/políticas sin verificar)
 
 **Regla de oro:** 5 HTML + `main.js` + `style.css`. Sin frameworks nuevos, sin npm, sin bundler, sin archivos extra.
 
@@ -79,7 +79,7 @@ Patrón: todo se expone en `window.*` (no hay módulos ES). `main.js` se carga c
 - YouTube IFrame API (`onYouTubeIframeAPIReady`) + Supabase + Realtime con reconexión automática.
 - Panel maestro del streamer para cambiar video; login **valida `esAdminActual()`** (v1.2.3).
 - Overlay de carga/error (`#cinePlayerOverlay`) + panel de instrucciones (`#streamerAdminPanel .admin-instructions`) colapsible, oculto por defecto, visible solo al admin.
-- **Corregido (v1.2.5):** instrucciones colapsible (`data-action="toggle-instrucciones"`); texto del tip actualizado para indicar que el reproductor convierte automáticamente los enlaces.
+- **Corregido (v1.2.6):** instrucciones colapsible (`data-action="toggle-instrucciones"`); tip corregido a formato específico de YouTube/Drive (no se promete conversión mágica).
 
 ### `sorteo.html`
 - Store `sorteo` (~626). Modo streamer para admin, modo manual/público para el resto.
