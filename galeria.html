@@ -179,15 +179,17 @@
             <h3 id="modal-galeria-titulo">🔒 MODERACIÓN DE GALERÍA</h3>
             <p>Ingresa tus datos de acceso:</p>
 
-            <input type="email" id="admin-email" class="gochi-modal-input" placeholder="Correo electrónico" aria-label="Correo electrónico" autocomplete="email">
-            <input type="password" id="admin-password" class="gochi-modal-input" placeholder="Contraseña" aria-label="Contraseña" autocomplete="current-password">
+            <form id="form-admin-login" novalidate>
+                <input type="email" id="admin-email" class="gochi-modal-input" placeholder="Correo electrónico" aria-label="Correo electrónico" autocomplete="username">
+                <input type="password" id="admin-password" class="gochi-modal-input" placeholder="Contraseña" aria-label="Contraseña" autocomplete="current-password">
 
-            <div id="feedback-pin" class="gochi-modal-feedback" role="status" aria-live="polite"></div>
+                <div id="feedback-pin" class="gochi-modal-feedback" role="status" aria-live="polite"></div>
 
-            <div class="gochi-modal-actions">
-                <button type="button" data-action="login-admin" class="btn-primary">Entrar</button>
-                <button type="button" data-action="close-login" class="btn-primary btn-muted">Cancelar</button>
-            </div>
+                <div class="gochi-modal-actions">
+                    <button type="submit" id="btn-entrar-admin" class="btn-primary">Entrar</button>
+                    <button type="button" data-action="close-login" class="btn-primary btn-muted">Cancelar</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -316,8 +318,9 @@
                 mostrarToast('Supabase no está disponible en este entorno', true);
             }
 
-            document.getElementById('admin-password')?.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') iniciarSesionAdmin();
+            document.getElementById('form-admin-login')?.addEventListener('submit', (e) => {
+                e.preventDefault();
+                iniciarSesionAdmin();
             });
 
             // Controles de admin (campo de autor) y aviso de sesión de comunidad
@@ -336,7 +339,6 @@
                 case 'toggle-admin': toggleModoAdmin(); break;
                 case 'logout': window.cerrarSesionAdminGlobal?.(); break;
                 case 'filter-gallery': cambiarFiltroGaleria(trigger.dataset.filter); break;
-                case 'login-admin': iniciarSesionAdmin(); break;
                 case 'close-login': cerrarModalPin(); break;
                 case 'delete-image': if (imageId) eliminarImagenPublica(imageId); break;
                 case 'toggle-like': if (imageId) toggleLike(imageId); break;
@@ -833,7 +835,7 @@
             const email = document.getElementById('admin-email').value.trim();
             const password = document.getElementById('admin-password').value.trim();
             const feedback = document.getElementById('feedback-pin');
-            const btnEntrar = document.querySelector('[data-action="login-admin"]');
+            const btnEntrar = document.getElementById('btn-entrar-admin');
 
             if (!window.supabase) {
                 feedback.innerText = '❌ No se pudo conectar con el servidor';

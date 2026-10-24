@@ -6,7 +6,7 @@
 
 **Repo:** github.com/Chary-lab/LaGochaGaming · **Prod:** lagochagaming.com (GitHub Pages, rama `main`, sin build)
 **Supabase:** `cydiyaacnyydprgffmkq` · `us-west-2` · Postgres 17.11
-**Versión:** v1.2.9 · **Actualizado:** 2026-10-24 · **BD:** verificado vía PostgREST `anon` el 2026-10-24; `es_admin()` y 22 políticas leídas por SQL el 2026-10-24 (catálogo completo sin revisar)
+**Versión:** v1.2.10 · **Actualizado:** 2026-10-24 · **BD:** verificado vía PostgREST `anon` el 2026-10-24; `es_admin()` y 22 políticas leídas por SQL el 2026-10-24 (catálogo completo sin revisar)
 
 **Regla de oro:** 5 HTML + `main.js` + `style.css`. Sin frameworks nuevos, sin npm, sin bundler, sin archivos extra.
 
@@ -65,6 +65,7 @@ Patrón: todo se expone en `window.*` (no hay módulos ES). `main.js` se carga c
 - Grid responsive, lightbox, subida a Storage, panel de pendientes/admin.
 - `width`/`height` ya puestos; validación de magic bytes en subida (solo cliente).
 - **Corregido (desde v1.0.0):** el login admin valida `esAdminActual()` antes de activar `adminAutenticado`.
+- **Corregido (v1.2.10):** el login admin vive en `<form id="form-admin-login">` (submit real, Enter nativo, autofill del gestor de contraseñas); el botón es `#btn-entrar-admin` y el delegado ya no maneja `login-admin`.
 - **Riesgo BD:** si la policy `SELECT` de `galeria` es `true`, las fotos `pendiente` son legibles por `anon` aunque la UI no las muestre.
 
 ### `comunidad.html`
@@ -129,10 +130,10 @@ Tablas (11): `comunidad_chat`, `comunidad_sesiones`, `config_sorteo`, `galeria`,
 2. **Cabeceras inertes:** `_headers` no lo aplica GitHub Pages (devuelve 404). Producción sin CSP/HSTS reales. Migrar a Cloudflare/Netlify Pages o meta tags.
 3. **BD:** revisar si la policy `SELECT` de `galeria` expone pendientes; decidir `donaciones`; confirmar y borrar los 4 índices sin uso; verificar permisos de `sortear_ganador_sorteo`/`asignar_peso_sorteo`.
 4. **Peso:** Bootstrap CSS y Font Awesome completos con uso mínimo; CSS/JS inline duplicado; fuentes de Google; `img/1-3.jpg` 1024×576 (~430 KB).
-5. **A11y restante:** 12 campos sin label/`aria-label`, falta skip-link, menú móvil no cierra con Escape, confeti sin `aria-hidden`; `comunidad.html` salta de `h1` a `h3` (faltan `h2`).
+5. **A11y restante:** 12 campos sin label/`aria-label`, falta skip-link, menú móvil no cierra con Escape, confeti sin `aria-hidden`; `comunidad.html` salta de `h1` a `h3` (faltan `h2`). Además, `type="password"` sigue fuera de un `<form>` en `comunidad.html:290`, `cine.html:153` y `sorteo.html:191` (mismo aviso de Chrome que tenía galería).
 6. **Detalles menores:** atributos deprecated en iframes; `AGENTS.md:61` sigue describiendo como bug vivo el fallback de YouTube de `index.html` (marcado como corregido en la prioridad antigua).
 
-**Resueltos:** login admin/streamer valida `esAdminActual()` (galería y sorteo, desde v1.0.0); `galeria.html`/`sorteo.html` ya no abren panel con cualquier cuenta. Cine en v1.2.3 (`<source>` vacío, fallback de YouTube, login). v1.2.6/v1.2.7 instrucciones del panel streamer. v1.2.8 `src=""` de `#canal-preview`, `<h1>` en comunidad, typos y metas de `sorteo.html`, 34 botones con `type="button"`, comentario "60s" → 90 s. v1.2.9 `esAdminActual()` migrado a la RPC `es_admin()` (sin email hardcodeado en el cliente, exige email confirmado, caché por usuario).
+**Resueltos:** login admin/streamer valida `esAdminActual()` (galería y sorteo, desde v1.0.0); `galeria.html`/`sorteo.html` ya no abren panel con cualquier cuenta. Cine en v1.2.3 (`<source>` vacío, fallback de YouTube, login). v1.2.6/v1.2.7 instrucciones del panel streamer. v1.2.8 `src=""` de `#canal-preview`, `<h1>` en comunidad, typos y metas de `sorteo.html`, 34 botones con `type="button"`, comentario "60s" → 90 s. v1.2.9 `esAdminActual()` migrado a la RPC `es_admin()` (sin email hardcodeado en el cliente, exige email confirmado, caché por usuario). v1.2.10 login admin de `galeria.html` dentro de un `<form>` real (Enter nativo y autofill; fuera el aviso `[DOM] Password field is not contained in a form`).
 
 ---
 
@@ -142,7 +143,7 @@ Tablas (11): `comunidad_chat`, `comunidad_sesiones`, `config_sorteo`, `galeria`,
 - **Sin archivos extra:** todo va en las 5 páginas, `main.js` o `style.css`. No `.env`, bundlers ni configs.
 - **Reutilizar** helpers, clases, modales y toasts. No duplicar lógica.
 - **Sin comentarios** en código salvo pedido. Variables/clases en español.
-- **Probar las 5 páginas** y la consola (comparten `main.js`). Revisar móvil y modo claro/oscuro.
+- **Probar las 5 páginas** y la consola (comparten `main.js`). Revisar móvil y modo claro/oscuro. Ojo: DevTools muestra avisos del dominio `Log` (cabeceras `Permissions-Policy`, `[DOM]`) que no pasan por `console.*`; revisa también el panel *Issues* antes de dar por limpia la consola.
 - **Actualizar `AGENTS.md` y `VERSION`** tras cada cambio.
 - **SemVer automático:** fix → PATCH, feature → MINOR, breaking → MAJOR. Si está estable: `git add -A && git commit && git tag vX.Y.Z && git push && git push origin vX.Y.Z`. No esperar a que lo pidan.
 - **Revertir:** `git checkout vX.Y.Z`. Nunca commitear secretos ni `service_role`.
