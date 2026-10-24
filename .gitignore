@@ -15,3 +15,5 @@
 !img/*
 # Ignorar documentación
 *.md
+# El mapa del proyecto sí se versiona
+!AGENTS.md
