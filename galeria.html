@@ -427,7 +427,7 @@
             <div class="gallery-grid" id="gridPendientes">
                 <template x-for="foto in $store.galeria.pendientes" :key="foto.id">
                     <div class="gallery-card gallery-card-pending">
-                        <img :src="foto.image_url" :alt="foto.alt" loading="lazy">
+                        <img :src="foto.image_url" :alt="foto.alt" loading="lazy" width="400" height="300">
                         <div class="gallery-card-info gallery-card-info-column">
                             <span class="gallery-card-title-full" x-text="foto.title"></span>
                             <div class="autor-editable" title="Autor de la foto">
@@ -495,7 +495,7 @@
                         <span :class="'badge-tag ' + badge.clase" x-text="badge.texto"></span>
                     </template>
                     <div class="gallery-card-image-wrap">
-                        <img :src="foto.image_url" :alt="foto.alt" loading="lazy">
+                        <img :src="foto.image_url" :alt="foto.alt" loading="lazy" width="400" height="300">
                     </div>
                     <div class="gallery-card-info">
                         <div class="gallery-card-info-row">
@@ -579,7 +579,7 @@
                     <button class="lightbox-btn-prev" aria-label="Foto anterior"><i class="fa-solid fa-chevron-left"></i></button>
                 </div>
                 <div class="lightbox-image-wrap">
-                    <img :src="$store.galeria.lightbox.foto.image_url" :alt="$store.galeria.lightbox.foto.title || 'Foto'" tabindex="0">
+                    <img :src="$store.galeria.lightbox.foto.image_url" :alt="$store.galeria.lightbox.foto.title || 'Foto'" tabindex="0" width="800" height="600">
                 </div>
                 <div class="lightbox-nav-side next" @click.stop="window.nextLightbox()">
                     <button class="lightbox-btn-next" aria-label="Foto siguiente"><i class="fa-solid fa-chevron-right"></i></button>
@@ -597,7 +597,7 @@
         </template>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
     <script>
         let adminAutenticado = false;
         let filtroActual = 'populares'; // 'populares' o 'recientes'
@@ -1444,7 +1444,7 @@
 
         // escapeHtml / escapeAttr viven en main.js (fuente única del sitio)
     </script>
-    <script type="module" src="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/js/bootstrap.bundle.min.js"></script>
+
     <script src="main.js" defer></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.17.5/dist/cdn.min.js"
             integrity="sha384-FYLKjwG3aohNhNZoVG8sY/5ntunm+MqylL90Q+rT3OM7AwV9/BKFjk/RjoIpIgsI"
