@@ -653,9 +653,8 @@
 
             if (window.supabase) {
                 try {
-                    const { data } = await supabase.auth.getSession();
-                    const session = data.session;
-                    if (session && session.user?.app_metadata?.role === 'admin') {
+                    const adminOk = await window.esAdminActual?.();
+                    if (adminOk) {
                         streamerAutenticado = true;
                     }
                 } catch (e) {

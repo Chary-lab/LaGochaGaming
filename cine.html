@@ -333,14 +333,13 @@
 
         document.addEventListener('DOMContentLoaded', async () => {
             try {
-                if (window.supabase) {
-                    const { data } = await window.supabase.auth.getSession();
-                    const session = data.session;
-                    if (session && session.user?.app_metadata?.role === 'admin') {
-                        streamerCineAutenticado = true;
-                        activarModoStreamerUI();
+                    if (window.supabase) {
+                        const adminOk = await window.esAdminActual?.();
+                        if (adminOk) {
+                            streamerCineAutenticado = true;
+                            activarModoStreamerUI();
+                        }
                     }
-                }
             } catch (e) {
                 console.warn('No se pudo verificar la sesión del streamer:', e);
             }
