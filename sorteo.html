@@ -187,15 +187,17 @@
             <h3 id="modal-sorteo-titulo">🔒 ACCESO EXCLUSIVO GOCHA</h3>
             <p>Ingresa tus datos de acceso:</p>
 
-            <input type="email" id="streamer-email" class="gochi-modal-input" placeholder="Correo electrónico" aria-label="Correo electrónico" autocomplete="email">
-            <input type="password" id="streamer-password" class="gochi-modal-input" placeholder="Contraseña" aria-label="Contraseña" autocomplete="current-password">
+            <form id="form-login-sorteo" novalidate>
+                <input type="email" id="streamer-email" class="gochi-modal-input" placeholder="Correo electrónico" aria-label="Correo electrónico" autocomplete="email">
+                <input type="password" id="streamer-password" class="gochi-modal-input" placeholder="Contraseña" aria-label="Contraseña" autocomplete="current-password">
 
-            <div id="feedback-pin" class="feedback-msg gochi-modal-feedback" role="status" aria-live="polite"></div>
+                <div id="feedback-pin" class="feedback-msg gochi-modal-feedback" role="status" aria-live="polite"></div>
 
-            <div class="gochi-modal-actions">
-                <button type="button" data-action="login-streamer" class="btn-primary">Entrar</button>
-                <button type="button" data-action="close-login" class="btn-primary btn-muted">Cancelar</button>
-            </div>
+                <div class="gochi-modal-actions">
+                    <button type="submit" id="btn-entrar-sorteo" class="btn-primary">Entrar</button>
+                    <button type="button" data-action="close-login" class="btn-primary btn-muted">Cancelar</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -265,8 +267,9 @@
                     .subscribe();
             } catch(e) { console.log('Modo local detectado'); }
 
-            document.getElementById('streamer-password')?.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') confirmarLoginStreamer();
+            document.getElementById('form-login-sorteo')?.addEventListener('submit', (e) => {
+                e.preventDefault();
+                confirmarLoginStreamer();
             });
         });
 
@@ -287,7 +290,6 @@
                 case 'exit-streamer': salirModoStreamer(); break;
                 case 'add-bonus': agregarParticipanteAdminBonus(); break;
                 case 'spin-streamer': girarRuletaStreamer(); break;
-                case 'login-streamer': confirmarLoginStreamer(); break;
                 case 'close-login': cerrarModalPin(); break;
                 case 'join-draw': enviarParticipacionTemporal(); break;
                 case 'remove-public-participant':
@@ -358,7 +360,7 @@
         async function confirmarLoginStreamer() {
             const email = document.getElementById('streamer-email').value.trim();
             const password = document.getElementById('streamer-password').value.trim();
-            const btnEntrar = document.querySelector('[data-action="login-streamer"]');
+            const btnEntrar = document.getElementById('btn-entrar-sorteo');
 
             if (!window.supabase) {
                 mostrarFeedback('feedback-pin', '❌ No se pudo conectar con el servidor', true);

@@ -286,11 +286,13 @@
             <button type="button" id="nickname-modal-close" aria-label="Cerrar">&times;</button>
             <h3 id="modal-titulo-accion">¡Bienvenido a la Comunidad!</h3>
             <p id="modal-subtitulo-accion" class="modal-subtitle">Ingresa tu apodo y tu PIN de 4 dígitos.</p>
-            <input type="text" id="nickname-modal-input" placeholder="Tu apodo" maxlength="20">
-            <input type="password" id="nickname-modal-pin" placeholder="PIN (4 dígitos)" maxlength="4" pattern="[0-9]*" inputmode="numeric">
-            <div>
-                <button type="button" id="nickname-modal-set-btn" class="btn-primary">Entrar</button>
-            </div>
+            <form id="form-nickname" novalidate>
+                <input type="text" id="nickname-modal-input" placeholder="Tu apodo" maxlength="20" autocomplete="username">
+                <input type="password" id="nickname-modal-pin" placeholder="PIN (4 dígitos)" maxlength="4" pattern="[0-9]*" inputmode="numeric" autocomplete="current-password">
+                <div>
+                    <button type="submit" id="nickname-modal-set-btn" class="btn-primary">Entrar</button>
+                </div>
+            </form>
             <p id="nickname-modal-error" class="modal-error"></p>
         </div>
     </div>
@@ -1730,10 +1732,11 @@ if (chatForm) {
             }
 
             // Event listeners
-            nicknameModalSetBtn.addEventListener('click', enviarNickConPIN);
+            document.getElementById('form-nickname').addEventListener('submit', (e) => {
+                e.preventDefault();
+                enviarNickConPIN();
+            });
             nicknameModalCloseBtn.addEventListener('click', hideNicknameModal);
-            nicknameModalInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') enviarNickConPIN(); });
-            nicknameModalPin.addEventListener('keydown', (e) => { if (e.key === 'Enter') enviarNickConPIN(); });
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape' && nicknameModal.style.display === 'flex') hideNicknameModal();
             });

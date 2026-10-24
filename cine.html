@@ -149,15 +149,17 @@
             <h3 id="modal-cine-titulo">🔒 ACCESO STREAMER CINE</h3>
             <p>Ingresa tus datos para controlar la reproducción:</p>
 
-            <input type="email" id="streamer-cine-email" class="gochi-modal-input" placeholder="Correo electrónico" aria-label="Correo electrónico" autocomplete="email">
-            <input type="password" id="streamer-cine-password" class="gochi-modal-input" placeholder="Contraseña" aria-label="Contraseña" autocomplete="current-password">
+            <form id="form-login-cine" novalidate>
+                <input type="email" id="streamer-cine-email" class="gochi-modal-input" placeholder="Correo electrónico" aria-label="Correo electrónico" autocomplete="email">
+                <input type="password" id="streamer-cine-password" class="gochi-modal-input" placeholder="Contraseña" aria-label="Contraseña" autocomplete="current-password">
 
-            <div id="feedback-cine-pin" class="gochi-modal-feedback" role="status" aria-live="polite"></div>
+                <div id="feedback-cine-pin" class="gochi-modal-feedback" role="status" aria-live="polite"></div>
 
-            <div class="gochi-modal-actions">
-                <button type="button" data-action="login-streamer" class="btn-primary">Entrar</button>
-                <button type="button" data-action="close-login" class="btn-primary btn-muted">Cancelar</button>
-            </div>
+                <div class="gochi-modal-actions">
+                    <button type="submit" id="btn-entrar-cine" class="btn-primary">Entrar</button>
+                    <button type="button" data-action="close-login" class="btn-primary btn-muted">Cancelar</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -283,8 +285,9 @@
                 mostrarToast('Error al reproducir el video.', true);
             });
 
-            document.getElementById('streamer-cine-password')?.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') iniciarSesionStreamerCine();
+            document.getElementById('form-login-cine')?.addEventListener('submit', (e) => {
+                e.preventDefault();
+                iniciarSesionStreamerCine();
             });
         });
 
@@ -298,7 +301,6 @@
                 case 'load-video': actualizarUrlPelicula(); break;
                 case 'stop-video': cerrarReproductorTotal(); break;
                 case 'logout-admin': window.cerrarSesionAdminGlobal?.(); break;
-                case 'login-streamer': iniciarSesionStreamerCine(); break;
                 case 'close-login': cerrarModalCinePin(); break;
             }
         });
@@ -582,7 +584,7 @@
             const email = document.getElementById('streamer-cine-email').value.trim();
             const password = document.getElementById('streamer-cine-password').value.trim();
             const feedback = document.getElementById('feedback-cine-pin');
-            const btnEntrar = document.querySelector('[data-action="login-streamer"]');
+            const btnEntrar = document.getElementById('btn-entrar-cine');
 
             if (!window.supabase) {
                 feedback.textContent = '❌ No se pudo conectar con el servidor';
