@@ -1708,7 +1708,40 @@ body.light-mode #lightbox .lightbox-caption {
  .cargar-mas-container { text-align: center; margin-top: 25px; }
 
  /* Accesibilidad: respeta la preferencia de movimiento reducido */
- @media (prefers-reduced-motion: reduce) {
+ /* --- NAVBAR: AJUSTES MÓVIL (iconos del menú y cambiar tema) --- */
+@media (max-width: 480px) {
+    .navbar {
+        padding: 0 12px;
+        gap: 8px;
+    }
+    .logo {
+        min-width: 120px;
+        font-size: 20px;
+        letter-spacing: 1px;
+    }
+    .nav-right {
+        min-width: auto;
+        gap: 8px;
+    }
+    .btn-tema-nav {
+        min-width: 36px;
+        height: 36px;
+        padding: 6px 8px;
+        font-size: 1.1rem;
+    }
+    .mobile-menu-toggle-btn {
+        min-width: 36px;
+        height: 36px;
+        padding: 6px 8px;
+        font-size: 1.1rem;
+    }
+    .nav-links a {
+        font-size: 11px;
+        padding: 6px 10px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
      *, *::before, *::after {
          animation-duration: 0.01ms !important;
          animation-iteration-count: 1 !important;
