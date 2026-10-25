@@ -36,6 +36,8 @@
 </head>
 <body>
     
+    <a href="#contenido" class="skip-link">Saltar al contenido</a>
+
     <header id="global-header">
         <nav class="navbar navbar-expand-lg">
             <div class="logo navbar-brand">LAGOCHA<span>GAMING</span></div>
@@ -58,7 +60,7 @@
 
     <!-- TOAST DE STREAM EN VIVO se inserta dinámicamente desde main.js -->
 
-    <div class="content-section galeria-top">
+    <div class="content-section galeria-top" id="contenido" tabindex="-1">
         <div class="admin-controls-panel">
             <h1>Mi Galería</h1>
             <div class="admin-controls-actions">
@@ -105,7 +107,7 @@
         <!-- SUBIDA DE IMÁGENES -->
         <div class="upload-container" id="uploadContainer">
             <div class="upload-title-wrap">
-                <input type="text" id="imageTitleInput" class="gallery-title-input" placeholder="Escribe un título para tu imagen..." maxlength="40">
+                <input type="text" id="imageTitleInput" class="gallery-title-input" aria-label="Título de la imagen" placeholder="Escribe un título para tu imagen..." maxlength="40">
                 <div id="admin-author-wrap" hidden>
                     <input type="text" id="imageAuthorInput" class="gallery-title-input" placeholder="Autor de la foto" maxlength="30" value="LaGochaGaming">
                     <p class="upload-hint">

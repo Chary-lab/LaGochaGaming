@@ -44,6 +44,8 @@
 </head>
 <body id="top">
 
+    <a href="#stream" class="skip-link">Saltar al contenido</a>
+
     <!-- ALERTA VISUAL DE STREAM EN VIVO -->
     <header id="global-header">
         <nav class="navbar navbar-expand-lg">
@@ -84,7 +86,7 @@
         </div>
     </header>
 
-    <main class="main-container" id="stream">
+    <main class="main-container" id="stream" tabindex="-1">
         <div class="video-container">
             <iframe src="https://player.kick.com/lagochagaming?autoplay=true&muted=1" frameborder="0" scrolling="no" allowfullscreen="true" title="Stream de LaGochaGaming en Kick" loading="lazy"></iframe>
         </div>
@@ -174,8 +176,8 @@
         <h2>💬 MURO DE SALUDOS DE LA COMUNIDAD</h2>
         <div class="muro-form-container">
             <form id="muro-form" class="muro-form">
-                <input type="text" id="muro-autor" placeholder="Tu apodo o nombre (invitado)" maxlength="30" required>
-                <textarea id="muro-mensaje" placeholder="Escribe tu saludo o mensaje para La Gocha..." maxlength="150" required></textarea>
+                <input type="text" id="muro-autor" aria-label="Tu apodo o nombre" placeholder="Tu apodo o nombre (invitado)" maxlength="30" required>
+                <textarea id="muro-mensaje" aria-label="Tu saludo o mensaje" placeholder="Escribe tu saludo o mensaje para La Gocha..." maxlength="150" required></textarea>
                 <button type="submit" id="btn-enviar-muro" class="btn-primary">ENVIAR SALUDO</button>
             </form>
             <div id="muro-feedback" class="muro-feedback"></div>

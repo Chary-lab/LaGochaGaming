@@ -96,6 +96,8 @@ window.lanzarConfetti = function lanzarConfetti(canvasId, opciones = {}) {
     if (!canvas) {
         canvas = document.createElement('canvas');
         canvas.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:99999;';
+        canvas.setAttribute('aria-hidden', 'true');
+        canvas.setAttribute('role', 'presentation');
         document.body.appendChild(canvas);
         efimero = true;
     }
@@ -438,10 +440,23 @@ window.inicializarMenuMovil = function inicializarMenuMovil() {
     const btn = document.querySelector('.mobile-menu-toggle-btn');
     const navLinks = document.querySelector('.nav-links');
     if (!btn || !navLinks) return;
+    btn.setAttribute('aria-expanded', 'false');
     btn.onclick = null;
     btn.onclick = () => {
-        navLinks.classList.toggle('mobile-active');
+        const abierto = navLinks.classList.toggle('mobile-active');
+        btn.setAttribute('aria-expanded', abierto ? 'true' : 'false');
     };
+    if (window.escapeMenuMovilRegistrado) return;
+    window.escapeMenuMovilRegistrado = true;
+    document.addEventListener('keydown', (e) => {
+        if (e.key !== 'Escape') return;
+        const boton = document.querySelector('.mobile-menu-toggle-btn');
+        const menu = document.querySelector('.nav-links');
+        if (!boton || !menu || !menu.classList.contains('mobile-active')) return;
+        menu.classList.remove('mobile-active');
+        boton.setAttribute('aria-expanded', 'false');
+        boton.focus();
+    });
 };
 
 // Prevenir navegación/recarga cuando el enlace apunta a la página actual (sin hash)
@@ -463,7 +478,10 @@ window.inicializarNavLinks = function inicializarNavLinks() {
         link.addEventListener('click', () => {
             const btn = document.querySelector('.mobile-menu-toggle-btn');
             const navLinksMenu = document.querySelector('.nav-links');
-            if (btn && navLinksMenu) navLinksMenu.classList.remove('mobile-active');
+            if (btn && navLinksMenu) {
+                navLinksMenu.classList.remove('mobile-active');
+                btn.setAttribute('aria-expanded', 'false');
+            }
         });
     });
 };

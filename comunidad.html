@@ -39,6 +39,8 @@
 </head>
 <body class="comunidad-page">
 
+    <a href="#contenido" class="skip-link">Saltar al contenido</a>
+
     <!-- ALERTA VISUAL DE STREAM EN VIVO -->
     <header id="global-header">
         <nav class="navbar navbar-expand-lg">
@@ -63,13 +65,13 @@
     <!-- TOAST DE STREAM EN VIVO se inserta dinámicamente desde main.js -->
 
     <!-- CONTENIDO PRINCIPAL COMUNIDAD -->
-    <main class="comunidad-layout page-layout">
+    <main class="comunidad-layout page-layout" id="contenido" tabindex="-1">
         <h1 class="visually-hidden">Comunidad y chat de LaGochaGaming</h1>
         <!-- COLUMNA IZQUIERDA: USUARIOS EN LÍNEA + LEADERBOARD -->
         <section id="online-users" class="online-users-column">
-            <h3 class="chat-sidebar-title">
+            <h2 class="chat-sidebar-title">
                 <i class="fa-solid fa-users"></i> Usuarios en línea
-            </h3>
+            </h2>
             <div id="online-users-list" aria-live="polite" aria-label="Usuarios conectados al chat">
                 Cargando usuarios...
             </div>
@@ -177,7 +179,7 @@
             </div>
 
             <form id="chat-form" class="chat-input-area chat-form">
-                <input type="text" id="chat-autor" placeholder="Tu apodo" maxlength="30" required>
+                <input type="text" id="chat-autor" aria-label="Tu apodo" placeholder="Tu apodo" maxlength="30" required>
                 <textarea id="chat-mensaje" rows="1" maxlength="300" placeholder="Escribe un mensaje..." aria-label="Mensaje del chat" required></textarea>
                 <button type="submit" class="btn-primary chat-submit-btn">Enviar</button>
                 <!-- Badge de racha de mensajes -->

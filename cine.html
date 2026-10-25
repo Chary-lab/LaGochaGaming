@@ -36,6 +36,8 @@
 </head>
 <body>
 
+    <a href="#contenido" class="skip-link">Saltar al contenido</a>
+
     <!-- NAVEGACIÓN PRINCIPAL -->
     <header id="global-header">
         <nav class="navbar navbar-expand-lg">
@@ -59,7 +61,7 @@
 
     <!-- TOAST DE STREAM EN VIVO se inserta dinámicamente desde main.js -->
 
-    <div class="cine-layout page-layout">
+    <div class="cine-layout page-layout" id="contenido" tabindex="-1">
         <div class="cine-main-screen">
             <!-- BARRA DE TÍTULO Y BOTÓN DE PANEL -->
             <div class="cine-controls-bar">
@@ -76,7 +78,7 @@
                     Pega cualquier enlace (<strong>Google Drive</strong>, <strong>YouTube</strong> o <strong>.mp4 directos</strong>).
                 </p>
                 <div class="admin-toolbar">
-                    <input type="text" id="inputVideoUrl" class="admin-input" placeholder="Pega aquí el enlace de Drive, YouTube o .mp4...">
+                    <input type="text" id="inputVideoUrl" class="admin-input" aria-label="Enlace del video" placeholder="Pega aquí el enlace de Drive, YouTube o .mp4...">
                     <button type="button" data-action="load-video" class="btn-primary">Cargar Video</button>
                     <button type="button" data-action="stop-video" class="btn-primary btn-danger">🛑 Apagar</button>
                     <button type="button" data-action="logout-admin" class="btn-primary btn-danger-dark"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión</button>
