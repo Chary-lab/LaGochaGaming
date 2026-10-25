@@ -61,9 +61,10 @@
     <!-- TOAST DE STREAM EN VIVO se inserta dinámicamente desde main.js -->
 
     <div class="sorteo-layout page-layout" id="contenido" tabindex="-1">
+        <h1 class="visually-hidden">GochiSorteo</h1>
         <!-- SECCIÓN IZQUIERDA: HISTORIAL Y GANADORES -->
         <div class="sidebar-ganadores">
-            <h3><i class="fa-solid fa-trophy"></i> &Uacute;ltimos Ganadores</h3>
+            <h2><i class="fa-solid fa-trophy"></i> &Uacute;ltimos Ganadores</h2>
             <p class="sidebar-ganadores-lead">
                 Registro histórico con los últimos ganadores afortunados de los sorteos oficiales de la comunidad.
             </p>
@@ -87,7 +88,7 @@
 
             <!-- MODO MANUAL -->
             <div id="sec-modo-manual" class="sorteo-panel-manual" role="tabpanel" aria-labelledby="tab-manual">
-                <h1 class="sorteo-page-title">✍️ App de Sorteos Manual</h1>
+                <h2 class="sorteo-page-title">✍️ App de Sorteos Manual</h2>
                 <p class="sorteo-lead">
                     Función para la comunidad y moderadores: Agrega nombres personalizados de participantes de forma local y haz girar la ruleta de prueba con efectos de confeti.
                 </p>
@@ -110,7 +111,7 @@
                 </div>
 
                 <div class="participants-box">
-                    <h4 class="participants-title">Participantes (<span id="count-publico">0</span>)</h4>
+                    <h3 class="participants-title">Participantes (<span id="count-publico">0</span>)</h3>
                     <ul id="lista-participantes-publico" class="participants-list"></ul>
                 </div>
             </div>
@@ -158,7 +159,7 @@
                 </div>
 
                 <div class="participants-box" x-data="{}">
-                    <h4 class="participants-title">Participantes Registrados Online (<span id="count-streamer" x-text="$store.sorteo.participantes.length">0</span>)</h4>
+                    <h3 class="participants-title">Participantes Registrados Online (<span id="count-streamer" x-text="$store.sorteo.participantes.length">0</span>)</h3>
                     <ul id="lista-participantes-streamer" class="participants-list">
                         <template x-for="p in $store.sorteo.participantes" :key="p.id || p.username">
                             <li class="tag-participante">
@@ -456,9 +457,9 @@
                     if (registradoUser) {
                         bannerArea.innerHTML = `
                             <div class="banner-sorteo-registrado">
-                                <h3 class="banner-title">
+                                <h2 class="banner-title">
                                     ✅ ¡YA ESTÁS PARTICIPANDO EN EL GOCHISORTEO!
-                                </h3>
+                                </h2>
                                 <p class="banner-text">
                                     Inscrito con el usuario: <strong class="banner-user">@${escapeHtml(registradoUser)}</strong>
                                 </p>
@@ -470,9 +471,9 @@
                     } else {
                         bannerArea.innerHTML = `
                             <div class="banner-sorteo-activo">
-                                <h3 class="banner-title">
+                                <h2 class="banner-title">
                                     🎉 ¡GochiSorteo Oficial ABIERTO! 🎉
-                                </h3>
+                                </h2>
                                 <p class="banner-text-lead">
                                     Ingresa tu nombre de usuario exacto de Kick para participar en directo:
                                 </p>

@@ -75,7 +75,7 @@
 
         <!-- PANEL DE MODERACIÓN -->
         <div id="panelPendientes" class="panel-pendientes" x-data="{}">
-            <h3><i class="fa-solid fa-clock-rotate-left"></i> Imágenes Pendientes por Aprobar (<span id="cantPendientes" x-text="$store.galeria.pendientesEstado === 'error' ? '?' : $store.galeria.pendientes.length">0</span>)</h3>
+            <h2><i class="fa-solid fa-clock-rotate-left"></i> Imágenes Pendientes por Aprobar (<span id="cantPendientes" x-text="$store.galeria.pendientesEstado === 'error' ? '?' : $store.galeria.pendientes.length">0</span>)</h2>
             <div class="gallery-grid" id="gridPendientes">
                 <template x-for="foto in $store.galeria.pendientes" :key="foto.id">
                     <div class="gallery-card gallery-card-pending">

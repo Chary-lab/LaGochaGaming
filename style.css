@@ -2146,13 +2146,21 @@ body.light-mode {
             box-shadow: 0 0 15px rgba(243, 156, 18, 0.2);
             display: none;
         }
-        .panel-pendientes h3 {
+        .panel-pendientes h2 {
             color: #f39c12;
             font-size: 1.1rem;
             margin-bottom: 15px;
             display: flex;
             align-items: center;
             gap: 8px;
+            padding-left: 0;
+            border-left: none;
+            background: none;
+            -webkit-background-clip: border-box;
+            background-clip: border-box;
+            -webkit-text-fill-color: currentColor;
+            text-transform: none;
+            letter-spacing: normal;
         }
 
         .btn-aprobar {
@@ -3057,7 +3065,7 @@ body.light-mode {
             max-height: 75vh;
             overflow-y: auto;
         }
-        .sidebar-ganadores h3 {
+        .sidebar-ganadores h2 {
             color: var(--accent-color);
             margin-bottom: 15px;
             text-transform: uppercase;
