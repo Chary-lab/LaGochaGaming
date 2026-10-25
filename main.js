@@ -40,7 +40,7 @@ window.escapeAttr = function escapeAttr(s) {
     }[c]));
 };
 
-// El rol de admin lo resuelve el servidor con la RPC es_admin() (evalua auth.email()).
+// El rol de admin lo resuelve el servidor con la RPC es_admin() (lee app_metadata.role del JWT).
 let _adminCache = null;
 
 window.esAdminActual = async function esAdminActual() {
