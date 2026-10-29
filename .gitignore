@@ -14,7 +14,13 @@
 # Permitir carpeta de imágenes
 !img/
 !img/*
+# Migraciones SQL y herramientas de validación
+!supabase/
+!supabase/**
+!scripts/
+!scripts/*
 # Ignorar documentación
 *.md
-# El mapa del proyecto sí se versiona
+# El mapa del proyecto y el changelog sí se versionan
 !AGENTS.md
+!CHANGELOG.md

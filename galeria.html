@@ -25,7 +25,7 @@
     <meta name="twitter:image" content="https://lagochagaming.com/img/3.jpg">
     <link rel="manifest" href="manifest.webmanifest">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=1.5.0">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;800;900&display=swap" rel="stylesheet">
@@ -107,7 +107,7 @@
         <!-- SUBIDA DE IMÁGENES -->
         <div class="upload-container" id="uploadContainer">
             <div class="upload-title-wrap">
-                <input type="text" id="imageTitleInput" class="gallery-title-input" aria-label="Título de la imagen" placeholder="Escribe un título para tu imagen..." maxlength="40">
+                <input type="text" id="imageTitleInput" class="gallery-title-input" aria-label="Título de la imagen" placeholder="Escribe un título para tu imagen..." maxlength="60">
                 <div id="admin-author-wrap" hidden>
                     <input type="text" id="imageAuthorInput" class="gallery-title-input" placeholder="Autor de la foto" maxlength="30" value="LaGochaGaming">
                     <p class="upload-hint">
@@ -144,12 +144,12 @@
 
         <div class="gallery-grid" id="galleryGrid" x-data="{}">
             <template x-for="foto in $store.galeria.fotos" :key="foto.id">
-                <div class="gallery-card" tabindex="0" role="button" aria-label="Ver foto: {{ foto.title }}" @click="window.abrirLightbox(foto, $el)" @keydown.enter="window.abrirLightbox(foto, $el)" @keydown.space.prevent="window.abrirLightbox(foto, $el)">
+                <div class="gallery-card" tabindex="0" role="button" :aria-label="'Ver foto: ' + (foto.title || 'Foto de la galería')" @click="window.abrirLightboxDesdeTarjeta($event, foto, $el)" @keydown.enter="window.abrirLightboxDesdeTarjeta($event, foto, $el)" @keydown.space.prevent="window.abrirLightboxDesdeTarjeta($event, foto, $el)">
                     <template x-for="badge in foto.badges" :key="badge.texto">
                         <span :class="'badge-tag ' + badge.clase" x-text="badge.texto"></span>
                     </template>
                     <div class="gallery-card-image-wrap">
-                        <img :src="foto.image_url" :alt="foto.alt" loading="lazy" width="400" height="300">
+                        <img :src="foto.thumb_url || foto.image_url" :alt="foto.alt" loading="lazy" width="400" height="300">
                     </div>
                     <div class="gallery-card-info">
                         <div class="gallery-card-info-row">
@@ -159,11 +159,11 @@
                                     <span class="autor-avatar" x-text="foto.inicial"></span><span x-text="foto.autor"></span>
                                 </span>
                             </div>
-                            <div class="gallery-card-actions">
+                            <div class="gallery-card-actions" @keydown.stop>
                                 <button type="button" class="btn-eliminar-publica" data-action="delete-image" :data-image-id="foto.id" title="Borrar foto de la galería" aria-label="Borrar foto de la galería">
                                     <i class="fa-solid fa-trash-can"></i>
                                 </button>
-                                <button type="button" :class="foto.liked ? 'like-btn liked' : 'like-btn'" data-action="toggle-like" :data-image-id="foto.id" aria-label="Me gusta">
+                                <button type="button" :class="foto.liked ? 'like-btn liked' : 'like-btn'" data-action="toggle-like" :data-image-id="foto.id" :aria-pressed="foto.liked ? 'true' : 'false'" aria-label="Me gusta">
                                     <i :class="(foto.liked ? 'fas' : 'far') + ' fa-heart'"></i>
                                     <span x-text="foto.likes"></span>
                                 </button>
@@ -245,8 +245,8 @@
                     <button type="button" class="lightbox-btn-prev" @click.stop="window.prevLightbox()" aria-label="Foto anterior"><i class="fa-solid fa-chevron-left"></i></button>
                     <button type="button" class="lightbox-btn-close" @click="window.cerrarLightbox()" aria-label="Cerrar vista previa"><i class="fa-solid fa-xmark"></i></button>
                     <button type="button" class="lightbox-btn-next" @click.stop="window.nextLightbox()" aria-label="Foto siguiente"><i class="fa-solid fa-chevron-right"></i></button>
-                    <button type="button" class="lightbox-btn-like" :class="fotoLiked() ? 'liked' : ''" @click.stop="toggleLightboxLike()" aria-label="Me gusta">
-                        <i :class="fotoLiked() ? 'fas' : 'far' + ' fa-heart'"></i>
+                    <button type="button" class="lightbox-btn-like" :class="fotoLiked() ? 'liked' : ''" :aria-pressed="fotoLiked() ? 'true' : 'false'" @click.stop="toggleLightboxLike()" aria-label="Me gusta">
+                        <i :class="(fotoLiked() ? 'fas' : 'far') + ' fa-heart'"></i>
                     </button>
                 </div>
             </div>
@@ -262,6 +262,8 @@
         const AUTOR_POR_DEFECTO = 'LaGochaGaming';
         let topGaleriaGlobal = new Map(); // id -> posición (1..3) del top de likes
         let focoPrevioLightbox = null;
+        let misLikesGaleria = new Set(); // ids que el usuario actual ya likeó (servidor)
+        let likesTokenCargado = null;
 
         document.addEventListener('alpine:init', () => {
         window.Alpine.store('galeria', {
@@ -433,6 +435,27 @@
             }
         }
 
+        // El servidor es la única fuente de verdad de "mis likes". Se consulta
+        // una vez por carga y se refresca si cambia el token de comunidad.
+        async function asegurarLikesUsuario() {
+            const token = localStorage.getItem('comunidad_session_token');
+            if (likesTokenCargado === token) return misLikesGaleria;
+            likesTokenCargado = token;
+            misLikesGaleria = new Set();
+            if (!token || !window.supabase) return misLikesGaleria;
+
+            try {
+                const { data, error } = await supabase.rpc('obtener_likes_galeria', { p_token: token });
+                if (error) throw error;
+                if (data && data.ok && Array.isArray(data.ids)) {
+                    misLikesGaleria = new Set(data.ids.map(String));
+                }
+            } catch (e) {
+                console.warn('No se pudieron cargar tus likes:', e);
+            }
+            return misLikesGaleria;
+        }
+
         function mapearFotoGaleria(image, userLikes, horaAhora) {
             const posicionTop = topGaleriaGlobal.get(image.id);
             const fechaFoto = image.created_at ? new Date(image.created_at).getTime() : 0;
@@ -452,13 +475,14 @@
             return {
                 id: image.id,
                 image_url: image.image_url,
+                thumb_url: image.thumb_url || image.image_url,
                 title: image.title || 'Sin título',
                 alt: image.title || 'Foto Gocha',
                 autor: autor,
                 inicial: autor.charAt(0).toUpperCase(),
                 badges: badges,
                 likes: Number(image.likes) || 0,
-                liked: userLikes.includes(String(image.id))
+                liked: userLikes.has(String(image.id))
             };
         }
 
@@ -475,7 +499,7 @@
                 const orden = filtroActual === 'populares' ? { col: 'likes', asc: false } : { col: 'created_at', asc: false };
                 const { data, error } = await supabase
                     .from('galeria')
-                    .select('id, image_url, title, estado, likes, created_at, autor')
+                        .select('id, image_url, thumb_url, title, estado, likes, created_at, autor')
                     .eq('estado', 'aprobado')
                     .order(orden.col, { ascending: orden.asc })
                     .range(desde, hasta);
@@ -493,7 +517,7 @@
                 // estén disponibles en la primera renderización (independiente del filtro).
                 await cargarTopGlobal();
 
-                const userLikes = JSON.parse(localStorage.getItem('gocha_user_likes') || '[]');
+                const userLikes = await asegurarLikesUsuario();
                 const horaAhora = new Date().getTime();
                 const fotos = imagenesPublicas.map((image) => mapearFotoGaleria(image, userLikes, horaAhora));
 
@@ -545,26 +569,15 @@
             const foto = store ? store.fotos.find(f => String(f.id) === idStr) : null;
             if (!foto) return;
 
-            let userLikes = JSON.parse(localStorage.getItem('gocha_user_likes') || '[]');
             const idNumerico = isNaN(imageId) ? imageId : Number(imageId);
-            const isLiked = userLikes.includes(idStr);
-            const delta = isLiked ? -1 : 1;
-
             const prevLikes = Number(foto.likes) || 0;
             const prevLiked = !!foto.liked;
-            const prevUserLikes = [...userLikes];
+            const delta = prevLiked ? -1 : 1;
 
-            if (isLiked) {
-                userLikes = userLikes.filter(id => id !== idStr);
-            } else {
-                userLikes.push(idStr);
-            }
-            localStorage.setItem('gocha_user_likes', JSON.stringify(userLikes));
-            foto.liked = !isLiked;
+            foto.liked = !prevLiked;
             foto.likes = Math.max(0, prevLikes + delta);
 
             const revertir = () => {
-                localStorage.setItem('gocha_user_likes', JSON.stringify(prevUserLikes));
                 foto.likes = prevLikes;
                 foto.liked = prevLiked;
             };
@@ -586,7 +599,11 @@
                     return;
                 }
                 const likesServidor = Number(data.likes);
-                if (Number.isFinite(likesServidor)) foto.likes = likesServidor;
+                if (Number.isFinite(likesServidor)) foto.likes = Math.max(0, likesServidor);
+                const likedServidor = data.liked === true;
+                foto.liked = likedServidor;
+                if (likedServidor) misLikesGaleria.add(idStr);
+                else misLikesGaleria.delete(idStr);
             } catch (e) {
                 console.error(e);
                 revertir();
@@ -596,6 +613,14 @@
         // ===================================================
         // LIGHTBOX: Escape para cerrar y foco restaurado
         // ===================================================
+        function abrirLightboxDesdeTarjeta(evento, image, tarjetaOrigen) {
+            // Los botones de like/borrar viven dentro de la tarjeta y necesitan
+            // llegar al listener delegado del documento. No abrir el lightbox
+            // cuando el clic nace en la zona de acciones.
+            if (evento && evento.target && evento.target.closest('.gallery-card-actions')) return;
+            abrirLightbox(image, tarjetaOrigen);
+        }
+
         function abrirLightbox(image, tarjetaOrigen) {
             const store = obtenerStoreGaleria();
             if (!store) return;
@@ -723,6 +748,25 @@
                             return;
                         }
                         if (fila.estado !== 'aprobado') return;
+
+                        // Los likes cambian la fila constantemente: actualizar en
+                        // sitio evita recargar toda la galería en cada like.
+                        const store = obtenerStoreGaleria();
+                        const foto = store
+                            ? store.fotos.find(f => String(f.id) === String(fila.id))
+                            : null;
+                        if (foto) {
+                            foto.likes = Number(fila.likes) || 0;
+                            if (fila.title) { foto.title = fila.title; foto.alt = fila.title; }
+                            if (fila.autor) {
+                                foto.autor = fila.autor;
+                                foto.inicial = fila.autor.charAt(0).toUpperCase();
+                            }
+                            foto.image_url = fila.image_url || foto.image_url;
+                            foto.thumb_url = fila.thumb_url || foto.thumb_url || foto.image_url;
+                            return;
+                        }
+
                         paginaActualGaleria = 0;
                         loadApprovedImages();
                         if (adminAutenticado) loadPendingImages();
@@ -896,15 +940,25 @@
 
             if (btnEntrar) btnEntrar.disabled = true;
             try {
-                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+                const { error } = await supabase.auth.signInWithPassword({ email, password });
 
                 if (error) {
                     feedback.innerText = '❌ Credenciales incorrectas';
                     return;
                 }
 
-                adminAutenticado = true;
                 window.refrescarCacheAdmin?.();
+                const esAdmin = await window.esAdminActual?.();
+                if (!esAdmin) {
+                    await supabase.auth.signOut().catch(() => {});
+                    window.refrescarCacheAdmin?.();
+                    adminAutenticado = false;
+                    aplicarEstadoAdmin();
+                    feedback.innerText = '❌ Esta cuenta no tiene permisos de moderación';
+                    return;
+                }
+
+                adminAutenticado = true;
                 cerrarModalPin();
                 aplicarEstadoAdmin();
                 mostrarToast('¡Modo moderación activado!');
@@ -1005,7 +1059,7 @@
               hex.startsWith('ffd8ff') ||   // JPEG
               hex.startsWith('47494638') || // GIF
               hex.startsWith('52494646') || // WEBP (RIFF)
-              hex.startsWith('000000') ;    // AVIF/HEIC (ftyp)
+              hex.slice(8, 16) === '66747970'; // AVIF/HEIC (caja ftyp)
             if (!magicOk) {
               uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ El archivo no es una imagen válida.</p>';
               uploadInput.value = '';
@@ -1014,7 +1068,9 @@
 
             // La carpeta "gallery/" es obligatoria: la policy de Storage solo permite
             // subir dentro de esa ruta y el RPC publicar_foto_galeria valida la URL.
-            const nombreSeguro = (file.name || 'imagen').replace(/[^a-zA-Z0-9._-]/g, '_');
+            const nombreSeguro = (file.name || 'imagen')
+                .replace(/[^a-zA-Z0-9._-]/g, '_')
+                .slice(0, 100);
             const filePath = `gallery/${Date.now()}_${nombreSeguro}`;
 
             try {
@@ -1136,7 +1192,7 @@
         // escapeHtml / escapeAttr viven en main.js (fuente única del sitio)
     </script>
 
-    <script src="main.js" defer></script>
+    <script src="main.js?v=1.5.0" defer></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.17.5/dist/cdn.min.js"
             integrity="sha384-FYLKjwG3aohNhNZoVG8sY/5ntunm+MqylL90Q+rT3OM7AwV9/BKFjk/RjoIpIgsI"
             crossorigin="anonymous"></script>

@@ -28,7 +28,7 @@
     <link rel="icon" type="image/png" sizes="512x512" href="img/android-chrome-512x512.png">
     <link rel="manifest" href="manifest.webmanifest">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=1.5.0">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;800;900&display=swap" rel="stylesheet">
@@ -302,7 +302,7 @@
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
 
-    <script src="main.js" defer></script>
+    <script src="main.js?v=1.5.0" defer></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.17.5/dist/cdn.min.js"
             integrity="sha384-FYLKjwG3aohNhNZoVG8sY/5ntunm+MqylL90Q+rT3OM7AwV9/BKFjk/RjoIpIgsI"
             crossorigin="anonymous"></script>
@@ -909,6 +909,10 @@ setInterval(actualizarTypingIndicator, 500);
             }
 
             function guardarSesion(apodo, token, puntos, rango, id) {
+                const nickPrevio = localStorage.getItem(STORAGE_KEY_NICK);
+                if (nickPrevio && nickPrevio !== apodo) {
+                    window.limpiarCachesSesionComunidad?.();
+                }
                 if (id) userId = id;
                 sesionComunidadActiva = true;
                 localStorage.setItem(STORAGE_KEY_NICK, apodo);
@@ -951,6 +955,7 @@ setInterval(actualizarTypingIndicator, 500);
                         localStorage.removeItem(STORAGE_KEY_NICK);
                         localStorage.removeItem(STORAGE_KEY_TOKEN);
                         localStorage.removeItem('comunidad_user_id');
+                        window.limpiarCachesSesionComunidad?.();
                         userNickname = null;
                         userId = null;
                         sesionComunidadActiva = false;
@@ -1192,7 +1197,7 @@ setInterval(actualizarTypingIndicator, 500);
                 }
 
                 const lista = usuarios.map(n => `<span class="tooltip-usuario">${escapeHtml(n)}</span>`).join('');
-                tooltipReaccionEl.innerHTML = `<div class="tooltip-titulo">${emoji} <span class="tooltip-count">(${usuarios.length})</span></div><div class="tooltip-lista">${lista}</div>`;
+                tooltipReaccionEl.innerHTML = `<div class="tooltip-titulo">${escapeHtml(emoji)} <span class="tooltip-count">(${usuarios.length})</span></div><div class="tooltip-lista">${lista}</div>`;
 
                 const rect = target.getBoundingClientRect();
                 const tw = tooltipReaccionEl.offsetWidth || 160;
@@ -1706,7 +1711,15 @@ if (chatForm) {
                     });
 
                 canalPresencia.subscribe((state) => {
-                    if (state === 'SUBSCRIBED' && nickParaTrack && !trackHecho) {
+                    if (state !== 'SUBSCRIBED') return;
+
+                    // Si nadie mas esta conectado el evento 'sync' puede no llegar
+                    // con estado vacio: se pinta aqui para no dejar "Cargando..."
+                    // indefinidamente.
+                    if (onlineUsersListEl) onlineUsersListEl.dataset.loaded = 'true';
+                    renderizarListaUsuarios(canalPresencia.presenceState());
+
+                    if (nickParaTrack && !trackHecho) {
                         trackHecho = true;
                         canalPresencia.track({ user_id: presenceId, nickname: nickParaTrack });
                     }

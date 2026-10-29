@@ -89,6 +89,7 @@ window.refrescarCacheAdmin = function refrescarCacheAdmin() {
 // Confeti reutilizable. Acepta el id de un canvas existente o, si no se pasa,
 // crea uno efímero a pantalla completa que se elimina al terminar.
 window.lanzarConfetti = function lanzarConfetti(canvasId, opciones = {}) {
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const colores = ['#ff66b2', '#00f2fe', '#ffffff', '#ffeb3b', '#4caf50', '#9b59b6'];
     const cantidad = opciones.cantidad || 150;
 
@@ -230,11 +231,29 @@ window.toggleTema = function toggleTema() {
 
 // === SESIÓN DE COMUNIDAD ===
 
+// Cachés locales que pertenecen a la cuenta de comunidad. Se limpian al cerrar
+// sesión o cuando el servidor invalida el token para que el siguiente usuario
+// no herede likes, reacciones ni rachas de la cuenta anterior.
+window.limpiarCachesSesionComunidad = function limpiarCachesSesionComunidad() {
+    [
+        'gochi_chat_mi_reaccion_v2',
+        'gochi_chat_reacciones_cache',
+        'gochi_chat_mi_reaccion_pendiente_v1',
+        'gochi_chat_streak',
+        'gocha_user_likes',
+        'chat_scroll'
+    ].forEach((clave) => {
+        localStorage.removeItem(clave);
+        sessionStorage.removeItem(clave);
+    });
+};
+
 window.cerrarSesion = async function cerrarSesion() {
     const token = localStorage.getItem('comunidad_session_token');
     localStorage.removeItem('comunidad_nickname');
     localStorage.removeItem('comunidad_session_token');
     localStorage.removeItem('comunidad_user_id');
+    window.limpiarCachesSesionComunidad();
 
     if (token && window.supabase) {
         try {

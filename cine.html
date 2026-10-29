@@ -25,7 +25,7 @@
     <meta name="twitter:image" content="https://lagochagaming.com/img/3.jpg">
     <link rel="manifest" href="manifest.webmanifest">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=1.5.0">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;800;900&display=swap" rel="stylesheet">
@@ -113,6 +113,9 @@
                     <div class="cine-overlay-text">
                         <i class="fa-solid fa-circle-info"></i>
                         <span>Esperando video del streamer…</span>
+                        <button type="button" id="cine-join-play" class="btn-primary cine-join-btn" hidden>
+                            ▶ Unirme a la reproducción
+                        </button>
                     </div>
                 </div>
                 <!-- Reproductor HTML5 para MP4 / Google Drive -->
@@ -169,13 +172,14 @@
     <script src="https://www.youtube.com/iframe_api" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0" defer></script>
 
-    <script src="main.js" defer></script>
+    <script src="main.js?v=1.5.0" defer></script>
 
     <!-- LÓGICA DE JAVASCRIPT DEL CINE -->
     <script>
         let streamerCineAutenticado = false;
         const mp4Player = document.getElementById('cineVideoPlayer');
         const ytContainer = document.getElementById('ytPlayerContainer');
+        const btnUnirseCine = document.getElementById('cine-join-play');
         let ytPlayer = null;
         let esYouTube = false;
         let actualizandoLocalmente = false;
@@ -291,7 +295,23 @@
                 e.preventDefault();
                 iniciarSesionStreamerCine();
             });
+
+            if (btnUnirseCine) {
+                btnUnirseCine.addEventListener('click', unirseAReproduccion);
+            }
         });
+
+        function unirseAReproduccion() {
+            if (esYouTube && ytPlayer && typeof ytPlayer.playVideo === 'function') {
+                ytPlayer.playVideo();
+                return;
+            }
+            if (mp4Player) {
+                mp4Player.play().catch(() => {
+                    mostrarOverlayCarga('No se pudo iniciar la reproducción.', true);
+                });
+            }
+        }
 
         document.addEventListener('click', (e) => {
             const trigger = e.target.closest('[data-action]');
@@ -398,17 +418,6 @@
         }
 
         function sincronizarReproductorRemoto(data, intento = 0) {
-            const miIntento = ++sincronizarUltimoIntento;
-            if (!ytApiReady) {
-                if (intento < 40) {
-                    setTimeout(() => {
-                        if (miIntento === sincronizarUltimoIntento) {
-                            sincronizarReproductorRemoto(data, intento + 1);
-                        }
-                    }, 300);
-                }
-                return;
-            }
             // Ignorar el eco de nuestro propio comando ya aplicado localmente (evita bucle de re-emisión)
             if (window._ultimoSyncEnviado && data && data.estado === window._ultimoSyncEnviado.estado && Math.abs((data.tiempo || 0) - (window._ultimoSyncEnviado.tiempo || 0)) < 1.5) {
                 window._ultimoSyncEnviado = null;
@@ -437,6 +446,20 @@
             const ytId = extraerYouTubeId(finalUrl);
 
             if (ytId) {
+                // El iframe de YouTube puede tardar o estar bloqueado; MP4 no
+                // depende de su API y debe seguir funcionando igualmente.
+                if (!ytApiReady) {
+                    const miIntento = ++sincronizarUltimoIntento;
+                    if (intento < 40) {
+                        setTimeout(() => {
+                            if (miIntento === sincronizarUltimoIntento) {
+                                sincronizarReproductorRemoto(data, intento + 1);
+                            }
+                        }, 300);
+                    }
+                    return;
+                }
+
                 esYouTube = true;
                 mp4Player.style.display = 'none';
                 mp4Player.pause();
@@ -457,7 +480,10 @@
                                 'onReady': (event) => {
                                     _cargandoVideo = false;
                                     try { event.target.seekTo(data.tiempo || 0, true); } catch (e) {}
-                                    if (data.estado === 'play') event.target.playVideo();
+                                    if (data.estado === 'play') {
+                                        mostrarOverlayCarga('Pulsa para unirte a la reproducción', false, true);
+                                        event.target.playVideo();
+                                    }
                                 },
                                 'onError': (event) => {
                                     console.error('Error YouTube Player:', event.data);
@@ -488,8 +514,16 @@
                         if (Math.abs(ytPlayer.getCurrentTime() - data.tiempo) > 2) {
                             ytPlayer.seekTo(data.tiempo, true);
                         }
-                        if (data.estado === 'play') ytPlayer.playVideo();
-                        else if (data.estado === 'pause') ytPlayer.pauseVideo();
+                        if (data.estado === 'play') {
+                            // Si el navegador bloqueo el autoplay, se ofrece el
+                            // boton para que el usuario habilite el sonido.
+                            try {
+                                if (ytPlayer.getPlayerState() !== YT.PlayerState.PLAYING) {
+                                    mostrarOverlayCarga('Pulsa para unirte a la reproducción', false, true);
+                                }
+                            } catch (e) {}
+                            ytPlayer.playVideo();
+                        } else if (data.estado === 'pause') ytPlayer.pauseVideo();
                     } catch (e) { /* ignorar errores de estado intermedio */ }
                     actualizandoLocalmente = false;
                 }
@@ -516,7 +550,9 @@
                         mp4Player.currentTime = data.tiempo;
                     }
                     if (data.estado === 'play' && mp4Player.paused) {
-                        mp4Player.play().catch(() => {});
+                        mp4Player.play().catch(() => {
+                            mostrarOverlayCarga('Pulsa para unirte a la reproducción', false, true);
+                        });
                     } else if (data.estado === 'pause' && !mp4Player.paused) {
                         mp4Player.pause();
                     }
@@ -548,6 +584,7 @@
         function ocultarOverlayCarga() {
             const overlay = document.getElementById('cinePlayerOverlay');
             if (overlay) overlay.classList.add('hide');
+            if (btnUnirseCine) btnUnirseCine.hidden = true;
         }
 
         function toggleInstruccionesPanel() {
@@ -558,7 +595,7 @@
             btn.setAttribute('aria-expanded', abierto ? 'true' : 'false');
         }
 
-        function mostrarOverlayCarga(mensagem = 'Esperando video del streamer…', esError = false) {
+        function mostrarOverlayCarga(mensagem = 'Esperando video del streamer…', esError = false, mostrarUnirse = false) {
             const overlay = document.getElementById('cinePlayerOverlay');
             if (!overlay) return;
             overlay.classList.remove('hide', 'error');
@@ -567,6 +604,7 @@
             const icono = overlay.querySelector('.cine-overlay-text i');
             if (texto) texto.textContent = mensagem;
             if (icono) icono.className = esError ? 'fa-solid fa-triangle-exclamation' : 'fa-solid fa-circle-info';
+            if (btnUnirseCine) btnUnirseCine.hidden = !mostrarUnirse;
         }
 
         function abrirModalCinePin() {
@@ -620,7 +658,7 @@ try {
                 activarModoStreamerUI();
                 mostrarToast('¡Sesión iniciada con éxito!');
             } catch (e) {
-                feedback.textContent = '❌ No se pudo iniciar sessión';
+                feedback.textContent = '❌ No se pudo iniciar sesión';
             } finally {
                 if (btnEntrar) btnEntrar.disabled = false;
             }

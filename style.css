@@ -2908,6 +2908,16 @@ body.light-mode {
             pointer-events: none;
         }
 
+        .cine-join-btn {
+            pointer-events: auto;
+            margin-top: 14px;
+            font-size: 0.9rem;
+        }
+
+        .cine-player-overlay.hide .cine-join-btn {
+            display: none;
+        }
+
         .cine-player-overlay.error {
             background: rgba(30, 10, 10, 0.85);
             color: #ff6b6b;
