@@ -359,7 +359,9 @@
             // página del sitio): reevalúa el rol para no dejar el panel desfasado.
             if (window.supabase && typeof window.supabase.auth?.onAuthStateChange === 'function') {
                 window.supabase.auth.onAuthStateChange((evento, sesion) => {
-                    if (evento === 'INITIAL_SESSION') return;
+                    // Solo login/logout real: reevaluar en TOKEN_REFRESHED vuelve a pedir
+                    // la sesión mientras el cliente refresca y encadena refrescos sin fin.
+                    if (evento !== 'SIGNED_IN' && evento !== 'SIGNED_OUT') return;
                     if (!sesion && evento !== 'SIGNED_OUT') return;
                     setTimeout(async () => {
                         adminAutenticado = await window.esAdminActual();

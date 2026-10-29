@@ -45,14 +45,15 @@ let _adminCache = null;
 
 window.esAdminActual = async function esAdminActual() {
     if (!window.supabase) return false;
+    const adminEnCache = () => (_adminCache ? _adminCache.ok : false);
 
     let user = null;
     try {
         const { data, error } = await window.supabase.auth.getSession();
-        if (error) return false;
+        if (error) return _adminCache ? _adminCache.ok : false;
         user = data && data.session ? data.session.user : null;
     } catch (e) {
-        return false;
+        return _adminCache ? _adminCache.ok : false;
     }
 
     if (!user) { _adminCache = null; return false; }
