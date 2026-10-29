@@ -67,7 +67,7 @@ Everything exposed on `window.*`; no ES modules. `DOMContentLoaded` initializes 
 
 ## Versioning (SemVer)
 
-- **Source of truth:** The `VERSION` file contains the current version in `X.Y.Z` format (current: `1.4.3`).
+- **Source of truth:** The `VERSION` file contains the current version in `X.Y.Z` format (current: `1.4.4`).
 - **Git tags:** Releases are tagged as `vX.Y.Z` matching the same number (e.g., `v1.4.3`). Full history: `git tag --list`.
 - **Rule:** Follow [Semantic Versioning 2.0.0](https://semver.org/).
   - `MAJOR` (X): Incompatible/breaking changes
