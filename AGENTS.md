@@ -65,6 +65,24 @@ Everything exposed on `window.*`; no ES modules. `DOMContentLoaded` initializes 
 - **Medium:** Large inline CSS/JS, Bootstrap/FA full, unoptimized images.
 - **Low:** Table `donaciones` orphaned.
 
+## Versioning (SemVer)
+
+- **Source of truth:** The `VERSION` file contains the current version in `X.Y.Z` format (current: `1.4.3`).
+- **Git tags:** Releases are tagged as `vX.Y.Z` matching the same number (e.g., `v1.4.3`). Full history: `git tag --list`.
+- **Rule:** Follow [Semantic Versioning 2.0.0](https://semver.org/).
+  - `MAJOR` (X): Incompatible/breaking changes
+  - `MINOR` (Y): Backwards-compatible new features
+  - `PATCH` (Z): Backwards-compatible bug fixes
+
+### Process when updating version
+1. **Determine bump:** Analyze changes to decide `patch`, `minor`, or `major`.
+2. **Update files:** Change `VERSION` to the new number. Update references if needed (e.g., `ninjas.md`).
+3. **Commit:** Commit changes with a clear message.
+4. **Tag:** Create annotated tag: `git tag -a vX.Y.Z -m "Release vX.Y.Z"`.
+5. **Push:** Push commits and tags: `git push && git push --tags`.
+
+**Important:** Always start from the highest existing tag. Never reuse versions or skip the SemVer sequence.
+
 ## Development
 - **Run:** Open HTML files directly or serve locally (any static server). No build step.
 - **Edit:** Follow existing patterns. Check neighbors/imports. Preserve behavior (Regla de Oro).

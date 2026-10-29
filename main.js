@@ -88,8 +88,12 @@ window.refrescarCacheAdmin = function refrescarCacheAdmin() {
 // Confeti reutilizable. Acepta el id de un canvas existente o, si no se pasa,
 // crea uno efímero a pantalla completa que se elimina al terminar.
 window.lanzarConfetti = function lanzarConfetti(canvasId, opciones = {}) {
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        return;
+    }
+    const esMovil = window.innerWidth < 768;
     const colores = ['#ff66b2', '#00f2fe', '#ffffff', '#ffeb3b', '#4caf50', '#9b59b6'];
-    const cantidad = opciones.cantidad || 150;
+    const cantidad = opciones.cantidad || (esMovil ? 60 : 150);
 
     let canvas = canvasId ? document.getElementById(canvasId) : null;
     let efimero = false;

@@ -901,6 +901,13 @@
                     return;
                 }
 
+                const adminOk = await window.esAdminActual?.();
+                if (!adminOk) {
+                    await supabase.auth.signOut();
+                    feedback.innerText = '❌ No tienes permisos de administrador';
+                    return;
+                }
+
                 adminAutenticado = true;
                 window.refrescarCacheAdmin?.();
                 cerrarModalPin();

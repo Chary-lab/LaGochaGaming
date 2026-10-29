@@ -117,7 +117,6 @@
                 </div>
                 <!-- Reproductor HTML5 para MP4 / Google Drive -->
                 <video id="cineVideoPlayer" class="cine-video" controls controlslist="nodownload" aria-label="Reproductor de video">
-                    <source id="cineVideoSource" type="video/mp4">
                     Tu navegador no soporta reproducción.
                 </video>
 
@@ -126,7 +125,7 @@
 
                 <!-- Overlay con la cámara/stream en directo de La Gocha -->
                 <div class="streamer-overlay-cam">
-                    <iframe src="https://player.kick.com/lagochagaming?autoplay=true&muted=1" frameborder="0" scrolling="no" allowfullscreen="true" title="Transmisión en directo" loading="lazy"></iframe>
+                    <iframe src="https://player.kick.com/lagochagaming?autoplay=true&muted=1" title="Transmisión en directo" loading="lazy" allow="fullscreen"></iframe>
                 </div>
             </div>
         </div>
@@ -134,7 +133,7 @@
         <!-- BARRA LATERAL (CHAT DE KICK) -->
         <div class="cine-sidebar">
             <div class="chat-box-cine">
-                <iframe src="https://kick.com/popout/lagochagaming/chat" frameborder="0" scrolling="no" title="Chat de Kick" loading="lazy"></iframe>
+                <iframe src="https://kick.com/popout/lagochagaming/chat" title="Chat de Kick" loading="lazy" class="chat-iframe"></iframe>
             </div>
             <div class="sidebar-info cine-info-card">
                 <h3>ℹ️ ¿Cómo funciona?</h3>
@@ -504,9 +503,8 @@
                 if (_ytLoadTimer) clearTimeout(_ytLoadTimer);
                 mp4Player.style.display = 'block';
 
-                const source = document.getElementById('cineVideoSource');
-                if (source && source.src !== finalUrl) {
-                    source.src = finalUrl;
+                if (mp4Player.src !== finalUrl) {
+                    mp4Player.src = finalUrl;
                     mp4Player.load();
                 }
 

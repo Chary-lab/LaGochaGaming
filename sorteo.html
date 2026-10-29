@@ -384,6 +384,13 @@
                     return;
                 }
 
+                const adminOk = await window.esAdminActual?.();
+                if (!adminOk) {
+                    await supabase.auth.signOut();
+                    mostrarFeedback('feedback-pin', '❌ No tienes permisos de streamer', true);
+                    return;
+                }
+
                 streamerAutenticado = true;
                 cerrarModalPin();
                 document.getElementById('sec-modo-manual').style.display = 'none';
@@ -853,8 +860,9 @@
 
         async function guardarGanadorOficial(nombre) {
             try {
-                const { error } = await supabase.from('ganadores_sorteo').insert([{ nombre: `@${nombre}`, created_at: new Date().toISOString() }]);
-                if (!error) cargarTopGanadores();
+                const { data, error } = await supabase.rpc('registrar_ganador_sorteo', { p_nombre: nombre });
+                if (error) { console.error('Error:', error); return; }
+                if (data && data.ok) cargarTopGanadores();
             } catch (err) { console.error('Error:', err); }
         }
 

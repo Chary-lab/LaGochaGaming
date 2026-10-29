@@ -559,7 +559,7 @@
                     typingIndicator.textContent = nombres.join(', ') + ' está escribiendo...';
                 }
             }
-setInterval(actualizarTypingIndicator, 500);
+setInterval(() => { if (document.hidden) return; actualizarTypingIndicator(); }, 500);
             const inputAutor = document.getElementById('chat-autor');
             let inputMensaje = document.getElementById('chat-mensaje');
             if (inputMensaje) {
@@ -1807,7 +1807,7 @@ if (chatForm) {
             cargarMensajesChat();
             iniciarRealtimeChat();
             cargarLeaderboard();
-            setInterval(cargarLeaderboard, 60000); // Actualizar ranking cada minuto
+            setInterval(() => { if (document.hidden) return; cargarLeaderboard(); }, 60000); // Actualizar ranking cada minuto
 
             // Reconciliación periódica de las reacciones visibles. Si se pierde algún
             // evento de Realtime (p. ej. un DELETE que solo trae la clave primaria),
