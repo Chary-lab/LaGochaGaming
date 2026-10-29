@@ -102,6 +102,7 @@ Guía operativa para agentes que trabajen en este repositorio. Leerla completa a
 - No registrar tokens, PINs ni datos personales en consola.
 - No introducir `target="_blank"` sin `rel="noopener noreferrer"`.
 - Las cuentas de comunidad usan PIN de 4 dígitos: es una decisión de producto; no aumentar la superficie de ataque (no permitir cambiar el PIN sin verificación, no exponer hashes).
+- Recomendado en Supabase Auth: activar "Leaked password protection" y revisar los advisors tras cada migración.
 
 ## 7. Despliegue
 
@@ -168,6 +169,8 @@ Guía operativa para agentes que trabajen en este repositorio. Leerla completa a
 ## 12. Riesgos aceptados / deuda conocida
 
 - Registro de sorteo público: la verificación de Kick es del lado cliente y el rate limit por IP es 30/10 min; un atacante con muchas IPs aún podría llenar la tómbola. El servidor limita a 500 y decide el ganador.
+- El ganador no se elimina de `participantes_en_vivo` al sortear (puede volver a ganar en otro giro). Si el producto requiere un ganador por persona, modificar `sortear_ganador_sorteo` para excluirlo.
+- Las sesiones caducadas se limpian al iniciar sesión/registrarse, no con un cron. No asumir limpieza inmediata.
 - Presencia y "escribiendo" usan canales públicos: un cliente puede falsificar el apodo mostrado. El chat real sí usa el apodo canónico del servidor.
 - Subida anónima a Storage: permite spam de almacenamiento y archivos huérfanos si la RPC falla. Requiere Edge Function/servicio externo para verificación fuerte.
 - PIN de 4 dígitos: fuerza bruta distribuida posible; el rate limit es por IP.
