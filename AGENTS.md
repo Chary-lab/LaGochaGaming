@@ -83,6 +83,8 @@ Everything exposed on `window.*`; no ES modules. `DOMContentLoaded` initializes 
 
 **Important:** Always start from the highest existing tag. Never reuse versions or skip the SemVer sequence.
 
+**Rule:** On every change, update `AGENTS.md` version reference and `VERSION` to keep them in sync.
+
 ## Development
 - **Run:** Open HTML files directly or serve locally (any static server). No build step.
 - **Edit:** Follow existing patterns. Check neighbors/imports. Preserve behavior (Regla de Oro).
