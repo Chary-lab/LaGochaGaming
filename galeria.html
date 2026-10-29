@@ -361,6 +361,9 @@
                 window.supabase.auth.onAuthStateChange((evento, sesion) => {
                     if (evento === 'INITIAL_SESSION') return;
                     if (!sesion && evento !== 'SIGNED_OUT') return;
+                    // Evitar doble ejecución (y el re-render/salto de la UI)
+                    // cuando el login se hace desde el propio panel de la galería.
+                    if (evento === 'SIGNED_IN' && adminAutenticado) return;
                     setTimeout(async () => {
                         adminAutenticado = await window.esAdminActual();
                         aplicarEstadoAdmin();

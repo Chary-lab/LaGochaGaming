@@ -6,7 +6,7 @@
 - **Stack:** Vanilla HTML5/CSS3/JS (ES2020+), Bootstrap CSS (utilities only), Alpine.js 3.17.5 (galeria/comunidad/sorteo), Supabase JS v2.118.0, Font Awesome 6.6.0, Google Fonts (Inter/Poppins)
 - **Backend:** Supabase (project `cydiyaacnyydprgffmkq`, us-west-2, Postgres 17.11). Auth, Realtime, Storage, RPC. No Edge Functions.
 - **Deployment:** GitHub Pages (push to `main`), CNAME `lagochagaming.com`. `_headers` ignored by GitHub Pages.
-- **Version:** v1.4.3
+- **Version:** v1.4.5
 
 ## Architecture
 ```
@@ -67,7 +67,7 @@ Everything exposed on `window.*`; no ES modules. `DOMContentLoaded` initializes 
 
 ## Versioning (SemVer)
 
-- **Source of truth:** The `VERSION` file contains the current version in `X.Y.Z` format (current: `1.4.4`).
+- **Source of truth:** The `VERSION` file contains the current version in `X.Y.Z` format (current: `1.4.5`).
 - **Git tags:** Releases are tagged as `vX.Y.Z` matching the same number (e.g., `v1.4.3`). Full history: `git tag --list`.
 - **Rule:** Follow [Semantic Versioning 2.0.0](https://semver.org/).
   - `MAJOR` (X): Incompatible/breaking changes
