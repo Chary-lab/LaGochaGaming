@@ -3,6 +3,23 @@
 Formato basado en Keep a Changelog. Versionado SemVer (`MAJOR.MINOR.PATCH`).
 El historial anterior a 1.5.0 está en los commits `v1.4.x`.
 
+## [1.9.2] - 2026-10-30
+
+### Reacciones del chat al recargar
+
+- Corregido: las reacciones guardadas en el servidor no se cargaban al abrir
+  Comunidad. `cargarMensajesChat` pintaba los mensajes pero nunca pedía los
+  chips a Supabase ni marcaba el chat como inicializado, así que solo se veían
+  las reacciones que quedaban en `localStorage`.
+- Como cerrar sesión limpia esa caché local, al volver a entrar la reacción
+  seguía guardada en la base de datos pero desaparecía de la interfaz. Ahora la
+  carga inicial (y la de mensajes antiguos) pide las reacciones al servidor.
+- El reconciliador de reacciones cada 30 s ahora sí se activa tras la carga
+  inicial (antes dependía de que llegara un mensaje nuevo).
+- La comparación de `user_id` es tolerante a string/número al marcar la
+  reacción como propia, y al restaurar o crear la sesión se refrescan los chips
+  para marcar las reacciones que ya existen en el servidor.
+
 ## [1.9.1] - 2026-10-30
 
 ### Footer sin hueco inferior
