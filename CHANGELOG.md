@@ -3,6 +3,14 @@
 Formato basado en Keep a Changelog. Versionado SemVer (`MAJOR.MINOR.PATCH`).
 El historial anterior a 1.5.0 está en los commits `v1.4.x`.
 
+## [1.12.1] - 2026-10-30
+
+### TikTok sin pie del embed
+
+- Recortado el iframe del embed de TikTok (400 px + `scrolling="no"`) para
+  ocultar la barra inferior con “TikTok / Política de privacidad / Abrir TikTok”.
+- Se mantiene el enlace “Ver perfil en TikTok” bajo el widget.
+
 ## [1.12.0] - 2026-10-30
 
 ### Feed de Instagram propio (sin Juicer)

@@ -340,7 +340,7 @@ body.light-mode .hero-bio {
 
 /* TikTok: embed oficial de creador (se sincroniza solo) */
 .social-feed-box.tiktok-embed-box {
-    height: 440px;
+    height: 400px;
 }
 .social-feed-box.tiktok-embed-box iframe {
     transform: none;

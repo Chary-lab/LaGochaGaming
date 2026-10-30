@@ -134,7 +134,7 @@ Las migraciones SQL no se versionan en este repo: el historial vive en Supabase.
 - En cada release, actualizar el query de caché `?v=X.Y.Z` de `style.css` y `main.js` en los HTML (GitHub Pages cachea agresivamente).
 - Formato de commit: `vX.Y.Z - resumen corto` (seguir el historial existente).
 - No commitear ni pushear una versión inestable. Probar antes.
-- Versión de esta release: `1.12.0` (feed de Instagram propio con Edge Function; sobre 1.11.0).
+- Versión de esta release: `1.12.1` (TikTok sin pie del embed; sobre 1.12.0).
 
 ## 9. Pruebas antes de commitear
 
