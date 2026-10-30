@@ -21,6 +21,7 @@ supabase/
 !scripts/*
 # Ignorar documentación
 *.md
-# El mapa del proyecto y el changelog sí se versionan
+# El mapa del proyecto, el changelog y el plan beta sí se versionan
 !AGENTS.md
 !CHANGELOG.md
+!beta.md

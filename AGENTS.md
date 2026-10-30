@@ -32,6 +32,7 @@ Guía operativa para agentes que trabajen en este repositorio. Leerla completa a
 | `cine.html` | Sincronización de películas/videos para espectadores y streamer |
 | `_headers` | Cabeceras para hosts que las soportan (NO en GitHub Pages) |
 | `VERSION` | Versión SemVer de la release |
+| `beta.md` | Plan de trabajo de la siguiente beta (perfil, tienda privada, admin) |
 | `scripts/check.js` | Validaciones estáticas del repo (no se carga en Pages) |
 
 Las migraciones SQL no se versionan en este repo: el historial vive en Supabase. La carpeta local `supabase/` está ignorada.
