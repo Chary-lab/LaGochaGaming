@@ -68,12 +68,12 @@ html {
     scroll-behavior: smooth;
 }
 
-body { background-color: var(--bg-color); color: var(--text-main); font-family: var(--font-body); overflow-x: hidden; margin: 0; transition: background-color 0.3s ease, color 0.3s ease; }
+body { background-color: var(--bg-color); color: var(--text-main); font-family: var(--font-body); overflow-x: hidden; margin: 0; min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; transition: background-color 0.3s ease, color 0.3s ease; }
 
-/* Mayor margen en el body para más espacio vertical */
-body.comunidad-page {
-    margin: 0 auto;
-    padding-bottom: 80px;
+/* Envoltura del contenido: empuja el footer al fondo en páginas cortas */
+.page-shell {
+    flex: 1 0 auto;
+    width: 100%;
 }
 
 /* Prevenir overflow de texto en lists */

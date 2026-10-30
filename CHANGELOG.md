@@ -3,6 +3,20 @@
 Formato basado en Keep a Changelog. Versionado SemVer (`MAJOR.MINOR.PATCH`).
 El historial anterior a 1.5.0 está en los commits `v1.4.x`.
 
+## [1.9.1] - 2026-10-30
+
+### Footer sin hueco inferior
+
+- Corregido el hueco (negro en modo OLED) que quedaba bajo el footer en
+  Comunidad: `body.comunidad-page` añadía 80px de `padding-bottom` después del
+  footer.
+- Nuevo layout de página con `.page-shell` y `body` en columna flexible: si el
+  contenido es más corto que la pantalla, el footer queda pegado al borde
+  inferior (Cine, Sorteo y Comunidad en pantallas altas) en vez de dejar una
+  banda vacía debajo.
+- Sin cambios en el espaciado interno de las páginas largas ni en las páginas
+  que ya hacían scroll.
+
 ## [1.9.0] - 2026-10-30
 
 ### Tienda en carrusel
