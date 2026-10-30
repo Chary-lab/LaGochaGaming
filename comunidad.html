@@ -28,7 +28,7 @@
     <link rel="icon" type="image/png" sizes="512x512" href="img/android-chrome-512x512.png">
     <link rel="manifest" href="manifest.webmanifest">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=1.8.1">
+    <link rel="stylesheet" href="style.css?v=1.9.0">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;800;900&display=swap" rel="stylesheet">
@@ -287,32 +287,40 @@
             <div id="tab-tienda" class="tab-content" hidden role="tabpanel" aria-labelledby="tabbtn-tienda">
     <h4 class="tab-content-title"><i class="fa-solid fa-shop"></i> Tienda de Puntos</h4>
     <p class="tab-hint">Gasta tus puntos en recompensas exclusivas. Los iconos se muestran junto a tu nombre en todo el sitio.</p>
-    <div id="tienda-catalogo" class="tienda-grid" x-data="{}">
-        <template x-for="premio in $store.tienda.premios" :key="premio.id">
-            <div class="tienda-item" :class="{ agotado: premio.stock !== null && premio.stock <= 0, obtenido: $store.tienda.yaObtenido(premio) }">
-                <template x-if="premio.tipo === 'avatar' && premio.avatar_url">
-                    <div class="tienda-item-avatar"><img :src="premio.avatar_url" :alt="premio.nombre" loading="lazy"></div>
-                </template>
-                <div class="tienda-item-icon" x-show="premio.tipo !== 'avatar' || !premio.avatar_url" x-text="premio.icono"></div>
-                <div class="tienda-item-info">
-                    <span class="tienda-item-nombre" x-text="premio.nombre"></span>
-                    <span class="tienda-item-desc" x-text="premio.descripcion"></span>
-                    <div class="tienda-item-meta">
-                        <span class="tienda-costo" x-text="premio.costo_puntos + ' pts'"></span>
-                        <template x-if="premio.stock !== null">
-                            <span class="tienda-stock" x-text="'Stock: ' + premio.stock"></span>
-                        </template>
+    <div class="tienda-carrusel" role="group" aria-roledescription="carrusel" aria-label="Catálogo de premios">
+        <button type="button" class="tienda-flecha tienda-flecha-prev" id="tienda-flecha-prev" aria-label="Premios anteriores" aria-controls="tienda-catalogo">
+            <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+        </button>
+        <div id="tienda-catalogo" class="tienda-grid" x-data="{}" tabindex="0" aria-label="Premios disponibles, desplázate en horizontal">
+            <template x-for="premio in $store.tienda.premios" :key="premio.id">
+                <div class="tienda-item" :class="{ agotado: premio.stock !== null && premio.stock <= 0, obtenido: $store.tienda.yaObtenido(premio) }">
+                    <template x-if="premio.tipo === 'avatar' && premio.avatar_url">
+                        <div class="tienda-item-avatar"><img :src="premio.avatar_url" :alt="premio.nombre" loading="lazy"></div>
+                    </template>
+                    <div class="tienda-item-icon" x-show="premio.tipo !== 'avatar' || !premio.avatar_url" x-text="premio.icono"></div>
+                    <div class="tienda-item-info">
+                        <span class="tienda-item-nombre" x-text="premio.nombre"></span>
+                        <span class="tienda-item-desc" x-text="premio.descripcion"></span>
+                        <div class="tienda-item-meta">
+                            <span class="tienda-costo" x-text="premio.costo_puntos + ' pts'"></span>
+                            <template x-if="premio.stock !== null">
+                                <span class="tienda-stock" x-text="'Stock: ' + premio.stock"></span>
+                            </template>
+                        </div>
                     </div>
+                    <button type="button" class="btn-tienda-comprar"
+                            :disabled="(premio.stock !== null && premio.stock <= 0) || $store.tienda.yaObtenido(premio)"
+                            @click="window.tiendaCanjear(premio.id, $event)"
+                            x-text="$store.tienda.yaObtenido(premio) ? 'Ya lo tienes' : (premio.costo_puntos === 0 ? 'Gratis' : 'Comprar')"></button>
                 </div>
-                <button type="button" class="btn-tienda-comprar"
-                        :disabled="(premio.stock !== null && premio.stock <= 0) || $store.tienda.yaObtenido(premio)"
-                        @click="window.tiendaCanjear(premio.id, $event)"
-                        x-text="$store.tienda.yaObtenido(premio) ? 'Ya lo tienes' : (premio.costo_puntos === 0 ? 'Gratis' : 'Comprar')"></button>
-            </div>
-        </template>
-        <p class="gallery-empty" x-show="$store.tienda.cargando">Cargando tienda...</p>
-        <p class="gallery-empty" x-show="!$store.tienda.cargando && !$store.tienda.premios.length">No hay premios disponibles.</p>
-        <p class="chat-empty-error" x-show="$store.tienda.error" x-text="$store.tienda.error" x-cloak></p>
+            </template>
+            <p class="gallery-empty" x-show="$store.tienda.cargando">Cargando tienda...</p>
+            <p class="gallery-empty" x-show="!$store.tienda.cargando && !$store.tienda.premios.length">No hay premios disponibles.</p>
+            <p class="chat-empty-error" x-show="$store.tienda.error" x-text="$store.tienda.error" x-cloak></p>
+        </div>
+        <button type="button" class="tienda-flecha tienda-flecha-next" id="tienda-flecha-next" aria-label="Siguientes premios" aria-controls="tienda-catalogo">
+            <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+        </button>
     </div>
     <div id="mis-canjeos" class="tienda-mis-canjeos" hidden>
         <h4 class="tab-content-title-sm"><i class="fa-solid fa-bag-shopping"></i> Mis Canjes</h4>
@@ -389,7 +397,7 @@
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
 
-    <script src="main.js?v=1.8.1" defer></script>
+    <script src="main.js?v=1.9.0" defer></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.17.5/dist/cdn.min.js"
             integrity="sha384-FYLKjwG3aohNhNZoVG8sY/5ntunm+MqylL90Q+rT3OM7AwV9/BKFjk/RjoIpIgsI"
             crossorigin="anonymous"></script>
@@ -2373,6 +2381,79 @@ if (chatForm) {
             if (btnVerMis) btnVerMis.hidden = false;
             if (btnVerCat) btnVerCat.hidden = true;
         };
+
+        // === CARRUSEL HORIZONTAL DE LA TIENDA ===
+        (function iniciarCarruselTienda() {
+            const viewport = document.getElementById('tienda-catalogo');
+            const prev = document.getElementById('tienda-flecha-prev');
+            const next = document.getElementById('tienda-flecha-next');
+            if (!viewport || !prev || !next) return;
+
+            const moverCon = () => (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+                ? 'auto'
+                : 'smooth';
+            const actualizar = () => {
+                const visible = !viewport.hidden && viewport.clientWidth > 0;
+                const max = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
+                const desborda = visible && max > 8;
+                prev.hidden = !desborda || viewport.scrollLeft <= 8;
+                next.hidden = !desborda || viewport.scrollLeft >= max - 8;
+            };
+            window.actualizarFlechasTienda = actualizar;
+
+            // Posiciones de scroll donde cada tarjeta queda alineada al inicio.
+            const destinos = () => {
+                const max = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
+                const caja = viewport.getBoundingClientRect();
+                return Array.from(viewport.querySelectorAll('.tienda-item'))
+                    .map((item) => {
+                        const r = item.getBoundingClientRect();
+                        const izquierda = (r.left - caja.left) + viewport.scrollLeft;
+                        return Math.min(Math.max(izquierda, 0), max);
+                    })
+                    .sort((a, b) => a - b);
+            };
+
+            let temporizador = 0;
+            let pendiente = null;
+            const deslizar = (sentido) => {
+                const puntos = destinos();
+                if (!puntos.length) return;
+                const base = pendiente === null ? viewport.scrollLeft : pendiente;
+                const destino = sentido > 0
+                    ? puntos.find(p => p > base + 4)
+                    : puntos.slice().reverse().find(p => p < base - 4);
+                if (destino === undefined) return;
+                pendiente = destino;
+                viewport.scrollTo({ left: destino, behavior: moverCon() });
+                clearTimeout(temporizador);
+                temporizador = setTimeout(() => {
+                    pendiente = null;
+                    actualizar();
+                }, 480);
+            };
+
+            prev.addEventListener('click', () => deslizar(-1));
+            next.addEventListener('click', () => deslizar(1));
+            viewport.addEventListener('scroll', actualizar, { passive: true });
+            viewport.addEventListener('scrollend', () => {
+                pendiente = null;
+                actualizar();
+            });
+            window.addEventListener('resize', actualizar);
+            if ('ResizeObserver' in window) {
+                new ResizeObserver(actualizar).observe(viewport);
+            }
+            if ('MutationObserver' in window) {
+                new MutationObserver(actualizar).observe(viewport, {
+                    childList: true,
+                    subtree: true,
+                    attributes: true,
+                    attributeFilter: ['hidden']
+                });
+            }
+            requestAnimationFrame(actualizar);
+        })();
 
         // === PERFIL: el modal global de main.js es el ?nico editor ===
         function abrirAjustesPerfil() {

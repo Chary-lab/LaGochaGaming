@@ -3,6 +3,24 @@
 Formato basado en Keep a Changelog. Versionado SemVer (`MAJOR.MINOR.PATCH`).
 El historial anterior a 1.5.0 está en los commits `v1.4.x`.
 
+## [1.9.0] - 2026-10-30
+
+### Tienda en carrusel
+
+- El catálogo de la tienda de comunidad pasa de rejilla vertical a carrusel
+  horizontal: se navega deslizando con el dedo, la rueda/trackpad o las flechas
+  anterior/siguiente.
+- Flechas circulares superpuestas en los laterales del carrusel, centradas
+  verticalmente, que se ocultan al llegar al extremo correspondiente. Un clic
+  avanza exactamente una tarjeta; los clics rápidos se acumulan.
+- Scroll con snap por tarjeta, foco accesible del carrusel y respeto de
+  `prefers-reduced-motion` (sin desplazamiento animado).
+- Ancho de tarjeta adaptable: una tarjeta completa en el sidebar estrecho de
+  escritorio y ~78% del ancho en móvil para ver parte de la siguiente y evitar
+  el scroll vertical largo.
+- Corregido: el catálogo no se ocultaba al abrir “Mis canjes” porque
+  `.tienda-grid` sobreescribía el atributo `hidden`.
+
 ## [1.8.1] - 2026-10-30
 
 ### Perfil y tienda
