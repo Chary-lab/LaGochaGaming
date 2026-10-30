@@ -56,6 +56,16 @@ if (/service_role|serviceRole/i.test(mainJs)) {
 if (/Ã[\u0080-\u00BF]|Â[\u0080-\u00BF]|Ãƒ|Ã‚|ðŸ|â€/.test(mainJs)) {
     error('main.js: texto con encoding roto (mojibake)');
 }
+// Copiar enlaces: una sola implementación con fallback (HTTPS y navegadores antiguos).
+if (!/window\.copiarEnlace\s*=\s*(async\s+)?function/.test(mainJs)) {
+    error('main.js: falta window.copiarEnlace (helper compartido de copiar enlace)');
+}
+if (!/execCommand\(\s*['"]copy['"]/.test(mainJs)) {
+    error('main.js: copiarEnlace debe conservar el fallback con execCommand("copy")');
+}
+if (!/navigator\.clipboard\s*\.\s*writeText/.test(mainJs)) {
+    aviso('main.js: copiarEnlace no usa navigator.clipboard.writeText');
+}
 
 // CSS
 const css = leer('style.css');
@@ -110,6 +120,11 @@ for (const pagina of PAGES) {
     // Mustaches de Blade/Vue dentro de atributos (no se interpolan en Alpine).
     if (/:[a-z0-9-]+="[^"]*\{\{/i.test(html)) {
         error(`${pagina}: hay {{ }} dentro de un atributo con binding (usa una expresión JS)`);
+    }
+
+    // Copiar enlaces: todas las páginas deben usar el helper compartido.
+    if (/navigator\.clipboard|document\.execCommand\(\s*['"]copy/i.test(html)) {
+        error(`${pagina}: usa window.copiarEnlace en vez de acceder al portapapeles directamente`);
     }
 
     // Enlaces target=_blank sin rel

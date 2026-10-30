@@ -4241,3 +4241,217 @@ body.light-mode {
 .modal-perfil-body label { display: block; margin: 8px 0; }
 .modal-perfil-body textarea { width: 100%; min-height: 60px; }
 body.modal-perfil-open { overflow: hidden; }
+
+/* ==========================================================================
+   Beta 1.7.2: navbar de usuario, modal de perfil, genero, tienda y ranking
+   ========================================================================== */
+
+/* --- Usuario en el navbar --- */
+#nav-user-info { gap: 6px; align-items: center; }
+.nav-user-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 200px;
+    padding: 4px 10px 4px 4px;
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    background: var(--card-bg-subtle);
+    color: var(--text-main);
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+}
+.nav-user-btn:hover { border-color: var(--accent-color); transform: translateY(-1px); }
+.nav-user-btn:focus-visible { outline: 2px solid var(--accent-color); outline-offset: 2px; }
+.nav-user-avatar,
+.nav-user-inicial {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.nav-user-avatar { object-fit: cover; background: var(--card-bg-subtle); }
+.nav-user-inicial {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--accent-color);
+    color: var(--btn-text);
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+.nav-user-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nav-user-icono { font-size: 0.9rem; line-height: 1; }
+.nav-user-chevron { font-size: 0.65rem; opacity: 0.7; }
+@media (max-width: 640px) {
+    .nav-logout-texto { display: none; }
+}
+
+/* --- Modal de perfil global --- */
+.modal-perfil-card {
+    width: min(560px, 94vw);
+    padding: 26px 24px 22px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+}
+.modal-perfil-card h3 { margin: 0 0 12px; padding-right: 28px; }
+.modal-perfil-tabs { border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+.modal-perfil-tabs button { color: var(--text-main); font-weight: 600; }
+.modal-perfil-tabs button[aria-selected="true"] { background: var(--accent-color); color: var(--btn-text); border-color: var(--accent-color); }
+.modal-perfil-body { padding-top: 12px; }
+.mp-avatar-wrap { display: flex; justify-content: center; margin-bottom: 10px; }
+.mp-avatar,
+.mp-avatar-inicial {
+    width: 104px;
+    height: 104px;
+    border-radius: 50%;
+    border: 3px solid var(--border-color);
+}
+.mp-avatar { object-fit: cover; background: var(--card-bg-subtle); }
+.mp-avatar-inicial {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--accent-color);
+    color: var(--btn-text);
+    font-size: 2.2rem;
+    font-weight: 700;
+    border-color: transparent;
+}
+.mp-apodo { margin: 6px 0 2px; text-align: center; font-size: 1.25rem; }
+.mp-meta { margin: 0 0 8px; text-align: center; }
+.mp-bio { margin: 10px 0; text-align: center; white-space: pre-wrap; overflow-wrap: anywhere; }
+.mp-icono { font-size: 1rem; }
+.mp-links { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 10px 0 16px; }
+.mp-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    background: var(--card-bg-subtle);
+    color: var(--text-main);
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+.mp-link:hover { border-color: var(--accent-color); color: var(--accent-color); }
+.mp-vacio { color: var(--text-muted); font-size: 0.88rem; }
+.mp-cargando { color: var(--text-muted); text-align: center; padding: 24px 0; }
+.mp-error { color: #ff6b6b; font-size: 0.88rem; margin: 8px 0; }
+.mp-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; margin-top: 16px; }
+.mp-avatar-acciones { display: flex; justify-content: center; margin-bottom: 6px; }
+.mp-field { display: flex; flex-direction: column; gap: 6px; margin: 14px 0; font-size: 0.9rem; font-weight: 600; }
+.mp-field select,
+.mp-field textarea,
+.mp-link-field input {
+    width: 100%;
+    padding: 9px 11px;
+    border: 1px solid var(--border-color);
+    border-radius: 9px;
+    background: var(--card-bg-subtle);
+    color: var(--text-main);
+    font: inherit;
+    font-weight: 400;
+}
+.mp-field textarea { min-height: 76px; resize: vertical; }
+.mp-field select:focus,
+.mp-field textarea:focus,
+.mp-link-field input:focus { outline: 2px solid var(--accent-color); outline-offset: 1px; }
+.mp-contador { margin-left: auto; font-size: 0.78rem; font-weight: 400; color: var(--text-muted); }
+.mp-links-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 14px;
+    margin: 14px 0;
+    padding: 12px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+}
+.mp-links-grid legend { padding: 0 6px; font-size: 0.85rem; font-weight: 600; }
+.mp-link-field { display: flex; flex-direction: column; gap: 4px; font-size: 0.78rem; color: var(--text-muted); }
+@media (max-width: 520px) {
+    .mp-links-grid { grid-template-columns: 1fr; }
+    .modal-perfil-card { padding: 22px 16px 18px; }
+    .mp-actions { justify-content: stretch; }
+    .mp-actions .btn-primary { flex: 1 1 auto; }
+}
+
+/* --- Selector de genero en el registro --- */
+.genero-selector { border: 0; margin: 12px 0 4px; padding: 0; }
+.genero-selector[hidden] { display: none; }
+.genero-selector legend { font-size: 0.88rem; font-weight: 700; margin-bottom: 4px; }
+.genero-selector .form-hint { margin: 0 0 8px; font-size: 0.78rem; color: var(--text-muted); }
+.genero-opciones { display: flex; gap: 10px; }
+.genero-opcion {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    background: var(--card-bg-subtle);
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+.genero-opcion:has(input:checked) {
+    border-color: var(--accent-color);
+    box-shadow: inset 0 0 0 1px var(--accent-color);
+}
+.genero-opcion input { accent-color: var(--accent-color); }
+
+/* --- Aviso para elegir genero --- */
+.aviso-genero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+    padding: 10px 12px;
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    border-radius: 10px;
+    background: rgba(245, 158, 11, 0.12);
+    font-size: 0.82rem;
+}
+.aviso-genero[hidden] { display: none; }
+.aviso-genero .btn-primary { padding: 6px 10px; font-size: 0.8rem; }
+
+/* --- Tienda: premios de avatar y estado obtenido --- */
+.tienda-item-avatar {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: var(--card-bg-subtle);
+    border: 1px solid var(--border-color);
+}
+.tienda-item-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.tienda-item.obtenido { opacity: 0.65; }
+.tienda-item.obtenido .btn-tienda-comprar { cursor: default; }
+
+/* --- Ranking con avatar --- */
+.leaderboard-user { display: flex; align-items: center; gap: 8px; min-width: 0; flex-wrap: wrap; }
+.leaderboard-avatar {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--card-bg-subtle);
+    border: 1px solid var(--border-color);
+}
+.leaderboard-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.leaderboard-avatar-inicial { font-size: 0.72rem; font-weight: 700; color: var(--text-main); }
+.leaderboard-nombre { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 150px; }

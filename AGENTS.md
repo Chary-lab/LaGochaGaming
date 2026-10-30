@@ -32,7 +32,7 @@ Guía operativa para agentes que trabajen en este repositorio. Leerla completa a
 | `cine.html` | Sincronización de películas/videos para espectadores y streamer |
 | `_headers` | Cabeceras para hosts que las soportan (NO en GitHub Pages) |
 | `VERSION` | Versión SemVer de la release |
-| `beta.md` | Plan de trabajo de la siguiente beta (perfil, tienda privada, admin) |
+| `beta.md` | Plan de trabajo de la beta de perfil, tienda privada y admin (implementado en 1.7.2) |
 | `scripts/check.js` | Validaciones estáticas del repo (no se carga en Pages) |
 
 Las migraciones SQL no se versionan en este repo: el historial vive en Supabase. La carpeta local `supabase/` está ignorada.
@@ -91,9 +91,10 @@ Las migraciones SQL no se versionan en este repo: el historial vive en Supabase.
 - Muro: rate limit por autor normalizado; mensajes máximo 280 caracteres (servidor y cliente).
 - Sorteo: nombre único sin distinguir mayúsculas (`lower(username)`), límite de 500 participantes, rate limit por IP y ganador decidido SOLO en el servidor. No insertar ganadores desde el cliente.
 - Galería: subida anónima permitida por diseño (bucket `fotos-galeria`, prefijo `gallery/`, 5MB, JPG/PNG/GIF/WEBP/AVIF). Si la RPC falla después de subir, puede quedar un archivo huérfano; no prometer limpieza automática.
-- Avatares: bucket público `avatares-comunidad` (500KB), subida anónima solo bajo `avatar/`, sin update; borrado solo admin.
-- Perfil: `bio` máximo 160, `links_json` solo claves whitelist y URLs `http/https` máximo 300; `avatar_url` debe apuntar al bucket `avatares-comunidad` y a la carpeta del propio usuario.
-- Tienda: el canje descuenta puntos y stock en una transacción con locks; los iconos son uno por usuario (`icono_equipado`). No insertar canjes ni premios desde el cliente.
+- Avatares: bucket público `avatares-comunidad` (500KB), subida anónima solo bajo `avatar/`, sin update; borrado solo admin. Los avatares beta locales viven en `/img/avatars/avatar-male.webp` y `/img/avatars/avatar-female.webp` y se asignan por género cuando no hay avatar propio.
+- Perfil: `bio` máximo 160, `links_json` solo claves whitelist y URLs `http/https` máximo 300; `avatar_url` acepta los avatares beta locales, el bucket propio o un avatar comprado en la tienda. `genero` es `masculino`/`femenino`/`no_definido`; el registro nuevo exige masculino o femenino. El editor vive solo en el modal global de `main.js`.
+- Sesión de comunidad: `comunidad_session_usuario` guarda el objeto completo (id, apodo, puntos, rango, icono, género, avatar, bio, enlaces) y es la fuente de verdad del navbar/modal; limpiarlo junto con el token al cerrar o invalidar sesión.
+- Tienda: el canje descuenta puntos y stock en una transacción con locks; los iconos son uno por usuario (`icono_equipado`) y los avatares se equipan al canjear. Usar las columnas reales de `tienda_canjes` (`nombre`, `costo_puntos`, `entregado_at`); no existe `metadata` ni `puntos_gastados`. No insertar canjes ni premios desde el cliente.
 - Baneo: `baneado_hasta` bloquea login, chat, muro, puntos, likes, reacciones, galería, tienda y perfil. Al banear se borran las sesiones de comunidad. `shadowban` solo oculta los mensajes de chat a terceros (no es un límite de seguridad fuerte).
 - Moderación: `admin_*` exige `es_admin()`; toda acción de ban/shadowban se registra en `admin_audit_log`. No exponer `baneado_hasta`, `baneado_motivo` ni `shadowban` a `anon`.
 
@@ -131,7 +132,7 @@ Las migraciones SQL no se versionan en este repo: el historial vive en Supabase.
 - En cada release, actualizar el query de caché `?v=X.Y.Z` de `style.css` y `main.js` en los HTML (GitHub Pages cachea agresivamente).
 - Formato de commit: `vX.Y.Z - resumen corto` (seguir el historial existente).
 - No commitear ni pushear una versión inestable. Probar antes.
-- Versión de esta release: `1.6.0` (tienda de puntos, perfiles, reacciones del muro, moderación/auditoría y baneos; sobre 1.5.1).
+- Versión de esta release: `1.7.2` (correcciones de perfil, género, avatares y tienda sobre `1.7.1`).
 
 ## 9. Pruebas antes de commitear
 

@@ -1,7 +1,7 @@
 # Plan Beta 1.7.0 - Perfil, ajustes, tienda privada y ayuda de admin
 
-Estado: propuesta  
-Base: `1.6.0`  
+Estado: implementado y corregido en `1.7.2`
+Base: `1.7.1`  
 Objetivo: cerrar los seis puntos sin romper comunidad, galería, cine ni sorteo.
 
 ## Decisiones previas
@@ -257,13 +257,12 @@ huérfanos; las tarjetas siguen abriendo lightbox y los likes funcionan.
 
 ### Versión
 
-- [ ] `VERSION` → `1.7.0` (MINOR: funciones nuevas y cambio de contrato del
-  catálogo).
-- [ ] `?v=1.7.0` en `style.css` y `main.js` de los cinco HTML.
-- [ ] Entrada en `CHANGELOG.md`.
-- [ ] Actualizar `AGENTS.md` (reglas de género, avatares, tienda privada).
+- [x] `VERSION` → `1.7.2` (PATCH: correcciones de perfil, género y tienda sobre 1.7.1).
+- [x] `?v=1.7.2` en `style.css` y `main.js` de los cinco HTML.
+- [x] Entrada en `CHANGELOG.md`.
+- [x] Actualizar `AGENTS.md` (reglas de género, avatares, tienda privada).
 - [ ] Actualizar `sitemap.xml` si cambia contenido público.
-- [ ] Commit `v1.7.0 - perfil, ajustes, tienda privada y ayuda admin`.
+- [ ] Commit `v1.7.2 - perfil, género y tienda funcionales`.
 - [ ] Push solo con pruebas verdes.
 
 ## Riesgos y notas

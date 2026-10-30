@@ -258,6 +258,35 @@ window.limpiarCachesSesionComunidad = function limpiarCachesSesionComunidad() {
     });
 };
 
+// Única fuente de verdad del usuario de comunidad en el cliente.
+window.obtenerSesionUsuarioComunidad = function obtenerSesionUsuarioComunidad() {
+    try {
+        const datos = JSON.parse(localStorage.getItem('comunidad_session_usuario') || '{}');
+        return datos && typeof datos === 'object' ? datos : {};
+    } catch (e) {
+        return {};
+    }
+};
+
+window.actualizarSesionUsuarioComunidad = function actualizarSesionUsuarioComunidad(parcial) {
+    const actual = window.obtenerSesionUsuarioComunidad();
+    const nuevo = Object.assign({}, actual, parcial || {});
+    try {
+        localStorage.setItem('comunidad_session_usuario', JSON.stringify(nuevo));
+    } catch (e) {}
+    return nuevo;
+};
+
+// Avatar efectivo: el guardado, el beta segun genero o null (inicial).
+window.avatarUsuarioComunidad = function avatarUsuarioComunidad(usuario) {
+    const u = usuario || window.obtenerSesionUsuarioComunidad();
+    if (u.avatar_url) return u.avatar_url;
+    if (u.genero === 'femenino') return '/img/avatars/avatar-female.webp';
+    if (u.genero === 'masculino') return '/img/avatars/avatar-male.webp';
+    return null;
+};
+
+
 // === COPIAR ENLACE (compartido) ===
 window.copiarEnlace = async function copiarEnlace(url, textoExito = '¡Enlace copiado!') {
     try {
@@ -389,6 +418,7 @@ window.cerrarSesion = async function cerrarSesion() {
     localStorage.removeItem('comunidad_nickname');
     localStorage.removeItem('comunidad_session_token');
     localStorage.removeItem('comunidad_user_id');
+    localStorage.removeItem('comunidad_session_usuario');
     window.limpiarCachesSesionComunidad();
 
     if (token && window.supabase) {
@@ -433,20 +463,45 @@ window.actualizarUsuarioNavComunidad = function actualizarUsuarioNavComunidad() 
     const navUserInfo = document.getElementById('nav-user-info');
 
     if (apodo && navUserInfo) {
+        const usuario = window.obtenerSesionUsuarioComunidad();
         const apodoSeguro = window.escapeHtml(apodo);
+        const avatar = window.avatarUsuarioComunidad(usuario);
+        const inicial = apodo.charAt(0).toUpperCase();
+        const icono = usuario.icono || '';
+        const avatarHtml = avatar
+            ? `<img class="nav-user-avatar" src="${window.escapeAttr(avatar)}" alt="" loading="lazy">`
+            : `<span class="nav-user-inicial" aria-hidden="true">${window.escapeHtml(inicial)}</span>`;
+
         navUserInfo.style.display = 'inline-flex';
         navUserInfo.innerHTML = `
-            <i class="fa-solid fa-user nav-user-icon"></i>
-            <span id="nav-username">${apodoSeguro}</span>
-            <button type="button" class="btn-logout-nav" title="Cerrar Sesión" aria-label="Cerrar sesión"><i class="fa-solid fa-right-from-bracket"></i> Salir</button>
+            <button type="button" class="nav-user-btn" aria-haspopup="dialog" aria-expanded="false" aria-label="Abrir mi perfil y ajustes">
+                ${avatarHtml}
+                <span id="nav-username" class="nav-user-name">${apodoSeguro}</span>
+                <span class="nav-user-icono" ${icono ? '' : 'hidden'}>${window.escapeHtml(icono)}</span>
+                <i class="fa-solid fa-chevron-down nav-user-chevron" aria-hidden="true"></i>
+            </button>
+            <button type="button" class="btn-logout-nav" title="Cerrar Sesión" aria-label="Cerrar sesión"><i class="fa-solid fa-right-from-bracket"></i> <span class="nav-logout-texto">Salir</span></button>
         `;
+        const btnPerfil = navUserInfo.querySelector('.nav-user-btn');
+        if (btnPerfil) {
+            btnPerfil.addEventListener('click', (e) => {
+                e.stopPropagation();
+                window.abrirModalPerfil?.('perfil');
+            });
+        }
         const btnSalir = navUserInfo.querySelector('.btn-logout-nav');
-        if (btnSalir) btnSalir.addEventListener('click', window.cerrarSesion);
+        if (btnSalir) {
+            btnSalir.addEventListener('click', (e) => {
+                e.stopPropagation();
+                window.cerrarSesion();
+            });
+        }
     } else if (!apodo && navUserInfo) {
         navUserInfo.innerHTML = '';
         navUserInfo.style.display = 'none';
     }
 };
+
 
 window.validarSesionStreamer = async function validarSesionStreamer() {
     return window.esAdminActual();
@@ -840,10 +895,47 @@ document.addEventListener('DOMContentLoaded', () => {
     try { actualizarUsuarioNavComunidad(); } catch (e) { console.error('actualizarUsuarioNavComunidad:', e); }
 });
 
-// === MODAL DE PERFIL GLOBAL (beta 1.7.0) ===
+// === MODAL DE PERFIL GLOBAL (beta 1.7.2) ===
 (function () {
   let modalEl = null;
-  let lastFocus = null;
+  let usuario = {};
+  let avatares = [];
+  let avatarSeleccionado; // undefined = no cambiar; '' = quitar; url = nuevo
+  let cargando = false;
+
+  const LINK_LABELS = {
+    twitter: 'X/Twitter',
+    instagram: 'Instagram',
+    youtube: 'YouTube',
+    tiktok: 'TikTok',
+    discord: 'Discord',
+    kick: 'Kick',
+    twitch: 'Twitch',
+    website: 'Web'
+  };
+  const LINK_ICONS = {
+    twitter: 'fab fa-twitter',
+    instagram: 'fab fa-instagram',
+    youtube: 'fab fa-youtube',
+    tiktok: 'fab fa-tiktok',
+    discord: 'fab fa-discord',
+    kick: 'fa-solid fa-k',
+    twitch: 'fab fa-twitch',
+    website: 'fa-solid fa-globe'
+  };
+  const LINK_KEYS = Object.keys(LINK_LABELS);
+  const ERRORES = {
+    sin_sesion: 'Sesión expirada. Inicia sesión de nuevo.',
+    baneado: 'Tu cuenta está suspendida.',
+    bio_larga: 'La bio no puede superar 160 caracteres.',
+    links_invalidos: 'Algún enlace no es válido (solo http/https, máx. 300).',
+    avatar_invalida: 'Ese avatar no está permitido.',
+    genero_invalido: 'El género seleccionado no es válido.',
+    error_interno: 'No se pudo guardar. Inténtalo de nuevo.'
+  };
+
+  function escapeHtml(s) { return window.escapeHtml(String(s ?? '')); }
+  function escapeAttr(s) { return window.escapeAttr(String(s ?? '')); }
 
   function crearModal() {
     if (modalEl) return modalEl;
@@ -859,12 +951,12 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="modal-perfil-card" role="document">
         <button type="button" class="modal-perfil-close" data-close aria-label="Cerrar">&times;</button>
         <h3 id="modal-perfil-titulo">Mi perfil</h3>
-        <nav class="modal-perfil-tabs">
-          <button type="button" data-view="perfil" class="active">Perfil</button>
-          <button type="button" data-view="ajustes">Ajustes</button>
+        <nav class="modal-perfil-tabs" role="tablist" aria-label="Perfil y ajustes">
+          <button type="button" role="tab" data-view="perfil" class="active" aria-selected="true">Perfil</button>
+          <button type="button" role="tab" data-view="ajustes" aria-selected="false">Ajustes</button>
         </nav>
-        <div class="modal-perfil-body" id="mp-perfil"></div>
-        <div class="modal-perfil-body" id="mp-ajustes" hidden></div>
+        <div class="modal-perfil-body" id="mp-perfil" role="tabpanel"></div>
+        <div class="modal-perfil-body" id="mp-ajustes" role="tabpanel" hidden></div>
       </div>`;
     document.body.appendChild(modalEl);
     modalEl.addEventListener('click', (e) => {
@@ -879,135 +971,323 @@ document.addEventListener('DOMContentLoaded', () => {
     return modalEl;
   }
 
-  function abrir() {
+  function setNavExpanded(abierto) {
+    const btn = document.querySelector('#nav-user-info .nav-user-btn');
+    if (btn) btn.setAttribute('aria-expanded', abierto ? 'true' : 'false');
+  }
+
+  function abrir(vista) {
     crearModal();
-    lastFocus = document.activeElement;
     modalEl.hidden = false;
     document.body.classList.add('modal-perfil-open');
-    cambiarVista('perfil');
+    cambiarVista(vista === 'ajustes' ? 'ajustes' : 'perfil');
+    setNavExpanded(true);
+    window.activarTrampaFoco?.(modalEl, modalEl.querySelector('.modal-perfil-close'));
     cargarPerfil();
   }
 
   function cerrar() {
-    if (!modalEl) return;
+    if (!modalEl || modalEl.hidden) return;
     modalEl.hidden = true;
     document.body.classList.remove('modal-perfil-open');
-    if (lastFocus && lastFocus.focus) lastFocus.focus();
+    setNavExpanded(false);
+    window.desactivarTrampaFoco?.();
   }
 
   function cambiarVista(v) {
+    if (!modalEl) return;
     const tabs = modalEl.querySelectorAll('[data-view]');
-    tabs.forEach((t) => t.classList.toggle('active', t.getAttribute('data-view') === v));
+    tabs.forEach((t) => {
+      const activa = t.getAttribute('data-view') === v;
+      t.classList.toggle('active', activa);
+      t.setAttribute('aria-selected', activa ? 'true' : 'false');
+    });
     modalEl.querySelector('#mp-perfil').hidden = v !== 'perfil';
     modalEl.querySelector('#mp-ajustes').hidden = v !== 'ajustes';
   }
 
+  function inicialDe(apodo) {
+    return String(apodo || '?').trim().charAt(0).toUpperCase() || '?';
+  }
+
+  function renderLinks(links) {
+    if (!links || typeof links !== 'object') return '<span class="mp-vacio">Sin enlaces.</span>';
+    const piezas = [];
+    LINK_KEYS.forEach((clave) => {
+      const url = links[clave];
+      if (typeof url !== 'string' || !/^https?:\/\//i.test(url)) return;
+      piezas.push(`<a class="mp-link" href="${escapeAttr(url)}" target="_blank" rel="noopener noreferrer"><i class="${LINK_ICONS[clave]}" aria-hidden="true"></i> ${escapeHtml(LINK_LABELS[clave])}</a>`);
+    });
+    return piezas.length ? piezas.join('') : '<span class="mp-vacio">Sin enlaces.</span>';
+  }
+
   async function cargarPerfil() {
+    if (!modalEl) return;
     const token = localStorage.getItem('comunidad_session_token');
     const perfilDiv = modalEl.querySelector('#mp-perfil');
     const ajustesDiv = modalEl.querySelector('#mp-ajustes');
-    if (!token) {
-      perfilDiv.innerHTML = '<p>Sin sesión de comunidad.</p>';
+    if (!token || !window.supabase) {
+      perfilDiv.innerHTML = '<p class="mp-vacio">Inicia sesión en la Comunidad para ver tu perfil.</p>';
       ajustesDiv.innerHTML = '';
       return;
     }
-    let usuario = {};
-    try { usuario = JSON.parse(localStorage.getItem('comunidad_session_usuario') || '{}'); } catch (e) {}
-    const avatar = usuario.avatar_url || (usuario.genero === 'femenino' ? '/img/avatars/avatar-female.webp' : (usuario.genero === 'masculino' ? '/img/avatars/avatar-male.webp' : null));
-    const avatarSrc = avatar || ('https://ui-avatars.com/api/?name=' + encodeURIComponent((usuario.apodo||'?').charAt(0)));
+    if (cargando) return;
+    cargando = true;
+    perfilDiv.innerHTML = '<p class="mp-cargando">Cargando perfil…</p>';
+    ajustesDiv.innerHTML = '';
+
+    usuario = window.obtenerSesionUsuarioComunidad();
+    const userId = usuario.id || localStorage.getItem('comunidad_user_id');
+    try {
+      if (userId) {
+        const { data, error } = await window.supabase
+          .from('usuarios_comunidad')
+          .select('apodo,puntos,rango,avatar_url,bio,links_json,icono_equipado')
+          .eq('id', userId)
+          .maybeSingle();
+        if (!error && data) {
+          usuario = Object.assign({}, usuario, {
+            id: Number(userId),
+            apodo: data.apodo ?? usuario.apodo,
+            puntos: data.puntos ?? usuario.puntos,
+            rango: data.rango ?? usuario.rango,
+            avatar_url: data.avatar_url ?? null,
+            bio: data.bio ?? null,
+            links_json: data.links_json ?? null,
+            icono: data.icono_equipado ?? ''
+          });
+        }
+      }
+
+      const { data: avData, error: avError } = await window.supabase.rpc('obtener_avatares_disponibles', { p_token: token });
+      if (!avError && avData && avData.ok) {
+        avatares = Array.isArray(avData.avatares) ? avData.avatares : [];
+        if (avData.genero) usuario.genero = avData.genero;
+      }
+
+      window.actualizarSesionUsuarioComunidad(usuario);
+      avatarSeleccionado = undefined;
+      renderPerfil(perfilDiv, ajustesDiv);
+    } catch (e) {
+      console.error('Error cargando perfil:', e);
+      perfilDiv.innerHTML = '<p class="mp-error">No se pudo cargar el perfil.</p>';
+    } finally {
+      cargando = false;
+    }
+  }
+
+  function renderPerfil(perfilDiv, ajustesDiv) {
+    const avatar = window.avatarUsuarioComunidad(usuario);
+    const inicial = inicialDe(usuario.apodo || localStorage.getItem('comunidad_nickname'));
+    const bio = usuario.bio ? escapeHtml(usuario.bio) : '<span class="mp-vacio">Sin bio todavía.</span>';
+    const icono = usuario.icono ? ` <span class="mp-icono">${escapeHtml(usuario.icono)}</span>` : '';
+    const avatarPerfil = avatar
+      ? `<img class="mp-avatar" src="${escapeAttr(avatar)}" alt="Avatar de ${escapeAttr(usuario.apodo || 'usuario')}">`
+      : `<span class="mp-avatar-inicial" aria-hidden="true">${escapeHtml(inicial)}</span>`;
+
     perfilDiv.innerHTML = `
-      <div class="mp-avatar-wrap"><img src="${avatarSrc}" alt="Avatar" class="mp-avatar"></div>
-      <h4>${escapeHtml(usuario.apodo || '')}</h4>
-      <p class="mp-meta">${escapeHtml(usuario.rango || '')} · ${usuario.puntos || 0} pts</p>
-      <p class="mp-bio">${escapeHtml(usuario.bio || '')}</p>`;
+      <div class="mp-avatar-wrap">${avatarPerfil}</div>
+      <h4 class="mp-apodo">${escapeHtml(usuario.apodo || localStorage.getItem('comunidad_nickname') || '')}</h4>
+      <p class="mp-meta">${escapeHtml(usuario.rango || 'semilla')} · ${Number(usuario.puntos || 0)} pts${icono}</p>
+      <p class="mp-bio">${bio}</p>
+      <div class="mp-links">${renderLinks(usuario.links_json)}</div>
+      <div class="mp-actions">
+        <button type="button" id="mp-ir-ajustes" class="btn-primary"><i class="fa-solid fa-sliders"></i> Editar perfil y ajustes</button>
+      </div>`;
+    perfilDiv.querySelector('#mp-ir-ajustes')?.addEventListener('click', () => cambiarVista('ajustes'));
+
+    const links = usuario.links_json && typeof usuario.links_json === 'object' ? usuario.links_json : {};
+    const inputsLinks = LINK_KEYS.map((clave) => `
+      <label class="mp-link-field">
+        <span><i class="${LINK_ICONS[clave]}" aria-hidden="true"></i> ${LINK_LABELS[clave]}</span>
+        <input type="url" data-link="${clave}" value="${escapeAttr(links[clave] || '')}" placeholder="https://..." autocomplete="url">
+      </label>`).join('');
+
     ajustesDiv.innerHTML = `
-      <div class="mp-avatar-wrap"><img src="${avatarSrc}" alt="Avatar" class="mp-avatar" id="mp-avatar-preview"></div>
-      <div class="mp-avatar-choices" id="mp-avatar-choices"></div>
-      <label>Género
+      <div class="mp-avatar-wrap">
+        <img id="mp-avatar-preview" class="mp-avatar" src="${avatar ? escapeAttr(avatar) : ''}" alt="Vista previa del avatar" ${avatar ? '' : 'hidden'}>
+        <span id="mp-avatar-inicial" class="mp-avatar-inicial" aria-hidden="true" ${avatar ? 'hidden' : ''}>${escapeHtml(inicial)}</span>
+      </div>
+      <div class="mp-avatar-acciones">
+        <button type="button" id="mp-quitar-avatar" class="btn-primary btn-muted">Usar avatar por defecto</button>
+      </div>
+      <div class="mp-avatar-choices" id="mp-avatar-choices" aria-label="Avatares disponibles"></div>
+      <label class="mp-field">Género
         <select id="mp-genero">
-          <option value="masculino">Masculino</option>
           <option value="femenino">Femenino</option>
+          <option value="masculino">Masculino</option>
           <option value="no_definido">No definido</option>
         </select>
       </label>
-      <label>Bio (máx 160)
-        <textarea id="mp-bio" maxlength="160">${escapeHtml(usuario.bio || '')}</textarea>
+      <label class="mp-field">Bio <span class="mp-contador" id="mp-bio-count">0/160</span>
+        <textarea id="mp-bio" maxlength="160" placeholder="Cuéntanos algo sobre ti...">${escapeHtml(usuario.bio || '')}</textarea>
       </label>
-      <button type="button" id="mp-guardar" class="btn-primary">Guardar</button>`;
-    const sel = ajustesDiv.querySelector('#mp-genero');
-    if (sel) sel.value = usuario.genero || 'no_definido';
-    try {
-      const { data } = await window.supabase.rpc('obtener_avatares_disponibles', { p_token: token });
-      const choices = ajustesDiv.querySelector('#mp-avatar-choices');
-      if (choices && data && data.ok) {
-        choices.innerHTML = '';
-        (data.avatares || []).forEach((a) => {
-          const btn = document.createElement('button');
-          btn.type = 'button';
-          btn.className = 'mp-avatar-choice';
-          btn.dataset.url = a.url;
-          btn.innerHTML = `<img src="${a.url}" alt="${escapeHtml(a.nombre)}">`;
-          btn.addEventListener('click', () => {
-            ajustesDiv.querySelector('#mp-avatar-preview').src = a.url;
-            choices.querySelectorAll('.mp-avatar-choice').forEach((x) => x.classList.remove('selected'));
-            btn.classList.add('selected');
-          });
-          choices.appendChild(btn);
-        });
+      <fieldset class="mp-links-grid">
+        <legend>Enlaces sociales</legend>
+        ${inputsLinks}
+      </fieldset>
+      <p id="mp-error" class="mp-error" role="alert" hidden></p>
+      <div class="mp-actions">
+        <button type="button" id="mp-cancelar" class="btn-primary btn-muted">Cancelar</button>
+        <button type="button" id="mp-guardar" class="btn-primary">Guardar cambios</button>
+      </div>`;
+
+    const generoSel = ajustesDiv.querySelector('#mp-genero');
+    if (generoSel) generoSel.value = usuario.genero || 'no_definido';
+
+    const bioInput = ajustesDiv.querySelector('#mp-bio');
+    const bioCount = ajustesDiv.querySelector('#mp-bio-count');
+    const actualizarContador = () => {
+      if (bioInput && bioCount) bioCount.textContent = `${bioInput.value.length}/160`;
+    };
+    actualizarContador();
+    bioInput?.addEventListener('input', actualizarContador);
+
+    const previewImg = ajustesDiv.querySelector('#mp-avatar-preview');
+    const previewInicial = ajustesDiv.querySelector('#mp-avatar-inicial');
+    const choices = ajustesDiv.querySelector('#mp-avatar-choices');
+
+    const setPreview = (url) => {
+      if (url) {
+        if (previewImg) { previewImg.src = url; previewImg.hidden = false; }
+        if (previewInicial) previewInicial.hidden = true;
+      } else {
+        if (previewImg) { previewImg.removeAttribute('src'); previewImg.hidden = true; }
+        if (previewInicial) previewInicial.hidden = false;
       }
-    } catch (e) {}
-    ajustesDiv.querySelector('#mp-guardar').addEventListener('click', () => guardarPerfil(ajustesDiv, token));
+    };
+    const marcarSeleccion = (url) => {
+      choices?.querySelectorAll('.mp-avatar-choice').forEach((b) => {
+        b.classList.toggle('selected', !!url && b.dataset.url === url);
+      });
+    };
+
+    if (choices) {
+      choices.innerHTML = '';
+      if (!avatares.length) {
+        choices.innerHTML = '<span class="mp-vacio">No se pudieron cargar los avatares.</span>';
+      }
+      avatares.forEach((a) => {
+        if (!a || !a.url) return;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'mp-avatar-choice';
+        btn.dataset.url = a.url;
+        btn.title = a.nombre || 'Avatar';
+        btn.setAttribute('aria-label', `Elegir ${a.nombre || 'avatar'}`);
+        btn.innerHTML = `<img src="${escapeAttr(a.url)}" alt="${escapeAttr(a.nombre || 'Avatar')}" loading="lazy">`;
+        btn.addEventListener('click', () => {
+          avatarSeleccionado = a.url;
+          setPreview(a.url);
+          marcarSeleccion(a.url);
+        });
+        choices.appendChild(btn);
+      });
+      if (avatar) marcarSeleccion(avatar);
+    }
+
+    ajustesDiv.querySelector('#mp-quitar-avatar')?.addEventListener('click', () => {
+      avatarSeleccionado = '';
+      const generoActual = ajustesDiv.querySelector('#mp-genero')?.value || 'no_definido';
+      const porDefecto = generoActual === 'femenino'
+        ? '/img/avatars/avatar-female.webp'
+        : (generoActual === 'masculino' ? '/img/avatars/avatar-male.webp' : null);
+      setPreview(porDefecto);
+      marcarSeleccion(null);
+    });
+
+    generoSel?.addEventListener('change', () => {
+      if (avatarSeleccionado !== '') return;
+      const porDefecto = generoSel.value === 'femenino'
+        ? '/img/avatars/avatar-female.webp'
+        : (generoSel.value === 'masculino' ? '/img/avatars/avatar-male.webp' : null);
+      setPreview(porDefecto);
+    });
+
+    ajustesDiv.querySelector('#mp-cancelar')?.addEventListener('click', () => cambiarVista('perfil'));
+    ajustesDiv.querySelector('#mp-guardar')?.addEventListener('click', () => guardarPerfil(ajustesDiv));
   }
 
-  function escapeHtml(s) { return (window.escapeHtml ? window.escapeHtml(s) : String(s)); }
+  function mostrarError(ajustesDiv, mensaje) {
+    const el = ajustesDiv.querySelector('#mp-error');
+    if (!el) return;
+    el.textContent = mensaje;
+    el.hidden = false;
+  }
 
-  async function guardarPerfil(div, token) {
-    let avatarFinal = div.querySelector('#mp-avatar-preview').src;
-    try {
-      const u = new URL(avatarFinal);
-      if (u.origin === location.origin) avatarFinal = u.pathname;
-    } catch (e) {}
-    const genero = div.querySelector('#mp-genero').value;
-    const bio = div.querySelector('#mp-bio').value;
-    const { data } = await window.supabase.rpc('actualizar_perfil_comunidad', {
-      p_token: token,
-      p_avatar_url: avatarFinal,
-      p_bio: bio,
-      p_genero: genero,
+  async function guardarPerfil(ajustesDiv) {
+    const token = localStorage.getItem('comunidad_session_token');
+    if (!token || !window.supabase) {
+      mostrarError(ajustesDiv, ERRORES.sin_sesion);
+      return;
+    }
+
+    const bio = ajustesDiv.querySelector('#mp-bio')?.value.trim() || '';
+    const genero = ajustesDiv.querySelector('#mp-genero')?.value || 'no_definido';
+    const links = {};
+    let enlaceInvalido = false;
+    LINK_KEYS.forEach((clave) => {
+      const input = ajustesDiv.querySelector(`[data-link="${clave}"]`);
+      const valor = input ? input.value.trim() : '';
+      if (!valor) return;
+      if (!/^https?:\/\//i.test(valor) || valor.length > 300) {
+        enlaceInvalido = true;
+        return;
+      }
+      links[clave] = valor;
     });
-    if (data && data.ok) {
-      try {
-        const u = JSON.parse(localStorage.getItem('comunidad_session_usuario') || '{}');
-        u.avatar_url = data.avatar_url;
-        u.bio = data.bio;
-        u.genero = data.genero;
-        localStorage.setItem('comunidad_session_usuario', JSON.stringify(u));
-      } catch (e) {}
+    if (enlaceInvalido) {
+      mostrarError(ajustesDiv, ERRORES.links_invalidos);
+      return;
+    }
+
+    const payload = {
+      p_token: token,
+      p_bio: bio,
+      p_links_json: links,
+      p_genero: genero
+    };
+    if (avatarSeleccionado !== undefined) {
+      payload.p_avatar_url = avatarSeleccionado;
+    }
+
+    const btn = ajustesDiv.querySelector('#mp-guardar');
+    if (btn) btn.disabled = true;
+    try {
+      const { data, error } = await window.supabase.rpc('actualizar_perfil_comunidad', payload);
+      if (error) {
+        console.error('Error guardando perfil:', error);
+        mostrarError(ajustesDiv, ERRORES.error_interno);
+        return;
+      }
+      if (!data || !data.ok) {
+        mostrarError(ajustesDiv, ERRORES[data?.error] || ERRORES.error_interno);
+        return;
+      }
+
+      const perfil = data.perfil || data;
+      const actualizado = window.actualizarSesionUsuarioComunidad({
+        avatar_url: perfil.avatar_url !== undefined ? perfil.avatar_url : (usuario.avatar_url ?? null),
+        bio: perfil.bio !== undefined ? perfil.bio : (usuario.bio ?? null),
+        links_json: perfil.links_json !== undefined
+          ? perfil.links_json
+          : (perfil.links !== undefined ? perfil.links : links),
+        genero: perfil.genero !== undefined ? perfil.genero : genero,
+        icono: perfil.icono !== undefined ? perfil.icono : (usuario.icono || '')
+      });
+      usuario = Object.assign({}, usuario, actualizado);
       window.actualizarUsuarioNavComunidad?.();
+      window.recargarPerfilComunidad?.();
+      window.mostrarToast?.('Perfil actualizado');
       cerrar();
-    } else {
-      alert(data?.error || 'Error guardando');
+    } catch (e) {
+      console.error('Error guardando perfil:', e);
+      mostrarError(ajustesDiv, ERRORES.error_interno);
+    } finally {
+      if (btn) btn.disabled = false;
     }
   }
 
   window.abrirModalPerfil = abrir;
   window.cerrarModalPerfil = cerrar;
 })();
-
-document.addEventListener('DOMContentLoaded', () => {
-  const nav = document.getElementById('nav-user-info');
-  if (nav && nav.tagName !== 'BUTTON') {
-    const btn = document.createElement('button');
-    btn.id = 'nav-user-info';
-    btn.type = 'button';
-    btn.className = nav.className;
-    btn.innerHTML = nav.innerHTML;
-    btn.setAttribute('aria-haspopup', 'dialog');
-    nav.replaceWith(btn);
-    btn.addEventListener('click', () => window.abrirModalPerfil?.());
-  }
-  // also hook existing buttons
-  document.querySelectorAll('#nav-user-info').forEach((b) => {
-    if (!b._hooked) { b._hooked = true; b.addEventListener('click', () => window.abrirModalPerfil?.()); }
-  });
-});

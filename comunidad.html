@@ -28,7 +28,7 @@
     <link rel="icon" type="image/png" sizes="512x512" href="img/android-chrome-512x512.png">
     <link rel="manifest" href="manifest.webmanifest">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=1.7.1">
+    <link rel="stylesheet" href="style.css?v=1.7.2">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;800;900&display=swap" rel="stylesheet">
@@ -85,7 +85,15 @@
                     <template x-for="(user, index) in $store.ranking.usuarios" :key="user.apodo">
                         <div class="leaderboard-item" :class="{ 'leaderboard-item-first': index === 0 }">
                             <span class="leaderboard-user">
-                                <span x-text="user.medalla + ' ' + user.apodo + (user.icono ? ' ' + user.icono : '')"></span>
+                                <span class="leaderboard-avatar">
+                                    <template x-if="user.avatar">
+                                        <img :src="user.avatar" alt="" loading="lazy">
+                                    </template>
+                                    <template x-if="!user.avatar">
+                                        <span class="leaderboard-avatar-inicial" x-text="user.inicial"></span>
+                                    </template>
+                                </span>
+                                <span class="leaderboard-nombre" x-text="user.medalla + ' ' + user.apodo + (user.icono ? ' ' + user.icono : '')"></span>
                                 <span class="rango-badge leaderboard-badge" :class="'rango-' + user.rangoClave">
                                     <span x-text="user.rangoEmoji"></span><span x-text="user.rangoNombre"></span>
                                 </span>
@@ -241,65 +249,16 @@
                     <div id="user-bio" class="user-bio" hidden></div>
                     <div id="user-links" class="user-links" hidden></div>
 
-                    <!-- Formulario de edición (oculto por defecto) -->
-                    <form id="form-editar-perfil" class="form-editar-perfil" hidden>
-                        <div class="form-group-perfil">
-                            <label for="perfil-avatar">Avatar</label>
-                            <div class="avatar-upload-wrap">
-                                <img id="perfil-avatar-preview" class="avatar-preview" src="" alt="Vista previa avatar" hidden>
-                                <span id="perfil-avatar-inicial" class="avatar-inicial"></span>
-                                <input type="file" id="perfil-avatar" class="avatar-input" accept="image/*" aria-label="Subir avatar">
-                                <label for="perfil-avatar" class="avatar-label"><i class="fa-solid fa-camera"></i></label>
-                            </div>
-                            <p class="form-hint">Máx 500 KB · JPG, PNG, GIF, WebP</p>
-                        </div>
-                        <div class="form-group-perfil">
-                            <label for="perfil-bio">Bio</label>
-                            <textarea id="perfil-bio" class="perfil-input" maxlength="160" placeholder="Cuéntanos algo sobre ti..." aria-label="Bio"></textarea>
-                            <span class="char-count"><span id="bio-char-count">0</span>/160</span>
-                        </div>
-                        <div class="form-group-perfil">
-                            <label>Enlaces sociales</label>
-                            <div class="links-grid">
-                                <div class="link-input-wrap">
-                                    <label for="link-twitter"><i class="fab fa-twitter"></i> X/Twitter</label>
-                                    <input type="url" id="link-twitter" class="perfil-input" placeholder="https://x.com/usuario" autocomplete="url">
-                                </div>
-                                <div class="link-input-wrap">
-                                    <label for="link-instagram"><i class="fab fa-instagram"></i> Instagram</label>
-                                    <input type="url" id="link-instagram" class="perfil-input" placeholder="https://instagram.com/usuario" autocomplete="url">
-                                </div>
-                                <div class="link-input-wrap">
-                                    <label for="link-youtube"><i class="fab fa-youtube"></i> YouTube</label>
-                                    <input type="url" id="link-youtube" class="perfil-input" placeholder="https://youtube.com/@usuario" autocomplete="url">
-                                </div>
-                                <div class="link-input-wrap">
-                                    <label for="link-tiktok"><i class="fab fa-tiktok"></i> TikTok</label>
-                                    <input type="url" id="link-tiktok" class="perfil-input" placeholder="https://tiktok.com/@usuario" autocomplete="url">
-                                </div>
-                                <div class="link-input-wrap">
-                                    <label for="link-discord"><i class="fab fa-discord"></i> Discord</label>
-                                    <input type="url" id="link-discord" class="perfil-input" placeholder="https://discord.gg/..." autocomplete="url">
-                                </div>
-                                <div class="link-input-wrap">
-                                    <label for="link-kick"><i class="fa-solid fa-k"></i> Kick</label>
-                                    <input type="url" id="link-kick" class="perfil-input" placeholder="https://kick.com/usuario" autocomplete="url">
-                                </div>
-                                <div class="link-input-wrap">
-                                    <label for="link-twitch"><i class="fab fa-twitch"></i> Twitch</label>
-                                    <input type="url" id="link-twitch" class="perfil-input" placeholder="https://twitch.tv/usuario" autocomplete="url">
-                                </div>
-                                <div class="link-input-wrap">
-                                    <label for="link-website"><i class="fa-solid fa-globe"></i> Web</label>
-                                    <input type="url" id="link-website" class="perfil-input" placeholder="https://tusitio.com" autocomplete="url">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group-perfil form-actions">
-                            <button type="button" id="btn-cancelar-perfil" class="btn-primary btn-muted">Cancelar</button>
-                            <button type="submit" id="btn-guardar-perfil" class="btn-primary">Guardar cambios</button>
-                        </div>
-                    </form>
+                    <div id="aviso-genero" class="aviso-genero" hidden>
+                        <span><i class="fa-solid fa-circle-info" aria-hidden="true"></i> Elige tu género en Ajustes para asignar tu avatar.</span>
+                        <button type="button" id="btn-aviso-genero" class="btn-primary btn-muted">Abrir Ajustes</button>
+                    </div>
+
+                    <div class="user-profile-acciones">
+                        <button type="button" id="btn-abrir-ajustes" class="btn-primary btn-muted">
+                            <i class="fa-solid fa-sliders"></i> Editar perfil y ajustes
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -330,8 +289,11 @@
     <p class="tab-hint">Gasta tus puntos en recompensas exclusivas. Los iconos se muestran junto a tu nombre en todo el sitio.</p>
     <div id="tienda-catalogo" class="tienda-grid" x-data="{}">
         <template x-for="premio in $store.tienda.premios" :key="premio.id">
-            <div class="tienda-item" :class="{ agotado: premio.stock !== null && premio.stock <= 0 }">
-                <div class="tienda-item-icon" x-text="premio.icono"></div>
+            <div class="tienda-item" :class="{ agotado: premio.stock !== null && premio.stock <= 0, obtenido: $store.tienda.yaObtenido(premio) }">
+                <template x-if="premio.tipo === 'avatar' && premio.avatar_url">
+                    <div class="tienda-item-avatar"><img :src="premio.avatar_url" :alt="premio.nombre" loading="lazy"></div>
+                </template>
+                <div class="tienda-item-icon" x-show="premio.tipo !== 'avatar' || !premio.avatar_url" x-text="premio.icono"></div>
                 <div class="tienda-item-info">
                     <span class="tienda-item-nombre" x-text="premio.nombre"></span>
                     <span class="tienda-item-desc" x-text="premio.descripcion"></span>
@@ -342,7 +304,10 @@
                         </template>
                     </div>
                 </div>
-                <button type="button" class="btn-tienda-comprar" :disabled="premio.stock !== null && premio.stock <= 0" @click="window.tiendaCanjear(premio.id, $event)" x-text="premio.costo_puntos === 0 ? 'Gratis' : 'Comprar'"></button>
+                <button type="button" class="btn-tienda-comprar"
+                        :disabled="(premio.stock !== null && premio.stock <= 0) || $store.tienda.yaObtenido(premio)"
+                        @click="window.tiendaCanjear(premio.id, $event)"
+                        x-text="$store.tienda.yaObtenido(premio) ? 'Ya lo tienes' : (premio.costo_puntos === 0 ? 'Gratis' : 'Comprar')"></button>
             </div>
         </template>
         <p class="gallery-empty" x-show="$store.tienda.cargando">Cargando tienda...</p>
@@ -399,6 +364,20 @@
             <form id="form-nickname" novalidate>
                 <input type="text" id="nickname-modal-input" placeholder="Tu apodo" aria-label="Tu apodo" maxlength="20" autocomplete="username">
                 <input type="password" id="nickname-modal-pin" placeholder="PIN (4 dígitos)" aria-label="PIN de 4 dígitos" maxlength="4" pattern="[0-9]*" inputmode="numeric" autocomplete="current-password">
+                <fieldset id="nickname-modal-genero" class="genero-selector" aria-describedby="nickname-genero-ayuda" hidden>
+                    <legend>Elige tu género</legend>
+                    <p id="nickname-genero-ayuda" class="form-hint">Se usa para tu avatar inicial. Puedes cambiarlo después en Ajustes.</p>
+                    <div class="genero-opciones">
+                        <label class="genero-opcion">
+                            <input type="radio" name="nickname-genero" value="femenino">
+                            <span>Femenino</span>
+                        </label>
+                        <label class="genero-opcion">
+                            <input type="radio" name="nickname-genero" value="masculino">
+                            <span>Masculino</span>
+                        </label>
+                    </div>
+                </fieldset>
                 <div>
                     <button type="submit" id="nickname-modal-set-btn" class="btn-primary">Entrar</button>
                 </div>
@@ -410,7 +389,7 @@
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
 
-    <script src="main.js?v=1.7.1" defer></script>
+    <script src="main.js?v=1.7.2" defer></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.17.5/dist/cdn.min.js"
             integrity="sha384-FYLKjwG3aohNhNZoVG8sY/5ntunm+MqylL90Q+rT3OM7AwV9/BKFjk/RjoIpIgsI"
             crossorigin="anonymous"></script>
@@ -499,7 +478,20 @@
                 misCanjes: [],
                 cargando: false,
                 error: '',
-                verCatalogo: true
+                verCatalogo: true,
+                yaObtenido(premio) {
+                    if (!premio || !Array.isArray(this.misCanjes)) return false;
+                    return this.misCanjes.some((c) => {
+                        if (!c || !['pendiente', 'entregado'].includes(c.estado)) return false;
+                        if (premio.tipo === 'avatar') {
+                            return c.tipo === 'avatar' && c.avatar_url && c.avatar_url === premio.avatar_url;
+                        }
+                        if (premio.tipo === 'icono') {
+                            return c.tipo === 'icono';
+                        }
+                        return false;
+                    });
+                }
             });
 
             const storeReacciones = window.Alpine.store('reacciones');
@@ -543,6 +535,10 @@
 
             const btnAccion = document.getElementById('nickname-modal-set-btn');
             if (btnAccion) btnAccion.textContent = (modo === 'registro') ? 'Crear cuenta' : 'Entrar';
+
+            const generoWrap = document.getElementById('nickname-modal-genero');
+            if (generoWrap) generoWrap.hidden = modo !== 'registro';
+            document.querySelectorAll('input[name="nickname-genero"]').forEach((radio) => { radio.checked = false; });
 
             input.value = '';
             pin.value = '';
@@ -1010,10 +1006,10 @@ setInterval(actualizarTypingIndicator, 500);
                 if (window.desactivarTrampaFoco) window.desactivarTrampaFoco(true);
             }
 
-            async function registrarUsuario(apodo, pin) {
+            async function registrarUsuario(apodo, pin, genero) {
                 if (!window.supabase) return { ok: false, error: 'Supabase no disponible' };
                 try {
-                    const { data, error } = await supabase.rpc('registrar_comunidad', { p_apodo: apodo, p_pin: pin });
+                    const { data, error } = await supabase.rpc('registrar_comunidad', { p_apodo: apodo, p_pin: pin, p_genero: genero });
                     if (error) return { ok: false, error: error.message };
                     return { ok: !!data?.ok, error: data?.error, token: data?.token, usuario: data?.usuario };
                 } catch (e) { return { ok: false, error: e.message }; }
@@ -1028,22 +1024,36 @@ setInterval(actualizarTypingIndicator, 500);
                 } catch (e) { return { ok: false, error: e.message }; }
             }
 
-            function guardarSesion(apodo, token, puntos, rango, id, icono) {
+            function guardarSesion(usuario, token) {
+                const u = usuario || {};
+                const apodo = u.apodo || '';
                 const nickPrevio = localStorage.getItem(STORAGE_KEY_NICK);
                 if (nickPrevio && nickPrevio !== apodo) {
                     window.limpiarCachesSesionComunidad?.();
                 }
-                if (id) userId = id;
+                if (u.id) userId = u.id;
                 sesionComunidadActiva = true;
                 localStorage.setItem(STORAGE_KEY_NICK, apodo);
-                if (id) localStorage.setItem('comunidad_user_id', String(id));
+                if (u.id) localStorage.setItem('comunidad_user_id', String(u.id));
                 if (token) localStorage.setItem(STORAGE_KEY_TOKEN, token);
+                // La sesión completa es la fuente de verdad para navbar y modal.
+                window.actualizarSesionUsuarioComunidad({
+                    id: u.id ?? null,
+                    apodo: apodo,
+                    puntos: u.puntos ?? 0,
+                    rango: u.rango || 'semilla',
+                    icono: u.icono || '',
+                    genero: u.genero || 'no_definido',
+                    avatar_url: u.avatar_url || null,
+                    bio: u.bio || null,
+                    links_json: u.links_json || null
+                });
                 if (userProfilePanel) {
                     userProfilePanel.style.display = 'block';
                     if (userInfoDisplay) userInfoDisplay.textContent = apodo;
-                    if (userPointsDisplay) userPointsDisplay.textContent = (puntos || 0) + ' pts';
-                    aplicarEstadoRango(puntos || 0, rango, { silencioso: true });
-                    actualizarIconoEquipado(icono);
+                    if (userPointsDisplay) userPointsDisplay.textContent = (u.puntos || 0) + ' pts';
+                    aplicarEstadoRango(u.puntos || 0, u.rango, { silencioso: true });
+                    actualizarIconoEquipado(u.icono);
                 }
                 if (inputAutor) {
                     inputAutor.value = apodo;
@@ -1063,13 +1073,22 @@ setInterval(actualizarTypingIndicator, 500);
                 if (btnEnviar) btnEnviar.disabled = false;
                 window.actualizarUsuarioNavComunidad?.();
 
-                // Cargar perfil extendido (avatar, bio, links)
+                // Pintar avatar, bio, enlaces y aviso de género con lo que ya tenemos.
+                actualizarUIPerfilExtendido({
+                    avatar_url: u.avatar_url || null,
+                    genero: u.genero || 'no_definido',
+                    bio: u.bio || null,
+                    links_json: u.links_json || null,
+                    icono_equipado: u.icono || null
+                });
+
+                // Refrescar desde la base de datos (por si el login vino incompleto).
                 cargarPerfilExtendido();
                 // La tienda solo se puede cargar cuando ya hay token de comunidad.
                 if (typeof cargarTiendaCatalogo === 'function') cargarTiendaCatalogo();
             }
 
-            // Cargar avatar, bio y links del usuario
+            // Cargar avatar, bio, enlaces y género del usuario
             async function cargarPerfilExtendido() {
                 if (!window.supabase || !userId) return;
                 try {
@@ -1087,75 +1106,72 @@ setInterval(actualizarTypingIndicator, 500);
 
             function actualizarIconoEquipado(icono) {
                 const el = document.getElementById('user-icono-equipado');
-                if (!el) return;
-                el.textContent = icono || '';
-                el.hidden = !icono;
+                if (el) {
+                    el.textContent = icono || '';
+                    el.hidden = !icono;
+                }
+                const sesion = window.obtenerSesionUsuarioComunidad?.() || {};
+                if (sesion.icono !== (icono || '')) {
+                    window.actualizarSesionUsuarioComunidad?.({ icono: icono || '' });
+                }
+            }
+
+            function actualizarAvisoGenero(genero, avatarUrl) {
+                const aviso = document.getElementById('aviso-genero');
+                if (!aviso) return;
+                const sinGenero = !genero || genero === 'no_definido';
+                aviso.hidden = !(sinGenero && !avatarUrl);
             }
 
             function actualizarUIPerfilExtendido(data) {
+                const genero = data.genero || window.obtenerSesionUsuarioComunidad?.()?.genero || 'no_definido';
                 actualizarIconoEquipado(data.icono_equipado);
-                // Avatar
+
+                // Avatar: el guardado manda; si no hay, el beta según género.
+                const avatarUrl = window.avatarUsuarioComunidad?.({
+                    avatar_url: data.avatar_url || null,
+                    genero: genero
+                }) || null;
                 const avatarImg = document.getElementById('user-avatar-img');
                 const avatarInicial = document.getElementById('user-avatar-inicial');
-                const previewImg = document.getElementById('perfil-avatar-preview');
-                const previewInicial = document.getElementById('perfil-avatar-inicial');
-                if (data.avatar_url) {
-                    if (avatarImg) { avatarImg.src = data.avatar_url; avatarImg.hidden = false; }
+                const inicial = (userNickname || '?').charAt(0).toUpperCase();
+                if (avatarUrl) {
+                    if (avatarImg) { avatarImg.src = avatarUrl; avatarImg.hidden = false; }
                     if (avatarInicial) avatarInicial.hidden = true;
-                    if (previewImg) { previewImg.src = data.avatar_url; previewImg.hidden = false; }
-                    if (previewInicial) previewInicial.hidden = true;
                 } else {
-                    const inicial = (userNickname || '?').charAt(0).toUpperCase();
-                    if (avatarImg) avatarImg.hidden = true;
+                    if (avatarImg) { avatarImg.removeAttribute('src'); avatarImg.hidden = true; }
                     if (avatarInicial) { avatarInicial.textContent = inicial; avatarInicial.hidden = false; }
-                    if (previewImg) previewImg.hidden = true;
-                    if (previewInicial) { previewInicial.textContent = inicial; previewInicial.hidden = false; }
                 }
+                actualizarAvisoGenero(genero, data.avatar_url || null);
+
                 // Bio
                 const bioDiv = document.getElementById('user-bio');
-                const bioInput = document.getElementById('perfil-bio');
                 if (data.bio) {
                     if (bioDiv) { bioDiv.textContent = data.bio; bioDiv.hidden = false; }
-                    if (bioInput) bioInput.value = data.bio;
-                } else {
-                    if (bioDiv) bioDiv.hidden = true;
+                } else if (bioDiv) {
+                    bioDiv.hidden = true;
                 }
-                // Links
+
+                // Enlaces
                 const linksDiv = document.getElementById('user-links');
-                const linkInputs = {
-                    twitter: document.getElementById('link-twitter'),
-                    instagram: document.getElementById('link-instagram'),
-                    youtube: document.getElementById('link-youtube'),
-                    tiktok: document.getElementById('link-tiktok'),
-                    discord: document.getElementById('link-discord'),
-                    kick: document.getElementById('link-kick'),
-                    twitch: document.getElementById('link-twitch'),
-                    website: document.getElementById('link-website')
-                };
-                const links = data.links_json || {};
-                let hayLinks = false;
-                Object.entries(links).forEach(([k, v]) => {
-                    if (v && linkInputs[k]) {
-                        linkInputs[k].value = v;
-                        hayLinks = true;
-                    }
-                });
+                const links = (data.links_json && typeof data.links_json === 'object') ? data.links_json : {};
                 if (linksDiv) {
                     linksDiv.innerHTML = '';
+                    const iconMap = {
+                        twitter: 'fab fa-twitter', instagram: 'fab fa-instagram',
+                        youtube: 'fab fa-youtube', tiktok: 'fab fa-tiktok',
+                        discord: 'fab fa-discord', kick: 'fa-solid fa-k',
+                        twitch: 'fab fa-twitch', website: 'fa-solid fa-globe'
+                    };
+                    const labelMap = {
+                        twitter: 'X/Twitter', instagram: 'Instagram',
+                        youtube: 'YouTube', tiktok: 'TikTok',
+                        discord: 'Discord', kick: 'Kick',
+                        twitch: 'Twitch', website: 'Web'
+                    };
+                    let hayLinks = false;
                     Object.entries(links).forEach(([k, v]) => {
                         if (!v) return;
-                        const iconMap = {
-                            twitter: 'fab fa-twitter', instagram: 'fab fa-instagram',
-                            youtube: 'fab fa-youtube', tiktok: 'fab fa-tiktok',
-                            discord: 'fab fa-discord', kick: 'fa-solid fa-k',
-                            twitch: 'fab fa-twitch', website: 'fa-solid fa-globe'
-                        };
-                        const labelMap = {
-                            twitter: 'X/Twitter', instagram: 'Instagram',
-                            youtube: 'YouTube', tiktok: 'TikTok',
-                            discord: 'Discord', kick: 'Kick',
-                            twitch: 'Twitch', website: 'Web'
-                        };
                         let urlSegura;
                         try {
                             const url = new URL(v);
@@ -1170,10 +1186,27 @@ setInterval(actualizarTypingIndicator, 500);
                         a.className = 'user-link';
                         a.innerHTML = `<i class="${iconMap[k] || 'fa-solid fa-link'}"></i> ${escapeHtml(labelMap[k] || k)}`;
                         linksDiv.appendChild(a);
+                        hayLinks = true;
                     });
                     linksDiv.hidden = !hayLinks;
                 }
+
+                // Mantener la sesión local y el navbar en sintonía.
+                window.actualizarSesionUsuarioComunidad?.({
+                    avatar_url: data.avatar_url || null,
+                    bio: data.bio || null,
+                    links_json: data.links_json || null,
+                    genero: genero,
+                    icono: data.icono_equipado || ''
+                });
+                window.actualizarUsuarioNavComunidad?.();
             }
+
+            // El modal global (main.js) llama a esto tras guardar el perfil.
+            window.recargarPerfilComunidad = function recargarPerfilComunidad() {
+                cargarPerfilExtendido();
+                if (typeof cargarLeaderboard === 'function') cargarLeaderboard();
+            };
 
             async function validarSesionGuardada() {
                 const savedToken = localStorage.getItem(STORAGE_KEY_TOKEN);
@@ -1187,6 +1220,7 @@ setInterval(actualizarTypingIndicator, 500);
                         localStorage.removeItem(STORAGE_KEY_NICK);
                         localStorage.removeItem(STORAGE_KEY_TOKEN);
                         localStorage.removeItem('comunidad_user_id');
+                        localStorage.removeItem('comunidad_session_usuario');
                         window.limpiarCachesSesionComunidad?.();
                         userNickname = null;
                         userId = null;
@@ -1212,7 +1246,7 @@ setInterval(actualizarTypingIndicator, 500);
                     const usuario = data.usuario;
                     // El apodo canónico lo devuelve el servidor: se usa ese,
                     // no el que quedó cacheado en el navegador.
-                    guardarSesion(usuario.apodo, savedToken, usuario.puntos, usuario.rango, usuario.id, usuario.icono);
+                    guardarSesion(usuario, savedToken);
                     return true;
                 } catch (e) {
                     console.error('Error validando sesión de comunidad:', e);
@@ -1249,9 +1283,19 @@ setInterval(actualizarTypingIndicator, 500);
                 try {
                     // Si estamos en modo registro, forzamos crear cuenta nueva
                     if (_modalModo === 'registro') {
-                        const reg = await registrarUsuario(nick, pin);
+                        const generoSeleccionado = document.querySelector('input[name="nickname-genero"]:checked');
+                        if (!generoSeleccionado) {
+                            if (nicknameModalError) {
+                                nicknameModalError.textContent = 'Elige tu género para crear el avatar inicial.';
+                                nicknameModalError.style.display = 'block';
+                            }
+                            const generoWrap = document.getElementById('nickname-modal-genero');
+                            if (generoWrap) generoWrap.hidden = false;
+                            return;
+                        }
+                        const reg = await registrarUsuario(nick, pin, generoSeleccionado.value);
                         if (reg.ok && reg.token && reg.usuario) {
-                            guardarSesion(reg.usuario.apodo, reg.token, reg.usuario.puntos, reg.usuario.rango, reg.usuario.id, reg.usuario.icono);
+                            guardarSesion(reg.usuario, reg.token);
                             hideNicknameModal();
                             return;
                         }
@@ -1267,7 +1311,7 @@ setInterval(actualizarTypingIndicator, 500);
                     // Modo login: intentar autenticar
                     const verif = await verificarLogin(nick, pin);
                     if (verif.ok && verif.token && verif.usuario) {
-                        guardarSesion(verif.usuario.apodo, verif.token, verif.usuario.puntos, verif.usuario.rango, verif.usuario.id, verif.usuario.icono);
+                        guardarSesion(verif.usuario, verif.token);
                         hideNicknameModal();
                         return;
                     }
@@ -2038,7 +2082,7 @@ if (chatForm) {
                 try {
                     const { data, error } = await supabase
                         .from('usuarios_comunidad')
-                        .select('apodo, puntos, rango, icono_equipado')
+                        .select('apodo, puntos, rango, icono_equipado, avatar_url')
                         .order('puntos', { ascending: false })
                         .limit(10);
 
@@ -2066,7 +2110,9 @@ if (chatForm) {
                             rangoClave: clave,
                             rangoEmoji: emoji,
                             rangoNombre: nombre,
-                            icono: user.icono_equipado || ''
+                            icono: user.icono_equipado || '',
+                            avatar: window.avatarUsuarioComunidad?.(user) || null,
+                            inicial: String(user.apodo || '?').trim().charAt(0).toUpperCase() || '?'
                         };
                     });
                     store.error = '';
@@ -2115,6 +2161,7 @@ if (chatForm) {
                     localStorage.removeItem(STORAGE_KEY_NICK);
                     localStorage.removeItem(STORAGE_KEY_TOKEN);
                     localStorage.removeItem('comunidad_user_id');
+                    localStorage.removeItem('comunidad_session_usuario');
                     userNickname = null;
                     userId = null;
                     if (inputAutor) {
@@ -2201,6 +2248,8 @@ if (chatForm) {
                     return;
                 }
                 store.premios = data.premios || [];
+                // Los canjes permiten marcar en el catálogo lo que ya se posee.
+                if (typeof cargarMisCanjes === 'function') cargarMisCanjes();
             } catch (e) {
                 console.error('Error cargando catálogo tienda:', e);
                 store.error = 'Error inesperado';
@@ -2245,20 +2294,35 @@ if (chatForm) {
                         ? `Puntos insuficientes (faltan ${data.faltan} pts)`
                         : data?.error === 'ya_tiene_icono'
                             ? 'Ya tienes un icono. Solo puedes tener uno a la vez.'
-                            : data?.error === 'sin_stock'
-                                ? 'Ese premio está agotado.'
-                                : data?.error === 'baneado'
-                                    ? 'Tu cuenta está suspendida.'
-                                    : data?.error || 'No se pudo canjear';
+                            : data?.error === 'ya_tiene_avatar'
+                                ? 'Ya tienes ese avatar. Elige otro distinto.'
+                                : data?.error === 'sin_stock'
+                                    ? 'Ese premio está agotado.'
+                                    : data?.error === 'baneado'
+                                        ? 'Tu cuenta está suspendida.'
+                                        : data?.error || 'No se pudo canjear';
                     window.mostrarToast?.('❌ ' + msg, true);
+                    cargarMisCanjes();
                     return;
                 }
                 window.mostrarToast?.('¡Canjeado con éxito! Puntos restantes: ' + (data.puntos_restantes || 0));
                 if (typeof data.puntos_restantes === 'number') {
                     if (userPointsDisplay) userPointsDisplay.textContent = data.puntos_restantes + ' pts';
                     window.aplicarEstadoRango?.(data.puntos_restantes, data.rango, { silencioso: true });
+                    window.actualizarSesionUsuarioComunidad?.({ puntos: data.puntos_restantes });
                 }
                 actualizarIconoEquipado(data.icono);
+                if (data.tipo === 'avatar' && data.avatar_url) {
+                    actualizarUIPerfilExtendido({
+                        avatar_url: data.avatar_url,
+                        genero: window.obtenerSesionUsuarioComunidad?.()?.genero || 'no_definido',
+                        bio: window.obtenerSesionUsuarioComunidad?.()?.bio || null,
+                        links_json: window.obtenerSesionUsuarioComunidad?.()?.links_json || null,
+                        icono_equipado: data.icono || ''
+                    });
+                } else {
+                    window.actualizarUsuarioNavComunidad?.();
+                }
                 cargarTiendaCatalogo();
                 cargarMisCanjes();
                 if (typeof cargarLeaderboard === 'function') cargarLeaderboard();
@@ -2299,143 +2363,18 @@ if (chatForm) {
             if (btnVerCat) btnVerCat.hidden = true;
         };
 
-        // === PERFIL EDITABLE ===
-        const btnEditarPerfil = document.getElementById('btn-editar-perfil');
-        const formEditarPerfil = document.getElementById('form-editar-perfil');
-        const btnCancelarPerfil = document.getElementById('btn-cancelar-perfil');
-        const perfilAvatarInput = document.getElementById('perfil-avatar');
-        const perfilBioInput = document.getElementById('perfil-bio');
-        const bioCharCount = document.getElementById('bio-char-count');
+        // === PERFIL: el modal global de main.js es el ?nico editor ===
+        function abrirAjustesPerfil() {
+            if (!window.abrirModalPerfil) {
+                window.mostrarToast?.('Recarga la p?gina para editar tu perfil', true);
+                return;
+            }
+            window.abrirModalPerfil('ajustes');
+        }
 
-        if (btnEditarPerfil && formEditarPerfil) {
-            btnEditarPerfil.addEventListener('click', () => {
-                formEditarPerfil.hidden = false;
-                btnEditarPerfil.hidden = true;
-                // Focus en bio
-                if (perfilBioInput) perfilBioInput.focus();
-            });
-        }
-        if (btnCancelarPerfil && formEditarPerfil && btnEditarPerfil) {
-            btnCancelarPerfil.addEventListener('click', () => {
-                formEditarPerfil.hidden = true;
-                btnEditarPerfil.hidden = false;
-                // Descartar un avatar subido pero no guardado.
-                formEditarPerfil.dataset.avatarUrl = '';
-                // Restaurar valores originales
-                cargarPerfilExtendido();
-            });
-        }
-        if (perfilBioInput && bioCharCount) {
-            perfilBioInput.addEventListener('input', () => {
-                bioCharCount.textContent = perfilBioInput.value.length;
-            });
-        }
-        if (perfilAvatarInput) {
-            perfilAvatarInput.addEventListener('change', async (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-                if (!file.type.startsWith('image/')) {
-                    window.mostrarToast?.('Solo se permiten imágenes', true);
-                    perfilAvatarInput.value = '';
-                    return;
-                }
-                if (file.size > 500 * 1024) {
-                    window.mostrarToast?.('El avatar no puede superar 500 KB', true);
-                    perfilAvatarInput.value = '';
-                    return;
-                }
-                // Validar magic bytes
-                const buf = await file.arrayBuffer();
-                const bytes = new Uint8Array(buf.slice(0, 12));
-                const hex = [...bytes].map(b => b.toString(16).padStart(2, '0')).join('');
-                const magicOk =
-                    hex.startsWith('89504e47') ||
-                    hex.startsWith('ffd8ff') ||
-                    hex.startsWith('47494638') ||
-                    hex.startsWith('52494646');
-                if (!magicOk) {
-                    window.mostrarToast?.('Archivo de imagen no válido', true);
-                    perfilAvatarInput.value = '';
-                    return;
-                }
-                // Subir a Storage
-                const token = localStorage.getItem(STORAGE_KEY_TOKEN);
-                if (!token || !window.supabase || !userId) {
-                    window.mostrarToast?.('Sesión no válida', true);
-                    return;
-                }
-                const safeName = (file.name || 'avatar').replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 50);
-                const filePath = `avatar/${userId}/${Date.now()}_${safeName}`;
-                try {
-                    const { error } = await supabase.storage.from('avatares-comunidad').upload(filePath, file, { upsert: false });
-                    if (error) throw error;
-                    const { data: publicURLData } = supabase.storage.from('avatares-comunidad').getPublicUrl(filePath);
-                    // Actualizar preview inmediato
-                    const previewImg = document.getElementById('perfil-avatar-preview');
-                    const previewInicial = document.getElementById('perfil-avatar-inicial');
-                    if (previewImg) { previewImg.src = publicURLData.publicUrl; previewImg.hidden = false; }
-                    if (previewInicial) previewInicial.hidden = true;
-                    // Guardar URL en variable temporal para el submit
-                    formEditarPerfil.dataset.avatarUrl = publicURLData.publicUrl;
-                } catch (err) {
-                    console.error('Error subiendo avatar:', err);
-                    window.mostrarToast?.('Error subiendo avatar', true);
-                }
-            });
-        }
-        if (formEditarPerfil) {
-            formEditarPerfil.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const token = localStorage.getItem(STORAGE_KEY_TOKEN);
-                if (!token || !window.supabase) return;
-                const bio = perfilBioInput ? perfilBioInput.value.trim() : '';
-                const avatarUrl = formEditarPerfil.dataset.avatarUrl || null;
-                const links = {
-                    twitter: (document.getElementById('link-twitter') || {}).value?.trim() || null,
-                    instagram: (document.getElementById('link-instagram') || {}).value?.trim() || null,
-                    youtube: (document.getElementById('link-youtube') || {}).value?.trim() || null,
-                    tiktok: (document.getElementById('link-tiktok') || {}).value?.trim() || null,
-                    discord: (document.getElementById('link-discord') || {}).value?.trim() || null,
-                    kick: (document.getElementById('link-kick') || {}).value?.trim() || null,
-                    twitch: (document.getElementById('link-twitch') || {}).value?.trim() || null,
-                    website: (document.getElementById('link-website') || {}).value?.trim() || null
-                };
-                // Filtrar vacíos
-                Object.keys(links).forEach(k => { if (!links[k]) delete links[k]; });
-                const btnGuardar = document.getElementById('btn-guardar-perfil');
-                if (btnGuardar) btnGuardar.disabled = true;
-                try {
-                    const { data, error } = await supabase.rpc('actualizar_perfil_comunidad', {
-                        p_token: token,
-                        p_avatar_url: avatarUrl,
-                        p_bio: bio || null,
-                        p_links_json: links
-                    });
-                    if (error) throw error;
-                    if (!data || !data.ok) {
-                        const erroresPerfil = {
-                            sin_sesion: 'Sesión expirada. Inicia sesión de nuevo.',
-                            baneado: 'Tu cuenta está suspendida.',
-                            bio_larga: 'La bio supera 160 caracteres.',
-                            links_invalidos: 'Algún enlace no es válido (solo http/https).',
-                            avatar_invalida: 'La URL del avatar no es válida.'
-                        };
-                        window.mostrarToast?.(erroresPerfil[data?.error] || 'Error: ' + (data?.error || 'desconocido'), true);
-                        return;
-                    }
-                    window.mostrarToast?.('Perfil actualizado');
-                    formEditarPerfil.hidden = true;
-                    if (btnEditarPerfil) btnEditarPerfil.hidden = false;
-                    formEditarPerfil.dataset.avatarUrl = '';
-                    cargarPerfilExtendido();
-                } catch (err) {
-                    console.error('Error guardando perfil:', err);
-                    window.mostrarToast?.('Error guardando perfil', true);
-                } finally {
-                    if (btnGuardar) btnGuardar.disabled = false;
-                }
-            });
-        }
+        document.getElementById('btn-editar-perfil')?.addEventListener('click', abrirAjustesPerfil);
+        document.getElementById('btn-abrir-ajustes')?.addEventListener('click', abrirAjustesPerfil);
+        document.getElementById('btn-aviso-genero')?.addEventListener('click', abrirAjustesPerfil);
 
         // Navegacion por teclado entre tabs (patron WAI-ARIA de tabs).
         document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {

@@ -1,12 +1,25 @@
-## [1.7.1] - 2026-10-30
-
-### Cambios
-- Refinada ayuda admin en cine (resumen conciso) y galeria (explica ban/shadowban).
-
 # Changelog - LaGochaGaming
 
 Formato basado en Keep a Changelog. Versionado SemVer (`MAJOR.MINOR.PATCH`).
 El historial anterior a 1.5.0 está en los commits `v1.4.x`.
+
+## [1.7.2] - 2026-10-30
+
+### Correcciones
+- Perfil: un único modal global; se elimina el formulario inline y la ambigüedad
+  de `actualizar_perfil_comunidad` (300 Multiple Choices en PostgREST).
+- Registro y login devuelven género, avatar, bio y enlaces; avatar beta según
+  género cuando no hay avatar comprado/subido.
+- Tienda: catálogo y canjes usan las columnas reales (`costo_puntos`, `nombre`,
+  `entregado_at`); se añaden dos avatares beta y se equipa avatar/icono al canjear.
+- Ranking y navbar muestran avatar; aviso para elegir género.
+- Migración local `supabase/migrations/20261031000000_beta_1_7_2_correcciones.sql`.
+- `scripts/check.js` vigila el helper de copiar enlace.
+
+## [1.7.1] - 2026-10-30
+
+### Cambios
+- Refinada ayuda admin en cine (resumen conciso) y galeria (explica ban/shadowban).
 
 ## [1.7.0] - 2026-10-30
 
