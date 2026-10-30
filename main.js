@@ -456,27 +456,52 @@ document.addEventListener('keydown', (evento) => {
 
 // === MENÚ MÓVIL ===
 
+window.cerrarMenuMovil = function cerrarMenuMovil(devolverFoco = false) {
+    const btn = document.querySelector('.mobile-menu-toggle-btn');
+    const menu = document.querySelector('.nav-links');
+    if (!btn || !menu) return;
+    menu.classList.remove('mobile-active');
+    btn.setAttribute('aria-expanded', 'false');
+    btn.setAttribute('aria-label', 'Abrir menú');
+    if (devolverFoco) btn.focus();
+};
+
 window.inicializarMenuMovil = function inicializarMenuMovil() {
     const btn = document.querySelector('.mobile-menu-toggle-btn');
     const navLinks = document.querySelector('.nav-links');
     if (!btn || !navLinks) return;
+
+    if (!navLinks.id) navLinks.id = 'nav-menu-principal';
+    btn.setAttribute('aria-controls', navLinks.id);
     btn.setAttribute('aria-expanded', 'false');
+    btn.setAttribute('aria-label', 'Abrir menú');
+
     btn.onclick = null;
     btn.onclick = () => {
-        const abierto = navLinks.classList.toggle('mobile-active');
+        const abierto = !navLinks.classList.contains('mobile-active');
+        navLinks.classList.toggle('mobile-active', abierto);
         btn.setAttribute('aria-expanded', abierto ? 'true' : 'false');
+        btn.setAttribute('aria-label', abierto ? 'Cerrar menú' : 'Abrir menú');
     };
+
     if (window.escapeMenuMovilRegistrado) return;
     window.escapeMenuMovilRegistrado = true;
+
     document.addEventListener('keydown', (e) => {
         if (e.key !== 'Escape') return;
-        const boton = document.querySelector('.mobile-menu-toggle-btn');
         const menu = document.querySelector('.nav-links');
-        if (!boton || !menu || !menu.classList.contains('mobile-active')) return;
-        menu.classList.remove('mobile-active');
-        boton.setAttribute('aria-expanded', 'false');
-        boton.focus();
+        if (!menu || !menu.classList.contains('mobile-active')) return;
+        window.cerrarMenuMovil(true);
     });
+
+    // Al rotar o ampliar la pantalla el menú móvil no debe quedar abierto.
+    // 1101px debe coincidir con el breakpoint de .nav-links en style.css.
+    const escritorio = window.matchMedia('(min-width: 1101px)');
+    const alCambiar = (e) => {
+        if (e.matches) window.cerrarMenuMovil(false);
+    };
+    if (escritorio.addEventListener) escritorio.addEventListener('change', alCambiar);
+    else escritorio.addListener(alCambiar);
 };
 
 // Prevenir navegación/recarga cuando el enlace apunta a la página actual (sin hash)
@@ -496,12 +521,7 @@ window.inicializarNavLinks = function inicializarNavLinks() {
         }
         // Cerrar menú móvil tras clickear un enlace
         link.addEventListener('click', () => {
-            const btn = document.querySelector('.mobile-menu-toggle-btn');
-            const navLinksMenu = document.querySelector('.nav-links');
-            if (btn && navLinksMenu) {
-                navLinksMenu.classList.remove('mobile-active');
-                btn.setAttribute('aria-expanded', 'false');
-            }
+            window.cerrarMenuMovil?.(false);
         });
     });
 };

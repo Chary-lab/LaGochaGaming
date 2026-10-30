@@ -68,7 +68,7 @@ body.comunidad-page {
 }
 
 #global-header { min-height: 65px; }
-.navbar { height: var(--navbar-height); background: rgba(15,31,26,0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: space-between; padding: 0 30px; position: fixed; top: 0; width: 100%; max-width: 100%; box-sizing: border-box; z-index: 1000; border-bottom: 1px solid var(--border-color); transition: background-color 0.3s ease; gap: 16px; }
+.navbar { height: var(--navbar-height); background: rgba(15,31,26,0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); display: flex; flex-wrap: nowrap; align-items: center; justify-content: space-between; padding: 0 30px; position: fixed; top: 0; width: 100%; max-width: 100%; box-sizing: border-box; z-index: 1000; border-bottom: 1px solid var(--border-color); transition: background-color 0.3s ease; gap: 16px; }
 body.light-mode .navbar { background: rgba(240,253,244,0.75); }
 .logo { font-family: var(--font-display); font-size: 22px; font-weight: 900; letter-spacing: 2px; color: var(--text-main); flex-shrink: 0; min-width: 160px; }
 .logo span { background: var(--gradient); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
@@ -902,22 +902,34 @@ body.light-mode #lightbox .lightbox-caption {
 }
 
 /* --- Media Queries General & Navbar Responsiva Móvil --- */
-@media (max-width: 1024px) {
+@media (max-width: 1280px) {
     .main-container { flex-direction: column; height: auto; }
-    .video-container { flex: 0 0 100%; aspect-ratio: 16/9; min-height: 300px; }
-    .chat-sidebar { height: 350px; }
+    .video-container { flex: 0 0 auto; width: 100%; aspect-ratio: 16/9; min-height: 0; }
+    .chat-sidebar { flex: 0 0 auto; height: clamp(480px, 60vh, 600px); }
+}
+
+@media (max-width: 1024px) {
     .social-grid { grid-template-columns: 1fr; }
     .youtube-grid { grid-template-columns: 1fr; }
 }
 
 /* El perfil del navbar solo aparece cuando hay ancho suficiente para logo, menú y perfil */
-@media (max-width: 1100px) {
+@media (max-width: 1399px) {
     #nav-user-info {
         display: none !important;
     }
+
+    .nav-right {
+        min-width: 0;
+    }
+
+    /* 7 enlaces + logo + tema caben justos desde 1101px. */
+    .nav-links {
+        gap: 4px;
+    }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
     .navbar {
         padding: 0 15px;
         height: 60px;
@@ -933,6 +945,13 @@ body.light-mode #lightbox .lightbox-caption {
 
     .mobile-menu-toggle-btn {
         display: flex;
+        margin-left: auto;
+    }
+
+    /* Mantener tema y hamburguesa juntos a la derecha; el perfil ya está oculto. */
+    .nav-right {
+        min-width: 0;
+        margin-left: 8px !important;
     }
 
     /* Menú desplegable hamburguesa moderno para móviles */
@@ -1796,6 +1815,23 @@ body.light-mode #lightbox .lightbox-caption {
     .nav-links a {
         font-size: 11px;
         padding: 6px 10px;
+    }
+}
+
+@media (max-width: 360px) {
+    .navbar {
+        gap: 6px;
+    }
+    .logo {
+        min-width: 0;
+        font-size: 18px;
+        letter-spacing: 0.5px;
+    }
+    .mobile-menu-toggle-btn,
+    .btn-tema-nav {
+        min-width: 34px;
+        height: 34px;
+        padding: 6px;
     }
 }
 

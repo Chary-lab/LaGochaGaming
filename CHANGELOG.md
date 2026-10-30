@@ -3,6 +3,25 @@
 Formato basado en Keep a Changelog. Versionado SemVer (`MAJOR.MINOR.PATCH`).
 El historial anterior a 1.5.0 está en los commits `v1.4.x`.
 
+## [1.5.1] - 2026-10-30
+
+### Responsive
+
+- Navbar: el menú hamburguesa entra en `<=1100px` (antes `<=900px`). Entre
+  901 y 1100 los enlaces se partían en dos filas y se solapaban con el hero.
+- `#nav-user-info` se oculta hasta `1399px` para dejar sitio a logo, enlaces y
+  tema sin solapes en tablets y portátiles pequeños; reaparece desde `1400px`.
+- Menú móvil: cierra al rotar/ampliar la pantalla, actualiza `aria-label` y
+  `aria-expanded`, y enlaza `aria-controls` con el panel.
+- Chat de Kick en el home: el layout móvil usaba `flex: 0 0 24%`, que anulaba
+  `height: 350px` y dejaba el iframe en ~152px. Ahora usa `flex: 0 0 auto` y
+  alto `clamp(480px, 60vh, 600px)`.
+- Se quitó `scrolling="no"` del iframe de Kick para permitir el scroll interno.
+- El stream y el chat se apilan hasta `1280px` (antes `1024px`), evitando un
+  chat de ~250px en tablets y portátiles pequeños.
+- El video conserva 16:9 en móvil: se quitó el `min-height: 300px` que lo
+  deformaba a ~335x300 en pantallas de 390px.
+
 ## [1.5.0] - 2026-10-29
 
 ### Seguridad e integridad
