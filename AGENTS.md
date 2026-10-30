@@ -74,11 +74,13 @@ Las migraciones SQL no se versionan en este repo: el historial vive en Supabase.
 - `usuarios_comunidad` (nunca exponer `pin_hash`; los grants de columna ya lo limitan).
 - `comunidad_sesiones` (token, expiración, cooldowns).
 - `comunidad_chat`, `message_reactions` (chat y reacciones).
-- `muro_saludos` (muro del home).
+- `muro_saludos` + `muro_reactions` (muro del home y sus reacciones).
 - `galeria` + `galeria_likes` (likes únicos por usuario).
 - `config_sorteo`, `participantes_en_vivo`, `ganadores_sorteo`.
 - `sync_cine` (estado de reproducción).
-- RPCs importantes: `login_comunidad`, `registrar_comunidad`, `validar_sesion_comunidad`, `cerrar_sesion_comunidad`, `incrementar_puntos_comunidad`, `enviar_mensaje_chat`, `establecer_reaccion`, `publicar_saludo_muro`, `publicar_foto_galeria`, `incrementar_likes`, `obtener_likes_galeria`, `registrar_participante_sorteo`, `sortear_ganador_sorteo`.
+- `tienda_premios`, `tienda_canjes` (tienda de puntos).
+- `admin_audit_log` (auditoría de moderación, solo admin).
+- RPCs importantes: `login_comunidad`, `registrar_comunidad`, `validar_sesion_comunidad`, `cerrar_sesion_comunidad`, `incrementar_puntos_comunidad`, `enviar_mensaje_chat`, `obtener_chat_historial`, `establecer_reaccion`, `establecer_reaccion_muro`, `obtener_reacciones_muro`, `publicar_saludo_muro`, `publicar_foto_galeria`, `actualizar_perfil_comunidad`, `incrementar_likes`, `obtener_likes_galeria`, `tienda_obtener_catalogo`, `tienda_canjear_premio`, `tienda_mis_canjes`, `registrar_participante_sorteo`, `sortear_ganador_sorteo`, `admin_listar_usuarios`, `admin_ban_usuario`, `admin_shadowban_usuario`, `admin_obtener_audit_log`.
 
 ### 5.5 Invariantes de integridad
 
@@ -88,6 +90,11 @@ Las migraciones SQL no se versionan en este repo: el historial vive en Supabase.
 - Muro: rate limit por autor normalizado; mensajes máximo 280 caracteres (servidor y cliente).
 - Sorteo: nombre único sin distinguir mayúsculas (`lower(username)`), límite de 500 participantes, rate limit por IP y ganador decidido SOLO en el servidor. No insertar ganadores desde el cliente.
 - Galería: subida anónima permitida por diseño (bucket `fotos-galeria`, prefijo `gallery/`, 5MB, JPG/PNG/GIF/WEBP/AVIF). Si la RPC falla después de subir, puede quedar un archivo huérfano; no prometer limpieza automática.
+- Avatares: bucket público `avatares-comunidad` (500KB), subida anónima solo bajo `avatar/`, sin update; borrado solo admin.
+- Perfil: `bio` máximo 160, `links_json` solo claves whitelist y URLs `http/https` máximo 300; `avatar_url` debe apuntar al bucket `avatares-comunidad` y a la carpeta del propio usuario.
+- Tienda: el canje descuenta puntos y stock en una transacción con locks; los iconos son uno por usuario (`icono_equipado`). No insertar canjes ni premios desde el cliente.
+- Baneo: `baneado_hasta` bloquea login, chat, muro, puntos, likes, reacciones, galería, tienda y perfil. Al banear se borran las sesiones de comunidad. `shadowban` solo oculta los mensajes de chat a terceros (no es un límite de seguridad fuerte).
+- Moderación: `admin_*` exige `es_admin()`; toda acción de ban/shadowban se registra en `admin_audit_log`. No exponer `baneado_hasta`, `baneado_motivo` ni `shadowban` a `anon`.
 
 ### 5.6 Realtime
 
@@ -123,7 +130,7 @@ Las migraciones SQL no se versionan en este repo: el historial vive en Supabase.
 - En cada release, actualizar el query de caché `?v=X.Y.Z` de `style.css` y `main.js` en los HTML (GitHub Pages cachea agresivamente).
 - Formato de commit: `vX.Y.Z - resumen corto` (seguir el historial existente).
 - No commitear ni pushear una versión inestable. Probar antes.
-- Versión de esta release: `1.5.1` (responsive de navbar, chat de Kick y layout móvil; sobre 1.5.0).
+- Versión de esta release: `1.6.0` (tienda de puntos, perfiles, reacciones del muro, moderación/auditoría y baneos; sobre 1.5.1).
 
 ## 9. Pruebas antes de commitear
 
@@ -133,9 +140,11 @@ Las migraciones SQL no se versionan en este repo: el historial vive en Supabase.
 4. Smoke test mínimo:
    - Home: player/clips/feed cargan, muro pinta mensajes, no errores de consola propios.
    - Comunidad: presencia muestra "Nadie en línea" si no hay nadie, chat/ranking cargan, login/registro y reacciones funcionan.
-   - Galería: tarjetas abren lightbox; like sin sesión NO abre lightbox y pide login; con sesión alterna like/contador; moderación rechaza cuentas no admin.
+   - Galería: tarjetas abren lightbox; like sin sesión NO abre lightbox y pide login; con sesión alterna like/contador; moderación rechaza cuentas no admin; pestañas Usuarios/Auditoría cargan y el detalle de auditoría se escapa.
+   - Comunidad: perfil (bio/links/avatar), tienda (catálogo/canje), icono equipado y reacciones del muro; probar con usuario temporal y borrarlo.
    - Sorteo: modo manual agrega/gira; modo streamer pide login; si no hay sesión admin no muestra panel; errores de red no muestran un ganador falso.
    - Cine: estado/video cargan, overlay/join no rompe MP4 si YouTube falla, sin errores propios.
+   - Moderación: ban y shadowban sobre usuario temporal; verificar borrado de sesiones, login bloqueado y fila en auditoría; limpiar después.
 5. Cambios de base de datos:
    - Preparar el SQL y probarlo en una transacción con un usuario temporal y `ROLLBACK`.
    - Verificar que no queden usuarios, mensajes, likes ni sesiones de prueba.
@@ -173,7 +182,8 @@ Las migraciones SQL no se versionan en este repo: el historial vive en Supabase.
 - El ganador no se elimina de `participantes_en_vivo` al sortear (puede volver a ganar en otro giro). Si el producto requiere un ganador por persona, modificar `sortear_ganador_sorteo` para excluirlo.
 - Las sesiones caducadas se limpian al iniciar sesión/registrarse, no con un cron. No asumir limpieza inmediata.
 - Presencia y "escribiendo" usan canales públicos: un cliente puede falsificar el apodo mostrado. El chat real sí usa el apodo canónico del servidor.
-- Subida anónima a Storage: permite spam de almacenamiento y archivos huérfanos si la RPC falla. Requiere Edge Function/servicio externo para verificación fuerte.
+- Subida anónima a Storage: permite spam de almacenamiento y archivos huérfanos si la RPC falla. Aplica a `fotos-galeria` y `avatares-comunidad` (500KB, prefijo `avatar/`). Requiere Edge Function/servicio externo para verificación fuerte.
+- Shadowban: `comunidad_chat.oculto` filtra la lectura por RPC y el realtime del cliente, pero la tabla tiene SELECT público; un atacante podría leer mensajes ocultos por REST. No es un control de seguridad fuerte.
 - PIN de 4 dígitos: fuerza bruta distribuida posible; el rate limit es por IP.
 - GitHub Pages no aplica `_headers`: no hay CSP/HSTS reales en producción.
 - CDNs sin SRI (Supabase, Alpine, Bootstrap CSS, Font Awesome, Google Fonts).

@@ -203,30 +203,40 @@ window.desactivarTrampaFoco = function desactivarTrampaFoco(restaurarFoco = true
     }
 };
 
-// === MODO CLARO / OSCURO ===
+// === MODO CLARO / OSCURO / OLED (3 estados) ===
+// Estados: 'dark' (default) → 'light' → 'oled' → 'dark'
 
 window.initTema = function initTema() {
-    const temaGuardado = localStorage.getItem('gochi_tema');
-    if (temaGuardado === 'light') {
-        document.body.classList.add('light-mode');
-    }
-
+    let temaActual = localStorage.getItem('gochi_tema') || 'dark';
+    if (!['dark', 'light', 'oled'].includes(temaActual)) temaActual = 'dark';
     const btn = document.getElementById('btn-toggle-tema');
-    if (btn) {
-        const icono = btn.querySelector('i');
-        if (icono) icono.className = 'fa-solid ' + (temaGuardado === 'light' ? 'fa-moon' : 'fa-sun');
-        btn.onclick = toggleTema;
-    }
-};
+    if (!btn) return;
 
-window.toggleTema = function toggleTema() {
-    const esClaro = document.body.classList.toggle('light-mode');
-    localStorage.setItem('gochi_tema', esClaro ? 'light' : 'dark');
-    const btn = document.getElementById('btn-toggle-tema');
-    if (btn) {
-        const icono = btn.querySelector('i');
-        if (icono) icono.className = 'fa-solid ' + (esClaro ? 'fa-moon' : 'fa-sun');
-    }
+    const icono = btn.querySelector('i');
+    const aplicarTema = (tema) => {
+        document.body.classList.remove('light-mode', 'oled-mode');
+        if (tema === 'light') document.body.classList.add('light-mode');
+        else if (tema === 'oled') document.body.classList.add('oled-mode');
+        if (icono) {
+            icono.className = 'fa-solid ' +
+                (tema === 'light' ? 'fa-moon' :
+                 tema === 'oled' ? 'fa-circle' : 'fa-sun');
+        }
+        btn.setAttribute('aria-label', tema === 'light' ? 'Cambiar a tema OLED' :
+                                             tema === 'oled' ? 'Cambiar a tema oscuro' :
+                                                               'Cambiar a tema claro');
+        btn.title = tema === 'light' ? 'Tema claro → OLED' :
+                                       tema === 'oled' ? 'Tema OLED → Oscuro' :
+                                                         'Tema oscuro → Claro';
+    };
+    aplicarTema(temaActual);
+    btn.onclick = () => {
+        const siguiente = temaActual === 'dark' ? 'light' :
+                          temaActual === 'light' ? 'oled' : 'dark';
+        temaActual = siguiente;
+        localStorage.setItem('gochi_tema', siguiente);
+        aplicarTema(siguiente);
+    };
 };
 
 // === SESIÓN DE COMUNIDAD ===
@@ -246,6 +256,132 @@ window.limpiarCachesSesionComunidad = function limpiarCachesSesionComunidad() {
         localStorage.removeItem(clave);
         sessionStorage.removeItem(clave);
     });
+};
+
+// === COPIAR ENLACE (compartido) ===
+window.copiarEnlace = async function copiarEnlace(url, textoExito = '¡Enlace copiado!') {
+    try {
+        await navigator.clipboard.writeText(url);
+        window.mostrarToast?.(textoExito);
+    } catch (e) {
+        // Fallback para navegadores sin clipboard API o sin HTTPS
+        const textarea = document.createElement('textarea');
+        textarea.value = url;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+            document.execCommand('copy');
+            window.mostrarToast?.(textoExito);
+        } catch (e2) {
+            window.mostrarToast?.('No se pudo copiar', true);
+        }
+        textarea.remove();
+    }
+};
+
+// Helper para crear botón copiar enlace
+window.crearBotonCopiar = function crearBotonCopiar(url, ariaLabel = 'Copiar enlace') {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn-copiar-enlace';
+    btn.setAttribute('aria-label', ariaLabel);
+    btn.title = 'Copiar enlace';
+    btn.innerHTML = '<i class="fa-solid fa-link"></i>';
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        window.copiarEnlace(url);
+    });
+    return btn;
+};
+
+// === REACCIONES MURO DE SALUDOS ===
+window.establecerReaccionMuro = async function establecerReaccionMuro(muroId, emoji) {
+    if (!window.supabase) return;
+    const token = localStorage.getItem('comunidad_session_token');
+    if (!token) {
+        window.mostrarToast?.('Inicia sesión en la Comunidad para reaccionar', true);
+        return;
+    }
+    try {
+        const { data, error } = await supabase.rpc('establecer_reaccion_muro', {
+            p_token: token,
+            p_muro_id: muroId,
+            p_emoji: emoji
+        });
+        if (error) throw error;
+        if (!data || !data.ok) {
+            if (data && data.error === 'sin_sesion') {
+                window.mostrarToast?.('Sesión expirada. Inicia sesión de nuevo.', true);
+            } else {
+                window.mostrarToast?.('No se pudo reaccionar.', true);
+            }
+            return;
+        }
+        // La UI se actualiza vía Realtime o recarga manual
+        cargarReaccionesMuro(muroId);
+    } catch (e) {
+        console.error(e);
+        window.mostrarToast?.('Error al reaccionar.', true);
+    }
+};
+
+// Cargar reacciones de un muro específico
+window.cargarReaccionesMuro = async function cargarReaccionesMuro(muroId) {
+    if (!window.supabase) return;
+    const token = localStorage.getItem('comunidad_session_token');
+    try {
+        const { data, error } = await supabase.rpc('obtener_reacciones_muro', {
+            p_muro_id: muroId,
+            p_token: token || null
+        });
+        if (error) throw error;
+        if (!data || !data.ok) return;
+        const reacciones = data.reacciones || [];
+        const container = document.querySelector(`.muro-reacciones[data-muro-id="${muroId}"]`);
+        if (!container) return;
+        container.innerHTML = '';
+        reacciones.forEach(r => {
+            const chip = document.createElement('span');
+            chip.className = 'reaccion-badge' + (r.mia ? ' mia' : '');
+            chip.tabIndex = 0;
+            chip.setAttribute('role', 'button');
+            chip.setAttribute('aria-label', `Reaccionar con ${r.emoji}, ${r.count} reacciones`);
+            chip.innerHTML = `<span class="emoji">${window.escapeHtml(r.emoji)}</span><span class="count">${r.count}</span>`;
+            chip.addEventListener('click', (e) => {
+                e.stopPropagation();
+                window.establecerReaccionMuro(muroId, r.emoji);
+            });
+            chip.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    window.establecerReaccionMuro(muroId, r.emoji);
+                }
+            });
+            container.appendChild(chip);
+        });
+    } catch (e) {
+        console.error('Error cargando reacciones muro:', e);
+    }
+};
+
+// Iniciar Realtime para reacciones de muro
+window.iniciarRealtimeMuroReacciones = function iniciarRealtimeMuroReacciones() {
+    if (!window.supabase) return;
+    try {
+        supabase.channel('muro_reactions_realtime')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'muro_reactions' }, (payload) => {
+                const muroId = payload.new?.muro_id || payload.old?.muro_id;
+                if (muroId) {
+                    window.cargarReaccionesMuro(muroId);
+                }
+            })
+            .subscribe();
+    } catch (e) {
+        console.warn('Realtime muro reacciones no disponible:', e);
+    }
 };
 
 window.cerrarSesion = async function cerrarSesion() {

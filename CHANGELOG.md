@@ -3,6 +3,55 @@
 Formato basado en Keep a Changelog. Versionado SemVer (`MAJOR.MINOR.PATCH`).
 El historial anterior a 1.5.0 está en los commits `v1.4.x`.
 
+## [1.6.0] - 2026-10-30
+
+### Funciones nuevas
+
+- Perfiles de comunidad: avatar en `avatares-comunidad`, bio (160), enlaces
+  whitelist e icono equipado. Nuevo RPC `actualizar_perfil_comunidad`.
+- Tienda de puntos: `tienda_premios`, `tienda_canjes`, catálogo público,
+  canje transaccional con stock, puntos y un icono por usuario.
+- Reacciones del muro: `muro_reactions`, RPCs `establecer_reaccion_muro` y
+  `obtener_reacciones_muro`, realtime y actualización en sitio.
+- Moderación: lista de usuarios, ban temporal, shadowban y auditoría
+  (`admin_audit_log`) desde el panel de galería.
+- Historial de chat por RPC `obtener_chat_historial`; lectura pública sin token
+  y mensajes ocultos visibles solo para su autor.
+- Tema OLED de tres estados y helpers de copiar enlace.
+
+### Seguridad e integridad
+
+- Baneo validado en login, sesión, chat, muro, puntos, likes, reacciones,
+  galería, tienda y perfil; al banear se eliminan las sesiones.
+- `admin_*` exige `es_admin()` y registra ban/shadowban en auditoría.
+- Avatar validado por bucket y carpeta del usuario; enlaces `http/https`.
+- Nuevas tablas internas con RLS y políticas de denegación explícita.
+- Se corrigió XSS en el detalle de auditoría (`formatearDetalle` escapado).
+
+### Correcciones de la implementación
+
+- Galería: el panel unificado no se abría (`panelPendientes` inexistente),
+  las pestañas Usuarios/Auditoría tenían `hidden` fijo y las acciones admin no
+  estaban expuestas en `window`.
+- CSS: la media query de 1200px quedó sin cerrar y metía todo el panel admin
+  dentro de ella; el panel quedaba sin estilos en escritorio.
+- Comunidad: HTML roto en las pestañas (`</butto` y `n>`), tarjeta
+  "Tienda próximamente" duplicada, historial de chat vacío sin sesión y
+  actualización de puntos tras canje usando un RPC de crédito en vez del saldo.
+- Tema: el ciclo de temas usaba una constante y no avanzaba más de una vez.
+- `obtener_chat_historial` y `tienda_*` creados en Supabase; la carpeta local
+  `supabase/` sigue ignorada.
+
+### Notas de migración
+
+- Migraciones aplicadas: columnas de perfil/ban, `muro_reactions`, tienda,
+  admin/auditoría, perfil/chat/baneo, helpers, bucket de avatares, políticas
+  de denegación e índices de FK.
+- El catálogo inicial trae tres iconos (100, 250 y 500 pts). Se puede editar
+  en `tienda_premios`.
+- Los iconos se muestran en perfil y ranking; extenderlos al chat requiere
+  guardar/consultar el icono por autor.
+
 ## [1.5.1] - 2026-10-30
 
 ### Responsive

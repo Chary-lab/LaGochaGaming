@@ -5,19 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#ff66b2">
     <title>LaGochaGaming | Comunidad y Chat</title>
-    <meta name="description" content="Únete al chat de la comunidad de LaGochaGaming, comparte con otros fans, sube de rango y gana puntos mientras no hay stream.">
+    <meta name="description" content="ÃƒÅ¡nete al chat de la comunidad de LaGochaGaming, comparte con otros fans, sube de rango y gana puntos mientras no hay stream.">
     <link rel="canonical" href="https://lagochagaming.com/comunidad">
     
     <!-- Open Graph / Redes Sociales -->
     <meta property="og:title" content="LaGochaGaming | Comunidad">
-    <meta property="og:description" content="Únete al chat de la comunidad, comparte con otros fans y entérate de todo mientras no hay stream.">
+    <meta property="og:description" content="ÃƒÅ¡nete al chat de la comunidad, comparte con otros fans y entÃƒÂ©rate de todo mientras no hay stream.">
     <meta property="og:image" content="https://lagochagaming.com/img/3.jpg">
     <meta property="og:url" content="https://lagochagaming.com/comunidad">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="LaGochaGaming">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="LaGochaGaming | Comunidad">
-    <meta name="twitter:description" content="Únete al chat de la comunidad, comparte con otros fans y entérate de todo mientras no hay stream.">
+    <meta name="twitter:description" content="ÃƒÅ¡nete al chat de la comunidad, comparte con otros fans y entÃƒÂ©rate de todo mientras no hay stream.">
     <meta name="twitter:image" content="https://lagochagaming.com/img/3.jpg">
 
     <link rel="icon" type="image/x-icon" href="img/favicon.ico">
@@ -28,7 +28,7 @@
     <link rel="icon" type="image/png" sizes="512x512" href="img/android-chrome-512x512.png">
     <link rel="manifest" href="manifest.webmanifest">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=1.5.1">
+    <link rel="stylesheet" href="style.css?v=1.6.0">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;800;900&display=swap" rel="stylesheet">
@@ -45,15 +45,15 @@
     <header id="global-header">
         <nav class="navbar navbar-expand-lg">
             <div class="logo navbar-brand">LAGOCHA<span>GAMING</span></div>
-            <button type="button" class="mobile-menu-toggle-btn navbar-toggler" aria-label="Abrir menú"><i class="fa-solid fa-bars"></i></button>
+            <button type="button" class="mobile-menu-toggle-btn navbar-toggler" aria-label="Abrir menÃƒÂº"><i class="fa-solid fa-bars"></i></button>
             <div class="nav-links navbar-nav">
                 <a href="./" class="nav-link">Inicio</a>
                 <a href="./#stream" class="nav-link">Directo</a>
                 <a href="./#clips" class="nav-link">Clips</a>
-                <a href="cine" class="nav-link">🍿 GochiWatch</a>
-                <a href="sorteo" class="nav-link">🎁 Sorteo</a>
-                <a href="galeria" class="nav-link">📸 Galería</a>
-                <a href="comunidad" class="nav-link nav-active" aria-current="page">💬 Comunidad</a>
+                <a href="cine" class="nav-link">Ã°Å¸ÂÂ¿ GochiWatch</a>
+                <a href="sorteo" class="nav-link">Ã°Å¸Å½Â Sorteo</a>
+                <a href="galeria" class="nav-link">Ã°Å¸â€œÂ¸ GalerÃƒÂ­a</a>
+                <a href="comunidad" class="nav-link nav-active" aria-current="page">Ã°Å¸â€™Â¬ Comunidad</a>
             </div>
             <div class="nav-right ms-auto d-flex align-items-center gap-2">
                 <button type="button" id="btn-toggle-tema" class="btn-tema-nav" title="Cambiar tema" aria-label="Cambiar tema claro/oscuro"><i class="fa-solid fa-sun"></i></button>
@@ -62,21 +62,21 @@
         </nav>
     </header>
 
-    <!-- TOAST DE STREAM EN VIVO se inserta dinámicamente desde main.js -->
+    <!-- TOAST DE STREAM EN VIVO se inserta dinÃƒÂ¡micamente desde main.js -->
 
     <!-- CONTENIDO PRINCIPAL COMUNIDAD -->
     <main class="comunidad-layout page-layout" id="contenido" tabindex="-1">
         <h1 class="visually-hidden">Comunidad y chat de LaGochaGaming</h1>
-        <!-- COLUMNA IZQUIERDA: USUARIOS EN LÍNEA + LEADERBOARD -->
+        <!-- COLUMNA IZQUIERDA: USUARIOS EN LÃƒÂNEA + LEADERBOARD -->
         <section id="online-users" class="online-users-column">
             <h2 class="chat-sidebar-title">
-                <i class="fa-solid fa-users"></i> Usuarios en línea
+                <i class="fa-solid fa-users"></i> Usuarios en lÃƒÂ­nea
             </h2>
             <div id="online-users-list" aria-live="polite" aria-label="Usuarios conectados al chat">
                 Cargando usuarios...
             </div>
 
-            <!-- LEADERBOARD PÚBLICO DE PUNTOS -->
+            <!-- LEADERBOARD PÃƒÅ¡BLICO DE PUNTOS -->
             <div class="chat-sidebar-section">
                 <h3 class="chat-sidebar-subtitle">
                     <i class="fa-solid fa-trophy"></i> Top Comunidad
@@ -85,7 +85,7 @@
                     <template x-for="(user, index) in $store.ranking.usuarios" :key="user.apodo">
                         <div class="leaderboard-item" :class="{ 'leaderboard-item-first': index === 0 }">
                             <span class="leaderboard-user">
-                                <span x-text="user.medalla + ' ' + user.apodo"></span>
+                                <span x-text="user.medalla + ' ' + user.apodo + (user.icono ? ' ' + user.icono : '')"></span>
                                 <span class="rango-badge leaderboard-badge" :class="'rango-' + user.rangoClave">
                                     <span x-text="user.rangoEmoji"></span><span x-text="user.rangoNombre"></span>
                                 </span>
@@ -94,18 +94,11 @@
                         </div>
                     </template>
                     <div class="chat-empty-note" x-show="$store.ranking.cargando">Cargando ranking...</div>
-                    <div class="chat-empty-note" x-show="!$store.ranking.cargando && !$store.ranking.error && !$store.ranking.usuarios.length" x-cloak>Sin participantes aún</div>
+                    <div class="chat-empty-note" x-show="!$store.ranking.cargando && !$store.ranking.error && !$store.ranking.usuarios.length" x-cloak>Sin participantes aÃƒÂºn</div>
                     <div class="chat-empty-note" x-show="$store.ranking.error" x-text="$store.ranking.error" x-cloak></div>
                 </div>
             </div>
 
-            <!-- TIENDA DE PUNTOS (debajo del ranking) -->
-            <div class="chat-sidebar-section">
-                <div class="shop-card">
-                    <h4 class="tab-content-title-sm"><i class="fa-solid fa-gift"></i> Tienda de Puntos <span class="shop-badge">PRÓXIMAMENTE</span></h4>
-                    <p class="tab-copy">Estamos preparando recompensas exclusivas para canjear tus puntos ganados por participar en la comunidad.</p>
-                </div>
-            </div>
         </section>
 
         <!-- COLUMNA CENTRO: CHAT EN VIVO -->
@@ -116,14 +109,15 @@
                 <span id="typing-indicator" class="typing-indicator" hidden></span>
             </div>
 
-            <button type="button" id="btn-scroll-nuevos" class="btn-scroll-nuevos" hidden>Nuevos mensajes ↓</button>
-            <div id="chat-mensajes" class="chat-messages" x-data="{}">
+            <button type="button" id="btn-scroll-nuevos" class="btn-scroll-nuevos" hidden>Nuevos mensajes Ã¢â€ â€œ</button>
+            <div id="chat-mensajes" class="chat-messages" role="log" aria-live="polite" aria-atomic="false" x-data="{}">
                 <template x-for="msg in $store.chat.mensajes" :key="msg.id">
                     <div class="chat-msg-container" :data-msgid="msg.id" @mouseleave="window.ocultarTooltipReaccion?.()">
                         <div class="chat-msg-header">
-                            <span class="chat-msg-autor" x-text="msg.autor || 'Anónimo'"></span>
+                            <span class="chat-msg-autor" x-text="msg.autor || 'AnÃƒÂ³nimo'"></span>
                             <span class="chat-msg-meta">
                                 <span class="chat-msg-fecha" x-text="msg.fecha"></span>
+                                <button type="button" class="btn-copiar-enlace" :data-url="'#chat-msg-' + msg.id" aria-label="Copiar enlace al mensaje" title="Copiar enlace"><i class="fa-solid fa-link"></i></button>
                                 <button type="button" class="btn-eliminar-chat" aria-label="Eliminar mensaje"><i class="fa-solid fa-trash-can"></i></button>
                             </span>
                         </div>
@@ -144,7 +138,7 @@
                                 </span>
                             </template>
                         </div>
-                        <div class="chat-msg-burbuja" role="group" aria-label="Reacciones rápidas">
+                        <div class="chat-msg-burbuja" role="group" aria-label="Reacciones rÃƒÂ¡pidas">
                             <template x-for="emoji in $store.reacciones.emojis" :key="emoji">
                                 <button type="button" class="btn-burbuja"
                                         :class="{ mia: $store.reacciones.miReaccion(msg.id) === emoji }"
@@ -159,27 +153,32 @@
                     </div>
                 </template>
                 <div class="chat-msg-vacio" x-show="$store.chat.cargando">Cargando mensajes de la comunidad...</div>
-                <div class="chat-msg-vacio" x-show="!$store.chat.cargando && !$store.chat.error && !$store.chat.mensajes.length" x-cloak>¡Sé el primero en escribir!</div>
+                <div class="chat-msg-vacio" x-show="!$store.chat.cargando && !$store.chat.error && !$store.chat.mensajes.length" x-cloak>Ã‚Â¡SÃƒÂ© el primero en escribir!</div>
                 <div class="chat-empty-error" x-show="$store.chat.error" x-text="$store.chat.error" x-cloak></div>
-                <div id="chat-no-disponible" class="chat-empty-error" hidden>Chat no disponible. Recarga la página.</div>
+                <div id="chat-no-disponible" class="chat-empty-error" hidden>Chat no disponible. Recarga la pÃƒÂ¡gina.</div>
             </div>
 
-            <!-- ÁREA DE CHAT: Login/Registro cuando no hay sesión, Formulario cuando hay sesión -->
+            <!-- BOTÃƒâ€œN CARGAR MÃƒÂS HISTORIAL -->
+            <div class="chat-cargar-mas-container" x-show="!$store.chat.cargando && $store.chat.hayMas">
+                <button type="button" id="btn-cargar-mas-chat" class="btn-primary btn-cargar-mas" @click="window.cargarMasChat?.()" x-text="$store.chat.cargandoMas ? 'Cargando...' : 'Ã¢Â¬â€  Cargar mensajes anteriores'"></button>
+            </div>
+
+            <!-- ÃƒÂREA DE CHAT: Login/Registro cuando no hay sesiÃƒÂ³n, Formulario cuando hay sesiÃƒÂ³n -->
             <div id="chat-login-area" class="chat-input-area chat-login-area">
-                <div class="chat-login-copy">Inicia sesión o regístrate para participar en el chat</div>
+                <div class="chat-login-copy">Inicia sesiÃƒÂ³n o regÃƒÂ­strate para participar en el chat</div>
                 <div class="chat-login-actions">
                     <button type="button" id="btn-login-chat" class="btn-primary chat-login-btn">
-                        <i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión
+                        <i class="fa-solid fa-right-to-bracket"></i> Iniciar SesiÃƒÂ³n
                     </button>
                     <button type="button" id="btn-registro-chat" class="btn-primary chat-login-btn">
                         <i class="fa-solid fa-user-plus"></i> Registrarse
                     </button>
                 </div>
-                <p class="chat-login-hint">Ambos requieren un apodo y un PIN de 4 dígitos para proteger tu cuenta y puntos.</p>
+                <p class="chat-login-hint">Ambos requieren un apodo y un PIN de 4 dÃƒÂ­gitos para proteger tu cuenta y puntos.</p>
             </div>
 
             <form id="chat-form" class="chat-input-area chat-form">
-                <input type="text" id="chat-autor" aria-label="Tu apodo" placeholder="Tu apodo" maxlength="30" required>
+                <input type="text" id="chat-autor" aria-label="Tu apodo" placeholder="Tu apodo" maxlength="30" required autocomplete="username">
                 <textarea id="chat-mensaje" rows="1" maxlength="300" placeholder="Escribe un mensaje..." aria-label="Mensaje del chat" required></textarea>
                 <button type="submit" class="btn-primary chat-submit-btn">Enviar</button>
                 <!-- Badge de racha de mensajes -->
@@ -192,6 +191,7 @@
             <div class="tab-header" role="tablist" aria-label="Paneles de la comunidad">
                 <button type="button" class="tab-btn active" data-tab="canal" role="tab" id="tabbtn-canal" aria-selected="true" aria-controls="tab-canal">Canal</button>
                 <button type="button" class="tab-btn" data-tab="rangos" role="tab" id="tabbtn-rangos" aria-selected="false" aria-controls="tab-rangos" tabindex="-1">Rangos</button>
+                <button type="button" class="tab-btn" data-tab="tienda" role="tab" id="tabbtn-tienda" aria-selected="false" aria-controls="tab-tienda" tabindex="-1">ðŸ›ï¸ Tienda</button>
                 <button type="button" class="tab-btn" data-tab="info" role="tab" id="tabbtn-info" aria-selected="false" aria-controls="tab-info" tabindex="-1">Info &amp; Reglas</button>
             </div>
 
@@ -215,11 +215,16 @@
                 <div id="user-profile-panel" class="user-profile-panel">
                     <div class="user-profile-label">
                         <i class="fa-solid fa-user-circle user-profile-icon"></i> Tu Perfil
+                        <button type="button" id="btn-editar-perfil" class="btn-editar-perfil" aria-label="Editar perfil" title="Editar perfil"><i class="fa-solid fa-pen"></i></button>
                     </div>
                     <div class="user-profile-rows">
                         <div class="user-profile-row">
-                            <i class="fa-solid fa-user user-profile-icon"></i>
+                            <div class="user-avatar-wrap">
+                                <img id="user-avatar-img" class="user-avatar-img" src="" alt="" hidden>
+                                <span id="user-avatar-inicial" class="user-avatar-inicial"></span>
+                            </div>
                             <span id="user-info-display">MCCHARY</span>
+                            <span id="user-icono-equipado" class="user-icono-equipado" hidden></span>
                         </div>
                         <div class="user-profile-row-accent">
                             <i class="fa-solid fa-gem"></i>
@@ -227,23 +232,87 @@
                             <span id="user-puntos-chip" class="rango-sube-chip" hidden>+0</span>
                             <span id="user-rango-mult" class="rango-mult">x1</span>
                         </div>
-                        <span id="user-rango-badge" class="rango-badge rango-semilla user-rango-badge">🌱 SEMILLA</span>
+                        <span id="user-rango-badge" class="rango-badge rango-semilla user-rango-badge">Ã°Å¸Å’Â± SEMILLA</span>
                     </div>
                     <div class="rango-progreso rango-progreso-usuario">
                         <div id="user-rango-progreso" class="rango-progreso-fill"></div>
                     </div>
-                    <p id="user-rango-meta" class="rango-meta">Próximo rango: Gota (50 pts)</p>
+                    <p id="user-rango-meta" class="rango-meta">PrÃƒÂ³ximo rango: Gota (50 pts)</p>
+
+                    <!-- Bio y enlaces (se muestran si existen) -->
+                    <div id="user-bio" class="user-bio" hidden></div>
+                    <div id="user-links" class="user-links" hidden></div>
+
+                    <!-- Formulario de ediciÃƒÂ³n (oculto por defecto) -->
+                    <form id="form-editar-perfil" class="form-editar-perfil" hidden>
+                        <div class="form-group-perfil">
+                            <label for="perfil-avatar">Avatar</label>
+                            <div class="avatar-upload-wrap">
+                                <img id="perfil-avatar-preview" class="avatar-preview" src="" alt="Vista previa avatar" hidden>
+                                <span id="perfil-avatar-inicial" class="avatar-inicial"></span>
+                                <input type="file" id="perfil-avatar" class="avatar-input" accept="image/*" aria-label="Subir avatar">
+                                <label for="perfil-avatar" class="avatar-label"><i class="fa-solid fa-camera"></i></label>
+                            </div>
+                            <p class="form-hint">MÃƒÂ¡x 500 KB Ã‚Â· JPG, PNG, GIF, WebP</p>
+                        </div>
+                        <div class="form-group-perfil">
+                            <label for="perfil-bio">Bio</label>
+                            <textarea id="perfil-bio" class="perfil-input" maxlength="160" placeholder="CuÃƒÂ©ntanos algo sobre ti..." aria-label="Bio"></textarea>
+                            <span class="char-count"><span id="bio-char-count">0</span>/160</span>
+                        </div>
+                        <div class="form-group-perfil">
+                            <label>Enlaces sociales</label>
+                            <div class="links-grid">
+                                <div class="link-input-wrap">
+                                    <label for="link-twitter"><i class="fab fa-twitter"></i> X/Twitter</label>
+                                    <input type="url" id="link-twitter" class="perfil-input" placeholder="https://x.com/usuario" autocomplete="url">
+                                </div>
+                                <div class="link-input-wrap">
+                                    <label for="link-instagram"><i class="fab fa-instagram"></i> Instagram</label>
+                                    <input type="url" id="link-instagram" class="perfil-input" placeholder="https://instagram.com/usuario" autocomplete="url">
+                                </div>
+                                <div class="link-input-wrap">
+                                    <label for="link-youtube"><i class="fab fa-youtube"></i> YouTube</label>
+                                    <input type="url" id="link-youtube" class="perfil-input" placeholder="https://youtube.com/@usuario" autocomplete="url">
+                                </div>
+                                <div class="link-input-wrap">
+                                    <label for="link-tiktok"><i class="fab fa-tiktok"></i> TikTok</label>
+                                    <input type="url" id="link-tiktok" class="perfil-input" placeholder="https://tiktok.com/@usuario" autocomplete="url">
+                                </div>
+                                <div class="link-input-wrap">
+                                    <label for="link-discord"><i class="fab fa-discord"></i> Discord</label>
+                                    <input type="url" id="link-discord" class="perfil-input" placeholder="https://discord.gg/..." autocomplete="url">
+                                </div>
+                                <div class="link-input-wrap">
+                                    <label for="link-kick"><i class="fa-solid fa-k"></i> Kick</label>
+                                    <input type="url" id="link-kick" class="perfil-input" placeholder="https://kick.com/usuario" autocomplete="url">
+                                </div>
+                                <div class="link-input-wrap">
+                                    <label for="link-twitch"><i class="fab fa-twitch"></i> Twitch</label>
+                                    <input type="url" id="link-twitch" class="perfil-input" placeholder="https://twitch.tv/usuario" autocomplete="url">
+                                </div>
+                                <div class="link-input-wrap">
+                                    <label for="link-website"><i class="fa-solid fa-globe"></i> Web</label>
+                                    <input type="url" id="link-website" class="perfil-input" placeholder="https://tusitio.com" autocomplete="url">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group-perfil form-actions">
+                            <button type="button" id="btn-cancelar-perfil" class="btn-primary btn-muted">Cancelar</button>
+                            <button type="submit" id="btn-guardar-perfil" class="btn-primary">Guardar cambios</button>
+                        </div>
+                    </form>
                 </div>
             </div>
 
             <div id="tab-rangos" class="tab-content" hidden role="tabpanel" aria-labelledby="tabbtn-rangos">
                 <h4 class="tab-content-title"><i class="fa-solid fa-crown"></i> Rangos y Puntos</h4>
                 <div id="cuadro-rangos" class="cuadro-rangos">
-                    <div class="rango-fila"><span class="rango-icono">🌱</span><span class="rango-nombre">Semilla</span><span class="rango-puntos">0 - 49 pts</span></div>
-                    <div class="rango-fila"><span class="rango-icono">💧</span><span class="rango-nombre">Gota</span><span class="rango-puntos">50 - 199 pts</span></div>
-                    <div class="rango-fila"><span class="rango-icono">🌸</span><span class="rango-nombre">Flor</span><span class="rango-puntos">200 - 499 pts</span></div>
-                    <div class="rango-fila"><span class="rango-icono">⭐</span><span class="rango-nombre">Estrella</span><span class="rango-puntos">500 - 999 pts</span></div>
-                    <div class="rango-fila rango-leyenda"><span class="rango-icono">👑</span><span class="rango-nombre">Leyenda</span><span class="rango-puntos">1000+ pts</span></div>
+                    <div class="rango-fila"><span class="rango-icono">Ã°Å¸Å’Â±</span><span class="rango-nombre">Semilla</span><span class="rango-puntos">0 - 49 pts</span></div>
+                    <div class="rango-fila"><span class="rango-icono">Ã°Å¸â€™Â§</span><span class="rango-nombre">Gota</span><span class="rango-puntos">50 - 199 pts</span></div>
+                    <div class="rango-fila"><span class="rango-icono">Ã°Å¸Å’Â¸</span><span class="rango-nombre">Flor</span><span class="rango-puntos">200 - 499 pts</span></div>
+                    <div class="rango-fila"><span class="rango-icono">Ã¢Â­Â</span><span class="rango-nombre">Estrella</span><span class="rango-puntos">500 - 999 pts</span></div>
+                    <div class="rango-fila rango-leyenda"><span class="rango-icono">Ã°Å¸â€˜â€˜</span><span class="rango-nombre">Leyenda</span><span class="rango-puntos">1000+ pts</span></div>
                 </div>
                 <div id="rango-progreso-panel" class="rango-progreso-panel">
                     <div class="rango-progreso-head">
@@ -255,27 +324,68 @@
                     </div>
                     <p id="rango-meta" class="rango-meta">Multiplicador actual: x1</p>
                 </div>
-                <p id="rango-hint-tick" class="tab-hint">Ganas <strong>1 punto cada 5 minutos</strong> conectado en el chat. El rango se actualiza automáticamente al sumar puntos.</p>
+                <p id="rango-hint-tick" class="tab-hint">Ganas <strong>1 punto cada 5 minutos</strong> conectado en el chat. El rango se actualiza automÃƒÂ¡ticamente al sumar puntos.</p>
             </div>
 
-            <div id="tab-info" class="tab-content" hidden role="tabpanel" aria-labelledby="tabbtn-info">
+            <div id="tab-tienda" class="tab-content" hidden role="tabpanel" aria-labelledby="tabbtn-tienda">
+    <h4 class="tab-content-title"><i class="fa-solid fa-shop"></i> Tienda de Puntos</h4>
+    <p class="tab-hint">Gasta tus puntos en recompensas exclusivas. Los iconos se muestran junto a tu nombre en todo el sitio.</p>
+    <div id="tienda-catalogo" class="tienda-grid" x-data="{}">
+        <template x-for="premio in $store.tienda.premios" :key="premio.id">
+            <div class="tienda-item" :class="{ agotado: premio.stock !== null && premio.stock <= 0 }">
+                <div class="tienda-item-icon" x-text="premio.icono"></div>
+                <div class="tienda-item-info">
+                    <span class="tienda-item-nombre" x-text="premio.nombre"></span>
+                    <span class="tienda-item-desc" x-text="premio.descripcion"></span>
+                    <div class="tienda-item-meta">
+                        <span class="tienda-costo" x-text="premio.costo_puntos + ' pts'"></span>
+                        <template x-if="premio.stock !== null">
+                            <span class="tienda-stock" x-text="'Stock: ' + premio.stock"></span>
+                        </template>
+                    </div>
+                </div>
+                <button type="button" class="btn-tienda-comprar" :disabled="premio.stock !== null && premio.stock <= 0" @click="window.tiendaCanjear(premio.id, $event)" x-text="premio.costo_puntos === 0 ? 'Gratis' : 'Comprar'"></button>
+            </div>
+        </template>
+        <p class="gallery-empty" x-show="$store.tienda.cargando">Cargando tienda...</p>
+        <p class="gallery-empty" x-show="!$store.tienda.cargando && !$store.tienda.premios.length">No hay premios disponibles.</p>
+        <p class="chat-empty-error" x-show="$store.tienda.error" x-text="$store.tienda.error" x-cloak></p>
+    </div>
+    <div id="mis-canjeos" class="tienda-mis-canjeos" hidden>
+        <h4 class="tab-content-title-sm"><i class="fa-solid fa-bag-shopping"></i> Mis Canjes</h4>
+        <div class="tienda-canjeos-lista" x-data="{}">
+            <template x-for="c in $store.tienda.misCanjes" :key="c.id">
+                <div class="tienda-canjeo-item">
+                    <span class="tienda-canjeo-nombre" x-text="c.nombre"></span>
+                    <span class="tienda-canjeo-estado" :class="c.estado" x-text="c.estado"></span>
+                    <span class="tienda-canjeo-fecha" x-text="new Date(c.created_at).toLocaleString('es-ES')"></span>
+                </div>
+            </template>
+            <p class="gallery-empty" x-show="!$store.tienda.misCanjes.length">No has canjeado nada aÃƒÂºn.</p>
+        </div>
+    </div>
+    <div class="tienda-acciones">
+        <button type="button" class="btn-primary" @click="window.tiendaVerMisCanjes()" id="btn-ver-mis-canjeos">Ver mis canjes</button>
+        <button type="button" class="btn-primary btn-muted" @click="window.tiendaVerCatalogo()" id="btn-ver-catalogo" hidden>Volver a la tienda</button>
+    </div>
+</div><div id="tab-info" class="tab-content" hidden role="tabpanel" aria-labelledby="tabbtn-info">
                 <h4 class="tab-content-title-sm"><i class="fa-solid fa-shield-halved"></i> Reglas del Chat</h4>
                 <ul class="tab-list">
                     <li>Respeto ante todo con la comunidad.</li>
                     <li>No hacer spam ni flood de mensajes.</li>
                     <li>No compartir enlaces sospechosos ni info personal.</li>
-                    <li>Todo es humor, pásatela bien y ríete mucho.</li>
+                    <li>Todo es humor, pÃƒÂ¡satela bien y rÃƒÂ­ete mucho.</li>
                 </ul>
                 <div class="tab-section">
-                    <h4 class="tab-content-title-sm"><i class="fa-solid fa-circle-info"></i> ¿Cómo funciona?</h4>
+                    <h4 class="tab-content-title-sm"><i class="fa-solid fa-circle-info"></i> Ã‚Â¿CÃƒÂ³mo funciona?</h4>
                     <ul class="tab-list-sm">
-                        <li><strong>💎 Puntos:</strong> Ganas 1 punto cada 5 minutos estando conectado en el chat.</li>
-                        <li><strong>🔒 PIN de 4 dígitos:</strong> Protege tu cuenta y progreso. Nadie puede robar tus puntos sin tu PIN.</li>
-                        <li><strong>💬 Chat en vivo:</strong> Habla con la comunidad en tiempo real. Los mensajes se sincronizan al instante.</li>
-                        <li><strong>👥 Usuarios en línea:</strong> Lista a la izquierda con avatares de iniciales. Verás quién está conectado.</li>
-                        <li><strong>📺 Estado del stream:</strong> El círculo verde = EN VIVO, rojo = Offline. Verás los viewers actuales.</li>
-                        <li><strong>🔔 Notificaciones:</strong> Si el stream empieza, salta un aviso aunque estés en otra pestaña.</li>
-                        <li><strong>🎁 Futuro:</strong> Podrás canjear puntos por premios, roles y acceso a sorteos exclusivos.</li>
+                        <li><strong>Ã°Å¸â€™Å½ Puntos:</strong> Ganas 1 punto cada 5 minutos estando conectado en el chat.</li>
+                        <li><strong>Ã°Å¸â€â€™ PIN de 4 dÃƒÂ­gitos:</strong> Protege tu cuenta y progreso. Nadie puede robar tus puntos sin tu PIN.</li>
+                        <li><strong>Ã°Å¸â€™Â¬ Chat en vivo:</strong> Habla con la comunidad en tiempo real. Los mensajes se sincronizan al instante.</li>
+                        <li><strong>Ã°Å¸â€˜Â¥ Usuarios en lÃƒÂ­nea:</strong> Lista a la izquierda con avatares de iniciales. VerÃƒÂ¡s quiÃƒÂ©n estÃƒÂ¡ conectado.</li>
+                        <li><strong>Ã°Å¸â€œÂº Estado del stream:</strong> El cÃƒÂ­rculo verde = EN VIVO, rojo = Offline. VerÃƒÂ¡s los viewers actuales.</li>
+                        <li><strong>Ã°Å¸â€â€ Notificaciones:</strong> Si el stream empieza, salta un aviso aunque estÃƒÂ©s en otra pestaÃƒÂ±a.</li>
+                        <li><strong>Ã°Å¸Å½Â Futuro:</strong> PodrÃƒÂ¡s canjear puntos por premios, roles y acceso a sorteos exclusivos.</li>
                     </ul>
                 </div>
             </div>
@@ -286,11 +396,11 @@
     <div id="nickname-modal" role="dialog" aria-modal="true" aria-labelledby="modal-titulo-accion">
         <div id="nickname-modal-content">
             <button type="button" id="nickname-modal-close" aria-label="Cerrar">&times;</button>
-            <h3 id="modal-titulo-accion">¡Bienvenido a la Comunidad!</h3>
-            <p id="modal-subtitulo-accion" class="modal-subtitle">Ingresa tu apodo y tu PIN de 4 dígitos.</p>
+            <h3 id="modal-titulo-accion">Ã‚Â¡Bienvenido a la Comunidad!</h3>
+            <p id="modal-subtitulo-accion" class="modal-subtitle">Ingresa tu apodo y tu PIN de 4 dÃƒÂ­gitos.</p>
             <form id="form-nickname" novalidate>
                 <input type="text" id="nickname-modal-input" placeholder="Tu apodo" aria-label="Tu apodo" maxlength="20" autocomplete="username">
-                <input type="password" id="nickname-modal-pin" placeholder="PIN (4 dígitos)" aria-label="PIN de 4 dígitos" maxlength="4" pattern="[0-9]*" inputmode="numeric" autocomplete="current-password">
+                <input type="password" id="nickname-modal-pin" placeholder="PIN (4 dÃƒÂ­gitos)" aria-label="PIN de 4 dÃƒÂ­gitos" maxlength="4" pattern="[0-9]*" inputmode="numeric" autocomplete="current-password">
                 <div>
                     <button type="submit" id="nickname-modal-set-btn" class="btn-primary">Entrar</button>
                 </div>
@@ -302,7 +412,7 @@
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
 
-    <script src="main.js?v=1.5.1" defer></script>
+    <script src="main.js?v=1.6.0" defer></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.17.5/dist/cdn.min.js"
             integrity="sha384-FYLKjwG3aohNhNZoVG8sY/5ntunm+MqylL90Q+rT3OM7AwV9/BKFjk/RjoIpIgsI"
             crossorigin="anonymous"></script>
@@ -310,13 +420,15 @@
         // Funciones globales para los botones de login/registro (llamadas desde HTML)
         let _modalModo = 'login'; // 'login' o 'registro'
 
-        const REACCIONES = ['👍', '❤️', '😂', '🔥', '😀', '🙏'];
+        const REACCIONES = ['Ã°Å¸â€˜Â', 'Ã¢ÂÂ¤Ã¯Â¸Â', 'Ã°Å¸Ëœâ€š', 'Ã°Å¸â€Â¥', 'Ã°Å¸Ëœâ‚¬', 'Ã°Å¸â„¢Â'];
 
         document.addEventListener('alpine:init', () => {
             window.Alpine.store('chat', {
                 mensajes: [],
                 cargando: true,
-                error: ''
+                error: '',
+                hayMas: true,
+                cargandoMas: false
             });
 
             window.Alpine.store('ranking', {
@@ -384,6 +496,14 @@
                 }
             });
 
+            window.Alpine.store('tienda', {
+                premios: [],
+                misCanjes: [],
+                cargando: false,
+                error: '',
+                verCatalogo: true
+            });
+
             const storeReacciones = window.Alpine.store('reacciones');
             if (storeReacciones) storeReacciones.cargar();
         });
@@ -417,10 +537,10 @@
 
             if (modo === 'registro') {
                 titulo.textContent = 'Registrarse en la Comunidad';
-                subtitulo.textContent = 'Crea un nuevo perfil con apodo y PIN de 4 dígitos.';
+                subtitulo.textContent = 'Crea un nuevo perfil con apodo y PIN de 4 dÃƒÂ­gitos.';
             } else {
-                titulo.textContent = 'Iniciar Sesión';
-                subtitulo.textContent = 'Ingresa tu apodo y PIN de 4 dígitos para acceder a tu cuenta.';
+                titulo.textContent = 'Iniciar SesiÃƒÂ³n';
+                subtitulo.textContent = 'Ingresa tu apodo y PIN de 4 dÃƒÂ­gitos para acceder a tu cuenta.';
             }
 
             const btnAccion = document.getElementById('nickname-modal-set-btn');
@@ -430,7 +550,7 @@
             pin.value = '';
             error.style.display = 'none';
             modal.style.display = 'flex';
-            // Trampa de foco: el teclado no puede salir del modal mientras está abierto.
+            // Trampa de foco: el teclado no puede salir del modal mientras estÃƒÂ¡ abierto.
             if (window.activarTrampaFoco) {
                 window.activarTrampaFoco(modal, input);
             } else {
@@ -446,8 +566,8 @@
             abrirModalComunidad('registro');
         }
 
-        // Estado del canal: main.js hace un único fetch y nos pasa los datos,
-        // evitando el polling duplicado que existía en esta página.
+        // Estado del canal: main.js hace un ÃƒÂºnico fetch y nos pasa los datos,
+        // evitando el polling duplicado que existÃƒÂ­a en esta pÃƒÂ¡gina.
         let _ultimoEstadoEnVivoPagina = null;
 
         window.actualizarEstadoStreamPagina = function actualizarEstadoStreamPagina(data, enVivo, error) {
@@ -499,7 +619,7 @@
                 if (canalInfo) {
                     const title = data.livestream.session_title || '';
                     const cat = data.livestream.category ? data.livestream.category.name : '';
-                    canalInfo.textContent = [title, cat].filter(Boolean).join(' • ');
+                    canalInfo.textContent = [title, cat].filter(Boolean).join(' Ã¢â‚¬Â¢ ');
                     canalInfo.style.display = canalInfo.textContent ? 'block' : 'none';
                 }
                 if (canalOffline) canalOffline.style.display = 'none';
@@ -556,7 +676,7 @@
                     typingIndicator.textContent = '';
                 } else {
                     typingIndicator.hidden = false;
-                    typingIndicator.textContent = nombres.join(', ') + ' está escribiendo...';
+                    typingIndicator.textContent = nombres.join(', ') + ' estÃƒÂ¡ escribiendo...';
                 }
             }
 setInterval(actualizarTypingIndicator, 500);
@@ -601,11 +721,11 @@ setInterval(actualizarTypingIndicator, 500);
 
             // Datos de rango compartidos por perfil, presencia y leaderboard
             const RANGOS = {
-                semilla: { emoji: '🌱', nombre: 'Semilla' },
-                gota: { emoji: '💧', nombre: 'Gota' },
-                flor: { emoji: '🌸', nombre: 'Flor' },
-                estrella: { emoji: '⭐', nombre: 'Estrella' },
-                leyenda: { emoji: '👑', nombre: 'Leyenda' }
+                semilla: { emoji: 'Ã°Å¸Å’Â±', nombre: 'Semilla' },
+                gota: { emoji: 'Ã°Å¸â€™Â§', nombre: 'Gota' },
+                flor: { emoji: 'Ã°Å¸Å’Â¸', nombre: 'Flor' },
+                estrella: { emoji: 'Ã¢Â­Â', nombre: 'Estrella' },
+                leyenda: { emoji: 'Ã°Å¸â€˜â€˜', nombre: 'Leyenda' }
             };
 
             function datosRango(rango) {
@@ -621,16 +741,16 @@ setInterval(actualizarTypingIndicator, 500);
                 el.textContent = emoji + ' ' + nombre.toUpperCase();
             }
 
-            // === GAMIFICACIÓN: escalera de rangos, progreso y celebración ===
+            // === GAMIFICACIÃƒâ€œN: escalera de rangos, progreso y celebraciÃƒÂ³n ===
 
             // Fuente de verdad: la RPC obtener_rangos(). El fallback local solo entra
             // si la RPC falla, para no dejar la UI de rangos vacia.
             const RANGOS_FALLBACK = [
-                { clave: 'semilla', emoji: '🌱', nombre: 'Semilla', min: 0, max: 49, mult: 1 },
-                { clave: 'gota', emoji: '💧', nombre: 'Gota', min: 50, max: 199, mult: 2 },
-                { clave: 'flor', emoji: '🌸', nombre: 'Flor', min: 200, max: 499, mult: 3 },
-                { clave: 'estrella', emoji: '⭐', nombre: 'Estrella', min: 500, max: 999, mult: 4 },
-                { clave: 'leyenda', emoji: '👑', nombre: 'Leyenda', min: 1000, max: null, mult: 5 }
+                { clave: 'semilla', emoji: 'Ã°Å¸Å’Â±', nombre: 'Semilla', min: 0, max: 49, mult: 1 },
+                { clave: 'gota', emoji: 'Ã°Å¸â€™Â§', nombre: 'Gota', min: 50, max: 199, mult: 2 },
+                { clave: 'flor', emoji: 'Ã°Å¸Å’Â¸', nombre: 'Flor', min: 200, max: 499, mult: 3 },
+                { clave: 'estrella', emoji: 'Ã¢Â­Â', nombre: 'Estrella', min: 500, max: 999, mult: 4 },
+                { clave: 'leyenda', emoji: 'Ã°Å¸â€˜â€˜', nombre: 'Leyenda', min: 1000, max: null, mult: 5 }
             ];
 
             let rangosEscalera = RANGOS_FALLBACK;
@@ -708,7 +828,7 @@ setInterval(actualizarTypingIndicator, 500);
                         <span class="rango-nombre">${escapeHtml(r.nombre)}</span>
                         <span class="rango-puntos">${puntosTxt}</span>
                         <span class="rango-mult">x${r.mult}</span>
-                        ${esActual ? '<span class="rango-actual-chip">TÚ</span>' : ''}
+                        ${esActual ? '<span class="rango-actual-chip">TÃƒÅ¡</span>' : ''}
                     </div>`;
                 }).join('');
             }
@@ -739,38 +859,38 @@ setInterval(actualizarTypingIndicator, 500);
                 const valor = document.getElementById('rango-progreso-valor');
                 if (valor) {
                     valor.textContent = info.esMaximo
-                        ? (puntosActualesUsuario + ' pts · Rango máximo')
+                        ? (puntosActualesUsuario + ' pts Ã‚Â· Rango mÃƒÂ¡ximo')
                         : (puntosActualesUsuario + ' / ' + info.siguiente.min + ' pts');
                 }
 
                 const label = document.getElementById('rango-progreso-label');
                 if (label) {
                     label.textContent = info.esMaximo
-                        ? 'Has alcanzado el rango máximo'
+                        ? 'Has alcanzado el rango mÃƒÂ¡ximo'
                         : ('Progreso hacia ' + info.siguiente.emoji + ' ' + info.siguiente.nombre);
                 }
 
                 const meta = document.getElementById('rango-meta');
                 if (meta) {
                     meta.textContent = info.esMaximo
-                        ? ('Multiplicador actual: x' + info.actual.mult + ' · Eres Leyenda')
+                        ? ('Multiplicador actual: x' + info.actual.mult + ' Ã‚Â· Eres Leyenda')
                         : ('Multiplicador actual: x' + info.actual.mult
-                            + ' · Te faltan ' + info.faltan + ' pts para ' + info.siguiente.emoji + ' ' + info.siguiente.nombre
-                            + ' · al llegar x' + info.siguiente.mult);
+                            + ' Ã‚Â· Te faltan ' + info.faltan + ' pts para ' + info.siguiente.emoji + ' ' + info.siguiente.nombre
+                            + ' Ã‚Â· al llegar x' + info.siguiente.mult);
                 }
 
                 const metaUsuario = document.getElementById('user-rango-meta');
                 if (metaUsuario) {
                     metaUsuario.textContent = info.esMaximo
-                        ? ('👑 Rango máximo · x' + info.actual.mult)
+                        ? ('Ã°Å¸â€˜â€˜ Rango mÃƒÂ¡ximo Ã‚Â· x' + info.actual.mult)
                         : ('Te faltan ' + info.faltan + ' pts para ' + info.siguiente.emoji + ' ' + info.siguiente.nombre
-                            + ' · al llegar x' + info.siguiente.mult);
+                            + ' Ã‚Â· al llegar x' + info.siguiente.mult);
                 }
 
                 const hint = document.getElementById('rango-hint-tick');
                 if (hint) {
                     hint.textContent = 'Ganas 1 punto x' + info.actual.mult
-                        + ' cada 5 minutos con la comunidad abierta. El rango se actualiza automáticamente al sumar puntos.';
+                        + ' cada 5 minutos con la comunidad abierta. El rango se actualiza automÃƒÂ¡ticamente al sumar puntos.';
                 }
             }
 
@@ -781,7 +901,7 @@ setInterval(actualizarTypingIndicator, 500);
                     overlay.id = 'overlay-celebracion';
                     overlay.className = 'celebracion-leyenda';
                     overlay.setAttribute('role', 'dialog');
-                    overlay.setAttribute('aria-label', 'Celebración de ascenso de rango');
+                    overlay.setAttribute('aria-label', 'CelebraciÃƒÂ³n de ascenso de rango');
                     document.body.appendChild(overlay);
                 }
                 return overlay;
@@ -836,10 +956,10 @@ setInterval(actualizarTypingIndicator, 500);
                 if (rangoNuevo === 'leyenda') {
                     const overlay = obtenerOverlayCelebracion();
                     overlay.innerHTML = `<div class="celebracion-caja">
-                        <span class="celebracion-emoji">👑</span>
-                        <h2 class="celebracion-titulo">¡Te has convertido en Leyenda!</h2>
-                        <p class="celebracion-texto">Multiplicador x${mult} en cada crédito de puntos.</p>
-                        <button type="button" class="btn-primary celebracion-cierre" data-cierre-celebracion>¡Vamos!</button>
+                        <span class="celebracion-emoji">Ã°Å¸â€˜â€˜</span>
+                        <h2 class="celebracion-titulo">Ã‚Â¡Te has convertido en Leyenda!</h2>
+                        <p class="celebracion-texto">Multiplicador x${mult} en cada crÃƒÂ©dito de puntos.</p>
+                        <button type="button" class="btn-primary celebracion-cierre" data-cierre-celebracion>Ã‚Â¡Vamos!</button>
                     </div>`;
                     overlay.classList.add('visible');
                     const btn = overlay.querySelector('[data-cierre-celebracion]');
@@ -849,7 +969,7 @@ setInterval(actualizarTypingIndicator, 500);
                     }
                     overlay.addEventListener('click', (e) => { if (e.target === overlay) cerrarCelebracion(); });
                 } else {
-                    window.mostrarToast?.('🎉 ¡Subiste a ' + info.nombre + '! Multiplicador x' + mult);
+                    window.mostrarToast?.('Ã°Å¸Å½â€° Ã‚Â¡Subiste a ' + info.nombre + '! Multiplicador x' + mult);
                 }
             }
 
@@ -860,18 +980,31 @@ setInterval(actualizarTypingIndicator, 500);
                 if (adminAutenticado) {
                     document.body.classList.add('admin-mode-active');
                 }
-            } catch (e) { console.warn('No se pudo verificar sesión admin:', e); }
+            } catch (e) { console.warn('No se pudo verificar sesiÃƒÂ³n admin:', e); }
 
             chatMensajes.addEventListener('click', (e) => {
-                const btn = e.target.closest('.btn-eliminar-chat');
-                if (!btn) return;
-                e.stopPropagation();
-                const container = btn.closest('.chat-msg-container');
-                const msgId = container?.dataset.msgid;
-                if (msgId) eliminarMensajeChat(String(msgId));
+                // BotÃƒÂ³n copiar enlace
+                const btnCopiar = e.target.closest('.btn-copiar-enlace');
+                if (btnCopiar) {
+                    e.stopPropagation();
+                    const url = btnCopiar.dataset.url;
+                    if (url) {
+                        const fullUrl = window.location.origin + window.location.pathname + url;
+                        window.copiarEnlace(fullUrl, 'Ã‚Â¡Enlace al mensaje copiado!');
+                    }
+                    return;
+                }
+                // BotÃƒÂ³n eliminar (solo admin)
+                const btnEliminar = e.target.closest('.btn-eliminar-chat');
+                if (btnEliminar) {
+                    e.stopPropagation();
+                    const container = btnEliminar.closest('.chat-msg-container');
+                    const msgId = container?.dataset.msgid;
+                    if (msgId) eliminarMensajeChat(String(msgId));
+                }
             });
 
-            // CARGA SÍNCRONA DEL APODO DESDE LOCALSTORAGE AL INICIAR
+            // CARGA SÃƒÂNCRONA DEL APODO DESDE LOCALSTORAGE AL INICIAR
             const savedApodo = localStorage.getItem('comunidad_nickname');
             if (savedApodo) {
                 userNickname = savedApodo;
@@ -908,7 +1041,7 @@ setInterval(actualizarTypingIndicator, 500);
                 } catch (e) { return { ok: false, error: e.message }; }
             }
 
-            function guardarSesion(apodo, token, puntos, rango, id) {
+            function guardarSesion(apodo, token, puntos, rango, id, icono) {
                 const nickPrevio = localStorage.getItem(STORAGE_KEY_NICK);
                 if (nickPrevio && nickPrevio !== apodo) {
                     window.limpiarCachesSesionComunidad?.();
@@ -923,6 +1056,7 @@ setInterval(actualizarTypingIndicator, 500);
                     if (userInfoDisplay) userInfoDisplay.textContent = apodo;
                     if (userPointsDisplay) userPointsDisplay.textContent = (puntos || 0) + ' pts';
                     aplicarEstadoRango(puntos || 0, rango, { silencioso: true });
+                    actualizarIconoEquipado(icono);
                 }
                 if (inputAutor) {
                     inputAutor.value = apodo;
@@ -933,7 +1067,7 @@ setInterval(actualizarTypingIndicator, 500);
                 if (typeof window._trackPresence === 'function') {
                     window._trackPresence(apodo);
                 }
-                // Mostrar formulario de chat, ocultar área de login
+                // Mostrar formulario de chat, ocultar ÃƒÂ¡rea de login
                 const chatLoginForm = document.getElementById('chat-form');
                 const chatLoginArea = document.getElementById('chat-login-area');
                 if (chatLoginForm) chatLoginForm.classList.add('is-visible');
@@ -941,6 +1075,117 @@ setInterval(actualizarTypingIndicator, 500);
                 const btnEnviar = chatForm ? chatForm.querySelector('button[type="submit"]') : null;
                 if (btnEnviar) btnEnviar.disabled = false;
                 window.actualizarUsuarioNavComunidad?.();
+
+                // Cargar perfil extendido (avatar, bio, links)
+                cargarPerfilExtendido();
+                // La tienda solo se puede cargar cuando ya hay token de comunidad.
+                if (typeof cargarTiendaCatalogo === 'function') cargarTiendaCatalogo();
+            }
+
+            // Cargar avatar, bio y links del usuario
+            async function cargarPerfilExtendido() {
+                if (!window.supabase || !userId) return;
+                try {
+                    const { data, error } = await supabase
+                        .from('usuarios_comunidad')
+                        .select('avatar_url, bio, links_json, icono_equipado')
+                        .eq('id', userId)
+                        .single();
+                    if (error || !data) return;
+                    actualizarUIPerfilExtendido(data);
+                } catch (e) {
+                    console.warn('No se pudo cargar perfil extendido:', e);
+                }
+            }
+
+            function actualizarIconoEquipado(icono) {
+                const el = document.getElementById('user-icono-equipado');
+                if (!el) return;
+                el.textContent = icono || '';
+                el.hidden = !icono;
+            }
+
+            function actualizarUIPerfilExtendido(data) {
+                actualizarIconoEquipado(data.icono_equipado);
+                // Avatar
+                const avatarImg = document.getElementById('user-avatar-img');
+                const avatarInicial = document.getElementById('user-avatar-inicial');
+                const previewImg = document.getElementById('perfil-avatar-preview');
+                const previewInicial = document.getElementById('perfil-avatar-inicial');
+                if (data.avatar_url) {
+                    if (avatarImg) { avatarImg.src = data.avatar_url; avatarImg.hidden = false; }
+                    if (avatarInicial) avatarInicial.hidden = true;
+                    if (previewImg) { previewImg.src = data.avatar_url; previewImg.hidden = false; }
+                    if (previewInicial) previewInicial.hidden = true;
+                } else {
+                    const inicial = (userNickname || '?').charAt(0).toUpperCase();
+                    if (avatarImg) avatarImg.hidden = true;
+                    if (avatarInicial) { avatarInicial.textContent = inicial; avatarInicial.hidden = false; }
+                    if (previewImg) previewImg.hidden = true;
+                    if (previewInicial) { previewInicial.textContent = inicial; previewInicial.hidden = false; }
+                }
+                // Bio
+                const bioDiv = document.getElementById('user-bio');
+                const bioInput = document.getElementById('perfil-bio');
+                if (data.bio) {
+                    if (bioDiv) { bioDiv.textContent = data.bio; bioDiv.hidden = false; }
+                    if (bioInput) bioInput.value = data.bio;
+                } else {
+                    if (bioDiv) bioDiv.hidden = true;
+                }
+                // Links
+                const linksDiv = document.getElementById('user-links');
+                const linkInputs = {
+                    twitter: document.getElementById('link-twitter'),
+                    instagram: document.getElementById('link-instagram'),
+                    youtube: document.getElementById('link-youtube'),
+                    tiktok: document.getElementById('link-tiktok'),
+                    discord: document.getElementById('link-discord'),
+                    kick: document.getElementById('link-kick'),
+                    twitch: document.getElementById('link-twitch'),
+                    website: document.getElementById('link-website')
+                };
+                const links = data.links_json || {};
+                let hayLinks = false;
+                Object.entries(links).forEach(([k, v]) => {
+                    if (v && linkInputs[k]) {
+                        linkInputs[k].value = v;
+                        hayLinks = true;
+                    }
+                });
+                if (linksDiv) {
+                    linksDiv.innerHTML = '';
+                    Object.entries(links).forEach(([k, v]) => {
+                        if (!v) return;
+                        const iconMap = {
+                            twitter: 'fab fa-twitter', instagram: 'fab fa-instagram',
+                            youtube: 'fab fa-youtube', tiktok: 'fab fa-tiktok',
+                            discord: 'fab fa-discord', kick: 'fa-solid fa-k',
+                            twitch: 'fab fa-twitch', website: 'fa-solid fa-globe'
+                        };
+                        const labelMap = {
+                            twitter: 'X/Twitter', instagram: 'Instagram',
+                            youtube: 'YouTube', tiktok: 'TikTok',
+                            discord: 'Discord', kick: 'Kick',
+                            twitch: 'Twitch', website: 'Web'
+                        };
+                        let urlSegura;
+                        try {
+                            const url = new URL(v);
+                            if (!['http:', 'https:'].includes(url.protocol)) return;
+                            urlSegura = url.href;
+                        } catch (e) { return; }
+
+                        const a = document.createElement('a');
+                        a.href = urlSegura;
+                        a.target = '_blank';
+                        a.rel = 'noopener noreferrer';
+                        a.className = 'user-link';
+                        a.innerHTML = `<i class="${iconMap[k] || 'fa-solid fa-link'}"></i> ${escapeHtml(labelMap[k] || k)}`;
+                        linksDiv.appendChild(a);
+                    });
+                    linksDiv.hidden = !hayLinks;
+                }
             }
 
             async function validarSesionGuardada() {
@@ -951,7 +1196,7 @@ setInterval(actualizarTypingIndicator, 500);
                 try {
                     const { data, error } = await supabase.rpc('validar_sesion_comunidad', { p_token: savedToken });
                     if (error || !data?.ok) {
-                        // Sesión inválida: limpiar todo
+                        // SesiÃƒÂ³n invÃƒÂ¡lida: limpiar todo
                         localStorage.removeItem(STORAGE_KEY_NICK);
                         localStorage.removeItem(STORAGE_KEY_TOKEN);
                         localStorage.removeItem('comunidad_user_id');
@@ -978,12 +1223,12 @@ setInterval(actualizarTypingIndicator, 500);
                         return false;
                     }
                     const usuario = data.usuario;
-                    // El apodo canónico lo devuelve el servidor: se usa ese,
-                    // no el que quedó cacheado en el navegador.
-                    guardarSesion(usuario.apodo, savedToken, usuario.puntos, usuario.rango, usuario.id);
+                    // El apodo canÃƒÂ³nico lo devuelve el servidor: se usa ese,
+                    // no el que quedÃƒÂ³ cacheado en el navegador.
+                    guardarSesion(usuario.apodo, savedToken, usuario.puntos, usuario.rango, usuario.id, usuario.icono);
                     return true;
                 } catch (e) {
-                    console.error('Error validando sesión de comunidad:', e);
+                    console.error('Error validando sesiÃƒÂ³n de comunidad:', e);
                     return false;
                 }
             }
@@ -993,24 +1238,25 @@ setInterval(actualizarTypingIndicator, 500);
                 const pin = nicknameModalPin.value.trim();
                 if (nicknameModalError) nicknameModalError.style.display = 'none';
                 if (!nick || nick.length > 20) {
-                    if (nicknameModalError) { nicknameModalError.textContent = 'Apodo inválido (1-20 caracteres).'; nicknameModalError.style.display = 'block'; }
+                    if (nicknameModalError) { nicknameModalError.textContent = 'Apodo invÃƒÂ¡lido (1-20 caracteres).'; nicknameModalError.style.display = 'block'; }
                     return;
                 }
                 if (!pin || pin.length !== 4 || !/^\d{4}$/.test(pin)) {
-                    if (nicknameModalError) { nicknameModalError.textContent = 'PIN inválido (debe ser 4 dígitos).'; nicknameModalError.style.display = 'block'; }
+                    if (nicknameModalError) { nicknameModalError.textContent = 'PIN invÃƒÂ¡lido (debe ser 4 dÃƒÂ­gitos).'; nicknameModalError.style.display = 'block'; }
                     return;
                 }
 
                 const mensajeError = {
                     credenciales: 'Credenciales incorrectas. Verifica tu apodo y PIN.',
-                    apodo_duplicado: 'Ese apodo ya existe (no distingue mayúsculas ni acentos). Elige otro.',
-                    apodo_invalido: 'Apodo inválido (1-20 caracteres; solo letras, números, espacios, guion y guion bajo).',
-                    pin_invalido: 'PIN inválido (debe ser 4 dígitos).',
-                    rate_limited: 'Demasiados intentos seguidos. Espera unos minutos y vuelve a probar.'
+                    apodo_duplicado: 'Ese apodo ya existe (no distingue mayÃƒÂºsculas ni acentos). Elige otro.',
+                    apodo_invalido: 'Apodo invÃƒÂ¡lido (1-20 caracteres; solo letras, nÃƒÂºmeros, espacios, guion y guion bajo).',
+                    pin_invalido: 'PIN invÃƒÂ¡lido (debe ser 4 dÃƒÂ­gitos).',
+                    rate_limited: 'Demasiados intentos seguidos. Espera unos minutos y vuelve a probar.',
+                    baneado: 'Tu cuenta estÃ¡ suspendida temporalmente.'
                 };
-                const traducir = (codigo) => mensajeError[codigo] || (codigo ? 'Error: ' + codigo : 'No se pudo completar la operación.');
+                const traducir = (codigo) => mensajeError[codigo] || (codigo ? 'Error: ' + codigo : 'No se pudo completar la operaciÃƒÂ³n.');
 
-                // Evita el doble envío mientras la RPC está en vuelo (cada intento cuenta para el rate limit).
+                // Evita el doble envÃƒÂ­o mientras la RPC estÃƒÂ¡ en vuelo (cada intento cuenta para el rate limit).
                 const btnEnviar = document.getElementById('nickname-modal-set-btn');
                 if (btnEnviar) btnEnviar.disabled = true;
                 try {
@@ -1018,13 +1264,13 @@ setInterval(actualizarTypingIndicator, 500);
                     if (_modalModo === 'registro') {
                         const reg = await registrarUsuario(nick, pin);
                         if (reg.ok && reg.token && reg.usuario) {
-                            guardarSesion(reg.usuario.apodo, reg.token, reg.usuario.puntos, reg.usuario.rango, reg.usuario.id);
+                            guardarSesion(reg.usuario.apodo, reg.token, reg.usuario.puntos, reg.usuario.rango, reg.usuario.id, reg.usuario.icono);
                             hideNicknameModal();
                             return;
                         }
                         if (nicknameModalError) {
                             nicknameModalError.textContent = reg.error === 'apodo_duplicado'
-                                ? 'Este usuario ya existe. Usa "Iniciar Sesión" si es tu cuenta.'
+                                ? 'Este usuario ya existe. Usa "Iniciar SesiÃƒÂ³n" si es tu cuenta.'
                                 : traducir(reg.error);
                             nicknameModalError.style.display = 'block';
                         }
@@ -1034,7 +1280,7 @@ setInterval(actualizarTypingIndicator, 500);
                     // Modo login: intentar autenticar
                     const verif = await verificarLogin(nick, pin);
                     if (verif.ok && verif.token && verif.usuario) {
-                        guardarSesion(verif.usuario.apodo, verif.token, verif.usuario.puntos, verif.usuario.rango, verif.usuario.id);
+                        guardarSesion(verif.usuario.apodo, verif.token, verif.usuario.puntos, verif.usuario.rango, verif.usuario.id, verif.usuario.icono);
                         hideNicknameModal();
                         return;
                     }
@@ -1049,7 +1295,7 @@ setInterval(actualizarTypingIndicator, 500);
                 const fecha = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 return {
                     id: id,
-                    autor: msg.autor || 'Anónimo',
+                    autor: msg.autor || 'AnÃƒÂ³nimo',
                     mensaje: msg.mensaje || '',
                     created_at: msg.created_at,
                     fecha: fecha
@@ -1083,31 +1329,63 @@ setInterval(actualizarTypingIndicator, 500);
                 ocultarBotonNuevosMensajes();
             }
 
-            async function cargarMensajesChat() {
+            async function cargarMensajesChat(antesDe = null) {
                 const store = obtenerStoreChat();
                 if (!store) return;
+                const token = localStorage.getItem('comunidad_session_token');
+                if (!window.supabase) {
+                    store.cargando = false;
+                    store.hayMas = false;
+                    return;
+                }
                 try {
-                    // Se piden los mensajes mas recientes primero (indice sobre created_at)
-                    // y luego se invierte el array para pintarlos de mas antiguo a mas nuevo.
-                    const { data, error } = await supabase
-                        .from('comunidad_chat')
-                        .select('id, autor, mensaje, created_at')
-                        .order('created_at', { ascending: false })
-                        .limit(50);
-                    if (error) {
-                        store.error = 'Error al cargar el chat.';
+                    if (antesDe) {
+                        store.cargandoMas = true;
+                    } else {
+                        store.cargando = true;
+                        store.error = '';
+                    }
+                    const { data, error } = await supabase.rpc('obtener_chat_historial', {
+                        p_token: token || null,
+                        p_antes_de: antesDe,
+                        p_limite: 50
+                    });
+                    if (error) throw error;
+                    if (!data || !data.ok) {
+                        store.error = 'No se pudo cargar el historial.';
                         store.cargando = false;
+                        store.cargandoMas = false;
                         return;
                     }
-                    renderizarMensajes((data || []).reverse());
+                    const nuevos = (data.mensajes || []).reverse();
+                    if (antesDe) {
+                        // Prepend mensajes mÃƒÂ¡s antiguos
+                        store.mensajes = nuevos.concat(store.mensajes);
+                        store.cargandoMas = false;
+                    } else {
+                        store.mensajes = nuevos;
+                        store.cargando = false;
+                    }
+                    store.hayMas = nuevos.length >= 50;
                 } catch (e) {
                     console.error(e);
                     store.error = 'Error al cargar el chat.';
                     store.cargando = false;
+                    store.cargandoMas = false;
+                    store.hayMas = false;
                 }
             }
 
-            // Reacciones del chat (tiempo real vía Supabase + panel burbuja al hover)
+            window.cargarMasChat = async function cargarMasChat() {
+                const store = obtenerStoreChat();
+                if (!store || store.cargandoMas || !store.hayMas || store.mensajes.length === 0) return;
+                const masAntiguo = store.mensajes[0];
+                if (masAntiguo && masAntiguo.created_at) {
+                    await cargarMensajesChat(masAntiguo.created_at);
+                }
+            };
+
+            // Reacciones del chat (tiempo real vÃƒÂ­a Supabase + panel burbuja al hover)
             const MAX_MENSAJES_DOM = 100;
             const STREAK_STORAGE_KEY = 'gochi_chat_streak';
             const STREAK_TIMEOUT_MS = 300000;
@@ -1115,7 +1393,7 @@ setInterval(actualizarTypingIndicator, 500);
             // Canal de realtime para reacciones
             let canalReacciones = null;
 
-            // Reacción propia pendiente de confirmar por el servidor. Solo se conserva
+            // ReacciÃƒÂ³n propia pendiente de confirmar por el servidor. Solo se conserva
             // un tiempo corto: si el servidor no la refleja, es que ya no existe y
             // mantenerla en localStorage resucitaba reacciones fantasma.
             const STORAGE_KEY_PENDIENTE = 'gochi_chat_mi_reaccion_pendiente_v1';
@@ -1142,7 +1420,7 @@ setInterval(actualizarTypingIndicator, 500);
                 return pend.emoji;
             }
 
-            // Toggle de reacción: el servidor decide borrar vs upsert. UI optimista con rollback.
+            // Toggle de reacciÃƒÂ³n: el servidor decide borrar vs upsert. UI optimista con rollback.
             async function establecerReaccionUsuario(msgId, emoji) {
                 const msgIdStr = String(msgId);
                 const token = localStorage.getItem(STORAGE_KEY_TOKEN);
@@ -1166,7 +1444,7 @@ setInterval(actualizarTypingIndicator, 500);
                     if (!resultado || !resultado.ok) {
                         throw new Error(resultado && resultado.error ? resultado.error : 'error_desconocido');
                     }
-                    // Servidor confirmó: el emoji devuelto (null = borrada) es el estado final
+                    // Servidor confirmÃƒÂ³: el emoji devuelto (null = borrada) es el estado final
                     guardarPendienteLocal(msgIdStr, null);
                 } catch (err) {
                     // Rollback completo
@@ -1176,16 +1454,16 @@ setInterval(actualizarTypingIndicator, 500);
                     guardarPendienteLocal(msgIdStr, null);
                     const codigo = err && err.message ? err.message : '';
                     if (codigo === 'sin_sesion') {
-                        mostrarToast('Sesión expirada. Inicia sesión de nuevo.', true);
+                        mostrarToast('SesiÃƒÂ³n expirada. Inicia sesiÃƒÂ³n de nuevo.', true);
                     } else {
-                        mostrarToast('No se pudo registrar la reacción.', true);
+                        mostrarToast('No se pudo registrar la reacciÃƒÂ³n.', true);
                     }
                 }
             }
 
             window.establecerReaccionUsuario = establecerReaccionUsuario;
 
-            // Tooltip: quiénes reaccionaron con un emoji
+            // Tooltip: quiÃƒÂ©nes reaccionaron con un emoji
             let tooltipReaccionEl = null;
             function mostrarTooltipReaccion(target, emoji, usuarios) {
                 if (!usuarios || usuarios.length === 0) return;
@@ -1226,7 +1504,7 @@ setInterval(actualizarTypingIndicator, 500);
                 try {
                     if (typeof window.validarSesionStreamer === 'function') {
                         if (!(await window.validarSesionStreamer())) {
-                            mostrarToast('Tu sesión de administración ha expirado.', true);
+                            mostrarToast('Tu sesiÃƒÂ³n de administraciÃƒÂ³n ha expirado.', true);
                             setTimeout(() => { window.location.reload(); }, 800);
                             return;
                         }
@@ -1234,7 +1512,7 @@ setInterval(actualizarTypingIndicator, 500);
                 } catch (e) {}
                 mostrarConfirmacionModal({
                     titulo: 'Eliminar mensaje',
-                    mensaje: '¿Seguro que deseas borrar este mensaje del chat?',
+                    mensaje: 'Ã‚Â¿Seguro que deseas borrar este mensaje del chat?',
                     textoConfirmar: 'Eliminar',
                     enConfirmar: async () => {
                         try {
@@ -1273,7 +1551,7 @@ setInterval(actualizarTypingIndicator, 500);
                 const streakData = obtenerStreakData();
                 const ahora = Date.now();
 
-                // Si pasaron más de 5 minutos desde el último mensaje, reiniciar racha
+                // Si pasaron mÃƒÂ¡s de 5 minutos desde el ÃƒÂºltimo mensaje, reiniciar racha
                 if (ahora - streakData.lastMessageTime > STREAK_TIMEOUT_MS) {
                     streakData.count = 1;
                 } else {
@@ -1288,7 +1566,7 @@ setInterval(actualizarTypingIndicator, 500);
                 if (streakBadge) {
                     if (streakData.count > 1) {
                         streakBadge.style.display = 'inline-flex';
-                        streakBadge.textContent = `🔥 Racha: ${streakData.count}`;
+                        streakBadge.textContent = `Ã°Å¸â€Â¥ Racha: ${streakData.count}`;
                     } else {
                         streakBadge.style.display = 'none';
                     }
@@ -1351,7 +1629,7 @@ setInterval(actualizarTypingIndicator, 500);
                         .select('message_id, emoji, user_id, apodo')
                         .in('message_id', idsFiltrados);
                     if (error) {
-                        console.warn('[REACCIÓN] Supabase reacciones falló (¿tabla ausente?), usando cache localStorage:', error.message);
+                        console.warn('[REACCIÃƒâ€œN] Supabase reacciones fallÃƒÂ³ (Ã‚Â¿tabla ausente?), usando cache localStorage:', error.message);
                         return;
                     }
                     idsFiltrados.forEach(id => { store._reaccionTs[id] = ahora; });
@@ -1359,7 +1637,7 @@ setInterval(actualizarTypingIndicator, 500);
                     const cache = JSON.parse(JSON.stringify(store.cache));
                     const mias = JSON.parse(JSON.stringify(store.mias));
 
-                    // Reconstruir desde el servidor: si solo se añadieran las filas
+                    // Reconstruir desde el servidor: si solo se aÃƒÂ±adieran las filas
                     // recibidas, las reacciones cambiadas o borradas quedaban fantasma.
                     idsFiltrados.forEach(id => { cache[id] = {}; });
                     const conMiReaccion = new Set();
@@ -1371,16 +1649,16 @@ setInterval(actualizarTypingIndicator, 500);
                         if (!cache[r.message_id][r.emoji].includes(nombre)) {
                             cache[r.message_id][r.emoji].push(nombre);
                         }
-                        // Si el usuario logueado es quien reaccionó, guardarlo en mi reaccion
+                        // Si el usuario logueado es quien reaccionÃƒÂ³, guardarlo en mi reaccion
                         if (userId && r.user_id === userId) {
                             mias[r.message_id] = r.emoji;
                             conMiReaccion.add(r.message_id);
                         }
                     });
 
-                    // Conservar la reacción optimista propia SOLO si sigue pendiente de
-                    // confirmación. Si el servidor ya la refleja, manda el servidor; si no
-                    // la refleja y no está pendiente, la reacción ya no existe.
+                    // Conservar la reacciÃƒÂ³n optimista propia SOLO si sigue pendiente de
+                    // confirmaciÃƒÂ³n. Si el servidor ya la refleja, manda el servidor; si no
+                    // la refleja y no estÃƒÂ¡ pendiente, la reacciÃƒÂ³n ya no existe.
                     const pendientes = obtenerPendientesLocales();
                     idsFiltrados.forEach(id => {
                         const miEmoji = pendienteVigente(pendientes[id]);
@@ -1393,7 +1671,7 @@ setInterval(actualizarTypingIndicator, 500);
                         }
                     });
 
-                    // Limpiar el marcador de "mi reacción" si el servidor ya no la tiene
+                    // Limpiar el marcador de "mi reacciÃƒÂ³n" si el servidor ya no la tiene
                     idsFiltrados.forEach(id => {
                         if (conMiReaccion.has(id)) return;
                         if (pendientes[id] && Date.now() - (pendientes[id].ts || 0) <= PENDIENTE_TTL_MS) return;
@@ -1406,7 +1684,7 @@ setInterval(actualizarTypingIndicator, 500);
                 } catch (e) { console.error('Error cargando reacciones:', e); }
             }
 
-            // Limpiar mensajes antiguos (mantener máximo 100 en el store)
+            // Limpiar mensajes antiguos (mantener mÃƒÂ¡ximo 100 en el store)
             function limpiarMensajesAntiguos() {
                 const store = obtenerStoreChat();
                 if (!store) return;
@@ -1441,7 +1719,7 @@ if (chatForm) {
                         return;
                     }
                     if (!userNickname) {
-                        mostrarToast('Inicia sesión para enviar mensajes', true);
+                        mostrarToast('Inicia sesiÃƒÂ³n para enviar mensajes', true);
                         return;
                     }
                     const mensaje = inputMensaje.value.trim();
@@ -1472,22 +1750,24 @@ if (chatForm) {
                         const { data: resultado, error } = await supabase.rpc('enviar_mensaje_chat', { p_token: token, p_mensaje: mensaje });
                         if (error) {
                             console.error('Error RPC enviar_mensaje_chat:', error);
-                            mostrarToast('No se pudo enviar el mensaje. Revisa tu conexión.', true);
+                            mostrarToast('No se pudo enviar el mensaje. Revisa tu conexiÃƒÂ³n.', true);
                         } else if (!resultado || !resultado.ok) {
                             const codigo = resultado && resultado.error ? resultado.error : 'desconocido';
                             if (resultado && resultado.detalle) console.error('Detalle del servidor:', resultado.detalle);
                             if (codigo === 'rate_limit') {
                                 mostrarToast('Espera unos segundos antes de enviar otro mensaje', true);
                             } else if (codigo === 'sin_sesion') {
-                                mostrarToast('Sesión expirada. Inicia sesión de nuevo.', true);
+                                mostrarToast('SesiÃƒÂ³n expirada. Inicia sesiÃƒÂ³n de nuevo.', true);
                             } else if (codigo === 'mensaje_vacio') {
-                                mostrarToast('El mensaje está vacío.', true);
+                                mostrarToast('El mensaje estÃƒÂ¡ vacÃƒÂ­o.', true);
                             } else if (codigo === 'mensaje_muy_largo') {
-                                mostrarToast('El mensaje es demasiado largo (máx. 300 caracteres).', true);
+                                mostrarToast('El mensaje es demasiado largo (mÃƒÂ¡x. 300 caracteres).', true);
                             } else if (codigo === 'usuario_no_encontrado') {
                                 mostrarToast('Tu usuario ya no existe. Vuelve a registrarte.', true);
+                            } else if (codigo === 'baneado') {
+                                mostrarToast('Tu cuenta estÃ¡ suspendida temporalmente.', true);
                             } else {
-                                mostrarToast('No se pudo enviar el mensaje. Inténtalo de nuevo.', true);
+                                mostrarToast('No se pudo enviar el mensaje. IntÃƒÂ©ntalo de nuevo.', true);
                             }
                         } else {
                             inputMensaje.value = '';
@@ -1506,7 +1786,7 @@ if (chatForm) {
                         }
                     } catch (e) {
                         console.error('Error enviando mensaje:', e);
-                        mostrarToast('No se pudo enviar el mensaje. Revisa tu conexión.', true);
+                        mostrarToast('No se pudo enviar el mensaje. Revisa tu conexiÃƒÂ³n.', true);
                     }
                 });
             }
@@ -1543,15 +1823,17 @@ if (chatForm) {
                 supabase.channel('public:comunidad_chat').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'comunidad_chat' }, payload => {
                     const nuevoMsg = payload.new;
                     if (!nuevoMsg) return;
+                    // Shadowban: el mensaje solo lo ve su autor.
+                    if (nuevoMsg.oculto && nuevoMsg.autor !== userNickname) return;
                     const store = obtenerStoreChat();
                     if (!store) return;
-                    // Si el emisor ya lo pintó de forma optimista, no lo duplicamos
+                    // Si el emisor ya lo pintÃƒÂ³ de forma optimista, no lo duplicamos
                     if (nuevoMsg.id != null && store.mensajes.some(m => String(m.id) === String(nuevoMsg.id))) return;
 
                     const estaCercaDelFondo = chatMensajes.scrollHeight - chatMensajes.scrollTop - chatMensajes.clientHeight < 100;
                     insertarMensajeEnChat(nuevoMsg, estaCercaDelFondo);
 
-                    // Limpiar mensajes antiguos si supera el límite
+                    // Limpiar mensajes antiguos si supera el lÃƒÂ­mite
                     limpiarMensajesAntiguos();
                 })
                 .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'comunidad_chat' }, payload => {
@@ -1591,8 +1873,8 @@ if (chatForm) {
                         })
                         .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'message_reactions' }, payload => {
                             const r = payload.old || {};
-                            // Realtime solo envía la clave primaria en los DELETE:
-                            // no sabemos qué mensaje/emoji se quitó, así que se
+                            // Realtime solo envÃƒÂ­a la clave primaria en los DELETE:
+                            // no sabemos quÃƒÂ© mensaje/emoji se quitÃƒÂ³, asÃƒÂ­ que se
                             // recargan las reacciones visibles desde el servidor.
                             if (r.message_id != null && r.emoji) {
                                 const store = obtenerStoreReacciones();
@@ -1608,11 +1890,11 @@ if (chatForm) {
                         })
                         .subscribe();
                 } catch (e) {
-                    console.warn('[REACCIÓN] Canal de reacciones no disponible:', e.message);
+                    console.warn('[REACCIÃƒâ€œN] Canal de reacciones no disponible:', e.message);
                 }
             }
 
-            // Caché de rangos en memoria (refrescado como máximo cada 30 s)
+            // CachÃƒÂ© de rangos en memoria (refrescado como mÃƒÂ¡ximo cada 30 s)
             let rangosCache = { map: {}, ts: 0 };
             async function obtenerRangosCache(nicknames) {
                 const ahora = Date.now();
@@ -1649,27 +1931,27 @@ if (chatForm) {
             async function renderizarListaUsuarios(estadoPresencia) {
                 if (!onlineUsersListEl) return;
 
-                // Si el estado está vacío y nunca hemos recibido presencia, mantener "Cargando usuarios..."
+                // Si el estado estÃƒÂ¡ vacÃƒÂ­o y nunca hemos recibido presencia, mantener "Cargando usuarios..."
                 if (!estadoPresencia || Object.keys(estadoPresencia).length === 0) {
                     if (onlineUsersListEl.dataset.loaded !== 'true') {
                         onlineUsersListEl.innerHTML = '<div class="chat-empty-note">Cargando usuarios...</div>';
                         return;
                     }
-                    // Ya habíamos recibido presencia y ahora está vacío = nadie en línea
-                    onlineUsersListEl.innerHTML = '<div class="chat-empty-note">Nadie en línea</div>';
+                    // Ya habÃƒÂ­amos recibido presencia y ahora estÃƒÂ¡ vacÃƒÂ­o = nadie en lÃƒÂ­nea
+                    onlineUsersListEl.innerHTML = '<div class="chat-empty-note">Nadie en lÃƒÂ­nea</div>';
                     return;
                 }
 
                 // Marcar como que ya recibimos presencia al menos una vez
                 onlineUsersListEl.dataset.loaded = 'true';
-                // Cargar rangos de todos los usuarios (caché 30 s)
+                // Cargar rangos de todos los usuarios (cachÃƒÂ© 30 s)
                 const nicknames = Object.values(estadoPresencia).map(arr => (arr[0] || {}).nickname).filter(Boolean);
                 const rangosMap = await obtenerRangosCache(nicknames);
 
                 onlineUsersListEl.textContent = '';
                 for (const [key, presenceArray] of Object.entries(estadoPresencia)) {
                     const datos = presenceArray[0] || {};
-                    const nick = (datos.nickname || 'Anónimo').toString();
+                    const nick = (datos.nickname || 'AnÃƒÂ³nimo').toString();
                     const initial = nick.charAt(0).toUpperCase();
 
                     const { clave: rangoLower, emoji, nombre: rangoNombre } = datosRango(rangosMap[datos.nickname]);
@@ -1697,7 +1979,7 @@ if (chatForm) {
             // invocado por el polling global de main.js (un solo fetch por ciclo).
 
             function iniciarPresenciaUsuarios() {
-                // El ID de presencia es efímero: NUNCA debe sobrescribir el id real de la cuenta
+                // El ID de presencia es efÃƒÂ­mero: NUNCA debe sobrescribir el id real de la cuenta
                 const presenceId = userId || sessionStorage.getItem('gochi_presence_id') || (Math.random().toString(36).slice(2, 11));
                 if (!userId) sessionStorage.setItem('gochi_presence_id', String(presenceId));
 
@@ -1756,20 +2038,20 @@ if (chatForm) {
                 if (e.key === 'Escape' && nicknameModal.style.display === 'flex') hideNicknameModal();
             });
 
-// Cargar leaderboard público
+// Cargar leaderboard pÃƒÂºblico
             async function cargarLeaderboard() {
                 const store = obtenerStoreRanking();
                 if (!store) {
                     const leaderboardEl = document.getElementById('leaderboard-list');
                     if (leaderboardEl) {
-                        leaderboardEl.innerHTML = '<div class="chat-empty-note">Ranking no disponible. Recarga la página.</div>';
+                        leaderboardEl.innerHTML = '<div class="chat-empty-note">Ranking no disponible. Recarga la pÃƒÂ¡gina.</div>';
                     }
                     return;
                 }
                 try {
                     const { data, error } = await supabase
                         .from('usuarios_comunidad')
-                        .select('apodo, puntos, rango')
+                        .select('apodo, puntos, rango, icono_equipado')
                         .order('puntos', { ascending: false })
                         .limit(10);
 
@@ -1787,7 +2069,7 @@ if (chatForm) {
                     }
 
                     store.usuarios = data.map((user, index) => {
-                        const medalla = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`;
+                        const medalla = index === 0 ? 'Ã°Å¸Â¥â€¡' : index === 1 ? 'Ã°Å¸Â¥Ë†' : index === 2 ? 'Ã°Å¸Â¥â€°' : `#${index + 1}`;
                         // Badge de rango (siempre se muestra, incluso semilla)
                         const { clave, emoji, nombre } = datosRango(user.rango);
                         return {
@@ -1796,7 +2078,8 @@ if (chatForm) {
                             medalla: medalla,
                             rangoClave: clave,
                             rangoEmoji: emoji,
-                            rangoNombre: nombre
+                            rangoNombre: nombre,
+                            icono: user.icono_equipado || ''
                         };
                     });
                     store.error = '';
@@ -1822,15 +2105,15 @@ if (chatForm) {
             cargarLeaderboard();
             setInterval(cargarLeaderboard, 60000); // Actualizar ranking cada minuto
 
-            // Reconciliación periódica de las reacciones visibles. Si se pierde algún
+            // ReconciliaciÃƒÂ³n periÃƒÂ³dica de las reacciones visibles. Si se pierde algÃƒÂºn
             // evento de Realtime (p. ej. un DELETE que solo trae la clave primaria),
-            // los chips podrían quedarse fantasma: esto los vuelve a sincronizar.
+            // los chips podrÃƒÂ­an quedarse fantasma: esto los vuelve a sincronizar.
             setInterval(() => {
                 if (document.hidden || !chatInicializado) return;
                 recargarReaccionesVisibles();
             }, 30000);
 
-            // Restaurar UI de chat y perfil solo si la sesión guardada es válida en Supabase
+            // Restaurar UI de chat y perfil solo si la sesiÃƒÂ³n guardada es vÃƒÂ¡lida en Supabase
             const chatLoginForm = document.getElementById('chat-form');
             const chatLoginArea = document.getElementById('chat-login-area');
 
@@ -1861,15 +2144,15 @@ if (chatForm) {
 
             const presenciaChannel = iniciarPresenciaUsuarios();
             
-            // Forzar track inmediato solo si la sesión quedó restaurada
+            // Forzar track inmediato solo si la sesiÃƒÂ³n quedÃƒÂ³ restaurada
             if (userNickname && typeof window._trackPresence === 'function') {
                 setTimeout(() => {
                     window._trackPresence(userNickname);
                 }, 500);
             }
 
-            // === PUNTOS AUTOMÁTICOS ===
-            // El navegador estrangula los timers en las pestañas ocultas: si el fan
+            // === PUNTOS AUTOMÃƒÂTICOS ===
+            // El navegador estrangula los timers en las pestaÃƒÂ±as ocultas: si el fan
             // deja la comunidad abierta en segundo plano mientras ve el stream,
             // perderia los puntos. Por eso el planificador se autocorrige al
             // volver a la pestana (el rate limit del servidor sigue ponguiendo
@@ -1914,26 +2197,258 @@ if (chatForm) {
             }
 
             iniciarPlanificadorPuntos();
-        });
 
-        window.cambiarTabComunidad = function(tab) {
-            const botones = document.querySelectorAll('.tab-btn[data-tab]');
-            const paneles = document.querySelectorAll('.tab-content');
-            let activo = null;
-            botones.forEach(b => {
-                const esActivo = (b.dataset.tab || '') === tab;
-                b.classList.toggle('active', esActivo);
-                b.setAttribute('aria-selected', esActivo ? 'true' : 'false');
-                b.tabIndex = esActivo ? 0 : -1;
-                if (esActivo) activo = b;
-            });
-            paneles.forEach(p => {
-                const esActivo = p.id === 'tab-' + tab;
-                p.hidden = !esActivo;
-                p.classList.toggle('active', esActivo);
-            });
-            if (activo) activo.focus();
+        // === TIENDA DE PUNTOS ===
+        async function cargarTiendaCatalogo() {
+            const store = window.Alpine && window.Alpine.store('tienda');
+            if (!store) return;
+            const token = localStorage.getItem(STORAGE_KEY_TOKEN);
+            if (!token || !window.supabase) return;
+            store.cargando = true;
+            store.error = '';
+            try {
+                const { data, error } = await supabase.rpc('tienda_obtener_catalogo');
+                if (error) throw error;
+                if (!data || !data.ok) {
+                    store.error = data?.error || 'Error cargando tienda';
+                    return;
+                }
+                store.premios = data.premios || [];
+            } catch (e) {
+                console.error('Error cargando catÃ¡logo tienda:', e);
+                store.error = 'Error inesperado';
+            } finally {
+                store.cargando = false;
+            }
+        }
+
+        async function cargarMisCanjes() {
+            const store = window.Alpine && window.Alpine.store('tienda');
+            if (!store) return;
+            const token = localStorage.getItem(STORAGE_KEY_TOKEN);
+            if (!token || !window.supabase) return;
+            try {
+                const { data, error } = await supabase.rpc('tienda_mis_canjes', { p_token: token });
+                if (error) throw error;
+                if (!data || !data.ok) return;
+                store.misCanjes = data.canjes || [];
+            } catch (e) {
+                console.error('Error cargando mis canjes:', e);
+            }
+        }
+
+        window.tiendaCanjear = async function tiendaCanjear(premioId, evento) {
+            const store = window.Alpine && window.Alpine.store('tienda');
+            if (!store) return;
+            const token = localStorage.getItem(STORAGE_KEY_TOKEN);
+            if (!token || !window.supabase) {
+                window.mostrarToast?.('Inicia sesiÃ³n para canjear', true);
+                return;
+            }
+            const btn = evento?.currentTarget || null;
+            if (btn) btn.disabled = true;
+            try {
+                const { data, error } = await supabase.rpc('tienda_canjear_premio', {
+                    p_token: token,
+                    p_premio_id: premioId
+                });
+                if (error) throw error;
+                if (!data || !data.ok) {
+                    const msg = data?.error === 'puntos_insuficientes'
+                        ? `Puntos insuficientes (faltan ${data.faltan} pts)`
+                        : data?.error === 'ya_tiene_icono'
+                            ? 'Ya tienes un icono. Solo puedes tener uno a la vez.'
+                            : data?.error === 'sin_stock'
+                                ? 'Ese premio estÃ¡ agotado.'
+                                : data?.error === 'baneado'
+                                    ? 'Tu cuenta estÃ¡ suspendida.'
+                                    : data?.error || 'No se pudo canjear';
+                    window.mostrarToast?.('âŒ ' + msg, true);
+                    return;
+                }
+                window.mostrarToast?.('Â¡Canjeado con Ã©xito! Puntos restantes: ' + (data.puntos_restantes || 0));
+                if (typeof data.puntos_restantes === 'number') {
+                    if (userPointsDisplay) userPointsDisplay.textContent = data.puntos_restantes + ' pts';
+                    window.aplicarEstadoRango?.(data.puntos_restantes, data.rango, { silencioso: true });
+                }
+                actualizarIconoEquipado(data.icono);
+                cargarTiendaCatalogo();
+                cargarMisCanjes();
+                if (typeof cargarLeaderboard === 'function') cargarLeaderboard();
+            } catch (e) {
+                console.error('Error canjeando:', e);
+                window.mostrarToast?.('Error al canjear', true);
+            } finally {
+                if (btn) btn.disabled = false;
+            }
         };
+
+        window.tiendaVerMisCanjes = function tiendaVerMisCanjes() {
+            const store = window.Alpine && window.Alpine.store('tienda');
+            if (!store) return;
+            store.verCatalogo = false;
+            const catalogo = document.getElementById('tienda-catalogo');
+            const misCanjes = document.getElementById('mis-canjeos');
+            const btnVerMis = document.getElementById('btn-ver-mis-canjeos');
+            const btnVerCat = document.getElementById('btn-ver-catalogo');
+            if (catalogo) catalogo.hidden = true;
+            if (misCanjes) misCanjes.hidden = false;
+            if (btnVerMis) btnVerMis.hidden = true;
+            if (btnVerCat) btnVerCat.hidden = false;
+            cargarMisCanjes();
+        };
+
+        window.tiendaVerCatalogo = function tiendaVerCatalogo() {
+            const store = window.Alpine && window.Alpine.store('tienda');
+            if (!store) return;
+            store.verCatalogo = true;
+            const catalogo = document.getElementById('tienda-catalogo');
+            const misCanjes = document.getElementById('mis-canjeos');
+            const btnVerMis = document.getElementById('btn-ver-mis-canjeos');
+            const btnVerCat = document.getElementById('btn-ver-catalogo');
+            if (catalogo) catalogo.hidden = false;
+            if (misCanjes) misCanjes.hidden = true;
+            if (btnVerMis) btnVerMis.hidden = false;
+            if (btnVerCat) btnVerCat.hidden = true;
+        };
+
+        // === PERFIL EDITABLE ===
+        const btnEditarPerfil = document.getElementById('btn-editar-perfil');
+        const formEditarPerfil = document.getElementById('form-editar-perfil');
+        const btnCancelarPerfil = document.getElementById('btn-cancelar-perfil');
+        const perfilAvatarInput = document.getElementById('perfil-avatar');
+        const perfilBioInput = document.getElementById('perfil-bio');
+        const bioCharCount = document.getElementById('bio-char-count');
+
+        if (btnEditarPerfil && formEditarPerfil) {
+            btnEditarPerfil.addEventListener('click', () => {
+                formEditarPerfil.hidden = false;
+                btnEditarPerfil.hidden = true;
+                // Focus en bio
+                if (perfilBioInput) perfilBioInput.focus();
+            });
+        }
+        if (btnCancelarPerfil && formEditarPerfil && btnEditarPerfil) {
+            btnCancelarPerfil.addEventListener('click', () => {
+                formEditarPerfil.hidden = true;
+                btnEditarPerfil.hidden = false;
+                // Descartar un avatar subido pero no guardado.
+                formEditarPerfil.dataset.avatarUrl = '';
+                // Restaurar valores originales
+                cargarPerfilExtendido();
+            });
+        }
+        if (perfilBioInput && bioCharCount) {
+            perfilBioInput.addEventListener('input', () => {
+                bioCharCount.textContent = perfilBioInput.value.length;
+            });
+        }
+        if (perfilAvatarInput) {
+            perfilAvatarInput.addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                if (!file.type.startsWith('image/')) {
+                    window.mostrarToast?.('Solo se permiten imÃƒÂ¡genes', true);
+                    perfilAvatarInput.value = '';
+                    return;
+                }
+                if (file.size > 500 * 1024) {
+                    window.mostrarToast?.('El avatar no puede superar 500 KB', true);
+                    perfilAvatarInput.value = '';
+                    return;
+                }
+                // Validar magic bytes
+                const buf = await file.arrayBuffer();
+                const bytes = new Uint8Array(buf.slice(0, 12));
+                const hex = [...bytes].map(b => b.toString(16).padStart(2, '0')).join('');
+                const magicOk =
+                    hex.startsWith('89504e47') ||
+                    hex.startsWith('ffd8ff') ||
+                    hex.startsWith('47494638') ||
+                    hex.startsWith('52494646');
+                if (!magicOk) {
+                    window.mostrarToast?.('Archivo de imagen no vÃƒÂ¡lido', true);
+                    perfilAvatarInput.value = '';
+                    return;
+                }
+                // Subir a Storage
+                const token = localStorage.getItem(STORAGE_KEY_TOKEN);
+                if (!token || !window.supabase || !userId) {
+                    window.mostrarToast?.('SesiÃƒÂ³n no vÃƒÂ¡lida', true);
+                    return;
+                }
+                const safeName = (file.name || 'avatar').replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 50);
+                const filePath = `avatar/${userId}/${Date.now()}_${safeName}`;
+                try {
+                    const { error } = await supabase.storage.from('avatares-comunidad').upload(filePath, file, { upsert: false });
+                    if (error) throw error;
+                    const { data: publicURLData } = supabase.storage.from('avatares-comunidad').getPublicUrl(filePath);
+                    // Actualizar preview inmediato
+                    const previewImg = document.getElementById('perfil-avatar-preview');
+                    const previewInicial = document.getElementById('perfil-avatar-inicial');
+                    if (previewImg) { previewImg.src = publicURLData.publicUrl; previewImg.hidden = false; }
+                    if (previewInicial) previewInicial.hidden = true;
+                    // Guardar URL en variable temporal para el submit
+                    formEditarPerfil.dataset.avatarUrl = publicURLData.publicUrl;
+                } catch (err) {
+                    console.error('Error subiendo avatar:', err);
+                    window.mostrarToast?.('Error subiendo avatar', true);
+                }
+            });
+        }
+        if (formEditarPerfil) {
+            formEditarPerfil.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const token = localStorage.getItem(STORAGE_KEY_TOKEN);
+                if (!token || !window.supabase) return;
+                const bio = perfilBioInput ? perfilBioInput.value.trim() : '';
+                const avatarUrl = formEditarPerfil.dataset.avatarUrl || null;
+                const links = {
+                    twitter: (document.getElementById('link-twitter') || {}).value?.trim() || null,
+                    instagram: (document.getElementById('link-instagram') || {}).value?.trim() || null,
+                    youtube: (document.getElementById('link-youtube') || {}).value?.trim() || null,
+                    tiktok: (document.getElementById('link-tiktok') || {}).value?.trim() || null,
+                    discord: (document.getElementById('link-discord') || {}).value?.trim() || null,
+                    kick: (document.getElementById('link-kick') || {}).value?.trim() || null,
+                    twitch: (document.getElementById('link-twitch') || {}).value?.trim() || null,
+                    website: (document.getElementById('link-website') || {}).value?.trim() || null
+                };
+                // Filtrar vacÃƒÂ­os
+                Object.keys(links).forEach(k => { if (!links[k]) delete links[k]; });
+                const btnGuardar = document.getElementById('btn-guardar-perfil');
+                if (btnGuardar) btnGuardar.disabled = true;
+                try {
+                    const { data, error } = await supabase.rpc('actualizar_perfil_comunidad', {
+                        p_token: token,
+                        p_avatar_url: avatarUrl,
+                        p_bio: bio || null,
+                        p_links_json: links
+                    });
+                    if (error) throw error;
+                    if (!data || !data.ok) {
+                        const erroresPerfil = {
+                            sin_sesion: 'SesiÃ³n expirada. Inicia sesiÃ³n de nuevo.',
+                            baneado: 'Tu cuenta estÃ¡ suspendida.',
+                            bio_larga: 'La bio supera 160 caracteres.',
+                            links_invalidos: 'AlgÃºn enlace no es vÃ¡lido (solo http/https).',
+                            avatar_invalida: 'La URL del avatar no es vÃ¡lida.'
+                        };
+                        window.mostrarToast?.(erroresPerfil[data?.error] || 'Error: ' + (data?.error || 'desconocido'), true);
+                        return;
+                    }
+                    window.mostrarToast?.('Perfil actualizado');
+                    formEditarPerfil.hidden = true;
+                    if (btnEditarPerfil) btnEditarPerfil.hidden = false;
+                    formEditarPerfil.dataset.avatarUrl = '';
+                    cargarPerfilExtendido();
+                } catch (err) {
+                    console.error('Error guardando perfil:', err);
+                    window.mostrarToast?.('Error guardando perfil', true);
+                } finally {
+                    if (btnGuardar) btnGuardar.disabled = false;
+                }
+            });
+        }
 
         // Navegacion por teclado entre tabs (patron WAI-ARIA de tabs).
         document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
@@ -1960,7 +2475,27 @@ if (chatForm) {
         document.querySelectorAll('.tab-btn[data-tab]').forEach(btn => {
             btn.addEventListener('click', () => window.cambiarTabComunidad(btn.dataset.tab));
         });
-    </script>
+    });
+
+    window.cambiarTabComunidad = function(tab) {
+        const botones = document.querySelectorAll('.tab-btn[data-tab]');
+        const paneles = document.querySelectorAll('.tab-content');
+        let activo = null;
+        botones.forEach(b => {
+            const esActivo = (b.dataset.tab || '') === tab;
+            b.classList.toggle('active', esActivo);
+            b.setAttribute('aria-selected', esActivo ? 'true' : 'false');
+            b.tabIndex = esActivo ? 0 : -1;
+            if (esActivo) activo = b;
+        });
+        paneles.forEach(p => {
+            const esActivo = p.id === 'tab-' + tab;
+            p.hidden = !esActivo;
+            p.classList.toggle('active', esActivo);
+        });
+        if (activo) activo.focus();
+    };
+</script>
     <!-- FOOTER -->
     <footer class="main-footer">
         <div class="footer-container">

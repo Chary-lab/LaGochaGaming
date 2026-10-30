@@ -10,22 +10,22 @@
     <meta name="theme-color" content="#ff66b2">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Galería | LaGochaGaming</title>
-    <meta name="description" content="Galería de fotos de la comunidad de LaGochaGaming. Sube tus imágenes, vota las más populares y forma parte del top.">
+    <title>GalerÃ­a | LaGochaGaming</title>
+    <meta name="description" content="GalerÃ­a de fotos de la comunidad de LaGochaGaming. Sube tus imÃ¡genes, vota las mÃ¡s populares y forma parte del top.">
     <link rel="canonical" href="https://lagochagaming.com/galeria">
-    <meta property="og:title" content="Galería | LaGochaGaming">
+    <meta property="og:title" content="GalerÃ­a | LaGochaGaming">
     <meta property="og:description" content="Explora las mejores fotos y momentos de La Gocha.">
     <meta property="og:image" content="https://lagochagaming.com/img/3.jpg">
     <meta property="og:url" content="https://lagochagaming.com/galeria">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="LaGochaGaming">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Galería | LaGochaGaming">
+    <meta name="twitter:title" content="GalerÃ­a | LaGochaGaming">
     <meta name="twitter:description" content="Explora las mejores fotos y momentos de La Gocha.">
     <meta name="twitter:image" content="https://lagochagaming.com/img/3.jpg">
     <link rel="manifest" href="manifest.webmanifest">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=1.5.1">
+    <link rel="stylesheet" href="style.css?v=1.6.0">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;800;900&display=swap" rel="stylesheet">
@@ -41,15 +41,15 @@
     <header id="global-header">
         <nav class="navbar navbar-expand-lg">
             <div class="logo navbar-brand">LAGOCHA<span>GAMING</span></div>
-            <button type="button" class="mobile-menu-toggle-btn navbar-toggler" aria-label="Abrir menú"><i class="fa-solid fa-bars"></i></button>
+            <button type="button" class="mobile-menu-toggle-btn navbar-toggler" aria-label="Abrir menÃº"><i class="fa-solid fa-bars"></i></button>
             <div class="nav-links navbar-nav">
                 <a href="./" class="nav-link">Inicio</a>
                 <a href="./#stream" class="nav-link">Directo</a>
                 <a href="./#clips" class="nav-link">Clips</a>
-                <a href="cine" class="nav-link">🍿 GochiWatch</a>
-                <a href="sorteo" class="nav-link">🎁 Sorteo</a>
-                <a href="galeria" class="nav-link nav-active" aria-current="page">📸 Galería</a>
-                <a href="comunidad" class="nav-link">💬 Comunidad</a>
+                <a href="cine" class="nav-link">ðŸ¿ GochiWatch</a>
+                <a href="sorteo" class="nav-link">ðŸŽ Sorteo</a>
+                <a href="galeria" class="nav-link nav-active" aria-current="page">ðŸ“¸ GalerÃ­a</a>
+                <a href="comunidad" class="nav-link">ðŸ’¬ Comunidad</a>
             </div>
             <div class="nav-right ms-auto d-flex align-items-center gap-2">
                 <button type="button" id="btn-toggle-tema" class="btn-tema-nav" title="Cambiar tema" aria-label="Cambiar tema claro/oscuro"><i class="fa-solid fa-sun"></i></button>
@@ -58,61 +58,138 @@
         </nav>
     </header>
 
-    <!-- TOAST DE STREAM EN VIVO se inserta dinámicamente desde main.js -->
+    <!-- TOAST DE STREAM EN VIVO se inserta dinÃ¡micamente desde main.js -->
 
     <div class="content-section galeria-top" id="contenido" tabindex="-1">
         <div class="admin-controls-panel">
-            <h1>Mi Galería</h1>
+            <h1>Mi GalerÃ­a</h1>
             <div class="admin-controls-actions">
-                <button type="button" id="btn-toggle-admin" class="btn-admin-mode" data-action="toggle-admin" aria-expanded="false" aria-controls="panelPendientes">
-                    <i class="fa-solid fa-lock"></i> Modo Moderación
+                <button type="button" id="btn-toggle-admin" class="btn-admin-mode" data-action="toggle-admin" aria-expanded="false" aria-controls="panelAdminUnificado">
+                    <i class="fa-solid fa-lock"></i> Panel Admin
                 </button>
                 <button type="button" id="btn-logout-galeria" class="btn-admin-mode btn-admin-logout" data-action="logout">
-                    <i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión Admin
+                    <i class="fa-solid fa-right-from-bracket"></i> Cerrar SesiÃ³n Admin
                 </button>
             </div>
         </div>
 
-        <!-- PANEL DE MODERACIÓN -->
-        <div id="panelPendientes" class="panel-pendientes" x-data="{}">
-            <h2><i class="fa-solid fa-clock-rotate-left"></i> Imágenes Pendientes por Aprobar (<span id="cantPendientes" x-text="$store.galeria.pendientesEstado === 'error' ? '?' : $store.galeria.pendientes.length">0</span>)</h2>
-            <div class="gallery-grid" id="gridPendientes">
-                <template x-for="foto in $store.galeria.pendientes" :key="foto.id">
-                    <div class="gallery-card gallery-card-pending">
-                        <div class="gallery-card-image-wrap">
-                            <img :src="foto.image_url" :alt="foto.alt" loading="lazy" width="400" height="300">
-                        </div>
-                        <div class="gallery-card-info gallery-card-info-column">
-                            <span class="gallery-card-title-full" x-text="foto.title"></span>
-                            <div class="autor-editable" title="Autor de la foto">
-                                <span class="autor-avatar" x-text="foto.inicial"></span>
-                                <input type="text" class="autor-input" maxlength="30" :value="foto.autor" :data-image-id="foto.id" aria-label="Autor de la foto">
-                                <button type="button" class="btn-guardar-autor" data-action="save-author" :data-image-id="foto.id" title="Guardar autor" aria-label="Guardar autor">
-                                    <i class="fa-solid fa-check"></i>
-                                </button>
-                            </div>
-                            <div class="gallery-card-pending-actions">
-                                <button type="button" class="btn-aprobar" data-action="approve-image" :data-image-id="foto.id"><i class="fa-solid fa-check"></i> Aprobar</button>
-                                <button type="button" class="btn-rechazar" data-action="delete-image" :data-image-id="foto.id"><i class="fa-solid fa-xmark"></i> Rechazar</button>
-                            </div>
-                        </div>
-                    </div>
-                </template>
-                <p class="gallery-empty" x-show="$store.galeria.pendientesEstado === 'lista' && !$store.galeria.pendientes.length" x-cloak>¡No hay fotos pendientes por moderar! 🎉</p>
-                <p class="gallery-empty" x-show="$store.galeria.pendientesEstado === 'error'" x-text="$store.galeria.errorPendientes" x-cloak></p>
+        <!-- PANEL ADMIN UNIFICADO -->
+        <div id="panelAdminUnificado" class="panel-admin-unificado" x-data="{ activeTab: 'moderacion' }" hidden>
+            <div class="admin-tabs" role="tablist" aria-label="Paneles de administraciÃ³n">
+                <button type="button" class="admin-tab-btn" :class="{ active: activeTab === 'moderacion' }" @click="activeTab = 'moderacion'" role="tab" :aria-selected="activeTab === 'moderacion' ? 'true' : 'false'" aria-controls="tab-moderacion">ðŸ›¡ï¸ ModeraciÃ³n</button>
+                <button type="button" class="admin-tab-btn" :class="{ active: activeTab === 'usuarios' }" @click="activeTab = 'usuarios'; window.cargarUsuariosAdmin?.()" role="tab" :aria-selected="activeTab === 'usuarios' ? 'true' : 'false'" aria-controls="tab-usuarios">ðŸ‘¥ Usuarios</button>
+                <button type="button" class="admin-tab-btn" :class="{ active: activeTab === 'auditoria' }" @click="activeTab = 'auditoria'; window.cargarAuditAdmin?.()" role="tab" :aria-selected="activeTab === 'auditoria' ? 'true' : 'false'" aria-controls="tab-auditoria">ðŸ“‹ AuditorÃ­a</button>
             </div>
-            <p id="pendientes-no-disponibles" class="gallery-empty" hidden>Moderación no disponible. Recarga la página.</p>
+
+            <!-- TAB MODERACIÃ“N -->
+            <div id="tab-moderacion" class="admin-tab-panel" role="tabpanel" aria-labelledby="tab-moderacion" x-show="activeTab === 'moderacion'">
+                <h2><i class="fa-solid fa-clock-rotate-left"></i> ImÃ¡genes Pendientes por Aprobar (<span id="cantPendientes" x-text="$store.galeria.pendientesEstado === 'error' ? '?' : $store.galeria.pendientes.length">0</span>)</h2>
+                <div class="gallery-grid" id="gridPendientes">
+                    <template x-for="foto in $store.galeria.pendientes" :key="foto.id">
+                        <div class="gallery-card gallery-card-pending">
+                            <div class="gallery-card-image-wrap">
+                                <img :src="foto.image_url" :alt="foto.alt" loading="lazy" width="400" height="300">
+                            </div>
+                            <div class="gallery-card-info gallery-card-info-column">
+                                <span class="gallery-card-title-full" x-text="foto.title"></span>
+                                <div class="autor-editable" title="Autor de la foto">
+                                    <span class="autor-avatar" x-text="foto.inicial"></span>
+                                    <input type="text" class="autor-input" maxlength="30" :value="foto.autor" :data-image-id="foto.id" aria-label="Autor de la foto">
+                                    <button type="button" class="btn-guardar-autor" data-action="save-author" :data-image-id="foto.id" title="Guardar autor" aria-label="Guardar autor">
+                                        <i class="fa-solid fa-check"></i>
+                                    </button>
+                                </div>
+                                <div class="gallery-card-pending-actions">
+                                    <button type="button" class="btn-aprobar" data-action="approve-image" :data-image-id="foto.id"><i class="fa-solid fa-check"></i> Aprobar</button>
+                                    <button type="button" class="btn-rechazar" data-action="delete-image" :data-image-id="foto.id"><i class="fa-solid fa-xmark"></i> Rechazar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                    <p class="gallery-empty" x-show="$store.galeria.pendientesEstado === 'lista' && !$store.galeria.pendientes.length" x-cloak>Â¡No hay fotos pendientes por moderar! ðŸŽ‰</p>
+                    <p class="gallery-empty" x-show="$store.galeria.pendientesEstado === 'error'" x-text="$store.galeria.errorPendientes" x-cloak></p>
+                </div>
+                <p id="pendientes-no-disponibles" class="gallery-empty" hidden>ModeraciÃ³n no disponible. Recarga la pÃ¡gina.</p>
+            </div>
+
+            <!-- TAB USUARIOS -->
+            <div id="tab-usuarios" class="admin-tab-panel" role="tabpanel" aria-labelledby="tab-usuarios" x-show="activeTab === 'usuarios'" x-cloak>
+                <div class="admin-usuarios-toolbar">
+                    <input type="text" id="admin-buscar-usuario" class="admin-input" placeholder="Buscar por apodo..." aria-label="Buscar usuario">
+                    <label class="admin-checkbox">
+                        <input type="checkbox" id="admin-filtro-baneados">
+                        <span>Solo baneados</span>
+                    </label>
+                </div>
+                <div class="admin-usuarios-grid" id="adminUsuariosGrid">
+                    <template x-for="u in $store.admin.usuarios" :key="u.id">
+                        <div class="admin-usuario-card" :class="{ baneado: u.baneado_activo, shadowban: u.shadowban }">
+                            <div class="admin-usuario-info">
+                                <span class="admin-usuario-avatar" x-text="u.apodo.charAt(0).toUpperCase()"></span>
+                                <div class="admin-usuario-datos">
+                                    <span class="admin-usuario-apodo" x-text="u.apodo"></span>
+                                    <span class="admin-usuario-meta">
+                                        <span x-text="u.puntos + ' pts'"></span>
+                                        <span class="rango-badge" :class="'rango-' + u.rango" x-text="u.rango.toUpperCase()"></span>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="admin-usuario-estado">
+                                <span class="estado-badge" :class="{ activo: !u.baneado_activo && !u.shadowban, baneado: u.baneado_activo, shadowban: u.shadowban }"
+                                      x-text="u.baneado_activo ? 'ðŸ”´ Baneado' : (u.shadowban ? 'ðŸŸ¡ Shadowban' : 'ðŸŸ¢ Activo')"></span>
+                                <template x-if="u.baneado_hasta && u.baneado_activo">
+                                    <span class="ban-hasta" x-text="'Hasta: ' + new Date(u.baneado_hasta).toLocaleString('es-ES')"></span>
+                                </template>
+                            </div>
+                            <div class="admin-usuario-acciones">
+                                <button type="button" class="btn-admin-accion btn-ban" @click="toggleBan(u.id, u.baneado_activo)" x-text="u.baneado_activo ? 'Desbanear' : 'Banear'"></button>
+                                <button type="button" class="btn-admin-accion btn-shadowban" @click="toggleShadowban(u.id, u.shadowban)" x-text="u.shadowban ? 'Quitar Shadowban' : 'Shadowban'"></button>
+                            </div>
+                        </div>
+                    </template>
+                    <p class="gallery-empty" x-show="$store.admin.usuariosEstado === 'lista' && !$store.admin.usuarios.length" x-cloak>No hay usuarios.</p>
+                    <p class="gallery-empty" x-show="$store.admin.usuariosEstado === 'error'" x-text="$store.admin.errorUsuarios" x-cloak></p>
+                </div>
+                <div class="admin-paginacion" x-show="$store.admin.totalUsuarios > 50">
+                    <button type="button" class="btn-admin-pag" @click="window.cambiarPaginaUsuarios(-1)" :disabled="$store.admin.paginaUsuarios === 0" x-text="'â† Anterior'"></button>
+                    <span class="pag-info" x-text="'PÃ¡gina ' + ($store.admin.paginaUsuarios + 1) + ' de ' + Math.ceil($store.admin.totalUsuarios / 50)"></span>
+                    <button type="button" class="btn-admin-pag" @click="window.cambiarPaginaUsuarios(1)" :disabled="($store.admin.paginaUsuarios + 1) * 50 >= $store.admin.totalUsuarios" x-text="'Siguiente â†’'"></button>
+                </div>
+            </div>
+
+            <!-- TAB AUDITORÃA -->
+            <div id="tab-auditoria" class="admin-tab-panel" role="tabpanel" aria-labelledby="tab-auditoria" x-show="activeTab === 'auditoria'" x-cloak>
+                <div class="admin-auditoria-lista" id="adminAuditoriaLista">
+                    <template x-for="a in $store.admin.auditLog" :key="a.id">
+                        <div class="auditoria-item">
+                            <div class="auditoria-accion" x-text="a.accion"></div>
+                            <div class="auditoria-detalle" x-html="formatearDetalle(a.detalle)"></div>
+                            <div class="auditoria-meta">
+                                <span x-text="a.admin_apodo || 'Sistema'"></span>
+                                <span x-text="new Date(a.created_at).toLocaleString('es-ES')"></span>
+                            </div>
+                        </div>
+                    </template>
+                    <p class="gallery-empty" x-show="$store.admin.auditEstado === 'lista' && !$store.admin.auditLog.length" x-cloak>Sin registros de auditorÃ­a.</p>
+                    <p class="gallery-empty" x-show="$store.admin.auditEstado === 'error'" x-text="$store.admin.errorAudit" x-cloak></p>
+                </div>
+                <div class="admin-paginacion" x-show="$store.admin.totalAudit > 50">
+                    <button type="button" class="btn-admin-pag" @click="window.cambiarPaginaAudit(-1)" :disabled="$store.admin.paginaAudit === 0" x-text="'â† Anterior'"></button>
+                    <span class="pag-info" x-text="'PÃ¡gina ' + ($store.admin.paginaAudit + 1) + ' de ' + Math.ceil($store.admin.totalAudit / 50)"></span>
+                    <button type="button" class="btn-admin-pag" @click="window.cambiarPaginaAudit(1)" :disabled="($store.admin.paginaAudit + 1) * 50 >= $store.admin.totalAudit" x-text="'Siguiente â†’'"></button>
+                </div>
+            </div>
         </div>
 
-        <!-- SUBIDA DE IMÁGENES -->
+        <!-- SUBIDA DE IMÃGENES -->
         <div class="upload-container" id="uploadContainer">
             <div class="upload-title-wrap">
-                <input type="text" id="imageTitleInput" class="gallery-title-input" aria-label="Título de la imagen" placeholder="Escribe un título para tu imagen..." maxlength="60">
+                <input type="text" id="imageTitleInput" class="gallery-title-input" aria-label="TÃ­tulo de la imagen" placeholder="Escribe un tÃ­tulo para tu imagen..." maxlength="60" autocomplete="off">
                 <div id="admin-author-wrap" hidden>
-                    <input type="text" id="imageAuthorInput" class="gallery-title-input" placeholder="Autor de la foto" maxlength="30" value="LaGochaGaming">
+                    <input type="text" id="imageAuthorInput" class="gallery-title-input" placeholder="Autor de la foto" maxlength="30" value="LaGochaGaming" autocomplete="name">
                     <p class="upload-hint">
-                        <i class="fa-solid fa-crown"></i> Sesión de admin: la foto se publicará con este autor
-                        (vacío = LaGochaGaming).
+                        <i class="fa-solid fa-crown"></i> SesiÃ³n de admin: la foto se publicarÃ¡ con este autor
+                        (vacÃ­o = LaGochaGaming).
                     </p>
                 </div>
             </div>
@@ -121,30 +198,30 @@
             <label for="uploadInput" class="upload-label">
                 <i class="fas fa-upload"></i> Seleccionar Imagen
             </label>
-            <p class="upload-hint">Formatos: JPG, PNG, GIF. Tamaño máximo: 5MB por imagen.</p>
+            <p class="upload-hint">Formatos: JPG, PNG, GIF. TamaÃ±o mÃ¡ximo: 5MB por imagen.</p>
             <p id="aviso-sesion-galeria" class="upload-hint" hidden>
-                <i class="fa-solid fa-lock"></i> Necesitas iniciar sesión en la
+                <i class="fa-solid fa-lock"></i> Necesitas iniciar sesiÃ³n en la
                 <a href="comunidad">Comunidad</a> para subir fotos.
             </p>
             <div id="uploadFeedback"></div>
         </div>
 
-        <!-- FILTROS Y PESTAÑAS POPULARES / RECIENTES -->
+        <!-- FILTROS Y PESTAÃ‘AS POPULARES / RECIENTES -->
         <div class="filter-tabs-container">
-            <h2 class="gallery-public-title">📸 Galería Pública</h2>
+            <h2 class="gallery-public-title">ðŸ“¸ GalerÃ­a PÃºblica</h2>
             <div class="filter-tabs">
                 <button type="button" id="tab-populares" class="tab-filter-btn active" data-action="filter-gallery" data-filter="populares">
-                    <i class="fa-solid fa-fire"></i> Más Populares
+                    <i class="fa-solid fa-fire"></i> MÃ¡s Populares
                 </button>
                 <button type="button" id="tab-recientes" class="tab-filter-btn" data-action="filter-gallery" data-filter="recientes">
-                    <i class="fa-solid fa-sparkles"></i> Más Recientes
+                    <i class="fa-solid fa-sparkles"></i> MÃ¡s Recientes
                 </button>
             </div>
         </div>
 
         <div class="gallery-grid" id="galleryGrid" x-data="{}">
             <template x-for="foto in $store.galeria.fotos" :key="foto.id">
-                <div class="gallery-card" tabindex="0" role="button" :aria-label="'Ver foto: ' + (foto.title || 'Foto de la galería')" @click="window.abrirLightboxDesdeTarjeta($event, foto, $el)" @keydown.enter="window.abrirLightboxDesdeTarjeta($event, foto, $el)" @keydown.space.prevent="window.abrirLightboxDesdeTarjeta($event, foto, $el)">
+                <div class="gallery-card" tabindex="0" role="button" :aria-label="'Ver foto: ' + (foto.title || 'Foto de la galerÃ­a')" @click="window.abrirLightboxDesdeTarjeta($event, foto, $el)" @keydown.enter="window.abrirLightboxDesdeTarjeta($event, foto, $el)" @keydown.space.prevent="window.abrirLightboxDesdeTarjeta($event, foto, $el)">
                     <template x-for="badge in foto.badges" :key="badge.texto">
                         <span :class="'badge-tag ' + badge.clase" x-text="badge.texto"></span>
                     </template>
@@ -160,7 +237,10 @@
                                 </span>
                             </div>
                             <div class="gallery-card-actions" @keydown.stop>
-                                <button type="button" class="btn-eliminar-publica" data-action="delete-image" :data-image-id="foto.id" title="Borrar foto de la galería" aria-label="Borrar foto de la galería">
+                                <button type="button" class="btn-copiar-enlace" :data-url="'#foto-' + foto.id" aria-label="Copiar enlace a la foto" title="Copiar enlace">
+                                    <i class="fa-solid fa-link"></i>
+                                </button>
+                                <button type="button" class="btn-eliminar-publica" data-action="delete-image" :data-image-id="foto.id" title="Borrar foto de la galerÃ­a" aria-label="Borrar foto de la galerÃ­a">
                                     <i class="fa-solid fa-trash-can"></i>
                                 </button>
                                 <button type="button" :class="foto.liked ? 'like-btn liked' : 'like-btn'" data-action="toggle-like" :data-image-id="foto.id" :aria-pressed="foto.liked ? 'true' : 'false'" aria-label="Me gusta">
@@ -172,20 +252,20 @@
                     </div>
                 </div>
             </template>
-            <p class="gallery-empty" x-show="!$store.galeria.fotos.length" x-cloak>No hay imágenes públicas aprobadas aún. ¡Sé el primero en subir una! 📸</p>
+            <p class="gallery-empty" x-show="!$store.galeria.fotos.length" x-cloak>No hay imÃ¡genes pÃºblicas aprobadas aÃºn. Â¡SÃ© el primero en subir una! ðŸ“¸</p>
         </div>
-        <p id="galeria-no-disponible" class="gallery-empty" hidden>Galería no disponible. Recarga la página.</p>
+        <p id="galeria-no-disponible" class="gallery-empty" hidden>GalerÃ­a no disponible. Recarga la pÃ¡gina.</p>
     </div>
 
-    <!-- MODAL DE INICIO DE SESIÓN ADMIN -->
+    <!-- MODAL DE INICIO DE SESIÃ“N ADMIN -->
     <div id="modal-pin" class="gochi-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-galeria-titulo">
         <div class="gochi-modal-box">
-            <h3 id="modal-galeria-titulo">🔒 MODERACIÓN DE GALERÍA</h3>
+            <h3 id="modal-galeria-titulo">ðŸ”’ MODERACIÃ“N DE GALERÃA</h3>
             <p>Ingresa tus datos de acceso:</p>
 
             <form id="form-admin-login" novalidate>
-                <input type="email" id="admin-email" class="gochi-modal-input" placeholder="Correo electrónico" aria-label="Correo electrónico" autocomplete="username">
-                <input type="password" id="admin-password" class="gochi-modal-input" placeholder="Contraseña" aria-label="Contraseña" autocomplete="current-password">
+                <input type="email" id="admin-email" class="gochi-modal-input" placeholder="Correo electrÃ³nico" aria-label="Correo electrÃ³nico" autocomplete="email">
+                <input type="password" id="admin-password" class="gochi-modal-input" placeholder="ContraseÃ±a" aria-label="ContraseÃ±a" autocomplete="current-password">
 
                 <div id="feedback-pin" class="gochi-modal-feedback" role="status" aria-live="polite"></div>
 
@@ -219,8 +299,8 @@
          x-transition:leave="transition ease-in duration-200"
          x-transition:leave-start="opacity-100 scale-100"
          x-transition:leave-end="opacity-0 scale-95"
-         role="dialog" aria-modal="true"
-         :aria-label="$store.galeria.lightbox.foto ? ($store.galeria.lightbox.foto.title || 'Foto de la galería') : 'Foto de la galería'"
+         role="dialog" aria-modal="true" aria-roledescription="dialog"
+         :aria-label="$store.galeria.lightbox.foto ? ($store.galeria.lightbox.foto.title || 'Foto de la galerÃ­a') : 'Foto de la galerÃ­a'"
          @click.away="window.cerrarLightbox()"
          @keydown.escape="window.cerrarLightbox()"
          @keydown.left="window.prevLightbox()"
@@ -240,7 +320,7 @@
                 <div class="lightbox-nav-side next" @click.stop="window.nextLightbox()">
                     <button type="button" class="lightbox-btn-next" aria-label="Foto siguiente"><i class="fa-solid fa-chevron-right"></i></button>
                 </div>
-                <p class="lightbox-caption" x-text="$store.galeria.lightbox.foto.title || 'Foto de la galería'"></p>
+                <p class="lightbox-caption" x-text="$store.galeria.lightbox.foto.title || 'Foto de la galerÃ­a'"></p>
                 <div class="lightbox-controls">
                     <button type="button" class="lightbox-btn-prev" @click.stop="window.prevLightbox()" aria-label="Foto anterior"><i class="fa-solid fa-chevron-left"></i></button>
                     <button type="button" class="lightbox-btn-close" @click="window.cerrarLightbox()" aria-label="Cerrar vista previa"><i class="fa-solid fa-xmark"></i></button>
@@ -260,9 +340,9 @@
         let paginaActualGaleria = 0;
         const LIMITE_GALERIA = 24;
         const AUTOR_POR_DEFECTO = 'LaGochaGaming';
-        let topGaleriaGlobal = new Map(); // id -> posición (1..3) del top de likes
+        let topGaleriaGlobal = new Map(); // id -> posiciÃ³n (1..3) del top de likes
         let focoPrevioLightbox = null;
-        let misLikesGaleria = new Set(); // ids que el usuario actual ya likeó (servidor)
+        let misLikesGaleria = new Set(); // ids que el usuario actual ya likeÃ³ (servidor)
         let likesTokenCargado = null;
 
         document.addEventListener('alpine:init', () => {
@@ -273,6 +353,19 @@
             pendientesEstado: 'inicial',
             errorPendientes: ''
         });
+
+        window.Alpine.store('admin', {
+            usuarios: [],
+            usuariosEstado: 'inicial',
+            errorUsuarios: '',
+            totalUsuarios: 0,
+            paginaUsuarios: 0,
+            auditLog: [],
+            auditEstado: 'inicial',
+            errorAudit: '',
+            totalAudit: 0,
+            paginaAudit: 0
+        });
         });
 
         function obtenerStoreGaleria() {
@@ -282,7 +375,7 @@
         }
 
         // Muestra u oculta los controles que solo puede usar el admin:
-        // campo de autor al subir y aviso de sesión de comunidad requerida.
+        // campo de autor al subir y aviso de sesiÃ³n de comunidad requerida.
         function actualizarControlesAdmin() {
             const wrapAutor = document.getElementById('admin-author-wrap');
             const avisoSesion = document.getElementById('aviso-sesion-galeria');
@@ -292,20 +385,20 @@
             }
         }
 
-        // Sincroniza toda la UI de moderación con adminAutenticado. Se usa al cargar,
-        // al entrar con el formulario y cuando la sesión cambia en otra pestaña.
+        // Sincroniza toda la UI de moderaciÃ³n con adminAutenticado. Se usa al cargar,
+        // al entrar con el formulario y cuando la sesiÃ³n cambia en otra pestaÃ±a.
         function aplicarEstadoAdmin() {
-            const panel = document.getElementById('panelPendientes');
+            const panel = document.getElementById('panelAdminUnificado');
             const btnLogout = document.getElementById('btn-logout-galeria');
             const btn = document.getElementById('btn-toggle-admin');
             const store = obtenerStoreGaleria();
 
             if (adminAutenticado) {
                 document.body.classList.add('admin-mode-active');
-                if (panel) panel.style.display = 'block';
+                if (panel) panel.hidden = false;
                 if (btnLogout) btnLogout.style.display = 'inline-flex';
                 if (btn) {
-                    btn.innerHTML = '<i class="fa-solid fa-lock-open"></i> Ocultar Moderación';
+                    btn.innerHTML = '<i class="fa-solid fa-lock-open"></i> Ocultar ModeraciÃ³n';
                     btn.classList.add('active');
                     btn.setAttribute('aria-expanded', 'true');
                 }
@@ -313,10 +406,10 @@
                 loadPendingImages();
             } else {
                 document.body.classList.remove('admin-mode-active');
-                if (panel) panel.style.display = 'none';
+                if (panel) panel.hidden = true;
                 if (btnLogout) btnLogout.style.display = 'none';
                 if (btn) {
-                    btn.innerHTML = '<i class="fa-solid fa-lock"></i> Modo Moderación';
+                    btn.innerHTML = '<i class="fa-solid fa-lock"></i> Modo ModeraciÃ³n';
                     btn.classList.remove('active');
                     btn.setAttribute('aria-expanded', 'false');
                 }
@@ -329,6 +422,164 @@
             }
         }
 
+        // === FUNCIONES ADMIN UNIFICADO ===
+        function obtenerStoreAdmin() {
+            return window.Alpine && typeof window.Alpine.store === 'function'
+                ? window.Alpine.store('admin')
+                : null;
+        }
+
+        async function cargarUsuariosAdmin() {
+            const store = obtenerStoreAdmin();
+            if (!store || !adminAutenticado || !window.supabase) return;
+
+            store.usuariosEstado = 'cargando';
+            store.errorUsuarios = '';
+
+            try {
+                const buscar = document.getElementById('admin-buscar-usuario')?.value || '';
+                const soloBaneados = document.getElementById('admin-filtro-baneados')?.checked || false;
+                const { data, error } = await supabase.rpc('admin_listar_usuarios', {
+                    p_token: localStorage.getItem('comunidad_session_token') || '',
+                    p_buscar: buscar || null,
+                    p_solo_baneados: soloBaneados,
+                    p_limite: 50,
+                    p_offset: (store.paginaUsuarios || 0) * 50
+                });
+                if (error) throw error;
+                if (!data || !data.ok) {
+                    store.errorUsuarios = data?.error || 'Error cargando usuarios';
+                    store.usuariosEstado = 'error';
+                    return;
+                }
+                store.usuarios = data.usuarios || [];
+                store.totalUsuarios = data.total || 0;
+                store.usuariosEstado = 'lista';
+            } catch (e) {
+                console.error('Error cargando usuarios admin:', e);
+                store.errorUsuarios = 'Error inesperado';
+                store.usuariosEstado = 'error';
+            }
+        }
+
+        window.cambiarPaginaUsuarios = function cambiarPaginaUsuarios(delta) {
+            const store = obtenerStoreAdmin();
+            if (!store) return;
+            const nueva = Math.max(0, (store.paginaUsuarios || 0) + delta);
+            if (nueva === store.paginaUsuarios) return;
+            store.paginaUsuarios = nueva;
+            cargarUsuariosAdmin();
+        };
+
+        async function toggleBan(usuarioId, estaBaneado) {
+            if (!(await validarSesionStreamer())) {
+                adminAutenticado = false;
+                aplicarEstadoAdmin();
+                mostrarToast('Tu sesiÃ³n ha expirado.', true);
+                return;
+            }
+            const duracion = estaBaneado ? 0 : 60 * 24 * 7; // 7 dÃ­as por defecto al banear
+            try {
+                const { data, error } = await supabase.rpc('admin_ban_usuario', {
+                    p_token: localStorage.getItem('comunidad_session_token') || '',
+                    p_usuario_id: usuarioId,
+                    p_duracion_minutos: estaBaneado ? null : duracion,
+                    p_motivo: estaBaneado ? 'Desbaneado por admin' : 'Baneado por admin'
+                });
+                if (error) throw error;
+                if (!data || !data.ok) {
+                    mostrarToast('Error: ' + (data?.error || 'desconocido'), true);
+                    return;
+                }
+                mostrarToast(estaBaneado ? 'Usuario desbaneado' : 'Usuario baneado por 7 dÃ­as');
+                cargarUsuariosAdmin();
+            } catch (e) {
+                console.error('Error ban:', e);
+                mostrarToast('Error al banear/desbanear', true);
+            }
+        }
+
+        async function toggleShadowban(usuarioId, estaShadowban) {
+            if (!(await validarSesionStreamer())) {
+                adminAutenticado = false;
+                aplicarEstadoAdmin();
+                mostrarToast('Tu sesiÃ³n ha expirado.', true);
+                return;
+            }
+            try {
+                const { data, error } = await supabase.rpc('admin_shadowban_usuario', {
+                    p_token: localStorage.getItem('comunidad_session_token') || '',
+                    p_usuario_id: usuarioId,
+                    p_activar: !estaShadowban
+                });
+                if (error) throw error;
+                if (!data || !data.ok) {
+                    mostrarToast('Error: ' + (data?.error || 'desconocido'), true);
+                    return;
+                }
+                mostrarToast(estaShadowban ? 'Shadowban quitado' : 'Shadowban aplicado');
+                cargarUsuariosAdmin();
+            } catch (e) {
+                console.error('Error shadowban:', e);
+                mostrarToast('Error al aplicar/quitar shadowban', true);
+            }
+        }
+
+        // El HTML/Alpine llama estas acciones desde window.
+        window.cargarUsuariosAdmin = cargarUsuariosAdmin;
+        window.cargarAuditAdmin = cargarAuditAdmin;
+        window.toggleBan = toggleBan;
+        window.toggleShadowban = toggleShadowban;
+
+        async function cargarAuditAdmin() {
+            const store = obtenerStoreAdmin();
+            if (!store || !adminAutenticado || !window.supabase) return;
+
+            store.auditEstado = 'cargando';
+            store.errorAudit = '';
+
+            try {
+                const { data, error } = await supabase.rpc('admin_obtener_audit_log', {
+                    p_token: localStorage.getItem('comunidad_session_token') || '',
+                    p_limite: 50,
+                    p_offset: (store.paginaAudit || 0) * 50
+                });
+                if (error) throw error;
+                if (!data || !data.ok) {
+                    store.errorAudit = data?.error || 'Error cargando auditorÃ­a';
+                    store.auditEstado = 'error';
+                    return;
+                }
+                store.auditLog = data.log || [];
+                store.totalAudit = data.total || 0;
+                store.auditEstado = 'lista';
+            } catch (e) {
+                console.error('Error cargando audit log:', e);
+                store.errorAudit = 'Error inesperado';
+                store.auditEstado = 'error';
+            }
+        }
+
+        window.cambiarPaginaAudit = function cambiarPaginaAudit(delta) {
+            const store = obtenerStoreAdmin();
+            if (!store) return;
+            const nueva = Math.max(0, (store.paginaAudit || 0) + delta);
+            if (nueva === store.paginaAudit) return;
+            store.paginaAudit = nueva;
+            cargarAuditAdmin();
+        };
+
+        // Formatear detalle de auditorÃ­a para mostrar
+        window.formatearDetalle = function formatearDetalle(detalle) {
+            if (!detalle) return '<em>Sin detalles</em>';
+            try {
+                const d = typeof detalle === 'string' ? JSON.parse(detalle) : detalle;
+                return '<pre class="audit-detalle-pre">' + window.escapeHtml(JSON.stringify(d, null, 2)) + '</pre>';
+            } catch (e) {
+                return '<em>Detalle no vÃ¡lido</em>';
+            }
+        };
+
         document.addEventListener('DOMContentLoaded', async () => {
             if (!obtenerStoreGaleria()) {
                 const aviso = document.getElementById('galeria-no-disponible');
@@ -336,7 +587,7 @@
                 const avisoPendientes = document.getElementById('pendientes-no-disponibles');
                 if (avisoPendientes) avisoPendientes.hidden = false;
                 const count = document.getElementById('cantPendientes');
-                if (count) count.textContent = '—';
+                if (count) count.textContent = 'â€”';
             }
 
             loadApprovedImages();
@@ -345,11 +596,11 @@
                 try {
                     adminAutenticado = await window.esAdminActual();
                 } catch (e) {
-                    console.error('Error obteniendo sesión:', e);
+                    console.error('Error obteniendo sesiÃ³n:', e);
                 }
                 aplicarEstadoAdmin();
             } else {
-                mostrarToast('Supabase no está disponible en este entorno', true);
+                mostrarToast('Supabase no estÃ¡ disponible en este entorno', true);
             }
 
             document.getElementById('form-admin-login')?.addEventListener('submit', (e) => {
@@ -357,12 +608,12 @@
                 iniciarSesionAdmin();
             });
 
-            // La sesión puede cambiar fuera de esta pestaña (login o logout en otra
-            // página del sitio): reevalúa el rol para no dejar el panel desfasado.
+            // La sesiÃ³n puede cambiar fuera de esta pestaÃ±a (login o logout en otra
+            // pÃ¡gina del sitio): reevalÃºa el rol para no dejar el panel desfasado.
             if (window.supabase && typeof window.supabase.auth?.onAuthStateChange === 'function') {
                 window.supabase.auth.onAuthStateChange((evento, sesion) => {
                     // Solo login/logout real: reevaluar en TOKEN_REFRESHED vuelve a pedir
-                    // la sesión mientras el cliente refresca y encadena refrescos sin fin.
+                    // la sesiÃ³n mientras el cliente refresca y encadena refrescos sin fin.
                     if (evento !== 'SIGNED_IN' && evento !== 'SIGNED_OUT') return;
                     if (!sesion && evento !== 'SIGNED_OUT') return;
                     setTimeout(async () => {
@@ -372,10 +623,32 @@
                 });
             }
 
-            // Controles de admin (campo de autor) y aviso de sesión de comunidad
+            // Controles de admin (campo de autor) y aviso de sesiÃ³n de comunidad
             actualizarControlesAdmin();
 
-            // Al aprobarse una foto aparece sola en la galería pública
+            // Admin panel: bÃºsqueda de usuarios con debounce
+            const buscarInput = document.getElementById('admin-buscar-usuario');
+            if (buscarInput) {
+                let debounceTimer = null;
+                buscarInput.addEventListener('input', () => {
+                    clearTimeout(debounceTimer);
+                    debounceTimer = setTimeout(() => {
+                        const store = obtenerStoreAdmin();
+                        if (store) store.paginaUsuarios = 0;
+                        window.cargarUsuariosAdmin?.();
+                    }, 300);
+                });
+            }
+            const filtroBaneados = document.getElementById('admin-filtro-baneados');
+            if (filtroBaneados) {
+                filtroBaneados.addEventListener('change', () => {
+                    const store = obtenerStoreAdmin();
+                    if (store) store.paginaUsuarios = 0;
+                    window.cargarUsuariosAdmin?.();
+                });
+            }
+
+            // Al aprobarse una foto aparece sola en la galerÃ­a pÃºblica
             iniciarRealtimeGaleria();
         });
 
@@ -396,10 +669,22 @@
             }
         });
 
+        // DelegaciÃ³n para botones copiar enlace (data-url)
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('.btn-copiar-enlace');
+            if (!btn) return;
+            e.stopPropagation();
+            const url = btn.dataset.url;
+            if (url) {
+                const fullUrl = window.location.origin + window.location.pathname + url;
+                window.copiarEnlace(fullUrl, 'Â¡Enlace a la foto copiado!');
+            }
+        });
+
         const lightbox = document.getElementById('lightbox');
 
         // ===================================================
-        // 1. CAMBIAR PESTAÑAS / FILTROS DE LA GALERÍA
+        // 1. CAMBIAR PESTAÃ‘AS / FILTROS DE LA GALERÃA
         // ===================================================
         function cambiarFiltroGaleria(filtro) {
             filtroActual = filtro;
@@ -410,11 +695,11 @@
         }
 
         // ===================================================
-        // 2. CARGAR IMÁGENES APROBADAS (CON ORDENAMIENTO Y BADGES)
+        // 2. CARGAR IMÃGENES APROBADAS (CON ORDENAMIENTO Y BADGES)
         // ===================================================
 
         // Top 3 global por likes: las medallas se calculan sobre toda la tabla,
-        // no solo sobre la página visible.
+        // no solo sobre la pÃ¡gina visible.
         async function cargarTopGlobal() {
             try {
                 const { data, error } = await supabase
@@ -430,12 +715,12 @@
                 });
                 topGaleriaGlobal = mapa;
             } catch (e) {
-                console.warn('No se pudo calcular el top global de la galería:', e);
+                console.warn('No se pudo calcular el top global de la galerÃ­a:', e);
                 topGaleriaGlobal = new Map();
             }
         }
 
-        // El servidor es la única fuente de verdad de "mis likes". Se consulta
+        // El servidor es la Ãºnica fuente de verdad de "mis likes". Se consulta
         // una vez por carga y se refresca si cambia el token de comunidad.
         async function asegurarLikesUsuario() {
             const token = localStorage.getItem('comunidad_session_token');
@@ -459,24 +744,24 @@
         function mapearFotoGaleria(image, userLikes, horaAhora) {
             const posicionTop = topGaleriaGlobal.get(image.id);
             const fechaFoto = image.created_at ? new Date(image.created_at).getTime() : 0;
-            const autor = (image.autor || 'Anónimo').trim() || 'Anónimo';
+            const autor = (image.autor || 'AnÃ³nimo').trim() || 'AnÃ³nimo';
             const badges = [];
 
             if (posicionTop === 1) {
-                badges.push({ texto: '👑 TOP 1', clase: 'badge-top1' });
+                badges.push({ texto: 'ðŸ‘‘ TOP 1', clase: 'badge-top1' });
             } else if (posicionTop) {
-                badges.push({ texto: `🔥 TOP ${posicionTop}`, clase: 'badge-top3' });
+                badges.push({ texto: `ðŸ”¥ TOP ${posicionTop}`, clase: 'badge-top3' });
             }
 
             if (fechaFoto > 0 && (horaAhora - fechaFoto) < (48 * 60 * 60 * 1000)) {
-                badges.push({ texto: '✨ NUEVO', clase: 'badge-nuevo' });
+                badges.push({ texto: 'âœ¨ NUEVO', clase: 'badge-nuevo' });
             }
 
             return {
                 id: image.id,
                 image_url: image.image_url,
                 thumb_url: image.thumb_url || image.image_url,
-                title: image.title || 'Sin título',
+                title: image.title || 'Sin tÃ­tulo',
                 alt: image.title || 'Foto Gocha',
                 autor: autor,
                 inicial: autor.charAt(0).toUpperCase(),
@@ -495,7 +780,7 @@
                 const hasta = desde + LIMITE_GALERIA - 1;
 
                 // El orden se aplica en el servidor: en "populares" por likes y en
-                // "recientes" por fecha, de modo que la paginación sea coherente.
+                // "recientes" por fecha, de modo que la paginaciÃ³n sea coherente.
                 const orden = filtroActual === 'populares' ? { col: 'likes', asc: false } : { col: 'created_at', asc: false };
                 const { data, error } = await supabase
                     .from('galeria')
@@ -505,7 +790,7 @@
                     .range(desde, hasta);
 
                 if (error) {
-                    console.error('Error cargando imágenes:', error);
+                    console.error('Error cargando imÃ¡genes:', error);
                     return;
                 }
 
@@ -514,7 +799,7 @@
                 const imagenesPublicas = data ? data : [];
 
                 // Cargar top global ANTES de mapear para que los badges TOP
-                // estén disponibles en la primera renderización (independiente del filtro).
+                // estÃ©n disponibles en la primera renderizaciÃ³n (independiente del filtro).
                 await cargarTopGlobal();
 
                 const userLikes = await asegurarLikesUsuario();
@@ -523,14 +808,14 @@
 
                 store.fotos = paginaActualGaleria === 0 ? fotos : store.fotos.concat(fotos);
 
-                // Mostrar u ocultar botón "cargar más"
+                // Mostrar u ocultar botÃ³n "cargar mÃ¡s"
                 const btnCargarMas = document.getElementById('btn-cargar-mas-galeria');
                 if (imagenesPublicas.length >= LIMITE_GALERIA) {
                     if (!btnCargarMas) {
                         const btn = document.createElement('button');
                         btn.id = 'btn-cargar-mas-galeria';
                         btn.className = 'btn-primary btn-cargar-mas';
-                        btn.innerHTML = '<i class="fa-solid fa-chevron-down"></i> Cargar más imágenes';
+                        btn.innerHTML = '<i class="fa-solid fa-chevron-down"></i> Cargar mÃ¡s imÃ¡genes';
                         btn.type = 'button';
                         btn.addEventListener('click', cargarMasGaleria);
                         galleryGrid.parentNode.insertBefore(btn, galleryGrid.nextSibling);
@@ -553,14 +838,14 @@
         }
 
         // ===================================================
-        // 3. SISTEMA DE LIKES (requiere sesión de comunidad)
+        // 3. SISTEMA DE LIKES (requiere sesiÃ³n de comunidad)
         // ===================================================
         async function toggleLike(imageId) {
             if (!window.supabase) return;
 
             const token = localStorage.getItem('comunidad_session_token');
             if (!token) {
-                mostrarToast('Inicia sesión en la Comunidad para dar like', true);
+                mostrarToast('Inicia sesiÃ³n en la Comunidad para dar like', true);
                 return;
             }
 
@@ -591,7 +876,9 @@
                 if (error) throw error;
                 if (!data || !data.ok) {
                     if (data && data.error === 'sin_sesion') {
-                        mostrarToast('Sesión expirada. Inicia sesión de nuevo.', true);
+                        mostrarToast('SesiÃ³n expirada. Inicia sesiÃ³n de nuevo.', true);
+                    } else if (data && data.error === 'baneado') {
+                        mostrarToast('Tu cuenta estÃ¡ suspendida temporalmente.', true);
                     } else {
                         mostrarToast('No se pudo registrar tu like.', true);
                     }
@@ -626,10 +913,10 @@
             if (!store) return;
 
             focoPrevioLightbox = tarjetaOrigen || document.activeElement;
-            store.lightbox.foto = { id: image.id, image_url: image.image_url, title: image.title || 'Foto de la galería' };
+            store.lightbox.foto = { id: image.id, image_url: image.image_url, title: image.title || 'Foto de la galerÃ­a' };
             store.lightbox.abierta = true;
 
-            // Sincronizar índice de la foto actual para navegación prev/next
+            // Sincronizar Ã­ndice de la foto actual para navegaciÃ³n prev/next
             const idx = store.fotos.findIndex(f => String(f.id) === String(image.id));
             store.lightbox.index = idx >= 0 ? idx : 0;
 
@@ -681,7 +968,7 @@
             setLightboxFotoIndex(idx);
             const f = store.fotos[idx];
             if (f) {
-                store.lightbox.foto = { id: f.id, image_url: f.image_url, title: f.title || 'Foto de la galería' };
+                store.lightbox.foto = { id: f.id, image_url: f.image_url, title: f.title || 'Foto de la galerÃ­a' };
             }
         }
 
@@ -693,7 +980,7 @@
             setLightboxFotoIndex(idx);
             const f = store.fotos[idx];
             if (f) {
-                store.lightbox.foto = { id: f.id, image_url: f.image_url, title: f.title || 'Foto de la galería' };
+                store.lightbox.foto = { id: f.id, image_url: f.image_url, title: f.title || 'Foto de la galerÃ­a' };
             }
         }
 
@@ -750,7 +1037,7 @@
                         if (fila.estado !== 'aprobado') return;
 
                         // Los likes cambian la fila constantemente: actualizar en
-                        // sitio evita recargar toda la galería en cada like.
+                        // sitio evita recargar toda la galerÃ­a en cada like.
                         const store = obtenerStoreGaleria();
                         const foto = store
                             ? store.fotos.find(f => String(f.id) === String(fila.id))
@@ -778,19 +1065,19 @@
                     })
                     .subscribe();
             } catch (e) {
-                console.warn('Realtime de la galería no disponible:', e);
+                console.warn('Realtime de la galerÃ­a no disponible:', e);
             }
         }
 
         // ===================================================
-        // 4. MODERACIÓN Y APROBACIÓN DE FOTOS
+        // 4. MODERACIÃ“N Y APROBACIÃ“N DE FOTOS
         // ===================================================
         function mapearPendienteGaleria(image) {
-            const autor = (image.autor || 'Anónimo').trim() || 'Anónimo';
+            const autor = (image.autor || 'AnÃ³nimo').trim() || 'AnÃ³nimo';
             return {
                 id: image.id,
                 image_url: image.image_url,
-                title: image.title || 'Sin título',
+                title: image.title || 'Sin tÃ­tulo',
                 alt: image.title || 'Foto pendiente',
                 autor: autor,
                 inicial: autor.charAt(0).toUpperCase()
@@ -814,7 +1101,7 @@
                     .order('created_at', { ascending: true });
 
                 if (error) {
-                    console.error('Error cargando imágenes pendientes:', error);
+                    console.error('Error cargando imÃ¡genes pendientes:', error);
                     store.errorPendientes = 'Error al cargar las pendientes: ' + error.message;
                     store.pendientesEstado = 'error';
                     return;
@@ -833,7 +1120,7 @@
             if (!(await validarSesionStreamer())) {
                 adminAutenticado = false;
                 toggleModoAdmin();
-                mostrarToast('Tu sesión ha expirado.', true);
+                mostrarToast('Tu sesiÃ³n ha expirado.', true);
                 return;
             }
             const store = obtenerStoreGaleria();
@@ -849,7 +1136,7 @@
                     mostrarToast(`Error: ${error.message}`, true);
                     return;
                 }
-                mostrarToast('¡Imagen aprobada con éxito!');
+                mostrarToast('Â¡Imagen aprobada con Ã©xito!');
                 loadPendingImages();
                 loadApprovedImages();
             } catch (e) {
@@ -862,13 +1149,13 @@
             if (!(await validarSesionStreamer())) {
                 adminAutenticado = false;
                 toggleModoAdmin();
-                mostrarToast('Tu sesión ha expirado.', true);
+                mostrarToast('Tu sesiÃ³n ha expirado.', true);
                 return;
             }
 
             mostrarConfirmacionModal({
-                titulo: '🗑️ Eliminar Imagen',
-                mensaje: '¿Deseas eliminar permanentemente esta imagen?',
+                titulo: 'ðŸ—‘ï¸ Eliminar Imagen',
+                mensaje: 'Â¿Deseas eliminar permanentemente esta imagen?',
                 textoConfirmar: 'Eliminar',
                 enConfirmar: async () => {
                     try {
@@ -881,7 +1168,7 @@
                             store.fotos = store.fotos.filter(f => String(f.id) !== idStr);
                             store.pendientes = store.pendientes.filter(p => String(p.id) !== idStr);
                         }
-                        mostrarToast('Imagen eliminada de la galería.');
+                        mostrarToast('Imagen eliminada de la galerÃ­a.');
                         loadPendingImages();
                         loadApprovedImages();
                     } catch (e) { console.error(e); }
@@ -890,7 +1177,7 @@
         }
 
         function toggleModoAdmin() {
-            const panel = document.getElementById('panelPendientes');
+            const panel = document.getElementById('panelAdminUnificado');
             const btn = document.getElementById('btn-toggle-admin');
             const btnLogout = document.getElementById('btn-logout-galeria');
 
@@ -899,19 +1186,19 @@
                 document.getElementById('modal-pin').style.display = 'flex';
                 document.getElementById('admin-email').focus();
             } else {
-                if (panel.style.display === 'none' || panel.style.display === '') {
-                    panel.style.display = 'block';
+                if (panel && panel.hidden) {
+                    panel.hidden = false;
                     btnLogout.style.display = 'inline-flex';
-                    btn.innerHTML = '<i class="fa-solid fa-lock-open"></i> Ocultar Moderación';
+                    btn.innerHTML = '<i class="fa-solid fa-lock-open"></i> Ocultar ModeraciÃ³n';
                     btn.classList.add('active');
                     loadPendingImages();
                 } else {
-                    panel.style.display = 'none';
+                    if (panel) panel.hidden = true;
                     btnLogout.style.display = 'none';
-                    btn.innerHTML = '<i class="fa-solid fa-lock"></i> Modo Moderación';
+                    btn.innerHTML = '<i class="fa-solid fa-lock"></i> Modo ModeraciÃ³n';
                     btn.classList.remove('active');
                 }
-                btn.setAttribute('aria-expanded', panel.style.display === 'block' ? 'true' : 'false');
+                btn.setAttribute('aria-expanded', panel && !panel.hidden ? 'true' : 'false');
             }
         }
 
@@ -929,7 +1216,7 @@
             const btnEntrar = document.getElementById('btn-entrar-admin');
 
             if (!window.supabase) {
-                feedback.innerText = '❌ No se pudo conectar con el servidor';
+                feedback.innerText = 'âŒ No se pudo conectar con el servidor';
                 return;
             }
 
@@ -943,7 +1230,7 @@
                 const { error } = await supabase.auth.signInWithPassword({ email, password });
 
                 if (error) {
-                    feedback.innerText = '❌ Credenciales incorrectas';
+                    feedback.innerText = 'âŒ Credenciales incorrectas';
                     return;
                 }
 
@@ -954,16 +1241,16 @@
                     window.refrescarCacheAdmin?.();
                     adminAutenticado = false;
                     aplicarEstadoAdmin();
-                    feedback.innerText = '❌ Esta cuenta no tiene permisos de moderación';
+                    feedback.innerText = 'âŒ Esta cuenta no tiene permisos de moderaciÃ³n';
                     return;
                 }
 
                 adminAutenticado = true;
                 cerrarModalPin();
                 aplicarEstadoAdmin();
-                mostrarToast('¡Modo moderación activado!');
+                mostrarToast('Â¡Modo moderaciÃ³n activado!');
             } catch (e) {
-                feedback.innerText = '❌ No se pudo iniciar sesión';
+                feedback.innerText = 'âŒ No se pudo iniciar sesiÃ³n';
             } finally {
                 if (btnEntrar) btnEntrar.disabled = false;
             }
@@ -983,13 +1270,13 @@
             if (!file) return;
 
             if (!customTitle) {
-                mostrarToast('Por favor escribe un título para la foto.', true);
+                mostrarToast('Por favor escribe un tÃ­tulo para la foto.', true);
                 uploadInput.value = '';
                 return;
             }
 
             if (file.size > 5 * 1024 * 1024) {
-                uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ La imagen supera el límite máximo de 5MB.</p>';
+                uploadFeedback.innerHTML = '<p class="msg-subida-error">âŒ La imagen supera el lÃ­mite mÃ¡ximo de 5MB.</p>';
                 uploadInput.value = '';
                 return;
             }
@@ -1025,11 +1312,11 @@
                 }
                 const customTitle = titleInput.value.trim();
                 if (!customTitle) {
-                    mostrarToast('Por favor escribe un título para la foto.', true);
+                    mostrarToast('Por favor escribe un tÃ­tulo para la foto.', true);
                     return;
                 }
                 if (file.size > 5 * 1024 * 1024) {
-                    uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ La imagen supera el límite máximo de 5MB.</p>';
+                    uploadFeedback.innerHTML = '<p class="msg-subida-error">âŒ La imagen supera el lÃ­mite mÃ¡ximo de 5MB.</p>';
                     return;
                 }
                 uploadToSupabase(file, customTitle);
@@ -1038,14 +1325,14 @@
 
         async function uploadToSupabase(file, title) {
             if (!file.type.startsWith('image/')) {
-                uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ Solo se permiten archivos de imagen.</p>';
+                uploadFeedback.innerHTML = '<p class="msg-subida-error">âŒ Solo se permiten archivos de imagen.</p>';
                 return;
             }
 
             // El bucket fotos-galeria solo admite estos tipos
             const TIPOS_PERMITIDOS = ['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'image/avif'];
             if (!TIPOS_PERMITIDOS.includes(file.type)) {
-                uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ Formato no admitido. Usa JPG, PNG, GIF o WEBP.</p>';
+                uploadFeedback.innerHTML = '<p class="msg-subida-error">âŒ Formato no admitido. Usa JPG, PNG, GIF o WEBP.</p>';
                 uploadInput.value = '';
                 return;
             }
@@ -1061,7 +1348,7 @@
               hex.startsWith('52494646') || // WEBP (RIFF)
               hex.slice(8, 16) === '66747970'; // AVIF/HEIC (caja ftyp)
             if (!magicOk) {
-              uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ El archivo no es una imagen válida.</p>';
+              uploadFeedback.innerHTML = '<p class="msg-subida-error">âŒ El archivo no es una imagen vÃ¡lida.</p>';
               uploadInput.value = '';
               return;
             }
@@ -1078,7 +1365,7 @@
 
                 if (error) {
                     console.error('Error subiendo a Storage:', error);
-                    uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ Error al subir imagen: ' + escapeHtml(error.message) + '</p>';
+                    uploadFeedback.innerHTML = '<p class="msg-subida-error">âŒ Error al subir imagen: ' + escapeHtml(error.message) + '</p>';
                     return;
                 }
 
@@ -1091,7 +1378,7 @@
                 }
             } catch (e) {
                 console.error('Error inesperado en la subida:', e);
-                uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ Error inesperado al subir la imagen.</p>';
+                uploadFeedback.innerHTML = '<p class="msg-subida-error">âŒ Error inesperado al subir la imagen.</p>';
             }
         }
 
@@ -1099,9 +1386,9 @@
             const token = localStorage.getItem('comunidad_session_token') || '';
             const esAdmin = adminAutenticado;
 
-            // El admin puede subir sin sesión de comunidad; el usuario común no
+            // El admin puede subir sin sesiÃ³n de comunidad; el usuario comÃºn no
             if (!esAdmin && !token) {
-                uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ Inicia sesión en la Comunidad para subir fotos.</p>';
+                uploadFeedback.innerHTML = '<p class="msg-subida-error">âŒ Inicia sesiÃ³n en la Comunidad para subir fotos.</p>';
                 return false;
             }
 
@@ -1121,8 +1408,8 @@
                 const { data: resultado, error } = await supabase.rpc('publicar_foto_galeria', args);
 
                 if (!error && resultado && resultado.ok) {
-                    const autor = resultado.autor || (esAdmin ? AUTOR_POR_DEFECTO : 'Anónimo');
-                    uploadFeedback.innerHTML = `<p class="msg-subida-exito">✅ ¡Imagen enviada como "${escapeHtml(autor)}"! Aparecerá cuando sea aprobada. 💖</p>`;
+                    const autor = resultado.autor || (esAdmin ? AUTOR_POR_DEFECTO : 'AnÃ³nimo');
+                    uploadFeedback.innerHTML = `<p class="msg-subida-exito">âœ… Â¡Imagen enviada como "${escapeHtml(autor)}"! AparecerÃ¡ cuando sea aprobada. ðŸ’–</p>`;
                     setTimeout(() => { uploadFeedback.innerHTML = ''; }, 5000);
                     paginaActualGaleria = 0;
                     loadApprovedImages();
@@ -1131,20 +1418,20 @@
                 }
 
                 const codigo = resultado && resultado.error ? resultado.error : (error ? error.message : 'desconocido');
-                console.error('Error al registrar la foto en la galería:', codigo);
+                console.error('Error al registrar la foto en la galerÃ­a:', codigo);
                 const mensajes = {
                     sin_sesion: esAdmin
-                        ? '❌ Tu sesión de admin no es válida. Vuelve a iniciar sesión.'
-                        : '❌ Tu sesión de comunidad no es válida. Vuelve a iniciar sesión.',
-                    titulo_invalido: '❌ El título no es válido (1-60 caracteres).',
-                    url_invalida: '❌ La imagen no se pudo registrar. Inténtalo de nuevo.',
-                    galeria_limite: '❌ Ya tienes 5 fotos pendientes de moderación.'
+                        ? 'âŒ Tu sesiÃ³n de admin no es vÃ¡lida. Vuelve a iniciar sesiÃ³n.'
+                        : 'âŒ Tu sesiÃ³n de comunidad no es vÃ¡lida. Vuelve a iniciar sesiÃ³n.',
+                    titulo_invalido: 'âŒ El tÃ­tulo no es vÃ¡lido (1-60 caracteres).',
+                    url_invalida: 'âŒ La imagen no se pudo registrar. IntÃ©ntalo de nuevo.',
+                    galeria_limite: 'âŒ Ya tienes 5 fotos pendientes de moderaciÃ³n.'
                 };
-                uploadFeedback.innerHTML = '<p class="msg-subida-error">' + (mensajes[codigo] || '❌ Error al guardar en base de datos.') + '</p>';
+                uploadFeedback.innerHTML = '<p class="msg-subida-error">' + (mensajes[codigo] || 'âŒ Error al guardar en base de datos.') + '</p>';
                 return false;
             } catch (e) {
                 console.error('Error inesperado al guardar la foto:', e);
-                uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ Error inesperado al guardar la foto.</p>';
+                uploadFeedback.innerHTML = '<p class="msg-subida-error">âŒ Error inesperado al guardar la foto.</p>';
                 return false;
             }
         }
@@ -1155,7 +1442,7 @@
             if (!input) return;
             const nuevoAutor = input.value.trim();
             if (!nuevoAutor) {
-                mostrarToast('El autor no puede estar vacío.', true);
+                mostrarToast('El autor no puede estar vacÃ­o.', true);
                 return;
             }
             try {
@@ -1169,7 +1456,7 @@
                     return;
                 }
                 if (!resultado || !resultado.ok) {
-                    mostrarToast(resultado && resultado.error === 'sin_permiso' ? 'Necesitas la sesión de admin.' : 'No se pudo cambiar el autor.', true);
+                    mostrarToast(resultado && resultado.error === 'sin_permiso' ? 'Necesitas la sesiÃ³n de admin.' : 'No se pudo cambiar el autor.', true);
                     return;
                 }
                 mostrarToast('Autor actualizado a ' + resultado.autor);
@@ -1189,10 +1476,10 @@
             }
         }
 
-        // escapeHtml / escapeAttr viven en main.js (fuente única del sitio)
+        // escapeHtml / escapeAttr viven en main.js (fuente Ãºnica del sitio)
     </script>
 
-    <script src="main.js?v=1.5.1" defer></script>
+    <script src="main.js?v=1.6.0" defer></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.17.5/dist/cdn.min.js"
             integrity="sha384-FYLKjwG3aohNhNZoVG8sY/5ntunm+MqylL90Q+rT3OM7AwV9/BKFjk/RjoIpIgsI"
             crossorigin="anonymous"></script>
