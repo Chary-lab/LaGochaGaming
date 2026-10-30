@@ -3,6 +3,23 @@
 Formato basado en Keep a Changelog. Versionado SemVer (`MAJOR.MINOR.PATCH`).
 El historial anterior a 1.5.0 está en los commits `v1.4.x`.
 
+## [1.12.0] - 2026-10-30
+
+### Feed de Instagram propio (sin Juicer)
+
+- Sustituido el iframe de Juicer del feed de Instagram por una rejilla propia
+  servida por la Edge Function `instagram-feed`: 6 últimas publicaciones con
+  miniatura, icono de vídeo y likes, enlazadas a Instagram.
+- La función consulta el perfil público de `@oscurostefany`, normaliza los datos
+  y los cachea en la tabla `instagram_feed`; un cron de `pg_cron` la refresca
+  cada 20 minutos. Si Instagram responde 401/429 se devuelve la última copia.
+- Las imágenes pasan por un proxy de la propia función (Instagram envía
+  `cross-origin-resource-policy: same-origin` y el navegador bloqueaba el
+  hotlink); solo se permiten hosts `cdninstagram.com` y `fbcdn.net`.
+- Fallback con enlace al perfil si la función no responde.
+- Nueva tabla `instagram_feed` (solo `service_role`) y extensiones `pg_net` y
+  `pg_cron` habilitadas.
+
 ## [1.11.0] - 2026-10-30
 
 ### Feed de TikTok

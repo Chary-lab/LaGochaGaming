@@ -345,19 +345,98 @@ body.light-mode .hero-bio {
 .social-feed-box.tiktok-embed-box iframe {
     transform: none;
 }
-.tiktok-feed-nota {
+/* Nota bajo los feeds sociales (Instagram / TikTok) */
+.social-feed-nota {
     margin: 12px 0 0;
     font-size: 0.78rem;
     color: var(--text-muted);
     text-align: center;
     line-height: 1.5;
 }
-.tiktok-feed-nota a {
+.social-feed-nota a {
     color: var(--accent-tiktok);
     font-weight: 700;
     text-decoration: none;
 }
-.tiktok-feed-nota a:hover { text-decoration: underline; }
+.social-feed-nota a:hover { text-decoration: underline; }
+
+/* Instagram: grid propio con la función instagram-feed (sin Juicer) */
+.ig-feed {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    min-height: 220px;
+}
+.ig-card {
+    position: relative;
+    display: block;
+    aspect-ratio: 1 / 1;
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--card-bg-subtle);
+    border: 1px solid var(--border-color);
+}
+.ig-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.35s ease;
+}
+.ig-card:hover img,
+.ig-card:focus-visible img { transform: scale(1.06); }
+.ig-card:focus-visible { outline: 2px solid var(--accent-color); outline-offset: 2px; }
+.ig-card-play {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    pointer-events: none;
+}
+.ig-card-likes {
+    position: absolute;
+    left: 8px;
+    bottom: 8px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    font-size: 0.68rem;
+    font-weight: 700;
+    pointer-events: none;
+}
+.ig-feed-cargando,
+.ig-feed-error {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 220px;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    text-align: center;
+    line-height: 1.6;
+}
+.ig-feed-error a {
+    color: var(--accent-color);
+    font-weight: 700;
+    text-decoration: none;
+}
+.ig-feed-error a:hover { text-decoration: underline; }
+@media (max-width: 600px) {
+    .ig-feed { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .ig-card img { transition: none; }
+}
 
 /* YouTube Compacto */
 .youtube-wrapper { border-color: var(--border-color); padding: 28px; border-radius: 20px; background-color: var(--card-bg); margin-top: 30px; }

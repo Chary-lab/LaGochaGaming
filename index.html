@@ -28,7 +28,7 @@
 
     <link rel="manifest" href="manifest.webmanifest">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=1.11.0">
+    <link rel="stylesheet" href="style.css?v=1.12.0">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;800;900&display=swap" rel="stylesheet">
@@ -144,9 +144,13 @@
         <div class="social-grid">
             <div class="social-column">
                 <h3>📸 Instagram</h3>
-                <div class="social-feed-box">
-                    <iframe src="https://www.juicer.io/api/feeds/oscurostefany/iframe" frameborder="0" title="oscurostefany - Instagram feed" loading="lazy"></iframe>
+                <div id="ig-feed" class="ig-feed" aria-live="polite">
+                    <div class="ig-feed-cargando">Cargando publicaciones…</div>
                 </div>
+                <p class="social-feed-nota">
+                    Se actualiza solo con las últimas publicaciones.
+                    <a href="https://www.instagram.com/oscurostefany/" target="_blank" rel="noopener noreferrer">Ver perfil en Instagram</a>
+                </p>
             </div>
             <div class="social-column tiktok-col">
                 <h3>🎵 TikTok Shorts</h3>
@@ -155,7 +159,7 @@
                             title="Últimos videos de TikTok de @lagochagaming11"
                             loading="lazy" allow="encrypted-media; fullscreen; picture-in-picture"></iframe>
                 </div>
-                <p class="tiktok-feed-nota">
+                <p class="social-feed-nota">
                     Se actualiza solo con los últimos videos publicados.
                     <a href="https://www.tiktok.com/@lagochagaming11" target="_blank" rel="noopener noreferrer">Ver perfil en TikTok</a>
                 </p>
@@ -215,7 +219,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0" defer></script>
 
-    <script src="main.js?v=1.11.0" defer></script>
+    <script src="main.js?v=1.12.0" defer></script>
     <script>
         // Navegación Inicio: scroll al top
         document.addEventListener('DOMContentLoaded', () => {
@@ -330,6 +334,73 @@
             return card;
         }
 
+        // === FEED DE INSTAGRAM (función Supabase, sin Juicer ni publicidad) ===
+        const IG_FEED_URL = 'https://cydiyaacnyydprgffmkq.supabase.co/functions/v1/instagram-feed?limit=6';
+        const IG_IMG_URL = 'https://cydiyaacnyydprgffmkq.supabase.co/functions/v1/instagram-feed?img=';
+
+        function formatearNumeroFeed(n) {
+            const v = Number(n) || 0;
+            if (v >= 1000000) return (v / 1000000).toFixed(1).replace('.', ',') + 'M';
+            if (v >= 1000) return (v / 1000).toFixed(1).replace('.', ',') + 'K';
+            return String(v);
+        }
+
+        async function cargarFeedInstagram() {
+            const cont = document.getElementById('ig-feed');
+            if (!cont) return;
+            try {
+                const resp = await fetch(IG_FEED_URL, { headers: { Accept: 'application/json' } });
+                if (!resp.ok) throw new Error('ig_' + resp.status);
+                const data = await resp.json();
+                if (!data || !data.ok || !Array.isArray(data.posts) || data.posts.length === 0) {
+                    throw new Error('sin_publicaciones');
+                }
+                cont.textContent = '';
+                data.posts.forEach((post) => {
+                    const enlace = document.createElement('a');
+                    enlace.className = 'ig-card';
+                    enlace.href = post.url;
+                    enlace.target = '_blank';
+                    enlace.rel = 'noopener noreferrer';
+                    const desc = String(post.texto || '').replace(/\s+/g, ' ').trim().slice(0, 90);
+                    enlace.setAttribute('aria-label', desc ? 'Publicación de Instagram: ' + desc : 'Abrir publicación de Instagram');
+
+                    const img = document.createElement('img');
+                    img.src = IG_IMG_URL + encodeURIComponent(post.imagen);
+                    img.alt = desc || 'Publicación de Instagram de La Gocha';
+                    img.loading = 'lazy';
+                    img.decoding = 'async';
+                    enlace.appendChild(img);
+
+                    if (post.esVideo) {
+                        const play = document.createElement('span');
+                        play.className = 'ig-card-play';
+                        play.innerHTML = '<i class="fa-solid fa-play" aria-hidden="true"></i>';
+                        enlace.appendChild(play);
+                    }
+                    if (Number(post.likes) > 0) {
+                        const likes = document.createElement('span');
+                        likes.className = 'ig-card-likes';
+                        likes.textContent = '❤ ' + formatearNumeroFeed(post.likes);
+                        enlace.appendChild(likes);
+                    }
+                    cont.appendChild(enlace);
+                });
+            } catch (e) {
+                cont.textContent = '';
+                const p = document.createElement('p');
+                p.className = 'ig-feed-error';
+                p.textContent = 'No se pudo cargar el feed. ';
+                const link = document.createElement('a');
+                link.href = 'https://www.instagram.com/oscurostefany/';
+                link.target = '_blank';
+                link.rel = 'noopener noreferrer';
+                link.textContent = 'Ver perfil en Instagram';
+                p.appendChild(link);
+                cont.appendChild(p);
+            }
+        }
+
 document.addEventListener('DOMContentLoaded', async () => {
     if (window.supabase) {
         try {
@@ -347,6 +418,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // El polling del stream está centralizado en main.js (iniciarPollingStreamGlobal)
         cargarMensajes(true);
         iniciarRealtimeMuro();
+        cargarFeedInstagram();
         if (window.iniciarRealtimeMuroReacciones) window.iniciarRealtimeMuroReacciones();
 
         document.getElementById('muro-form').addEventListener('submit', (e) => {
