@@ -28,7 +28,7 @@
 
     <link rel="manifest" href="manifest.webmanifest">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=1.12.2">
+    <link rel="stylesheet" href="style.css?v=1.13.0">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;800;900&display=swap" rel="stylesheet">
@@ -154,13 +154,8 @@
             </div>
             <div class="social-column tiktok-col">
                 <h3>🎵 TikTok Shorts</h3>
-                <div class="social-feed-box tiktok-embed-box" id="tiktok-embed-box">
-                    <button type="button" class="tiktok-cargar" id="tiktok-cargar">
-                        <span class="tiktok-cargar-icono"><i class="fa-brands fa-tiktok" aria-hidden="true"></i></span>
-                        <span class="tiktok-cargar-titulo">Ver los últimos videos</span>
-                        <span class="tiktok-cargar-handle">@lagochagaming11</span>
-                        <span class="tiktok-cargar-aviso">TikTok limita las cargas automáticas</span>
-                    </button>
+                <div id="tiktok-feed" class="ig-feed tt-feed" aria-live="polite">
+                    <div class="ig-feed-cargando">Cargando videos…</div>
                 </div>
                 <p class="social-feed-nota">
                     Se actualiza solo con los últimos videos publicados.
@@ -222,7 +217,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0" defer></script>
 
-    <script src="main.js?v=1.12.2" defer></script>
+    <script src="main.js?v=1.13.0" defer></script>
     <script>
         // Navegación Inicio: scroll al top
         document.addEventListener('DOMContentLoaded', () => {
@@ -337,26 +332,11 @@
             return card;
         }
 
-        // === FEED DE INSTAGRAM (función Supabase, sin Juicer ni publicidad) ===
+        // === FEED DE INSTAGRAM Y TIKTOK (Edge Functions propias, sin Juicer) ===
         const IG_FEED_URL = 'https://cydiyaacnyydprgffmkq.supabase.co/functions/v1/instagram-feed?limit=6';
         const IG_IMG_URL = 'https://cydiyaacnyydprgffmkq.supabase.co/functions/v1/instagram-feed?img=';
-        const TIKTOK_EMBED_URL = 'https://www.tiktok.com/embed/@lagochagaming11?lang=es';
-
-        // TikTok bloquea el embed si se carga muchas veces por IP. Se carga solo
-        // a petición del usuario para no mostrar "overload-protect triggered".
-        function cargarEmbedTikTok() {
-            const caja = document.getElementById('tiktok-embed-box');
-            if (!caja || caja.dataset.cargado === '1') return;
-            caja.dataset.cargado = '1';
-            caja.textContent = '';
-            const marco = document.createElement('iframe');
-            marco.src = TIKTOK_EMBED_URL;
-            marco.title = 'Últimos videos de TikTok de @lagochagaming11';
-            marco.setAttribute('scrolling', 'no');
-            marco.setAttribute('allow', 'encrypted-media; fullscreen; picture-in-picture');
-            caja.appendChild(marco);
-        }
-        window.cargarEmbedTikTok = cargarEmbedTikTok;
+        const TT_FEED_URL = 'https://cydiyaacnyydprgffmkq.supabase.co/functions/v1/tiktok-feed?limit=6';
+        const TT_IMG_URL = 'https://cydiyaacnyydprgffmkq.supabase.co/functions/v1/tiktok-feed?img=';
 
         function formatearNumeroFeed(n) {
             const v = Number(n) || 0;
@@ -421,6 +401,61 @@
             }
         }
 
+        async function cargarFeedTikTok() {
+            const cont = document.getElementById('tiktok-feed');
+            if (!cont) return;
+            try {
+                const resp = await fetch(TT_FEED_URL, { headers: { Accept: 'application/json' } });
+                if (!resp.ok) throw new Error('tt_' + resp.status);
+                const data = await resp.json();
+                if (!data || !data.ok || !Array.isArray(data.videos) || data.videos.length === 0) {
+                    throw new Error('sin_videos');
+                }
+                cont.textContent = '';
+                data.videos.forEach((video) => {
+                    const enlace = document.createElement('a');
+                    enlace.className = 'ig-card';
+                    enlace.href = video.url;
+                    enlace.target = '_blank';
+                    enlace.rel = 'noopener noreferrer';
+                    const desc = String(video.titulo || '').replace(/\s+/g, ' ').trim().slice(0, 90);
+                    enlace.setAttribute('aria-label', desc ? 'Video de TikTok: ' + desc : 'Abrir video de TikTok');
+
+                    const img = document.createElement('img');
+                    img.src = TT_IMG_URL + encodeURIComponent(video.portada);
+                    img.alt = desc || 'Video de TikTok de La Gocha';
+                    img.loading = 'lazy';
+                    img.decoding = 'async';
+                    enlace.appendChild(img);
+
+                    const play = document.createElement('span');
+                    play.className = 'ig-card-play';
+                    play.innerHTML = '<i class="fa-solid fa-play" aria-hidden="true"></i>';
+                    enlace.appendChild(play);
+
+                    if (Number(video.vistas) > 0) {
+                        const vistas = document.createElement('span');
+                        vistas.className = 'ig-card-likes';
+                        vistas.textContent = '▶ ' + formatearNumeroFeed(video.vistas);
+                        enlace.appendChild(vistas);
+                    }
+                    cont.appendChild(enlace);
+                });
+            } catch (e) {
+                cont.textContent = '';
+                const p = document.createElement('p');
+                p.className = 'ig-feed-error';
+                p.textContent = 'No se pudo cargar el feed. ';
+                const link = document.createElement('a');
+                link.href = 'https://www.tiktok.com/@lagochagaming11';
+                link.target = '_blank';
+                link.rel = 'noopener noreferrer';
+                link.textContent = 'Ver perfil en TikTok';
+                p.appendChild(link);
+                cont.appendChild(p);
+            }
+        }
+
 document.addEventListener('DOMContentLoaded', async () => {
     if (window.supabase) {
         try {
@@ -439,7 +474,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         cargarMensajes(true);
         iniciarRealtimeMuro();
         cargarFeedInstagram();
-        document.getElementById('tiktok-cargar')?.addEventListener('click', cargarEmbedTikTok);
+        cargarFeedTikTok();
         if (window.iniciarRealtimeMuroReacciones) window.iniciarRealtimeMuroReacciones();
 
         document.getElementById('muro-form').addEventListener('submit', (e) => {

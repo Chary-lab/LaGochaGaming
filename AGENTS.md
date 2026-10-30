@@ -83,6 +83,7 @@ Las migraciones SQL no se versionan en este repo: el historial vive en Supabase.
 - `tienda_premios`, `tienda_canjes` (tienda de puntos).
 - `admin_audit_log` (auditoría de moderación, solo admin).
 - `instagram_feed` (caché de la Edge Function `instagram-feed`; solo `service_role`, refresco con `pg_cron` cada 20 min).
+- `tiktok_feed` (caché de la Edge Function `tiktok-feed`; solo `service_role`, refresco con `pg_cron` cada 20 min).
 - RPCs importantes: `login_comunidad`, `registrar_comunidad`, `validar_sesion_comunidad`, `cerrar_sesion_comunidad`, `incrementar_puntos_comunidad`, `enviar_mensaje_chat`, `obtener_chat_historial`, `establecer_reaccion`, `establecer_reaccion_muro`, `obtener_reacciones_muro`, `publicar_saludo_muro`, `publicar_foto_galeria`, `actualizar_perfil_comunidad`, `incrementar_likes`, `obtener_likes_galeria`, `tienda_obtener_catalogo`, `tienda_canjear_premio`, `tienda_mis_canjes`, `registrar_participante_sorteo`, `sortear_ganador_sorteo`, `admin_listar_usuarios`, `admin_ban_usuario`, `admin_shadowban_usuario`, `admin_obtener_audit_log`.
 
 ### 5.5 Invariantes de integridad
@@ -134,7 +135,7 @@ Las migraciones SQL no se versionan en este repo: el historial vive en Supabase.
 - En cada release, actualizar el query de caché `?v=X.Y.Z` de `style.css` y `main.js` en los HTML (GitHub Pages cachea agresivamente).
 - Formato de commit: `vX.Y.Z - resumen corto` (seguir el historial existente).
 - No commitear ni pushear una versión inestable. Probar antes.
-- Versión de esta release: `1.12.2` (TikTok bajo demanda; sobre 1.12.1).
+- Versión de esta release: `1.13.0` (feed de TikTok propio con Edge Function; sobre 1.12.2).
 
 ## 9. Pruebas antes de commitear
 

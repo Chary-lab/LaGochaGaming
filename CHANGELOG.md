@@ -3,6 +3,20 @@
 Formato basado en Keep a Changelog. Versionado SemVer (`MAJOR.MINOR.PATCH`).
 El historial anterior a 1.5.0 está en los commits `v1.4.x`.
 
+## [1.13.0] - 2026-10-30
+
+### Feed de TikTok propio (sin embed)
+
+- Sustituido el embed de TikTok por una rejilla propia servida por la Edge
+  Function `tiktok-feed`: 6 últimos videos con portada, vistas y enlace a
+  TikTok. Sin iframe y sin `overload-protect triggered`.
+- La función obtiene los IDs desde el embed público, extrae portada, título y
+  estadísticas de cada página de video, y cachea el resultado en `tiktok_feed`.
+  Un cron de `pg_cron` la refresca cada 20 minutos.
+- Proxy de imágenes propio (solo hosts `tiktokcdn`) para evitar el bloqueo de
+  hotlink del CDN.
+- Nueva tabla `tiktok_feed` (solo `service_role`).
+
 ## [1.12.2] - 2026-10-30
 
 ### TikTok bajo demanda
