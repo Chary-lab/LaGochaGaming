@@ -28,7 +28,7 @@
 
     <link rel="manifest" href="manifest.webmanifest">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=1.10.0">
+    <link rel="stylesheet" href="style.css?v=1.11.0">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;800;900&display=swap" rel="stylesheet">
@@ -150,9 +150,15 @@
             </div>
             <div class="social-column tiktok-col">
                 <h3>🎵 TikTok Shorts</h3>
-                <div class="social-feed-box">
-                    <iframe src="https://www.juicer.io/api/feeds/lagochagaming/iframe" frameborder="0" title="lagochagaming - TikTok feed" loading="lazy"></iframe>
+                <div class="social-feed-box tiktok-embed-box">
+                    <iframe src="https://www.tiktok.com/embed/@lagochagaming11?lang=es"
+                            title="Últimos videos de TikTok de @lagochagaming11"
+                            loading="lazy" allow="encrypted-media; fullscreen; picture-in-picture"></iframe>
                 </div>
+                <p class="tiktok-feed-nota">
+                    Se actualiza solo con los últimos videos publicados.
+                    <a href="https://www.tiktok.com/@lagochagaming11" target="_blank" rel="noopener noreferrer">Ver perfil en TikTok</a>
+                </p>
             </div>
         </div>
     </section>
@@ -209,7 +215,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0" defer></script>
 
-    <script src="main.js?v=1.10.0" defer></script>
+    <script src="main.js?v=1.11.0" defer></script>
     <script>
         // Navegación Inicio: scroll al top
         document.addEventListener('DOMContentLoaded', () => {

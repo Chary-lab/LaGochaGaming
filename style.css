@@ -312,7 +312,7 @@ body.light-mode .hero-bio {
 }
 
 /* Social Feed (Instagram & TikTok) */
-.social-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 32px; }
+.social-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 32px; align-items: start; }
 .social-column { background-color: var(--card-bg); border-radius: 20px; padding: 28px; border: 1px solid var(--border-color); box-shadow: var(--glow); display: flex; flex-direction: column; }
 .social-column.tiktok-col { border-color: rgba(0, 242, 254, 0.3); box-shadow: var(--glow-tiktok); }
 .social-column h3 { font-size: 1.3rem; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; text-align: center; color: var(--accent-color); }
@@ -337,6 +337,27 @@ body.light-mode .hero-bio {
     transform: scale(1.02);
     transform-origin: top center;
 }
+
+/* TikTok: embed oficial de creador (se sincroniza solo) */
+.social-feed-box.tiktok-embed-box {
+    height: 440px;
+}
+.social-feed-box.tiktok-embed-box iframe {
+    transform: none;
+}
+.tiktok-feed-nota {
+    margin: 12px 0 0;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    text-align: center;
+    line-height: 1.5;
+}
+.tiktok-feed-nota a {
+    color: var(--accent-tiktok);
+    font-weight: 700;
+    text-decoration: none;
+}
+.tiktok-feed-nota a:hover { text-decoration: underline; }
 
 /* YouTube Compacto */
 .youtube-wrapper { border-color: var(--border-color); padding: 28px; border-radius: 20px; background-color: var(--card-bg); margin-top: 30px; }

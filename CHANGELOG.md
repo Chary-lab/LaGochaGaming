@@ -3,6 +3,21 @@
 Formato basado en Keep a Changelog. Versionado SemVer (`MAJOR.MINOR.PATCH`).
 El historial anterior a 1.5.0 está en los commits `v1.4.x`.
 
+## [1.11.0] - 2026-10-30
+
+### Feed de TikTok
+
+- Sustituido el iframe de Juicer del feed de TikTok (`/lagochagaming/iframe`,
+  devolvía 404) por el embed oficial de creador de TikTok para
+  `@lagochagaming11`, que se actualiza solo con los últimos videos publicados.
+- Nota bajo el widget con enlace directo al perfil.
+- La columna de TikTok usa altura propia (470 px) para no dejar hueco blanco y
+  la rejilla social alinea las tarjetas al inicio.
+- El embed carga con `loading="lazy"` y sin inyectar scripts de terceros en la
+  página.
+- Se retiró la función temporal de sondeo `tiktok-probe` usada para verificar el
+  acceso a TikTok desde Supabase.
+
 ## [1.10.0] - 2026-10-30
 
 ### Línea de tiempo cósmica de rangos
