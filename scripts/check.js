@@ -53,12 +53,18 @@ comprobarSintaxis('main.js', mainJs);
 if (/service_role|serviceRole/i.test(mainJs)) {
     error('main.js parece contener una clave service_role (nunca debe estar en el cliente)');
 }
+if (/Ã[\u0080-\u00BF]|Â[\u0080-\u00BF]|Ãƒ|Ã‚|ðŸ|â€/.test(mainJs)) {
+    error('main.js: texto con encoding roto (mojibake)');
+}
 
 // CSS
 const css = leer('style.css');
 const abre = (css.match(/\{/g) || []).length;
 const cierra = (css.match(/\}/g) || []).length;
 if (abre !== cierra) error(`style.css: llaves desbalanceadas (${abre} vs ${cierra})`);
+if (/Ã[\u0080-\u00BF]|Â[\u0080-\u00BF]|Ãƒ|Ã‚|ðŸ|â€/.test(css)) {
+    error('style.css: texto con encoding roto (mojibake)');
+}
 
 // _headers
 const headers = leer('_headers');
@@ -79,6 +85,14 @@ for (const pagina of PAGES) {
     if (!/<title>[^<]+<\/title>/i.test(html)) error(`${pagina}: falta <title>`);
     if (!/<meta[^>]+name="description"/i.test(html)) error(`${pagina}: falta meta description`);
     if (!/<link[^>]+rel="canonical"/i.test(html)) error(`${pagina}: falta canonical`);
+
+    // Detectar texto UTF-8 doblemente codificado (p. ej. "ÃƒÂ¡" en vez de "á").
+    if (/Ã[\u0080-\u00BF]|Â[\u0080-\u00BF]|Ãƒ|Ã‚|ðŸ|â€/.test(html)) {
+        error(`${pagina}: texto con encoding roto (mojibake)`);
+    }
+    if (/<\/butto\b|<\/buttn\b/.test(html)) {
+        error(`${pagina}: etiqueta </button> mal escrita`);
+    }
 
     const h1 = (html.match(/<h1\b/gi) || []).length;
     if (h1 !== 1) aviso(`${pagina}: se esperaba 1 <h1>, hay ${h1}`);

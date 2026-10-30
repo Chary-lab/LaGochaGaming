@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <link rel="icon" type="image/x-icon" href="img/favicon.ico">
@@ -11,17 +11,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GochiSorteo | LaGochaGaming</title>
-    <meta name="description" content="Sorteos de La Gocha con premios increÃ­bles: el modo streamer sortea en el servidor y el manual gira en tu navegador.">
+    <meta name="description" content="Sorteos de La Gocha con premios increíbles: el modo streamer sortea en el servidor y el manual gira en tu navegador.">
     <link rel="canonical" href="https://lagochagaming.com/sorteo">
     <meta property="og:title" content="GochiSorteo | LaGochaGaming">
-    <meta property="og:description" content="Participa en los sorteos de La Gocha y gana premios increÃ­bles.">
+    <meta property="og:description" content="Participa en los sorteos de La Gocha y gana premios increíbles.">
     <meta property="og:image" content="https://lagochagaming.com/img/3.jpg">
     <meta property="og:url" content="https://lagochagaming.com/sorteo">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="LaGochaGaming">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="GochiSorteo | LaGochaGaming">
-    <meta name="twitter:description" content="Sorteos de La Gocha con premios increÃ­bles: el modo streamer sortea en el servidor y el manual gira en tu navegador.">
+    <meta name="twitter:description" content="Sorteos de La Gocha con premios increíbles: el modo streamer sortea en el servidor y el manual gira en tu navegador.">
     <meta name="twitter:image" content="https://lagochagaming.com/img/3.jpg">
     <link rel="manifest" href="manifest.webmanifest">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -41,15 +41,15 @@
     <header id="global-header">
         <nav class="navbar navbar-expand-lg">
             <div class="logo navbar-brand">LAGOCHA<span>GAMING</span></div>
-            <button type="button" class="mobile-menu-toggle-btn navbar-toggler" aria-label="Abrir menÃº"><i class="fa-solid fa-bars"></i></button>
+            <button type="button" class="mobile-menu-toggle-btn navbar-toggler" aria-label="Abrir menú"><i class="fa-solid fa-bars"></i></button>
             <div class="nav-links navbar-nav">
                 <a href="./" class="nav-link">Inicio</a>
                 <a href="./#stream" class="nav-link">Directo</a>
                 <a href="./#clips" class="nav-link">Clips</a>
-                <a href="cine" class="nav-link">ðŸ¿ GochiWatch</a>
-                <a href="sorteo" class="nav-link nav-active" aria-current="page">ðŸŽ Sorteo</a>
-                <a href="galeria" class="nav-link">ðŸ“¸ GalerÃ­a</a>
-                <a href="comunidad" class="nav-link">ðŸ’¬ Comunidad</a>
+                <a href="cine" class="nav-link">🍿 GochiWatch</a>
+                <a href="sorteo" class="nav-link nav-active" aria-current="page">🎁 Sorteo</a>
+                <a href="galeria" class="nav-link">📸 Galería</a>
+                <a href="comunidad" class="nav-link">💬 Comunidad</a>
             </div>
             <div class="nav-right ms-auto d-flex align-items-center gap-2">
                 <button type="button" id="btn-toggle-tema" class="btn-tema-nav" title="Cambiar tema" aria-label="Cambiar tema claro/oscuro"><i class="fa-solid fa-sun"></i></button>
@@ -58,22 +58,22 @@
         </nav>
     </header>
 
-    <!-- TOAST DE STREAM EN VIVO se inserta dinÃ¡micamente desde main.js -->
+    <!-- TOAST DE STREAM EN VIVO se inserta dinámicamente desde main.js -->
 
     <div class="sorteo-layout page-layout" id="contenido" tabindex="-1">
         <h1 class="visually-hidden">GochiSorteo</h1>
-        <!-- SECCIÃ“N IZQUIERDA: HISTORIAL Y GANADORES -->
+        <!-- SECCIÓN IZQUIERDA: HISTORIAL Y GANADORES -->
         <div class="sidebar-ganadores">
             <h2><i class="fa-solid fa-trophy"></i> &Uacute;ltimos Ganadores</h2>
             <p class="sidebar-ganadores-lead">
-                Registro histÃ³rico con los Ãºltimos ganadores afortunados de los sorteos oficiales de la comunidad.
+                Registro histórico con los últimos ganadores afortunados de los sorteos oficiales de la comunidad.
             </p>
             <div id="top-ganadores-grid">
                 <div class="ganadores-empty">Cargando ganadores oficiales...</div>
             </div>
         </div>
 
-        <!-- SECCIÃ“N CENTRAL: CONTROLES DEL SORTEO -->
+        <!-- SECCIÓN CENTRAL: CONTROLES DEL SORTEO -->
         <div class="sorteo-container">
             <div class="mode-tabs" role="tablist" aria-label="Modos del sorteo">
                 <button type="button" id="tab-manual" class="tab-btn" data-action="tab-manual" role="tab" aria-selected="false" aria-controls="sec-modo-manual"><i class="fa-solid fa-pen-to-square"></i> Modo Manual</button>
@@ -82,15 +82,15 @@
 
             <div id="banner-estado-sorteo">
                 <div class="banner-sorteo-cerrado">
-                    <i class="fa-solid fa-lock"></i> El GochiSorteo estÃ¡ cerrado en este momento.
+                    <i class="fa-solid fa-lock"></i> El GochiSorteo está cerrado en este momento.
                 </div>
             </div>
 
             <!-- MODO MANUAL -->
             <div id="sec-modo-manual" class="sorteo-panel-manual" role="tabpanel" aria-labelledby="tab-manual">
-                <h2 class="sorteo-page-title">âœï¸ App de Sorteos Manual</h2>
+                <h2 class="sorteo-page-title">✍️ App de Sorteos Manual</h2>
                 <p class="sorteo-lead">
-                    FunciÃ³n para la comunidad y moderadores: Agrega nombres personalizados de participantes de forma local y haz girar la ruleta de prueba con efectos de confeti.
+                    Función para la comunidad y moderadores: Agrega nombres personalizados de participantes de forma local y haz girar la ruleta de prueba con efectos de confeti.
                 </p>
 
                 <div class="form-group form-group-tight">
@@ -101,13 +101,13 @@
                 <div id="feedback-manual" class="feedback-msg"></div>
 
                 <div class="ruleta-box">
-                    <div class="ruleta-title">ðŸŽ² Estado del Sorteo ðŸŽ²</div>
-                    <div class="ruleta-nombre" id="ruleta-display-publico">Â¡Sorteo Listo!</div>
+                    <div class="ruleta-title">🎲 Estado del Sorteo 🎲</div>
+                    <div class="ruleta-nombre" id="ruleta-display-publico">¡Sorteo Listo!</div>
                 </div>
                 <canvas id="confetti-canvas-publico" aria-hidden="true"></canvas>
 
                 <div class="sorteo-spin-wrap">
-                    <button type="button" class="btn-sortear" data-action="spin-public">ðŸŽ° Â¡Girar Ruleta!</button>
+                    <button type="button" class="btn-sortear" data-action="spin-public">🎰 ¡Girar Ruleta!</button>
                 </div>
 
                 <div class="participants-box">
@@ -119,29 +119,29 @@
             <!-- MODO STREAMER -->
             <div id="sec-modo-streamer" class="sorteo-panel-streamer" role="tabpanel" aria-labelledby="tab-streamer">
                 <div class="sorteo-admin-intro">
-                    <p class="admin-panel-title">ðŸ” Panel Exclusivo GochiSorteo</p>
+                    <p class="admin-panel-title">🔐 Panel Exclusivo GochiSorteo</p>
                     <p class="sorteo-admin-lead">
-                        Controla el estado de las inscripciones en vivo, aÃ±ade participantes con peso especial o vacÃ­a registros anteriores.
+                        Controla el estado de las inscripciones en vivo, añade participantes con peso especial o vacía registros anteriores.
                     </p>
                     <div class="admin-toolbar admin-toolbar-center">
-                        <button type="button" id="btn-toggle-sorteo" data-action="toggle-draw" class="btn-primary btn-success btn-sm">ðŸŸ¢ ABRIR SORTEO EN VIVO</button>
-                        <button type="button" data-action="empty-tombola" class="btn-primary btn-danger btn-sm">ðŸ—‘ï¸ Limpiar TÃ³mbola</button>
-                        <button type="button" data-action="logout-admin" class="btn-primary btn-danger-dark btn-sm"><i class="fa-solid fa-right-from-bracket"></i> Cerrar SesiÃ³n Admin</button>
+                        <button type="button" id="btn-toggle-sorteo" data-action="toggle-draw" class="btn-primary btn-success btn-sm">🟢 ABRIR SORTEO EN VIVO</button>
+                        <button type="button" data-action="empty-tombola" class="btn-primary btn-danger btn-sm">🗑️ Limpiar Tómbola</button>
+                        <button type="button" data-action="logout-admin" class="btn-primary btn-danger-dark btn-sm"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión Admin</button>
                         <button type="button" data-action="exit-streamer" class="btn-primary btn-muted btn-sm">Salir</button>
                     </div>
 
                     <!-- HERRAMIENTA BONUS PARTICIPANTES ADMIN -->
                     <div class="admin-bonus-card">
-                        <p class="admin-bonus-title">â­ Asignar Tickets Extra (Mayor Probabilidad)</p>
+                        <p class="admin-bonus-title">⭐ Asignar Tickets Extra (Mayor Probabilidad)</p>
                         <div class="form-group admin-bonus-form">
                             <input type="text" id="input-usuario-admin" class="admin-bonus-input" aria-label="Usuario para asignar peso" placeholder="Usuario (ej. Juan)" autocomplete="off">
                             <select id="select-peso-admin" class="admin-bonus-select" aria-label="Peso del usuario">
                                 <option value="1">1x (Normal)</option>
-                                <option value="2">2x (Doble Suerte ðŸ”¥)</option>
+                                <option value="2">2x (Doble Suerte 🔥)</option>
                                 <option value="3">3x (Triple Suerte âš¡)</option>
-                                <option value="5">5x (Mega Suerte ðŸ‘‘)</option>
+                                <option value="5">5x (Mega Suerte 👑)</option>
                             </select>
-                            <button type="button" data-action="add-bonus" class="btn-primary">AÃ±adir</button>
+                            <button type="button" data-action="add-bonus" class="btn-primary">Añadir</button>
                         </div>
                     </div>
 
@@ -149,13 +149,13 @@
                 </div>
 
                 <div class="ruleta-box">
-                    <div class="ruleta-title">ðŸŽ² Ruleta Oficial GochiSorteo ðŸŽ²</div>
-                    <div class="ruleta-nombre" id="ruleta-display-streamer">Â¡Sorteo Listo!</div>
+                    <div class="ruleta-title">🎲 Ruleta Oficial GochiSorteo 🎲</div>
+                    <div class="ruleta-nombre" id="ruleta-display-streamer">¡Sorteo Listo!</div>
                 </div>
                 <canvas id="confetti-canvas-streamer" aria-hidden="true"></canvas>
 
                 <div class="sorteo-spin-wrap">
-                    <button type="button" class="btn-sortear" data-action="spin-streamer">ðŸŽ° Â¡Girar Ruleta Oficial!</button>
+                    <button type="button" class="btn-sortear" data-action="spin-streamer">🎰 ¡Girar Ruleta Oficial!</button>
                 </div>
 
                 <div class="participants-box" x-data="{}">
@@ -175,25 +175,25 @@
             </div>
         </div>
 
-        <!-- SECCIÃ“N DERECHA: REGLAS E INFORMACIÃ“N -->
+        <!-- SECCIÓN DERECHA: REGLAS E INFORMACIÓN -->
         <div class="sidebar-info">
             <h3><i class="fa-solid fa-gift"></i> Reglas del Sorteo</h3>
             <p class="sidebar-info-text">
-                â€¢ El GochiSorteo se activa automÃ¡ticamente cuando La Gocha abre las inscripciones en directo. Los espectadores pueden registrarse con su usuario de Kick.<br><br>
-                â€¢ Â¡Mucha suerte a todos! ðŸ€
+                • El GochiSorteo se activa automáticamente cuando La Gocha abre las inscripciones en directo. Los espectadores pueden registrarse con su usuario de Kick.<br><br>
+                • ¡Mucha suerte a todos! 🍀
             </p>
         </div>
     </div>
 
-    <!-- Modal de Inicio de SesiÃ³n -->
+    <!-- Modal de Inicio de Sesión -->
     <div id="modal-pin" class="gochi-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-sorteo-titulo">
         <div class="gochi-modal-box">
-            <h3 id="modal-sorteo-titulo">ðŸ”’ ACCESO EXCLUSIVO GOCHA</h3>
+            <h3 id="modal-sorteo-titulo">🔒 ACCESO EXCLUSIVO GOCHA</h3>
             <p>Ingresa tus datos de acceso:</p>
 
             <form id="form-login-sorteo" novalidate>
-                <input type="email" id="streamer-email" class="gochi-modal-input" placeholder="Correo electrÃ³nico" aria-label="Correo electrÃ³nico" autocomplete="email">
-                <input type="password" id="streamer-password" class="gochi-modal-input" placeholder="ContraseÃ±a" aria-label="ContraseÃ±a" autocomplete="current-password">
+                <input type="email" id="streamer-email" class="gochi-modal-input" placeholder="Correo electrónico" aria-label="Correo electrónico" autocomplete="email">
+                <input type="password" id="streamer-password" class="gochi-modal-input" placeholder="Contraseña" aria-label="Contraseña" autocomplete="current-password">
 
                 <div id="feedback-pin" class="feedback-msg gochi-modal-feedback" role="status" aria-live="polite"></div>
 
@@ -231,11 +231,11 @@
                 if (lista) {
                     const aviso = document.createElement('li');
                     aviso.className = 'tag-participante';
-                    aviso.textContent = 'Lista no disponible. Recarga la pÃ¡gina.';
+                    aviso.textContent = 'Lista no disponible. Recarga la página.';
                     lista.appendChild(aviso);
                 }
 
-                if (count) count.textContent = 'â€”';
+                if (count) count.textContent = '—';
             }
 
             cargarEstadoSorteo();
@@ -252,10 +252,10 @@
                         cambiarTab('manual');
                     }
                 } catch (e) {
-                    console.error('Error obteniendo sesiÃ³n:', e);
+                    console.error('Error obteniendo sesión:', e);
                 }
             } else {
-                mostrarToast('Supabase no estÃ¡ disponible en este entorno', true);
+                mostrarToast('Supabase no está disponible en este entorno', true);
             }
 
             try {
@@ -302,14 +302,14 @@
             }
         });
 
-        // DelegaciÃ³n para botones copiar usuario (data-user)
+        // Delegación para botones copiar usuario (data-user)
         document.addEventListener('click', (e) => {
             const btn = e.target.closest('.btn-copiar-enlace[data-user]');
             if (!btn) return;
             e.stopPropagation();
             const user = btn.dataset.user;
             if (user) {
-                window.copiarEnlace(user, 'Â¡Usuario copiado!');
+                window.copiarEnlace(user, '¡Usuario copiado!');
             }
         });
 
@@ -386,7 +386,7 @@
             const btnEntrar = document.getElementById('btn-entrar-sorteo');
 
             if (!window.supabase) {
-                mostrarFeedback('feedback-pin', 'âŒ No se pudo conectar con el servidor', true);
+                mostrarFeedback('feedback-pin', '❌ No se pudo conectar con el servidor', true);
                 return;
             }
 
@@ -400,7 +400,7 @@
                 const { error } = await supabase.auth.signInWithPassword({ email, password });
 
                 if (error) {
-                    mostrarFeedback('feedback-pin', 'âŒ Credenciales incorrectas', true);
+                    mostrarFeedback('feedback-pin', '❌ Credenciales incorrectas', true);
                     return;
                 }
 
@@ -410,7 +410,7 @@
                     await supabase.auth.signOut().catch(() => {});
                     window.refrescarCacheAdmin?.();
                     streamerAutenticado = false;
-                    mostrarFeedback('feedback-pin', 'âŒ Esta cuenta no es de streamer', true);
+                    mostrarFeedback('feedback-pin', '❌ Esta cuenta no es de streamer', true);
                     return;
                 }
 
@@ -423,7 +423,7 @@
                 document.getElementById('tab-manual').setAttribute('aria-selected', 'false');
                 document.getElementById('tab-streamer').setAttribute('aria-selected', 'true');
             } catch (e) {
-                mostrarFeedback('feedback-pin', 'âŒ No se pudo iniciar sesiÃ³n', true);
+                mostrarFeedback('feedback-pin', '❌ No se pudo iniciar sesión', true);
             } finally {
                 if (btnEntrar) btnEntrar.disabled = false;
             }
@@ -442,7 +442,7 @@
             if (!(await validarSesionStreamer())) {
                 streamerAutenticado = false;
                 salirModoStreamer();
-                mostrarFeedback('feedback-streamer-direct', 'âŒ SesiÃ³n expirada.', true);
+                mostrarFeedback('feedback-streamer-direct', '❌ Sesión expirada.', true);
                 return;
             }
 
@@ -456,7 +456,7 @@
                 actualizarUIEstadoSorteo();
             } catch (e) {
                 console.error('No se pudo cambiar el estado del sorteo:', e);
-                mostrarFeedback('feedback-streamer-direct', 'âŒ No se pudo cambiar el estado del sorteo.', true);
+                mostrarFeedback('feedback-streamer-direct', '❌ No se pudo cambiar el estado del sorteo.', true);
             }
         }
 
@@ -476,11 +476,11 @@
 
             if (btnToggle) {
                 if (sorteoAbierto) {
-                    btnToggle.innerText = "ðŸ”´ CERRAR SORTEO EN VIVO";
+                    btnToggle.innerText = "🔴 CERRAR SORTEO EN VIVO";
                     btnToggle.classList.add('btn-danger');
                     btnToggle.classList.remove('btn-success');
                 } else {
-                    btnToggle.innerText = "ðŸŸ¢ ABRIR SORTEO EN VIVO";
+                    btnToggle.innerText = "🟢 ABRIR SORTEO EN VIVO";
                     btnToggle.classList.add('btn-success');
                     btnToggle.classList.remove('btn-danger');
                 }
@@ -494,13 +494,13 @@
                         bannerArea.innerHTML = `
                             <div class="banner-sorteo-registrado">
                                 <h2 class="banner-title">
-                                    âœ… Â¡YA ESTÃS PARTICIPANDO EN EL GOCHISORTEO!
+                                    ✅ ¡YA ESTÁS PARTICIPANDO EN EL GOCHISORTEO!
                                 </h2>
                                 <p class="banner-text">
                                     Inscrito con el usuario: <strong class="banner-user">@${escapeHtml(registradoUser)}</strong>
                                 </p>
                                 <p class="banner-hint">
-                                    Permanece atento a la transmisiÃ³n para conocer al ganador. Â¡Mucha suerte! ðŸ€
+                                    Permanece atento a la transmisión para conocer al ganador. ¡Mucha suerte! 🍀
                                 </p>
                             </div>
                         `;
@@ -508,7 +508,7 @@
                         bannerArea.innerHTML = `
                             <div class="banner-sorteo-activo">
                                 <h2 class="banner-title">
-                                    ðŸŽ‰ Â¡GochiSorteo Oficial ABIERTO! ðŸŽ‰
+                                    🎉 ¡GochiSorteo Oficial ABIERTO! 🎉
                                 </h2>
                                 <p class="banner-text-lead">
                                     Ingresa tu nombre de usuario exacto de Kick para participar en directo:
@@ -516,7 +516,7 @@
                                 <div class="form-group form-group-flush">
                                     <input type="text" id="input-usuario-temporal" placeholder="Tu usuario de Kick..." autocomplete="off">
                                     <button type="button" class="btn-primary btn-join-draw" data-action="join-draw">
-                                        ðŸŽ Â¡Unirme al GochiSorteo!
+                                        🎁 ¡Unirme al GochiSorteo!
                                     </button>
                                 </div>
                                 <div id="feedback-publico-temporal" class="feedback-msg"></div>
@@ -530,15 +530,15 @@
                     localStorage.removeItem('gochi_registrado_user');
                     bannerArea.innerHTML = `
                         <div class="banner-sorteo-cerrado">
-                            <i class="fa-solid fa-lock"></i> El GochiSorteo estÃ¡ cerrado en este momento.
+                            <i class="fa-solid fa-lock"></i> El GochiSorteo está cerrado en este momento.
                         </div>
                     `;
                 }
             }
         }
 
-        // VerificaciÃ³n del handle contra la API pÃºblica de Kick.
-        // Solo bloquea ante un 404 explÃ­cito (el usuario no existe): si la API
+        // Verificación del handle contra la API pública de Kick.
+        // Solo bloquea ante un 404 explícito (el usuario no existe): si la API
         // falla o va lenta, el sorteo nunca se bloquea por un problema externo.
         const CACHE_KICK_KEY = 'gochi_kick_cache';
         const CACHE_KICK_TTL = 30 * 60 * 1000;
@@ -579,7 +579,7 @@
                     }
                 }
             } catch (e) {
-                // Red caÃ­da: se permite el registro (el sorteo no se bloquea).
+                // Red caída: se permite el registro (el sorteo no se bloquea).
                 resultado = { ok: true, username, kickUserId: null };
             }
 
@@ -601,7 +601,7 @@
 
             const check = await verificarHandleKick(username);
             if (!check.ok) {
-                mostrarFeedback('feedback-publico-temporal', 'âŒ Ese usuario de Kick no existe. Revisa el nombre.', true);
+                mostrarFeedback('feedback-publico-temporal', '❌ Ese usuario de Kick no existe. Revisa el nombre.', true);
                 return;
             }
 
@@ -611,7 +611,7 @@
         async function registrarUsuarioEnLista(username, feedbackId, kickUserId = null) {
             const store = obtenerStoreSorteo();
             if (!store) {
-                mostrarFeedback(feedbackId, 'âŒ La lista no estÃ¡ disponible. Recarga la pÃ¡gina.', true);
+                mostrarFeedback(feedbackId, '❌ La lista no está disponible. Recarga la página.', true);
                 return;
             }
 
@@ -619,7 +619,7 @@
                 u => String(u.username ?? u).toLowerCase() === username.toLowerCase()
             );
             if (yaRegistrado) {
-                mostrarFeedback(feedbackId, 'âš ï¸ Â¡Este usuario ya estÃ¡ registrado!', true);
+                mostrarFeedback(feedbackId, '⚠️ ¡Este usuario ya está registrado!', true);
                 return;
             }
 
@@ -638,12 +638,12 @@
                 store.participantes = store.participantes.filter(
                     u => String(u.username ?? u).toLowerCase() !== username.toLowerCase()
                 );
-                const msg = err.message === 'sorteo_cerrado' ? 'El sorteo estÃ¡ cerrado en este momento.'
-                    : err.message === 'ya_registrado' ? 'âš ï¸ Â¡Este usuario ya estÃ¡ registrado!'
-                    : err.message === 'lleno' ? 'âš ï¸ El sorteo estÃ¡ lleno.'
-                    : err.message === 'rate_limited' ? 'â³ Demasiados registros desde esta conexiÃ³n. Espera unos minutos.'
-                    : err.message === 'usuario_invalido' ? 'âŒ Usuario invÃ¡lido (solo letras, nÃºmeros y _).'
-                    : 'âŒ No se pudo completar el registro. IntÃ©ntalo de nuevo.';
+                const msg = err.message === 'sorteo_cerrado' ? 'El sorteo está cerrado en este momento.'
+                    : err.message === 'ya_registrado' ? '⚠️ ¡Este usuario ya está registrado!'
+                    : err.message === 'lleno' ? '⚠️ El sorteo está lleno.'
+                    : err.message === 'rate_limited' ? '⏳ Demasiados registros desde esta conexión. Espera unos minutos.'
+                    : err.message === 'usuario_invalido' ? '❌ Usuario inválido (solo letras, números y _).'
+                    : '❌ No se pudo completar el registro. Inténtalo de nuevo.';
                 mostrarFeedback(feedbackId, msg, true);
                 return;
             }
@@ -659,7 +659,7 @@
             if (!nombre) return;
 
             if (listaPublica.some(p => p.toLowerCase() === nombre.toLowerCase())) {
-                mostrarFeedback('feedback-manual', 'âš ï¸ Este participante ya estÃ¡ en la lista.', true);
+                mostrarFeedback('feedback-manual', '⚠️ Este participante ya está en la lista.', true);
                 return;
             }
 
@@ -667,7 +667,7 @@
             actualizarListaPublica();
             input.value = '';
             input.focus();
-            mostrarFeedback('feedback-manual', `âœ… @${nombre} agregado a la lista.`);
+            mostrarFeedback('feedback-manual', `✅ @${nombre} agregado a la lista.`);
         }
 
         function eliminarParticipantePublico(index) {
@@ -678,8 +678,8 @@
         function limpiarListaPublica() {
             listaPublica = [];
             actualizarListaPublica();
-            document.getElementById('ruleta-display-publico').innerText = "Â¡Sorteo Listo!";
-            mostrarFeedback('feedback-manual', 'ðŸ§¹ Lista de participantes limpiada.');
+            document.getElementById('ruleta-display-publico').innerText = "¡Sorteo Listo!";
+            mostrarFeedback('feedback-manual', '🧹 Lista de participantes limpiada.');
         }
 
         function actualizarListaPublica() {
@@ -716,7 +716,7 @@
         function girarRuletaPublica() {
             if (ruletaGirando) return;
             if (listaPublica.length === 0) {
-                mostrarFeedback('feedback-manual', 'âš ï¸ Agrega al menos un participante antes de girar.', true);
+                mostrarFeedback('feedback-manual', '⚠️ Agrega al menos un participante antes de girar.', true);
                 return;
             }
             ruletaGirando = true;
@@ -729,7 +729,7 @@
                 if (counter > 25) {
                     clearInterval(intervalo);
                     let ganadorFinal = listaPublica[indiceAleatorioSeguro(listaPublica.length)];
-                    display.innerHTML = `ðŸŽ‰ Â¡@${escapeHtml(ganadorFinal)}! ðŸŽ‰`;
+                    display.innerHTML = `🎉 ¡@${escapeHtml(ganadorFinal)}! 🎉`;
                     lanzarConfetti('confetti-canvas-publico');
                     ruletaGirando = false;
                 }
@@ -743,7 +743,7 @@
             const peso = parseInt(selectPeso.value);
 
             if (!username) {
-                mostrarFeedback('feedback-streamer-direct', 'âŒ Escribe un usuario.', true);
+                mostrarFeedback('feedback-streamer-direct', '❌ Escribe un usuario.', true);
                 return;
             }
 
@@ -757,16 +757,16 @@
                 if (!resultado || !resultado.ok) {
                     throw new Error(resultado ? resultado.error : 'error_desconocido');
                 }
-                mostrarFeedback('feedback-streamer-direct', `âœ… @${username} aÃ±adido con ${peso}x de probabilidad.`);
+                mostrarFeedback('feedback-streamer-direct', `✅ @${username} añadido con ${peso}x de probabilidad.`);
                 input.value = '';
                 cargarParticipantesOnline();
             } catch (err) {
                 console.error('Error:', err);
                 const msg = err.message === 'usuario_invalido'
-                    ? 'âŒ Usuario invÃ¡lido (solo letras, nÃºmeros y _).'
+                    ? '❌ Usuario inválido (solo letras, números y _).'
                     : err.message === 'sin_permiso'
-                    ? 'âŒ Tu sesiÃ³n no tiene permiso para hacer eso.'
-                    : 'âŒ Error al agregar participante.';
+                    ? '❌ Tu sesión no tiene permiso para hacer eso.'
+                    : '❌ Error al agregar participante.';
                 mostrarFeedback('feedback-streamer-direct', msg, true);
             }
         }
@@ -790,14 +790,14 @@
         async function vaciarTombolaOnline() {
             const store = obtenerStoreSorteo();
             if (!store) {
-                mostrarFeedback('feedback-streamer-direct', 'âŒ La lista no estÃ¡ disponible. Recarga la pÃ¡gina.', true);
+                mostrarFeedback('feedback-streamer-direct', '❌ La lista no está disponible. Recarga la página.', true);
                 return;
             }
 
             if (!(await validarSesionStreamer())) {
                 streamerAutenticado = false;
                 salirModoStreamer();
-                mostrarFeedback('feedback-streamer-direct', 'âŒ SesiÃ³n expirada.', true);
+                mostrarFeedback('feedback-streamer-direct', '❌ Sesión expirada.', true);
                 return;
             }
 
@@ -811,10 +811,10 @@
                 store.participantes = [];
                 localStorage.removeItem('gochi_registrado_user');
                 actualizarUIEstadoSorteo();
-                mostrarFeedback('feedback-streamer-direct', 'ðŸ§¹ TÃ³mbola vaciada y registros limpiados.');
+                mostrarFeedback('feedback-streamer-direct', '🧹 Tómbola vaciada y registros limpiados.');
             } catch (err) {
-                console.error('Error vaciando la tÃ³mbola:', err);
-                mostrarFeedback('feedback-streamer-direct', 'âŒ No se pudo vaciar la tÃ³mbola.', true);
+                console.error('Error vaciando la tómbola:', err);
+                mostrarFeedback('feedback-streamer-direct', '❌ No se pudo vaciar la tómbola.', true);
             }
         }
 
@@ -823,23 +823,23 @@
 
             const store = obtenerStoreSorteo();
             if (!store) {
-                mostrarFeedback('feedback-streamer-direct', 'âŒ La lista no estÃ¡ disponible. Recarga la pÃ¡gina.', true);
+                mostrarFeedback('feedback-streamer-direct', '❌ La lista no está disponible. Recarga la página.', true);
                 return;
             }
 
             if (store.participantes.length === 0) {
-                mostrarFeedback('feedback-streamer-direct', 'âš ï¸ No hay participantes inscritos.', true);
+                mostrarFeedback('feedback-streamer-direct', '⚠️ No hay participantes inscritos.', true);
                 return;
             }
             if (!(await validarSesionStreamer())) {
                 streamerAutenticado = false;
                 salirModoStreamer();
-                mostrarFeedback('feedback-streamer-direct', 'âŒ SesiÃ³n expirada.', true);
+                mostrarFeedback('feedback-streamer-direct', '❌ Sesión expirada.', true);
                 return;
             }
 
             ruletaGirando = true;
-            mostrarFeedback('feedback-streamer-direct', 'ðŸŽ² Sorteando en el servidor...');
+            mostrarFeedback('feedback-streamer-direct', '🎲 Sorteando en el servidor...');
 
             // El resultado se decide SIEMPRE en el servidor. La animacion es
             // solo cosmetica. Si el servidor falla no se inventa un ganador:
@@ -852,11 +852,11 @@
                     ganadorFinal = data.ganador;
                 } else if (data && data.error === 'sin_participantes') {
                     ruletaGirando = false;
-                    mostrarFeedback('feedback-streamer-direct', 'âš ï¸ No hay participantes en la tombola.', true);
+                    mostrarFeedback('feedback-streamer-direct', '⚠️ No hay participantes en la tombola.', true);
                     return;
                 } else if (data && data.error === 'sin_permiso') {
                     ruletaGirando = false;
-                    mostrarFeedback('feedback-streamer-direct', 'âŒ Tu sesiÃ³n no tiene permiso para sortear.', true);
+                    mostrarFeedback('feedback-streamer-direct', '❌ Tu sesión no tiene permiso para sortear.', true);
                     return;
                 }
             } catch (err) {
@@ -865,7 +865,7 @@
 
             if (!ganadorFinal) {
                 ruletaGirando = false;
-                mostrarFeedback('feedback-streamer-direct', 'âŒ No se pudo sortear en el servidor. Intenta de nuevo.', true);
+                mostrarFeedback('feedback-streamer-direct', '❌ No se pudo sortear en el servidor. Intenta de nuevo.', true);
                 return;
             }
 
@@ -883,7 +883,7 @@
                 counter++;
                 if (counter > 25) {
                     clearInterval(intervalo);
-                    display.innerHTML = `ðŸŽ‰ Â¡@${escapeHtml(ganadorFinal)}! ðŸŽ‰`;
+                    display.innerHTML = `🎉 ¡@${escapeHtml(ganadorFinal)}! 🎉`;
                     lanzarConfetti('confetti-canvas-streamer');
                     // sortear_ganador_sorteo ya inserto el ganador en ganadores_sorteo.
                     cargarTopGanadores();
@@ -909,7 +909,7 @@
                     const fecha = new Date(g.created_at).toLocaleString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
                     const nombreDiv = document.createElement('div');
                     nombreDiv.className = 'ganador-nombre';
-                    nombreDiv.textContent = `ðŸŽ‰ ${g.nombre || ''}`;
+                    nombreDiv.textContent = `🎉 ${g.nombre || ''}`;
                     const fechaDiv = document.createElement('div');
                     fechaDiv.className = 'ganador-fecha';
                     fechaDiv.textContent = fecha;

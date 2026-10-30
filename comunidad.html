@@ -1,23 +1,23 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#ff66b2">
     <title>LaGochaGaming | Comunidad y Chat</title>
-    <meta name="description" content="ÃƒÅ¡nete al chat de la comunidad de LaGochaGaming, comparte con otros fans, sube de rango y gana puntos mientras no hay stream.">
+    <meta name="description" content="Únete al chat de la comunidad de LaGochaGaming, comparte con otros fans, sube de rango y gana puntos mientras no hay stream.">
     <link rel="canonical" href="https://lagochagaming.com/comunidad">
     
     <!-- Open Graph / Redes Sociales -->
     <meta property="og:title" content="LaGochaGaming | Comunidad">
-    <meta property="og:description" content="ÃƒÅ¡nete al chat de la comunidad, comparte con otros fans y entÃƒÂ©rate de todo mientras no hay stream.">
+    <meta property="og:description" content="Únete al chat de la comunidad, comparte con otros fans y entérate de todo mientras no hay stream.">
     <meta property="og:image" content="https://lagochagaming.com/img/3.jpg">
     <meta property="og:url" content="https://lagochagaming.com/comunidad">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="LaGochaGaming">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="LaGochaGaming | Comunidad">
-    <meta name="twitter:description" content="ÃƒÅ¡nete al chat de la comunidad, comparte con otros fans y entÃƒÂ©rate de todo mientras no hay stream.">
+    <meta name="twitter:description" content="Únete al chat de la comunidad, comparte con otros fans y entérate de todo mientras no hay stream.">
     <meta name="twitter:image" content="https://lagochagaming.com/img/3.jpg">
 
     <link rel="icon" type="image/x-icon" href="img/favicon.ico">
@@ -45,15 +45,15 @@
     <header id="global-header">
         <nav class="navbar navbar-expand-lg">
             <div class="logo navbar-brand">LAGOCHA<span>GAMING</span></div>
-            <button type="button" class="mobile-menu-toggle-btn navbar-toggler" aria-label="Abrir menÃƒÂº"><i class="fa-solid fa-bars"></i></button>
+            <button type="button" class="mobile-menu-toggle-btn navbar-toggler" aria-label="Abrir menú"><i class="fa-solid fa-bars"></i></button>
             <div class="nav-links navbar-nav">
                 <a href="./" class="nav-link">Inicio</a>
                 <a href="./#stream" class="nav-link">Directo</a>
                 <a href="./#clips" class="nav-link">Clips</a>
-                <a href="cine" class="nav-link">Ã°Å¸ÂÂ¿ GochiWatch</a>
-                <a href="sorteo" class="nav-link">Ã°Å¸Å½Â Sorteo</a>
-                <a href="galeria" class="nav-link">Ã°Å¸â€œÂ¸ GalerÃƒÂ­a</a>
-                <a href="comunidad" class="nav-link nav-active" aria-current="page">Ã°Å¸â€™Â¬ Comunidad</a>
+                <a href="cine" class="nav-link">🍿 GochiWatch</a>
+                <a href="sorteo" class="nav-link">🎁 Sorteo</a>
+                <a href="galeria" class="nav-link">📸 Galería</a>
+                <a href="comunidad" class="nav-link nav-active" aria-current="page">💬 Comunidad</a>
             </div>
             <div class="nav-right ms-auto d-flex align-items-center gap-2">
                 <button type="button" id="btn-toggle-tema" class="btn-tema-nav" title="Cambiar tema" aria-label="Cambiar tema claro/oscuro"><i class="fa-solid fa-sun"></i></button>
@@ -62,21 +62,21 @@
         </nav>
     </header>
 
-    <!-- TOAST DE STREAM EN VIVO se inserta dinÃƒÂ¡micamente desde main.js -->
+    <!-- TOAST DE STREAM EN VIVO se inserta dinámicamente desde main.js -->
 
     <!-- CONTENIDO PRINCIPAL COMUNIDAD -->
     <main class="comunidad-layout page-layout" id="contenido" tabindex="-1">
         <h1 class="visually-hidden">Comunidad y chat de LaGochaGaming</h1>
-        <!-- COLUMNA IZQUIERDA: USUARIOS EN LÃƒÂNEA + LEADERBOARD -->
+        <!-- COLUMNA IZQUIERDA: USUARIOS EN LÍNEA + LEADERBOARD -->
         <section id="online-users" class="online-users-column">
             <h2 class="chat-sidebar-title">
-                <i class="fa-solid fa-users"></i> Usuarios en lÃƒÂ­nea
+                <i class="fa-solid fa-users"></i> Usuarios en línea
             </h2>
             <div id="online-users-list" aria-live="polite" aria-label="Usuarios conectados al chat">
                 Cargando usuarios...
             </div>
 
-            <!-- LEADERBOARD PÃƒÅ¡BLICO DE PUNTOS -->
+            <!-- LEADERBOARD PÚBLICO DE PUNTOS -->
             <div class="chat-sidebar-section">
                 <h3 class="chat-sidebar-subtitle">
                     <i class="fa-solid fa-trophy"></i> Top Comunidad
@@ -94,7 +94,7 @@
                         </div>
                     </template>
                     <div class="chat-empty-note" x-show="$store.ranking.cargando">Cargando ranking...</div>
-                    <div class="chat-empty-note" x-show="!$store.ranking.cargando && !$store.ranking.error && !$store.ranking.usuarios.length" x-cloak>Sin participantes aÃƒÂºn</div>
+                    <div class="chat-empty-note" x-show="!$store.ranking.cargando && !$store.ranking.error && !$store.ranking.usuarios.length" x-cloak>Sin participantes aún</div>
                     <div class="chat-empty-note" x-show="$store.ranking.error" x-text="$store.ranking.error" x-cloak></div>
                 </div>
             </div>
@@ -109,12 +109,12 @@
                 <span id="typing-indicator" class="typing-indicator" hidden></span>
             </div>
 
-            <button type="button" id="btn-scroll-nuevos" class="btn-scroll-nuevos" hidden>Nuevos mensajes Ã¢â€ â€œ</button>
+            <button type="button" id="btn-scroll-nuevos" class="btn-scroll-nuevos" hidden>Nuevos mensajes ↓</button>
             <div id="chat-mensajes" class="chat-messages" role="log" aria-live="polite" aria-atomic="false" x-data="{}">
                 <template x-for="msg in $store.chat.mensajes" :key="msg.id">
                     <div class="chat-msg-container" :data-msgid="msg.id" @mouseleave="window.ocultarTooltipReaccion?.()">
                         <div class="chat-msg-header">
-                            <span class="chat-msg-autor" x-text="msg.autor || 'AnÃƒÂ³nimo'"></span>
+                            <span class="chat-msg-autor" x-text="msg.autor || 'Anónimo'"></span>
                             <span class="chat-msg-meta">
                                 <span class="chat-msg-fecha" x-text="msg.fecha"></span>
                                 <button type="button" class="btn-copiar-enlace" :data-url="'#chat-msg-' + msg.id" aria-label="Copiar enlace al mensaje" title="Copiar enlace"><i class="fa-solid fa-link"></i></button>
@@ -138,7 +138,7 @@
                                 </span>
                             </template>
                         </div>
-                        <div class="chat-msg-burbuja" role="group" aria-label="Reacciones rÃƒÂ¡pidas">
+                        <div class="chat-msg-burbuja" role="group" aria-label="Reacciones rápidas">
                             <template x-for="emoji in $store.reacciones.emojis" :key="emoji">
                                 <button type="button" class="btn-burbuja"
                                         :class="{ mia: $store.reacciones.miReaccion(msg.id) === emoji }"
@@ -153,28 +153,28 @@
                     </div>
                 </template>
                 <div class="chat-msg-vacio" x-show="$store.chat.cargando">Cargando mensajes de la comunidad...</div>
-                <div class="chat-msg-vacio" x-show="!$store.chat.cargando && !$store.chat.error && !$store.chat.mensajes.length" x-cloak>Ã‚Â¡SÃƒÂ© el primero en escribir!</div>
+                <div class="chat-msg-vacio" x-show="!$store.chat.cargando && !$store.chat.error && !$store.chat.mensajes.length" x-cloak>¡Sé el primero en escribir!</div>
                 <div class="chat-empty-error" x-show="$store.chat.error" x-text="$store.chat.error" x-cloak></div>
-                <div id="chat-no-disponible" class="chat-empty-error" hidden>Chat no disponible. Recarga la pÃƒÂ¡gina.</div>
+                <div id="chat-no-disponible" class="chat-empty-error" hidden>Chat no disponible. Recarga la página.</div>
             </div>
 
-            <!-- BOTÃƒâ€œN CARGAR MÃƒÂS HISTORIAL -->
+            <!-- BOTÓN CARGAR MÁS HISTORIAL -->
             <div class="chat-cargar-mas-container" x-show="!$store.chat.cargando && $store.chat.hayMas">
-                <button type="button" id="btn-cargar-mas-chat" class="btn-primary btn-cargar-mas" @click="window.cargarMasChat?.()" x-text="$store.chat.cargandoMas ? 'Cargando...' : 'Ã¢Â¬â€  Cargar mensajes anteriores'"></button>
+                <button type="button" id="btn-cargar-mas-chat" class="btn-primary btn-cargar-mas" @click="window.cargarMasChat?.()" x-text="$store.chat.cargandoMas ? 'Cargando...' : '⬆ Cargar mensajes anteriores'"></button>
             </div>
 
-            <!-- ÃƒÂREA DE CHAT: Login/Registro cuando no hay sesiÃƒÂ³n, Formulario cuando hay sesiÃƒÂ³n -->
+            <!-- ÁREA DE CHAT: Login/Registro cuando no hay sesión, Formulario cuando hay sesión -->
             <div id="chat-login-area" class="chat-input-area chat-login-area">
-                <div class="chat-login-copy">Inicia sesiÃƒÂ³n o regÃƒÂ­strate para participar en el chat</div>
+                <div class="chat-login-copy">Inicia sesión o regístrate para participar en el chat</div>
                 <div class="chat-login-actions">
                     <button type="button" id="btn-login-chat" class="btn-primary chat-login-btn">
-                        <i class="fa-solid fa-right-to-bracket"></i> Iniciar SesiÃƒÂ³n
+                        <i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión
                     </button>
                     <button type="button" id="btn-registro-chat" class="btn-primary chat-login-btn">
                         <i class="fa-solid fa-user-plus"></i> Registrarse
                     </button>
                 </div>
-                <p class="chat-login-hint">Ambos requieren un apodo y un PIN de 4 dÃƒÂ­gitos para proteger tu cuenta y puntos.</p>
+                <p class="chat-login-hint">Ambos requieren un apodo y un PIN de 4 dígitos para proteger tu cuenta y puntos.</p>
             </div>
 
             <form id="chat-form" class="chat-input-area chat-form">
@@ -191,7 +191,7 @@
             <div class="tab-header" role="tablist" aria-label="Paneles de la comunidad">
                 <button type="button" class="tab-btn active" data-tab="canal" role="tab" id="tabbtn-canal" aria-selected="true" aria-controls="tab-canal">Canal</button>
                 <button type="button" class="tab-btn" data-tab="rangos" role="tab" id="tabbtn-rangos" aria-selected="false" aria-controls="tab-rangos" tabindex="-1">Rangos</button>
-                <button type="button" class="tab-btn" data-tab="tienda" role="tab" id="tabbtn-tienda" aria-selected="false" aria-controls="tab-tienda" tabindex="-1">ðŸ›ï¸ Tienda</button>
+                <button type="button" class="tab-btn" data-tab="tienda" role="tab" id="tabbtn-tienda" aria-selected="false" aria-controls="tab-tienda" tabindex="-1">🛍️ Tienda</button>
                 <button type="button" class="tab-btn" data-tab="info" role="tab" id="tabbtn-info" aria-selected="false" aria-controls="tab-info" tabindex="-1">Info &amp; Reglas</button>
             </div>
 
@@ -232,18 +232,18 @@
                             <span id="user-puntos-chip" class="rango-sube-chip" hidden>+0</span>
                             <span id="user-rango-mult" class="rango-mult">x1</span>
                         </div>
-                        <span id="user-rango-badge" class="rango-badge rango-semilla user-rango-badge">Ã°Å¸Å’Â± SEMILLA</span>
+                        <span id="user-rango-badge" class="rango-badge rango-semilla user-rango-badge">🌱 SEMILLA</span>
                     </div>
                     <div class="rango-progreso rango-progreso-usuario">
                         <div id="user-rango-progreso" class="rango-progreso-fill"></div>
                     </div>
-                    <p id="user-rango-meta" class="rango-meta">PrÃƒÂ³ximo rango: Gota (50 pts)</p>
+                    <p id="user-rango-meta" class="rango-meta">Próximo rango: Gota (50 pts)</p>
 
                     <!-- Bio y enlaces (se muestran si existen) -->
                     <div id="user-bio" class="user-bio" hidden></div>
                     <div id="user-links" class="user-links" hidden></div>
 
-                    <!-- Formulario de ediciÃƒÂ³n (oculto por defecto) -->
+                    <!-- Formulario de edición (oculto por defecto) -->
                     <form id="form-editar-perfil" class="form-editar-perfil" hidden>
                         <div class="form-group-perfil">
                             <label for="perfil-avatar">Avatar</label>
@@ -253,11 +253,11 @@
                                 <input type="file" id="perfil-avatar" class="avatar-input" accept="image/*" aria-label="Subir avatar">
                                 <label for="perfil-avatar" class="avatar-label"><i class="fa-solid fa-camera"></i></label>
                             </div>
-                            <p class="form-hint">MÃƒÂ¡x 500 KB Ã‚Â· JPG, PNG, GIF, WebP</p>
+                            <p class="form-hint">Máx 500 KB · JPG, PNG, GIF, WebP</p>
                         </div>
                         <div class="form-group-perfil">
                             <label for="perfil-bio">Bio</label>
-                            <textarea id="perfil-bio" class="perfil-input" maxlength="160" placeholder="CuÃƒÂ©ntanos algo sobre ti..." aria-label="Bio"></textarea>
+                            <textarea id="perfil-bio" class="perfil-input" maxlength="160" placeholder="Cuéntanos algo sobre ti..." aria-label="Bio"></textarea>
                             <span class="char-count"><span id="bio-char-count">0</span>/160</span>
                         </div>
                         <div class="form-group-perfil">
@@ -308,11 +308,11 @@
             <div id="tab-rangos" class="tab-content" hidden role="tabpanel" aria-labelledby="tabbtn-rangos">
                 <h4 class="tab-content-title"><i class="fa-solid fa-crown"></i> Rangos y Puntos</h4>
                 <div id="cuadro-rangos" class="cuadro-rangos">
-                    <div class="rango-fila"><span class="rango-icono">Ã°Å¸Å’Â±</span><span class="rango-nombre">Semilla</span><span class="rango-puntos">0 - 49 pts</span></div>
-                    <div class="rango-fila"><span class="rango-icono">Ã°Å¸â€™Â§</span><span class="rango-nombre">Gota</span><span class="rango-puntos">50 - 199 pts</span></div>
-                    <div class="rango-fila"><span class="rango-icono">Ã°Å¸Å’Â¸</span><span class="rango-nombre">Flor</span><span class="rango-puntos">200 - 499 pts</span></div>
-                    <div class="rango-fila"><span class="rango-icono">Ã¢Â­Â</span><span class="rango-nombre">Estrella</span><span class="rango-puntos">500 - 999 pts</span></div>
-                    <div class="rango-fila rango-leyenda"><span class="rango-icono">Ã°Å¸â€˜â€˜</span><span class="rango-nombre">Leyenda</span><span class="rango-puntos">1000+ pts</span></div>
+                    <div class="rango-fila"><span class="rango-icono">🌱</span><span class="rango-nombre">Semilla</span><span class="rango-puntos">0 - 49 pts</span></div>
+                    <div class="rango-fila"><span class="rango-icono">💧</span><span class="rango-nombre">Gota</span><span class="rango-puntos">50 - 199 pts</span></div>
+                    <div class="rango-fila"><span class="rango-icono">🌸</span><span class="rango-nombre">Flor</span><span class="rango-puntos">200 - 499 pts</span></div>
+                    <div class="rango-fila"><span class="rango-icono">⭐</span><span class="rango-nombre">Estrella</span><span class="rango-puntos">500 - 999 pts</span></div>
+                    <div class="rango-fila rango-leyenda"><span class="rango-icono">👑</span><span class="rango-nombre">Leyenda</span><span class="rango-puntos">1000+ pts</span></div>
                 </div>
                 <div id="rango-progreso-panel" class="rango-progreso-panel">
                     <div class="rango-progreso-head">
@@ -324,7 +324,7 @@
                     </div>
                     <p id="rango-meta" class="rango-meta">Multiplicador actual: x1</p>
                 </div>
-                <p id="rango-hint-tick" class="tab-hint">Ganas <strong>1 punto cada 5 minutos</strong> conectado en el chat. El rango se actualiza automÃƒÂ¡ticamente al sumar puntos.</p>
+                <p id="rango-hint-tick" class="tab-hint">Ganas <strong>1 punto cada 5 minutos</strong> conectado en el chat. El rango se actualiza automáticamente al sumar puntos.</p>
             </div>
 
             <div id="tab-tienda" class="tab-content" hidden role="tabpanel" aria-labelledby="tabbtn-tienda">
@@ -361,7 +361,7 @@
                     <span class="tienda-canjeo-fecha" x-text="new Date(c.created_at).toLocaleString('es-ES')"></span>
                 </div>
             </template>
-            <p class="gallery-empty" x-show="!$store.tienda.misCanjes.length">No has canjeado nada aÃƒÂºn.</p>
+            <p class="gallery-empty" x-show="!$store.tienda.misCanjes.length">No has canjeado nada aún.</p>
         </div>
     </div>
     <div class="tienda-acciones">
@@ -374,18 +374,18 @@
                     <li>Respeto ante todo con la comunidad.</li>
                     <li>No hacer spam ni flood de mensajes.</li>
                     <li>No compartir enlaces sospechosos ni info personal.</li>
-                    <li>Todo es humor, pÃƒÂ¡satela bien y rÃƒÂ­ete mucho.</li>
+                    <li>Todo es humor, pásatela bien y ríete mucho.</li>
                 </ul>
                 <div class="tab-section">
-                    <h4 class="tab-content-title-sm"><i class="fa-solid fa-circle-info"></i> Ã‚Â¿CÃƒÂ³mo funciona?</h4>
+                    <h4 class="tab-content-title-sm"><i class="fa-solid fa-circle-info"></i> ¿Cómo funciona?</h4>
                     <ul class="tab-list-sm">
-                        <li><strong>Ã°Å¸â€™Å½ Puntos:</strong> Ganas 1 punto cada 5 minutos estando conectado en el chat.</li>
-                        <li><strong>Ã°Å¸â€â€™ PIN de 4 dÃƒÂ­gitos:</strong> Protege tu cuenta y progreso. Nadie puede robar tus puntos sin tu PIN.</li>
-                        <li><strong>Ã°Å¸â€™Â¬ Chat en vivo:</strong> Habla con la comunidad en tiempo real. Los mensajes se sincronizan al instante.</li>
-                        <li><strong>Ã°Å¸â€˜Â¥ Usuarios en lÃƒÂ­nea:</strong> Lista a la izquierda con avatares de iniciales. VerÃƒÂ¡s quiÃƒÂ©n estÃƒÂ¡ conectado.</li>
-                        <li><strong>Ã°Å¸â€œÂº Estado del stream:</strong> El cÃƒÂ­rculo verde = EN VIVO, rojo = Offline. VerÃƒÂ¡s los viewers actuales.</li>
-                        <li><strong>Ã°Å¸â€â€ Notificaciones:</strong> Si el stream empieza, salta un aviso aunque estÃƒÂ©s en otra pestaÃƒÂ±a.</li>
-                        <li><strong>Ã°Å¸Å½Â Futuro:</strong> PodrÃƒÂ¡s canjear puntos por premios, roles y acceso a sorteos exclusivos.</li>
+                        <li><strong>💎 Puntos:</strong> Ganas 1 punto cada 5 minutos estando conectado en el chat.</li>
+                        <li><strong>🔒 PIN de 4 dígitos:</strong> Protege tu cuenta y progreso. Nadie puede robar tus puntos sin tu PIN.</li>
+                        <li><strong>💬 Chat en vivo:</strong> Habla con la comunidad en tiempo real. Los mensajes se sincronizan al instante.</li>
+                        <li><strong>👥 Usuarios en línea:</strong> Lista a la izquierda con avatares de iniciales. Verás quién está conectado.</li>
+                        <li><strong>📺 Estado del stream:</strong> El círculo verde = EN VIVO, rojo = Offline. Verás los viewers actuales.</li>
+                        <li><strong>🔔 Notificaciones:</strong> Si el stream empieza, salta un aviso aunque estés en otra pestaña.</li>
+                        <li><strong>🎁 Futuro:</strong> Podrás canjear puntos por premios, roles y acceso a sorteos exclusivos.</li>
                     </ul>
                 </div>
             </div>
@@ -396,11 +396,11 @@
     <div id="nickname-modal" role="dialog" aria-modal="true" aria-labelledby="modal-titulo-accion">
         <div id="nickname-modal-content">
             <button type="button" id="nickname-modal-close" aria-label="Cerrar">&times;</button>
-            <h3 id="modal-titulo-accion">Ã‚Â¡Bienvenido a la Comunidad!</h3>
-            <p id="modal-subtitulo-accion" class="modal-subtitle">Ingresa tu apodo y tu PIN de 4 dÃƒÂ­gitos.</p>
+            <h3 id="modal-titulo-accion">¡Bienvenido a la Comunidad!</h3>
+            <p id="modal-subtitulo-accion" class="modal-subtitle">Ingresa tu apodo y tu PIN de 4 dígitos.</p>
             <form id="form-nickname" novalidate>
                 <input type="text" id="nickname-modal-input" placeholder="Tu apodo" aria-label="Tu apodo" maxlength="20" autocomplete="username">
-                <input type="password" id="nickname-modal-pin" placeholder="PIN (4 dÃƒÂ­gitos)" aria-label="PIN de 4 dÃƒÂ­gitos" maxlength="4" pattern="[0-9]*" inputmode="numeric" autocomplete="current-password">
+                <input type="password" id="nickname-modal-pin" placeholder="PIN (4 dígitos)" aria-label="PIN de 4 dígitos" maxlength="4" pattern="[0-9]*" inputmode="numeric" autocomplete="current-password">
                 <div>
                     <button type="submit" id="nickname-modal-set-btn" class="btn-primary">Entrar</button>
                 </div>
@@ -420,7 +420,7 @@
         // Funciones globales para los botones de login/registro (llamadas desde HTML)
         let _modalModo = 'login'; // 'login' o 'registro'
 
-        const REACCIONES = ['Ã°Å¸â€˜Â', 'Ã¢ÂÂ¤Ã¯Â¸Â', 'Ã°Å¸Ëœâ€š', 'Ã°Å¸â€Â¥', 'Ã°Å¸Ëœâ‚¬', 'Ã°Å¸â„¢Â'];
+        const REACCIONES = ['👍', '❤️', '😂', '🔥', '😀', '🙏'];
 
         document.addEventListener('alpine:init', () => {
             window.Alpine.store('chat', {
@@ -537,10 +537,10 @@
 
             if (modo === 'registro') {
                 titulo.textContent = 'Registrarse en la Comunidad';
-                subtitulo.textContent = 'Crea un nuevo perfil con apodo y PIN de 4 dÃƒÂ­gitos.';
+                subtitulo.textContent = 'Crea un nuevo perfil con apodo y PIN de 4 dígitos.';
             } else {
-                titulo.textContent = 'Iniciar SesiÃƒÂ³n';
-                subtitulo.textContent = 'Ingresa tu apodo y PIN de 4 dÃƒÂ­gitos para acceder a tu cuenta.';
+                titulo.textContent = 'Iniciar Sesión';
+                subtitulo.textContent = 'Ingresa tu apodo y PIN de 4 dígitos para acceder a tu cuenta.';
             }
 
             const btnAccion = document.getElementById('nickname-modal-set-btn');
@@ -550,7 +550,7 @@
             pin.value = '';
             error.style.display = 'none';
             modal.style.display = 'flex';
-            // Trampa de foco: el teclado no puede salir del modal mientras estÃƒÂ¡ abierto.
+            // Trampa de foco: el teclado no puede salir del modal mientras está abierto.
             if (window.activarTrampaFoco) {
                 window.activarTrampaFoco(modal, input);
             } else {
@@ -566,8 +566,8 @@
             abrirModalComunidad('registro');
         }
 
-        // Estado del canal: main.js hace un ÃƒÂºnico fetch y nos pasa los datos,
-        // evitando el polling duplicado que existÃƒÂ­a en esta pÃƒÂ¡gina.
+        // Estado del canal: main.js hace un único fetch y nos pasa los datos,
+        // evitando el polling duplicado que existía en esta página.
         let _ultimoEstadoEnVivoPagina = null;
 
         window.actualizarEstadoStreamPagina = function actualizarEstadoStreamPagina(data, enVivo, error) {
@@ -619,7 +619,7 @@
                 if (canalInfo) {
                     const title = data.livestream.session_title || '';
                     const cat = data.livestream.category ? data.livestream.category.name : '';
-                    canalInfo.textContent = [title, cat].filter(Boolean).join(' Ã¢â‚¬Â¢ ');
+                    canalInfo.textContent = [title, cat].filter(Boolean).join(' • ');
                     canalInfo.style.display = canalInfo.textContent ? 'block' : 'none';
                 }
                 if (canalOffline) canalOffline.style.display = 'none';
@@ -676,7 +676,7 @@
                     typingIndicator.textContent = '';
                 } else {
                     typingIndicator.hidden = false;
-                    typingIndicator.textContent = nombres.join(', ') + ' estÃƒÂ¡ escribiendo...';
+                    typingIndicator.textContent = nombres.join(', ') + ' está escribiendo...';
                 }
             }
 setInterval(actualizarTypingIndicator, 500);
@@ -721,11 +721,11 @@ setInterval(actualizarTypingIndicator, 500);
 
             // Datos de rango compartidos por perfil, presencia y leaderboard
             const RANGOS = {
-                semilla: { emoji: 'Ã°Å¸Å’Â±', nombre: 'Semilla' },
-                gota: { emoji: 'Ã°Å¸â€™Â§', nombre: 'Gota' },
-                flor: { emoji: 'Ã°Å¸Å’Â¸', nombre: 'Flor' },
-                estrella: { emoji: 'Ã¢Â­Â', nombre: 'Estrella' },
-                leyenda: { emoji: 'Ã°Å¸â€˜â€˜', nombre: 'Leyenda' }
+                semilla: { emoji: '🌱', nombre: 'Semilla' },
+                gota: { emoji: '💧', nombre: 'Gota' },
+                flor: { emoji: '🌸', nombre: 'Flor' },
+                estrella: { emoji: '⭐', nombre: 'Estrella' },
+                leyenda: { emoji: '👑', nombre: 'Leyenda' }
             };
 
             function datosRango(rango) {
@@ -741,16 +741,16 @@ setInterval(actualizarTypingIndicator, 500);
                 el.textContent = emoji + ' ' + nombre.toUpperCase();
             }
 
-            // === GAMIFICACIÃƒâ€œN: escalera de rangos, progreso y celebraciÃƒÂ³n ===
+            // === GAMIFICACIÓN: escalera de rangos, progreso y celebración ===
 
             // Fuente de verdad: la RPC obtener_rangos(). El fallback local solo entra
             // si la RPC falla, para no dejar la UI de rangos vacia.
             const RANGOS_FALLBACK = [
-                { clave: 'semilla', emoji: 'Ã°Å¸Å’Â±', nombre: 'Semilla', min: 0, max: 49, mult: 1 },
-                { clave: 'gota', emoji: 'Ã°Å¸â€™Â§', nombre: 'Gota', min: 50, max: 199, mult: 2 },
-                { clave: 'flor', emoji: 'Ã°Å¸Å’Â¸', nombre: 'Flor', min: 200, max: 499, mult: 3 },
-                { clave: 'estrella', emoji: 'Ã¢Â­Â', nombre: 'Estrella', min: 500, max: 999, mult: 4 },
-                { clave: 'leyenda', emoji: 'Ã°Å¸â€˜â€˜', nombre: 'Leyenda', min: 1000, max: null, mult: 5 }
+                { clave: 'semilla', emoji: '🌱', nombre: 'Semilla', min: 0, max: 49, mult: 1 },
+                { clave: 'gota', emoji: '💧', nombre: 'Gota', min: 50, max: 199, mult: 2 },
+                { clave: 'flor', emoji: '🌸', nombre: 'Flor', min: 200, max: 499, mult: 3 },
+                { clave: 'estrella', emoji: '⭐', nombre: 'Estrella', min: 500, max: 999, mult: 4 },
+                { clave: 'leyenda', emoji: '👑', nombre: 'Leyenda', min: 1000, max: null, mult: 5 }
             ];
 
             let rangosEscalera = RANGOS_FALLBACK;
@@ -828,7 +828,7 @@ setInterval(actualizarTypingIndicator, 500);
                         <span class="rango-nombre">${escapeHtml(r.nombre)}</span>
                         <span class="rango-puntos">${puntosTxt}</span>
                         <span class="rango-mult">x${r.mult}</span>
-                        ${esActual ? '<span class="rango-actual-chip">TÃƒÅ¡</span>' : ''}
+                        ${esActual ? '<span class="rango-actual-chip">TÚ</span>' : ''}
                     </div>`;
                 }).join('');
             }
@@ -859,38 +859,38 @@ setInterval(actualizarTypingIndicator, 500);
                 const valor = document.getElementById('rango-progreso-valor');
                 if (valor) {
                     valor.textContent = info.esMaximo
-                        ? (puntosActualesUsuario + ' pts Ã‚Â· Rango mÃƒÂ¡ximo')
+                        ? (puntosActualesUsuario + ' pts · Rango máximo')
                         : (puntosActualesUsuario + ' / ' + info.siguiente.min + ' pts');
                 }
 
                 const label = document.getElementById('rango-progreso-label');
                 if (label) {
                     label.textContent = info.esMaximo
-                        ? 'Has alcanzado el rango mÃƒÂ¡ximo'
+                        ? 'Has alcanzado el rango máximo'
                         : ('Progreso hacia ' + info.siguiente.emoji + ' ' + info.siguiente.nombre);
                 }
 
                 const meta = document.getElementById('rango-meta');
                 if (meta) {
                     meta.textContent = info.esMaximo
-                        ? ('Multiplicador actual: x' + info.actual.mult + ' Ã‚Â· Eres Leyenda')
+                        ? ('Multiplicador actual: x' + info.actual.mult + ' · Eres Leyenda')
                         : ('Multiplicador actual: x' + info.actual.mult
-                            + ' Ã‚Â· Te faltan ' + info.faltan + ' pts para ' + info.siguiente.emoji + ' ' + info.siguiente.nombre
-                            + ' Ã‚Â· al llegar x' + info.siguiente.mult);
+                            + ' · Te faltan ' + info.faltan + ' pts para ' + info.siguiente.emoji + ' ' + info.siguiente.nombre
+                            + ' · al llegar x' + info.siguiente.mult);
                 }
 
                 const metaUsuario = document.getElementById('user-rango-meta');
                 if (metaUsuario) {
                     metaUsuario.textContent = info.esMaximo
-                        ? ('Ã°Å¸â€˜â€˜ Rango mÃƒÂ¡ximo Ã‚Â· x' + info.actual.mult)
+                        ? ('👑 Rango máximo · x' + info.actual.mult)
                         : ('Te faltan ' + info.faltan + ' pts para ' + info.siguiente.emoji + ' ' + info.siguiente.nombre
-                            + ' Ã‚Â· al llegar x' + info.siguiente.mult);
+                            + ' · al llegar x' + info.siguiente.mult);
                 }
 
                 const hint = document.getElementById('rango-hint-tick');
                 if (hint) {
                     hint.textContent = 'Ganas 1 punto x' + info.actual.mult
-                        + ' cada 5 minutos con la comunidad abierta. El rango se actualiza automÃƒÂ¡ticamente al sumar puntos.';
+                        + ' cada 5 minutos con la comunidad abierta. El rango se actualiza automáticamente al sumar puntos.';
                 }
             }
 
@@ -901,7 +901,7 @@ setInterval(actualizarTypingIndicator, 500);
                     overlay.id = 'overlay-celebracion';
                     overlay.className = 'celebracion-leyenda';
                     overlay.setAttribute('role', 'dialog');
-                    overlay.setAttribute('aria-label', 'CelebraciÃƒÂ³n de ascenso de rango');
+                    overlay.setAttribute('aria-label', 'Celebración de ascenso de rango');
                     document.body.appendChild(overlay);
                 }
                 return overlay;
@@ -956,10 +956,10 @@ setInterval(actualizarTypingIndicator, 500);
                 if (rangoNuevo === 'leyenda') {
                     const overlay = obtenerOverlayCelebracion();
                     overlay.innerHTML = `<div class="celebracion-caja">
-                        <span class="celebracion-emoji">Ã°Å¸â€˜â€˜</span>
-                        <h2 class="celebracion-titulo">Ã‚Â¡Te has convertido en Leyenda!</h2>
-                        <p class="celebracion-texto">Multiplicador x${mult} en cada crÃƒÂ©dito de puntos.</p>
-                        <button type="button" class="btn-primary celebracion-cierre" data-cierre-celebracion>Ã‚Â¡Vamos!</button>
+                        <span class="celebracion-emoji">👑</span>
+                        <h2 class="celebracion-titulo">¡Te has convertido en Leyenda!</h2>
+                        <p class="celebracion-texto">Multiplicador x${mult} en cada crédito de puntos.</p>
+                        <button type="button" class="btn-primary celebracion-cierre" data-cierre-celebracion>¡Vamos!</button>
                     </div>`;
                     overlay.classList.add('visible');
                     const btn = overlay.querySelector('[data-cierre-celebracion]');
@@ -969,7 +969,7 @@ setInterval(actualizarTypingIndicator, 500);
                     }
                     overlay.addEventListener('click', (e) => { if (e.target === overlay) cerrarCelebracion(); });
                 } else {
-                    window.mostrarToast?.('Ã°Å¸Å½â€° Ã‚Â¡Subiste a ' + info.nombre + '! Multiplicador x' + mult);
+                    window.mostrarToast?.('🎉 ¡Subiste a ' + info.nombre + '! Multiplicador x' + mult);
                 }
             }
 
@@ -980,21 +980,21 @@ setInterval(actualizarTypingIndicator, 500);
                 if (adminAutenticado) {
                     document.body.classList.add('admin-mode-active');
                 }
-            } catch (e) { console.warn('No se pudo verificar sesiÃƒÂ³n admin:', e); }
+            } catch (e) { console.warn('No se pudo verificar sesión admin:', e); }
 
             chatMensajes.addEventListener('click', (e) => {
-                // BotÃƒÂ³n copiar enlace
+                // Botón copiar enlace
                 const btnCopiar = e.target.closest('.btn-copiar-enlace');
                 if (btnCopiar) {
                     e.stopPropagation();
                     const url = btnCopiar.dataset.url;
                     if (url) {
                         const fullUrl = window.location.origin + window.location.pathname + url;
-                        window.copiarEnlace(fullUrl, 'Ã‚Â¡Enlace al mensaje copiado!');
+                        window.copiarEnlace(fullUrl, '¡Enlace al mensaje copiado!');
                     }
                     return;
                 }
-                // BotÃƒÂ³n eliminar (solo admin)
+                // Botón eliminar (solo admin)
                 const btnEliminar = e.target.closest('.btn-eliminar-chat');
                 if (btnEliminar) {
                     e.stopPropagation();
@@ -1004,7 +1004,7 @@ setInterval(actualizarTypingIndicator, 500);
                 }
             });
 
-            // CARGA SÃƒÂNCRONA DEL APODO DESDE LOCALSTORAGE AL INICIAR
+            // CARGA SÍNCRONA DEL APODO DESDE LOCALSTORAGE AL INICIAR
             const savedApodo = localStorage.getItem('comunidad_nickname');
             if (savedApodo) {
                 userNickname = savedApodo;
@@ -1067,7 +1067,7 @@ setInterval(actualizarTypingIndicator, 500);
                 if (typeof window._trackPresence === 'function') {
                     window._trackPresence(apodo);
                 }
-                // Mostrar formulario de chat, ocultar ÃƒÂ¡rea de login
+                // Mostrar formulario de chat, ocultar área de login
                 const chatLoginForm = document.getElementById('chat-form');
                 const chatLoginArea = document.getElementById('chat-login-area');
                 if (chatLoginForm) chatLoginForm.classList.add('is-visible');
@@ -1196,7 +1196,7 @@ setInterval(actualizarTypingIndicator, 500);
                 try {
                     const { data, error } = await supabase.rpc('validar_sesion_comunidad', { p_token: savedToken });
                     if (error || !data?.ok) {
-                        // SesiÃƒÂ³n invÃƒÂ¡lida: limpiar todo
+                        // Sesión inválida: limpiar todo
                         localStorage.removeItem(STORAGE_KEY_NICK);
                         localStorage.removeItem(STORAGE_KEY_TOKEN);
                         localStorage.removeItem('comunidad_user_id');
@@ -1223,12 +1223,12 @@ setInterval(actualizarTypingIndicator, 500);
                         return false;
                     }
                     const usuario = data.usuario;
-                    // El apodo canÃƒÂ³nico lo devuelve el servidor: se usa ese,
-                    // no el que quedÃƒÂ³ cacheado en el navegador.
+                    // El apodo canónico lo devuelve el servidor: se usa ese,
+                    // no el que quedó cacheado en el navegador.
                     guardarSesion(usuario.apodo, savedToken, usuario.puntos, usuario.rango, usuario.id, usuario.icono);
                     return true;
                 } catch (e) {
-                    console.error('Error validando sesiÃƒÂ³n de comunidad:', e);
+                    console.error('Error validando sesión de comunidad:', e);
                     return false;
                 }
             }
@@ -1238,25 +1238,25 @@ setInterval(actualizarTypingIndicator, 500);
                 const pin = nicknameModalPin.value.trim();
                 if (nicknameModalError) nicknameModalError.style.display = 'none';
                 if (!nick || nick.length > 20) {
-                    if (nicknameModalError) { nicknameModalError.textContent = 'Apodo invÃƒÂ¡lido (1-20 caracteres).'; nicknameModalError.style.display = 'block'; }
+                    if (nicknameModalError) { nicknameModalError.textContent = 'Apodo inválido (1-20 caracteres).'; nicknameModalError.style.display = 'block'; }
                     return;
                 }
                 if (!pin || pin.length !== 4 || !/^\d{4}$/.test(pin)) {
-                    if (nicknameModalError) { nicknameModalError.textContent = 'PIN invÃƒÂ¡lido (debe ser 4 dÃƒÂ­gitos).'; nicknameModalError.style.display = 'block'; }
+                    if (nicknameModalError) { nicknameModalError.textContent = 'PIN inválido (debe ser 4 dígitos).'; nicknameModalError.style.display = 'block'; }
                     return;
                 }
 
                 const mensajeError = {
                     credenciales: 'Credenciales incorrectas. Verifica tu apodo y PIN.',
-                    apodo_duplicado: 'Ese apodo ya existe (no distingue mayÃƒÂºsculas ni acentos). Elige otro.',
-                    apodo_invalido: 'Apodo invÃƒÂ¡lido (1-20 caracteres; solo letras, nÃƒÂºmeros, espacios, guion y guion bajo).',
-                    pin_invalido: 'PIN invÃƒÂ¡lido (debe ser 4 dÃƒÂ­gitos).',
+                    apodo_duplicado: 'Ese apodo ya existe (no distingue mayúsculas ni acentos). Elige otro.',
+                    apodo_invalido: 'Apodo inválido (1-20 caracteres; solo letras, números, espacios, guion y guion bajo).',
+                    pin_invalido: 'PIN inválido (debe ser 4 dígitos).',
                     rate_limited: 'Demasiados intentos seguidos. Espera unos minutos y vuelve a probar.',
-                    baneado: 'Tu cuenta estÃ¡ suspendida temporalmente.'
+                    baneado: 'Tu cuenta está suspendida temporalmente.'
                 };
-                const traducir = (codigo) => mensajeError[codigo] || (codigo ? 'Error: ' + codigo : 'No se pudo completar la operaciÃƒÂ³n.');
+                const traducir = (codigo) => mensajeError[codigo] || (codigo ? 'Error: ' + codigo : 'No se pudo completar la operación.');
 
-                // Evita el doble envÃƒÂ­o mientras la RPC estÃƒÂ¡ en vuelo (cada intento cuenta para el rate limit).
+                // Evita el doble envío mientras la RPC está en vuelo (cada intento cuenta para el rate limit).
                 const btnEnviar = document.getElementById('nickname-modal-set-btn');
                 if (btnEnviar) btnEnviar.disabled = true;
                 try {
@@ -1270,7 +1270,7 @@ setInterval(actualizarTypingIndicator, 500);
                         }
                         if (nicknameModalError) {
                             nicknameModalError.textContent = reg.error === 'apodo_duplicado'
-                                ? 'Este usuario ya existe. Usa "Iniciar SesiÃƒÂ³n" si es tu cuenta.'
+                                ? 'Este usuario ya existe. Usa "Iniciar Sesión" si es tu cuenta.'
                                 : traducir(reg.error);
                             nicknameModalError.style.display = 'block';
                         }
@@ -1295,7 +1295,7 @@ setInterval(actualizarTypingIndicator, 500);
                 const fecha = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 return {
                     id: id,
-                    autor: msg.autor || 'AnÃƒÂ³nimo',
+                    autor: msg.autor || 'Anónimo',
                     mensaje: msg.mensaje || '',
                     created_at: msg.created_at,
                     fecha: fecha
@@ -1359,7 +1359,7 @@ setInterval(actualizarTypingIndicator, 500);
                     }
                     const nuevos = (data.mensajes || []).reverse();
                     if (antesDe) {
-                        // Prepend mensajes mÃƒÂ¡s antiguos
+                        // Prepend mensajes más antiguos
                         store.mensajes = nuevos.concat(store.mensajes);
                         store.cargandoMas = false;
                     } else {
@@ -1385,7 +1385,7 @@ setInterval(actualizarTypingIndicator, 500);
                 }
             };
 
-            // Reacciones del chat (tiempo real vÃƒÂ­a Supabase + panel burbuja al hover)
+            // Reacciones del chat (tiempo real vía Supabase + panel burbuja al hover)
             const MAX_MENSAJES_DOM = 100;
             const STREAK_STORAGE_KEY = 'gochi_chat_streak';
             const STREAK_TIMEOUT_MS = 300000;
@@ -1393,7 +1393,7 @@ setInterval(actualizarTypingIndicator, 500);
             // Canal de realtime para reacciones
             let canalReacciones = null;
 
-            // ReacciÃƒÂ³n propia pendiente de confirmar por el servidor. Solo se conserva
+            // Reacción propia pendiente de confirmar por el servidor. Solo se conserva
             // un tiempo corto: si el servidor no la refleja, es que ya no existe y
             // mantenerla en localStorage resucitaba reacciones fantasma.
             const STORAGE_KEY_PENDIENTE = 'gochi_chat_mi_reaccion_pendiente_v1';
@@ -1420,7 +1420,7 @@ setInterval(actualizarTypingIndicator, 500);
                 return pend.emoji;
             }
 
-            // Toggle de reacciÃƒÂ³n: el servidor decide borrar vs upsert. UI optimista con rollback.
+            // Toggle de reacción: el servidor decide borrar vs upsert. UI optimista con rollback.
             async function establecerReaccionUsuario(msgId, emoji) {
                 const msgIdStr = String(msgId);
                 const token = localStorage.getItem(STORAGE_KEY_TOKEN);
@@ -1444,7 +1444,7 @@ setInterval(actualizarTypingIndicator, 500);
                     if (!resultado || !resultado.ok) {
                         throw new Error(resultado && resultado.error ? resultado.error : 'error_desconocido');
                     }
-                    // Servidor confirmÃƒÂ³: el emoji devuelto (null = borrada) es el estado final
+                    // Servidor confirmó: el emoji devuelto (null = borrada) es el estado final
                     guardarPendienteLocal(msgIdStr, null);
                 } catch (err) {
                     // Rollback completo
@@ -1454,16 +1454,16 @@ setInterval(actualizarTypingIndicator, 500);
                     guardarPendienteLocal(msgIdStr, null);
                     const codigo = err && err.message ? err.message : '';
                     if (codigo === 'sin_sesion') {
-                        mostrarToast('SesiÃƒÂ³n expirada. Inicia sesiÃƒÂ³n de nuevo.', true);
+                        mostrarToast('Sesión expirada. Inicia sesión de nuevo.', true);
                     } else {
-                        mostrarToast('No se pudo registrar la reacciÃƒÂ³n.', true);
+                        mostrarToast('No se pudo registrar la reacción.', true);
                     }
                 }
             }
 
             window.establecerReaccionUsuario = establecerReaccionUsuario;
 
-            // Tooltip: quiÃƒÂ©nes reaccionaron con un emoji
+            // Tooltip: quiénes reaccionaron con un emoji
             let tooltipReaccionEl = null;
             function mostrarTooltipReaccion(target, emoji, usuarios) {
                 if (!usuarios || usuarios.length === 0) return;
@@ -1504,7 +1504,7 @@ setInterval(actualizarTypingIndicator, 500);
                 try {
                     if (typeof window.validarSesionStreamer === 'function') {
                         if (!(await window.validarSesionStreamer())) {
-                            mostrarToast('Tu sesiÃƒÂ³n de administraciÃƒÂ³n ha expirado.', true);
+                            mostrarToast('Tu sesión de administración ha expirado.', true);
                             setTimeout(() => { window.location.reload(); }, 800);
                             return;
                         }
@@ -1512,7 +1512,7 @@ setInterval(actualizarTypingIndicator, 500);
                 } catch (e) {}
                 mostrarConfirmacionModal({
                     titulo: 'Eliminar mensaje',
-                    mensaje: 'Ã‚Â¿Seguro que deseas borrar este mensaje del chat?',
+                    mensaje: '¿Seguro que deseas borrar este mensaje del chat?',
                     textoConfirmar: 'Eliminar',
                     enConfirmar: async () => {
                         try {
@@ -1551,7 +1551,7 @@ setInterval(actualizarTypingIndicator, 500);
                 const streakData = obtenerStreakData();
                 const ahora = Date.now();
 
-                // Si pasaron mÃƒÂ¡s de 5 minutos desde el ÃƒÂºltimo mensaje, reiniciar racha
+                // Si pasaron más de 5 minutos desde el último mensaje, reiniciar racha
                 if (ahora - streakData.lastMessageTime > STREAK_TIMEOUT_MS) {
                     streakData.count = 1;
                 } else {
@@ -1566,7 +1566,7 @@ setInterval(actualizarTypingIndicator, 500);
                 if (streakBadge) {
                     if (streakData.count > 1) {
                         streakBadge.style.display = 'inline-flex';
-                        streakBadge.textContent = `Ã°Å¸â€Â¥ Racha: ${streakData.count}`;
+                        streakBadge.textContent = `🔥 Racha: ${streakData.count}`;
                     } else {
                         streakBadge.style.display = 'none';
                     }
@@ -1629,7 +1629,7 @@ setInterval(actualizarTypingIndicator, 500);
                         .select('message_id, emoji, user_id, apodo')
                         .in('message_id', idsFiltrados);
                     if (error) {
-                        console.warn('[REACCIÃƒâ€œN] Supabase reacciones fallÃƒÂ³ (Ã‚Â¿tabla ausente?), usando cache localStorage:', error.message);
+                        console.warn('[REACCIÓN] Supabase reacciones falló (¿tabla ausente?), usando cache localStorage:', error.message);
                         return;
                     }
                     idsFiltrados.forEach(id => { store._reaccionTs[id] = ahora; });
@@ -1637,7 +1637,7 @@ setInterval(actualizarTypingIndicator, 500);
                     const cache = JSON.parse(JSON.stringify(store.cache));
                     const mias = JSON.parse(JSON.stringify(store.mias));
 
-                    // Reconstruir desde el servidor: si solo se aÃƒÂ±adieran las filas
+                    // Reconstruir desde el servidor: si solo se añadieran las filas
                     // recibidas, las reacciones cambiadas o borradas quedaban fantasma.
                     idsFiltrados.forEach(id => { cache[id] = {}; });
                     const conMiReaccion = new Set();
@@ -1649,16 +1649,16 @@ setInterval(actualizarTypingIndicator, 500);
                         if (!cache[r.message_id][r.emoji].includes(nombre)) {
                             cache[r.message_id][r.emoji].push(nombre);
                         }
-                        // Si el usuario logueado es quien reaccionÃƒÂ³, guardarlo en mi reaccion
+                        // Si el usuario logueado es quien reaccionó, guardarlo en mi reaccion
                         if (userId && r.user_id === userId) {
                             mias[r.message_id] = r.emoji;
                             conMiReaccion.add(r.message_id);
                         }
                     });
 
-                    // Conservar la reacciÃƒÂ³n optimista propia SOLO si sigue pendiente de
-                    // confirmaciÃƒÂ³n. Si el servidor ya la refleja, manda el servidor; si no
-                    // la refleja y no estÃƒÂ¡ pendiente, la reacciÃƒÂ³n ya no existe.
+                    // Conservar la reacción optimista propia SOLO si sigue pendiente de
+                    // confirmación. Si el servidor ya la refleja, manda el servidor; si no
+                    // la refleja y no está pendiente, la reacción ya no existe.
                     const pendientes = obtenerPendientesLocales();
                     idsFiltrados.forEach(id => {
                         const miEmoji = pendienteVigente(pendientes[id]);
@@ -1671,7 +1671,7 @@ setInterval(actualizarTypingIndicator, 500);
                         }
                     });
 
-                    // Limpiar el marcador de "mi reacciÃƒÂ³n" si el servidor ya no la tiene
+                    // Limpiar el marcador de "mi reacción" si el servidor ya no la tiene
                     idsFiltrados.forEach(id => {
                         if (conMiReaccion.has(id)) return;
                         if (pendientes[id] && Date.now() - (pendientes[id].ts || 0) <= PENDIENTE_TTL_MS) return;
@@ -1684,7 +1684,7 @@ setInterval(actualizarTypingIndicator, 500);
                 } catch (e) { console.error('Error cargando reacciones:', e); }
             }
 
-            // Limpiar mensajes antiguos (mantener mÃƒÂ¡ximo 100 en el store)
+            // Limpiar mensajes antiguos (mantener máximo 100 en el store)
             function limpiarMensajesAntiguos() {
                 const store = obtenerStoreChat();
                 if (!store) return;
@@ -1719,7 +1719,7 @@ if (chatForm) {
                         return;
                     }
                     if (!userNickname) {
-                        mostrarToast('Inicia sesiÃƒÂ³n para enviar mensajes', true);
+                        mostrarToast('Inicia sesión para enviar mensajes', true);
                         return;
                     }
                     const mensaje = inputMensaje.value.trim();
@@ -1750,24 +1750,24 @@ if (chatForm) {
                         const { data: resultado, error } = await supabase.rpc('enviar_mensaje_chat', { p_token: token, p_mensaje: mensaje });
                         if (error) {
                             console.error('Error RPC enviar_mensaje_chat:', error);
-                            mostrarToast('No se pudo enviar el mensaje. Revisa tu conexiÃƒÂ³n.', true);
+                            mostrarToast('No se pudo enviar el mensaje. Revisa tu conexión.', true);
                         } else if (!resultado || !resultado.ok) {
                             const codigo = resultado && resultado.error ? resultado.error : 'desconocido';
                             if (resultado && resultado.detalle) console.error('Detalle del servidor:', resultado.detalle);
                             if (codigo === 'rate_limit') {
                                 mostrarToast('Espera unos segundos antes de enviar otro mensaje', true);
                             } else if (codigo === 'sin_sesion') {
-                                mostrarToast('SesiÃƒÂ³n expirada. Inicia sesiÃƒÂ³n de nuevo.', true);
+                                mostrarToast('Sesión expirada. Inicia sesión de nuevo.', true);
                             } else if (codigo === 'mensaje_vacio') {
-                                mostrarToast('El mensaje estÃƒÂ¡ vacÃƒÂ­o.', true);
+                                mostrarToast('El mensaje está vacío.', true);
                             } else if (codigo === 'mensaje_muy_largo') {
-                                mostrarToast('El mensaje es demasiado largo (mÃƒÂ¡x. 300 caracteres).', true);
+                                mostrarToast('El mensaje es demasiado largo (máx. 300 caracteres).', true);
                             } else if (codigo === 'usuario_no_encontrado') {
                                 mostrarToast('Tu usuario ya no existe. Vuelve a registrarte.', true);
                             } else if (codigo === 'baneado') {
-                                mostrarToast('Tu cuenta estÃ¡ suspendida temporalmente.', true);
+                                mostrarToast('Tu cuenta está suspendida temporalmente.', true);
                             } else {
-                                mostrarToast('No se pudo enviar el mensaje. IntÃƒÂ©ntalo de nuevo.', true);
+                                mostrarToast('No se pudo enviar el mensaje. Inténtalo de nuevo.', true);
                             }
                         } else {
                             inputMensaje.value = '';
@@ -1786,7 +1786,7 @@ if (chatForm) {
                         }
                     } catch (e) {
                         console.error('Error enviando mensaje:', e);
-                        mostrarToast('No se pudo enviar el mensaje. Revisa tu conexiÃƒÂ³n.', true);
+                        mostrarToast('No se pudo enviar el mensaje. Revisa tu conexión.', true);
                     }
                 });
             }
@@ -1827,13 +1827,13 @@ if (chatForm) {
                     if (nuevoMsg.oculto && nuevoMsg.autor !== userNickname) return;
                     const store = obtenerStoreChat();
                     if (!store) return;
-                    // Si el emisor ya lo pintÃƒÂ³ de forma optimista, no lo duplicamos
+                    // Si el emisor ya lo pintó de forma optimista, no lo duplicamos
                     if (nuevoMsg.id != null && store.mensajes.some(m => String(m.id) === String(nuevoMsg.id))) return;
 
                     const estaCercaDelFondo = chatMensajes.scrollHeight - chatMensajes.scrollTop - chatMensajes.clientHeight < 100;
                     insertarMensajeEnChat(nuevoMsg, estaCercaDelFondo);
 
-                    // Limpiar mensajes antiguos si supera el lÃƒÂ­mite
+                    // Limpiar mensajes antiguos si supera el límite
                     limpiarMensajesAntiguos();
                 })
                 .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'comunidad_chat' }, payload => {
@@ -1873,8 +1873,8 @@ if (chatForm) {
                         })
                         .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'message_reactions' }, payload => {
                             const r = payload.old || {};
-                            // Realtime solo envÃƒÂ­a la clave primaria en los DELETE:
-                            // no sabemos quÃƒÂ© mensaje/emoji se quitÃƒÂ³, asÃƒÂ­ que se
+                            // Realtime solo envía la clave primaria en los DELETE:
+                            // no sabemos qué mensaje/emoji se quitó, así que se
                             // recargan las reacciones visibles desde el servidor.
                             if (r.message_id != null && r.emoji) {
                                 const store = obtenerStoreReacciones();
@@ -1890,11 +1890,11 @@ if (chatForm) {
                         })
                         .subscribe();
                 } catch (e) {
-                    console.warn('[REACCIÃƒâ€œN] Canal de reacciones no disponible:', e.message);
+                    console.warn('[REACCIÓN] Canal de reacciones no disponible:', e.message);
                 }
             }
 
-            // CachÃƒÂ© de rangos en memoria (refrescado como mÃƒÂ¡ximo cada 30 s)
+            // Caché de rangos en memoria (refrescado como máximo cada 30 s)
             let rangosCache = { map: {}, ts: 0 };
             async function obtenerRangosCache(nicknames) {
                 const ahora = Date.now();
@@ -1931,27 +1931,27 @@ if (chatForm) {
             async function renderizarListaUsuarios(estadoPresencia) {
                 if (!onlineUsersListEl) return;
 
-                // Si el estado estÃƒÂ¡ vacÃƒÂ­o y nunca hemos recibido presencia, mantener "Cargando usuarios..."
+                // Si el estado está vacío y nunca hemos recibido presencia, mantener "Cargando usuarios..."
                 if (!estadoPresencia || Object.keys(estadoPresencia).length === 0) {
                     if (onlineUsersListEl.dataset.loaded !== 'true') {
                         onlineUsersListEl.innerHTML = '<div class="chat-empty-note">Cargando usuarios...</div>';
                         return;
                     }
-                    // Ya habÃƒÂ­amos recibido presencia y ahora estÃƒÂ¡ vacÃƒÂ­o = nadie en lÃƒÂ­nea
-                    onlineUsersListEl.innerHTML = '<div class="chat-empty-note">Nadie en lÃƒÂ­nea</div>';
+                    // Ya habíamos recibido presencia y ahora está vacío = nadie en línea
+                    onlineUsersListEl.innerHTML = '<div class="chat-empty-note">Nadie en línea</div>';
                     return;
                 }
 
                 // Marcar como que ya recibimos presencia al menos una vez
                 onlineUsersListEl.dataset.loaded = 'true';
-                // Cargar rangos de todos los usuarios (cachÃƒÂ© 30 s)
+                // Cargar rangos de todos los usuarios (caché 30 s)
                 const nicknames = Object.values(estadoPresencia).map(arr => (arr[0] || {}).nickname).filter(Boolean);
                 const rangosMap = await obtenerRangosCache(nicknames);
 
                 onlineUsersListEl.textContent = '';
                 for (const [key, presenceArray] of Object.entries(estadoPresencia)) {
                     const datos = presenceArray[0] || {};
-                    const nick = (datos.nickname || 'AnÃƒÂ³nimo').toString();
+                    const nick = (datos.nickname || 'Anónimo').toString();
                     const initial = nick.charAt(0).toUpperCase();
 
                     const { clave: rangoLower, emoji, nombre: rangoNombre } = datosRango(rangosMap[datos.nickname]);
@@ -1979,7 +1979,7 @@ if (chatForm) {
             // invocado por el polling global de main.js (un solo fetch por ciclo).
 
             function iniciarPresenciaUsuarios() {
-                // El ID de presencia es efÃƒÂ­mero: NUNCA debe sobrescribir el id real de la cuenta
+                // El ID de presencia es efímero: NUNCA debe sobrescribir el id real de la cuenta
                 const presenceId = userId || sessionStorage.getItem('gochi_presence_id') || (Math.random().toString(36).slice(2, 11));
                 if (!userId) sessionStorage.setItem('gochi_presence_id', String(presenceId));
 
@@ -2038,13 +2038,13 @@ if (chatForm) {
                 if (e.key === 'Escape' && nicknameModal.style.display === 'flex') hideNicknameModal();
             });
 
-// Cargar leaderboard pÃƒÂºblico
+// Cargar leaderboard público
             async function cargarLeaderboard() {
                 const store = obtenerStoreRanking();
                 if (!store) {
                     const leaderboardEl = document.getElementById('leaderboard-list');
                     if (leaderboardEl) {
-                        leaderboardEl.innerHTML = '<div class="chat-empty-note">Ranking no disponible. Recarga la pÃƒÂ¡gina.</div>';
+                        leaderboardEl.innerHTML = '<div class="chat-empty-note">Ranking no disponible. Recarga la página.</div>';
                     }
                     return;
                 }
@@ -2069,7 +2069,7 @@ if (chatForm) {
                     }
 
                     store.usuarios = data.map((user, index) => {
-                        const medalla = index === 0 ? 'Ã°Å¸Â¥â€¡' : index === 1 ? 'Ã°Å¸Â¥Ë†' : index === 2 ? 'Ã°Å¸Â¥â€°' : `#${index + 1}`;
+                        const medalla = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`;
                         // Badge de rango (siempre se muestra, incluso semilla)
                         const { clave, emoji, nombre } = datosRango(user.rango);
                         return {
@@ -2105,15 +2105,15 @@ if (chatForm) {
             cargarLeaderboard();
             setInterval(cargarLeaderboard, 60000); // Actualizar ranking cada minuto
 
-            // ReconciliaciÃƒÂ³n periÃƒÂ³dica de las reacciones visibles. Si se pierde algÃƒÂºn
+            // Reconciliación periódica de las reacciones visibles. Si se pierde algún
             // evento de Realtime (p. ej. un DELETE que solo trae la clave primaria),
-            // los chips podrÃƒÂ­an quedarse fantasma: esto los vuelve a sincronizar.
+            // los chips podrían quedarse fantasma: esto los vuelve a sincronizar.
             setInterval(() => {
                 if (document.hidden || !chatInicializado) return;
                 recargarReaccionesVisibles();
             }, 30000);
 
-            // Restaurar UI de chat y perfil solo si la sesiÃƒÂ³n guardada es vÃƒÂ¡lida en Supabase
+            // Restaurar UI de chat y perfil solo si la sesión guardada es válida en Supabase
             const chatLoginForm = document.getElementById('chat-form');
             const chatLoginArea = document.getElementById('chat-login-area');
 
@@ -2144,15 +2144,15 @@ if (chatForm) {
 
             const presenciaChannel = iniciarPresenciaUsuarios();
             
-            // Forzar track inmediato solo si la sesiÃƒÂ³n quedÃƒÂ³ restaurada
+            // Forzar track inmediato solo si la sesión quedó restaurada
             if (userNickname && typeof window._trackPresence === 'function') {
                 setTimeout(() => {
                     window._trackPresence(userNickname);
                 }, 500);
             }
 
-            // === PUNTOS AUTOMÃƒÂTICOS ===
-            // El navegador estrangula los timers en las pestaÃƒÂ±as ocultas: si el fan
+            // === PUNTOS AUTOMÁTICOS ===
+            // El navegador estrangula los timers en las pestañas ocultas: si el fan
             // deja la comunidad abierta en segundo plano mientras ve el stream,
             // perderia los puntos. Por eso el planificador se autocorrige al
             // volver a la pestana (el rate limit del servidor sigue ponguiendo
@@ -2215,7 +2215,7 @@ if (chatForm) {
                 }
                 store.premios = data.premios || [];
             } catch (e) {
-                console.error('Error cargando catÃ¡logo tienda:', e);
+                console.error('Error cargando catálogo tienda:', e);
                 store.error = 'Error inesperado';
             } finally {
                 store.cargando = false;
@@ -2242,7 +2242,7 @@ if (chatForm) {
             if (!store) return;
             const token = localStorage.getItem(STORAGE_KEY_TOKEN);
             if (!token || !window.supabase) {
-                window.mostrarToast?.('Inicia sesiÃ³n para canjear', true);
+                window.mostrarToast?.('Inicia sesión para canjear', true);
                 return;
             }
             const btn = evento?.currentTarget || null;
@@ -2259,14 +2259,14 @@ if (chatForm) {
                         : data?.error === 'ya_tiene_icono'
                             ? 'Ya tienes un icono. Solo puedes tener uno a la vez.'
                             : data?.error === 'sin_stock'
-                                ? 'Ese premio estÃ¡ agotado.'
+                                ? 'Ese premio está agotado.'
                                 : data?.error === 'baneado'
-                                    ? 'Tu cuenta estÃ¡ suspendida.'
+                                    ? 'Tu cuenta está suspendida.'
                                     : data?.error || 'No se pudo canjear';
-                    window.mostrarToast?.('âŒ ' + msg, true);
+                    window.mostrarToast?.('❌ ' + msg, true);
                     return;
                 }
-                window.mostrarToast?.('Â¡Canjeado con Ã©xito! Puntos restantes: ' + (data.puntos_restantes || 0));
+                window.mostrarToast?.('¡Canjeado con éxito! Puntos restantes: ' + (data.puntos_restantes || 0));
                 if (typeof data.puntos_restantes === 'number') {
                     if (userPointsDisplay) userPointsDisplay.textContent = data.puntos_restantes + ' pts';
                     window.aplicarEstadoRango?.(data.puntos_restantes, data.rango, { silencioso: true });
@@ -2348,7 +2348,7 @@ if (chatForm) {
                 const file = e.target.files[0];
                 if (!file) return;
                 if (!file.type.startsWith('image/')) {
-                    window.mostrarToast?.('Solo se permiten imÃƒÂ¡genes', true);
+                    window.mostrarToast?.('Solo se permiten imágenes', true);
                     perfilAvatarInput.value = '';
                     return;
                 }
@@ -2367,14 +2367,14 @@ if (chatForm) {
                     hex.startsWith('47494638') ||
                     hex.startsWith('52494646');
                 if (!magicOk) {
-                    window.mostrarToast?.('Archivo de imagen no vÃƒÂ¡lido', true);
+                    window.mostrarToast?.('Archivo de imagen no válido', true);
                     perfilAvatarInput.value = '';
                     return;
                 }
                 // Subir a Storage
                 const token = localStorage.getItem(STORAGE_KEY_TOKEN);
                 if (!token || !window.supabase || !userId) {
-                    window.mostrarToast?.('SesiÃƒÂ³n no vÃƒÂ¡lida', true);
+                    window.mostrarToast?.('Sesión no válida', true);
                     return;
                 }
                 const safeName = (file.name || 'avatar').replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 50);
@@ -2413,7 +2413,7 @@ if (chatForm) {
                     twitch: (document.getElementById('link-twitch') || {}).value?.trim() || null,
                     website: (document.getElementById('link-website') || {}).value?.trim() || null
                 };
-                // Filtrar vacÃƒÂ­os
+                // Filtrar vacíos
                 Object.keys(links).forEach(k => { if (!links[k]) delete links[k]; });
                 const btnGuardar = document.getElementById('btn-guardar-perfil');
                 if (btnGuardar) btnGuardar.disabled = true;
@@ -2427,11 +2427,11 @@ if (chatForm) {
                     if (error) throw error;
                     if (!data || !data.ok) {
                         const erroresPerfil = {
-                            sin_sesion: 'SesiÃ³n expirada. Inicia sesiÃ³n de nuevo.',
-                            baneado: 'Tu cuenta estÃ¡ suspendida.',
+                            sin_sesion: 'Sesión expirada. Inicia sesión de nuevo.',
+                            baneado: 'Tu cuenta está suspendida.',
                             bio_larga: 'La bio supera 160 caracteres.',
-                            links_invalidos: 'AlgÃºn enlace no es vÃ¡lido (solo http/https).',
-                            avatar_invalida: 'La URL del avatar no es vÃ¡lida.'
+                            links_invalidos: 'Algún enlace no es válido (solo http/https).',
+                            avatar_invalida: 'La URL del avatar no es válida.'
                         };
                         window.mostrarToast?.(erroresPerfil[data?.error] || 'Error: ' + (data?.error || 'desconocido'), true);
                         return;
