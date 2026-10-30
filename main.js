@@ -1078,7 +1078,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="mp-links">${renderLinks(usuario.links_json)}</div>
       <div class="mp-actions">
         <button type="button" id="mp-ir-ajustes" class="btn-primary"><i class="fa-solid fa-sliders"></i> Editar perfil y ajustes</button>
-        <button type="button" id="mp-cerrar-sesion" class="btn-muted"><i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión</button>
+        <button type="button" id="mp-cerrar-sesion" class="btn-logout"><i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión</button>
       </div>`;
     perfilDiv.querySelector('#mp-ir-ajustes')?.addEventListener('click', () => cambiarVista('ajustes'));
     perfilDiv.querySelector('#mp-cerrar-sesion')?.addEventListener('click', () => window.cerrarSesion?.());

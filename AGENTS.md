@@ -133,7 +133,7 @@ Las migraciones SQL no se versionan en este repo: el historial vive en Supabase.
 - En cada release, actualizar el query de caché `?v=X.Y.Z` de `style.css` y `main.js` en los HTML (GitHub Pages cachea agresivamente).
 - Formato de commit: `vX.Y.Z - resumen corto` (seguir el historial existente).
 - No commitear ni pushear una versión inestable. Probar antes.
-- Versión de esta release: `1.7.3` (perfil móvil, tienda privada, ayuda admin, correcciones de muro/galería/cine y limpieza de cuentas de prueba; sobre 1.7.2).
+- Versión de esta release: `1.7.4` (avatares exclusivos de tienda y botones de cerrar sesión unificados; sobre 1.7.3).
 
 ## 9. Pruebas antes de commitear
 

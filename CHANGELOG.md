@@ -3,6 +3,24 @@
 Formato basado en Keep a Changelog. Versionado SemVer (`MAJOR.MINOR.PATCH`).
 El historial anterior a 1.5.0 está en los commits `v1.4.x`.
 
+## [1.7.4] - 2026-10-30
+
+### Avatares de tienda
+
+- Nuevos avatares exclusivos de tienda: `avatar-shop-male.webp` y
+  `avatar-shop-female.webp` (512x512, recorte circular, WebP).
+- Los avatares por defecto (`avatar-male.webp` y `avatar-female.webp`) siguen
+  siendo los gratuitos del perfil.
+- Premios actualizados en Supabase:
+  - `Avatar Cyber Masculino` → `/img/avatars/avatar-shop-male.webp`.
+  - `Avatar Cyber Femenino` → `/img/avatars/avatar-shop-female.webp`.
+
+### Diseño
+
+- Botones de cerrar sesión unificados con `.btn-logout`: fondo transparente,
+  borde y hover rojo suave, mismo alto/radio que los botones primarios.
+- Aplicado en galería, cine, sorteo y modal de perfil.
+
 ## [1.7.3] - 2026-10-30
 
 ### Correcciones
