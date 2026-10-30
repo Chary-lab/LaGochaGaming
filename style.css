@@ -4681,3 +4681,12 @@ body.modal-perfil-open { overflow: hidden; }
     text-decoration: none;
 }
 .cine-open-youtube[hidden] { display: none !important; }
+.cine-reactions {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.cine-reactions::-webkit-scrollbar { display: none; }
+@media (max-width: 600px) {
+    .cine-join-bar { padding: 7px 10px; font-size: 0.72rem; }
+    .cine-now-actions .btn-cine-ghost { padding: 7px 9px; font-size: 0.72rem; }
+}
