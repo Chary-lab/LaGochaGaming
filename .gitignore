@@ -14,6 +14,8 @@
 # Permitir carpeta de imágenes
 !img/
 !img/*
+!img/avatars/
+!img/avatars/*
 # Migraciones locales de Supabase: viven en Supabase, no en este repo
 supabase/
 # Herramientas de validación
