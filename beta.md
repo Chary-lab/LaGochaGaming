@@ -59,8 +59,8 @@ Objetivo: cerrar los seis puntos sin romper comunidad, galería, cine ni sorteo.
 - [ ] Crear `obtener_avatares_disponibles(p_token)`:
   - Devuelve defaults + avatares de canjes entregados.
   - Incluye `url`, `nombre`, `origen` (`default`/`tienda`).
-- [ ] Crear directorio `img/avatars/` con los dos avatares beta.
-  - Formato WebP, 256x256, fondo neutro, <80KB.
+- [x] Crear directorio `img/avatars/` con los dos avatares beta.
+  - Formato WebP 512x512, recorte circular transparente, <60KB.
   - Nombres exactos: `avatar-male.webp`, `avatar-female.webp`.
 - [ ] Probar SQL en transacción con usuario temporal y `ROLLBACK`.
 
