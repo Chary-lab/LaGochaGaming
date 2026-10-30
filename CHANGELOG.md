@@ -3,6 +3,32 @@
 Formato basado en Keep a Changelog. Versionado SemVer (`MAJOR.MINOR.PATCH`).
 El historial anterior a 1.5.0 está en los commits `v1.4.x`.
 
+## [1.8.0] - 2026-10-30
+
+### Cine 2.0
+
+- Botón “Unirme” persistente en la barra de sala: no desaparece al cargar y
+  arranca el play dentro del gesto del usuario (evita el bloqueo de autoplay).
+- Barra “Ahora en pantalla”: fuente detectada, estado (reproduciendo/pausado/
+  error), espectadores conectados, sincronizar y pantalla completa.
+- Reacciones en vivo con Supabase Broadcast: los emojis flotan en la pantalla
+  de toda la sala; contador de presencia.
+- Soporte de YouTube (watch, shorts, live, embed), Google Drive (file/d,
+  open?id, uc?id, lh3) y video directo MP4/WebM/OGG/OGV/MOV, con tipo MIME
+  correcto y detección automática.
+- Sincronización: heartbeat del streamer cada 8 s, corrección de deriva en
+  cada evento y respaldo de lectura cada 20 s.
+- Errores claros: YouTube 101/150 muestra “no permite reproducción incrustada”
+  y botón “Abrir en YouTube”.
+- Cambio de video en caliente: destruye el reproductor anterior y crea el nuevo
+  (antes reutilizaba el iframe viejo).
+
+### Notas
+
+- `1.8.0` es MINOR: nuevas funciones de sala y contrato de cine ampliado.
+- El video actual `XoNCV9BsU9c` no permite embedding; se muestra error y enlace
+  alternativo. Usar un video con incrustación habilitada para probar el sync.
+
 ## [1.7.4] - 2026-10-30
 
 ### Avatares de tienda

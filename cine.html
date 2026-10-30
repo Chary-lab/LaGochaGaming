@@ -25,7 +25,7 @@
     <meta name="twitter:image" content="https://lagochagaming.com/img/3.jpg">
     <link rel="manifest" href="manifest.webmanifest">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=1.7.4">
+    <link rel="stylesheet" href="style.css?v=1.8.0">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;800;900&display=swap" rel="stylesheet">
@@ -78,24 +78,29 @@
                     <summary>¿Qué hace cada control?</summary>
                     <ul>
                         <li><strong>Iniciar sesión:</strong> solo la cuenta admin/streamer puede abrir este panel.</li>
-                        <li><strong>Enlace:</strong> acepta YouTube, Google Drive o un archivo <code>.mp4</code> directo.</li>
+                        <li><strong>Enlace:</strong> acepta YouTube, Google Drive y video directo <code>.mp4/.webm/.ogg</code>.</li>
                         <li><strong>Cargar Video:</strong> cambia la película para todos los espectadores.</li>
                         <li><strong>Play, pausa y barra:</strong> se sincronizan en tiempo real con el público.</li>
                         <li><strong>Apagar:</strong> detiene el video y limpia la pantalla para todos.</li>
+                        <li><strong>Sincronizar:</strong> vuelve a pedir el tiempo exacto al servidor.</li>
+                        <li><strong>Unirme / Activar audio:</strong> arranca el video y habilita el sonido si el navegador lo bloqueó.</li>
+                        <li><strong>Reacciones:</strong> los emojis aparecen en la pantalla de toda la sala.</li>
                         <li><strong>Cerrar Sesión:</strong> sale del panel y del modo streamer.</li>
                     </ul>
                 </details>
                 <p class="admin-panel-hint">
-                    Pega cualquier enlace (<strong>Google Drive</strong>, <strong>YouTube</strong> o <strong>.mp4 directos</strong>).
+                    Acepta <strong>YouTube</strong>, <strong>Google Drive</strong> y video directo
+                    <strong>MP4/WebM/OGG</strong>. El enlace se convierte automáticamente.
                 </p>
                 <div class="admin-toolbar">
-                    <input type="text" id="inputVideoUrl" class="admin-input" aria-label="Enlace del video" placeholder="Pega aquí el enlace de Drive, YouTube o .mp4...">
+                    <input type="text" id="inputVideoUrl" class="admin-input" aria-label="Enlace del video" placeholder="YouTube, Drive o .mp4/.webm/.ogg...">
                     <button type="button" data-action="load-video" class="btn-primary">Cargar Video</button>
                     <button type="button" data-action="stop-video" class="btn-primary btn-danger">🛑 Apagar</button>
                     <button type="button" data-action="logout-admin" class="btn-logout"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión</button>
                 </div>
-                <div>
+                <div class="admin-source-row">
                     <span class="admin-status" id="statusSyncText">🟢 Sincronización activa</span>
+                    <span class="admin-source-hint" id="urlSourceHint">Fuente: esperando enlace</span>
                 </div>
 
             </div>
@@ -110,6 +115,9 @@
                         <button type="button" id="cine-join-play" class="btn-primary cine-join-btn" hidden>
                             ▶ Unirme a la reproducción
                         </button>
+                        <a id="cine-open-youtube" class="btn-cine-ghost cine-open-youtube" href="#" target="_blank" rel="noopener noreferrer" hidden>
+                            <i class="fa-brands fa-youtube"></i> Abrir en YouTube
+                        </a>
                     </div>
                 </div>
                 <!-- Reproductor HTML5 para MP4 / Google Drive -->
@@ -125,6 +133,36 @@
                 <div class="streamer-overlay-cam">
                     <iframe src="https://player.kick.com/lagochagaming?autoplay=true&muted=1" frameborder="0" scrolling="no" allowfullscreen="true" title="Transmisión en directo" loading="lazy"></iframe>
                 </div>
+                <div id="cineFloatingReactions" class="cine-floating-reactions" aria-hidden="true"></div>
+            </div>
+
+            <div class="cine-now-playing">
+                <div class="cine-now-meta">
+                    <span id="cineSourceBadge" class="cine-source-badge" hidden><i class="fa-solid fa-film"></i> <span>Video</span></span>
+                    <span id="cineStatusPill" class="cine-status-pill is-waiting"><i class="fa-solid fa-circle"></i> <span>Esperando</span></span>
+                    <span class="cine-viewers"><i class="fa-solid fa-users"></i> <span id="cineViewersCount">0</span> viendo</span>
+                </div>
+                <div class="cine-now-actions">
+                    <button type="button" id="cine-join-bar" class="btn-primary cine-join-bar" hidden>
+                        <i class="fa-solid fa-play"></i> Unirme a la reproducción
+                    </button>
+                    <button type="button" id="cine-resync" class="btn-cine-ghost" title="Volver a sincronizar">
+                        <i class="fa-solid fa-rotate"></i> Sincronizar
+                    </button>
+                    <button type="button" id="cine-fullscreen" class="btn-cine-ghost" title="Pantalla completa" aria-label="Pantalla completa">
+                        <i class="fa-solid fa-expand"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="cine-reactions" aria-label="Reacciones de la sala">
+                <span class="cine-reactions-label">Reacciona en vivo:</span>
+                <button type="button" data-cine-reaction="🔥" aria-label="Reaccionar con fuego">🔥</button>
+                <button type="button" data-cine-reaction="😂" aria-label="Reaccionar con risa">😂</button>
+                <button type="button" data-cine-reaction="😱" aria-label="Reaccionar con sorpresa">😱</button>
+                <button type="button" data-cine-reaction="❤️" aria-label="Reaccionar con corazón">❤️</button>
+                <button type="button" data-cine-reaction="👏" aria-label="Reaccionar con aplausos">👏</button>
+                <button type="button" data-cine-reaction="🍿" aria-label="Reaccionar con palomitas">🍿</button>
             </div>
         </div>
 
@@ -166,7 +204,7 @@
     <script src="https://www.youtube.com/iframe_api" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0" defer></script>
 
-    <script src="main.js?v=1.7.4" defer></script>
+    <script src="main.js?v=1.8.0" defer></script>
 
     <!-- LÓGICA DE JAVASCRIPT DEL CINE -->
     <script>
@@ -174,6 +212,12 @@
         const mp4Player = document.getElementById('cineVideoPlayer');
         const ytContainer = document.getElementById('ytPlayerContainer');
         const btnUnirseCine = document.getElementById('cine-join-play');
+        const btnUnirseBar = document.getElementById('cine-join-bar');
+        const sourceBadge = document.getElementById('cineSourceBadge');
+        const statusPill = document.getElementById('cineStatusPill');
+        const viewersCount = document.getElementById('cineViewersCount');
+        const urlSourceHint = document.getElementById('urlSourceHint');
+        const btnAbrirYouTube = document.getElementById('cine-open-youtube');
         let ytPlayer = null;
         let esYouTube = false;
         let actualizandoLocalmente = false;
@@ -183,12 +227,18 @@
         let _ultimoSyncEnviado = null;
         let _ytLoadTimer = null;
         let _cargandoVideo = false;
+        let ultimoEstadoRemoto = 'pause';
+        let fuenteActual = '';
+        let cineError = '';
+        let canalCineSocial = null;
+        let ultimaReaccion = 0;
+        const cinePresenceId = 'cine_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
 
         function procesarUrlEntrante(url) {
             if (!url) return '';
             url = url.trim();
 
-            if (url.includes('drive.google.com') || url.includes('googleusercontent.com')) {
+            if (url.includes('drive.google.com') || url.includes('googleusercontent.com') || url.includes('drive.usercontent.google.com')) {
                 let driveId = null;
                 const matchDrive = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
                 if (matchDrive && matchDrive[1]) {
@@ -211,7 +261,7 @@
         function extraerYouTubeId(url) {
             if (!url) return null;
             const patrones = [
-                /(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/|v\/|e\/))([^#\&\?]+)/,
+                /(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/|live\/|v\/|e\/))([^#\&\?]+)/,
                 /youtu\.be\/([^#\&\?]+)/,
                 /youtube\.com\/user\/[^/]+\/?#?([^#\&\?]+)/
             ];
@@ -220,6 +270,86 @@
                 if (match && match[1] && match[1].length === 11) return match[1];
             }
             return null;
+        }
+
+        function detectarFuente(url) {
+            if (!url) return '';
+            if (extraerYouTubeId(url)) return 'youtube';
+            if (/drive\.google\.com|googleusercontent\.com|drive\.usercontent\.google\.com/i.test(url)) return 'drive';
+            return 'video';
+        }
+
+        function tipoVideoPorUrl(url) {
+            const limpio = (url || '').split('?')[0].toLowerCase();
+            if (limpio.endsWith('.webm')) return 'video/webm';
+            if (limpio.endsWith('.ogg') || limpio.endsWith('.ogv')) return 'video/ogg';
+            if (limpio.endsWith('.mov')) return 'video/quicktime';
+            return 'video/mp4';
+        }
+
+        function actualizarFuenteBadge() {
+            if (!sourceBadge) return;
+            if (!urlActual) {
+                sourceBadge.hidden = true;
+                return;
+            }
+            const fuente = fuenteActual || detectarFuente(urlActual);
+            const datos = fuente === 'youtube'
+                ? { icono: 'fa-brands fa-youtube', texto: 'YouTube' }
+                : fuente === 'drive'
+                    ? { icono: 'fa-brands fa-google-drive', texto: 'Google Drive' }
+                    : { icono: 'fa-solid fa-film', texto: 'Video directo' };
+            sourceBadge.hidden = false;
+            sourceBadge.innerHTML = `<i class="${datos.icono}"></i> <span>${datos.texto}</span>`;
+        }
+
+        function estaReproduciendoCine() {
+            if (esYouTube && ytPlayer && typeof ytPlayer.getPlayerState === 'function') {
+                try { return ytPlayer.getPlayerState() === YT.PlayerState.PLAYING; } catch (e) { return false; }
+            }
+            return !!mp4Player && !mp4Player.paused && !mp4Player.ended;
+        }
+
+        function tiempoActualCine() {
+            if (esYouTube && ytPlayer && typeof ytPlayer.getCurrentTime === 'function') {
+                try { return ytPlayer.getCurrentTime() || 0; } catch (e) { return 0; }
+            }
+            return mp4Player ? (mp4Player.currentTime || 0) : 0;
+        }
+
+        function actualizarControlesCine() {
+            const playing = estaReproduciendoCine();
+            if (statusPill) {
+                let texto = 'Esperando';
+                let clase = 'is-waiting';
+                if (cineError) {
+                    texto = cineError;
+                    clase = 'is-error';
+                } else if (urlActual) {
+                    if (playing) { texto = 'Reproduciendo'; clase = 'is-playing'; }
+                    else if (ultimoEstadoRemoto === 'play') { texto = 'Pulsa unirte'; clase = 'is-paused'; }
+                    else { texto = 'Pausado por el streamer'; clase = 'is-paused'; }
+                }
+                statusPill.className = `cine-status-pill ${clase}`;
+                const span = statusPill.querySelector('span');
+                if (span) span.textContent = texto;
+            }
+            if (btnUnirseBar) {
+                btnUnirseBar.hidden = !urlActual || !!cineError;
+                btnUnirseBar.innerHTML = playing
+                    ? '<i class="fa-solid fa-volume-high"></i> Activar audio'
+                    : '<i class="fa-solid fa-play"></i> Unirme a la reproducción';
+            }
+            if (btnAbrirYouTube) {
+                const mostrar = !!cineError && fuenteActual === 'youtube' && !!urlActual;
+                btnAbrirYouTube.hidden = !mostrar;
+                if (mostrar) btnAbrirYouTube.href = urlActual;
+            }
+            actualizarFuenteBadge();
+        }
+
+        function marcarFuente(dataUrl) {
+            fuenteActual = detectarFuente(dataUrl);
         }
 
         function onYouTubeIframeAPIReady() {
@@ -273,15 +403,22 @@
                     });
             } catch(e) { console.log('Modo local activo'); }
 
-            mp4Player.addEventListener('play', () => { if (streamerCineAutenticado && !actualizandoLocalmente && !esYouTube) {
-                ocultarOverlayCarga();
-                enviarComandoSync('play', mp4Player.currentTime);
-            }});
+            mp4Player.addEventListener('play', () => {
+                actualizarControlesCine();
+                if (streamerCineAutenticado && !actualizandoLocalmente && !esYouTube) {
+                    ocultarOverlayCarga();
+                    enviarComandoSync('play', mp4Player.currentTime);
+                }
+            });
             mp4Player.addEventListener('pause', () => { if (streamerCineAutenticado && !actualizandoLocalmente && !esYouTube) enviarComandoSync('pause', mp4Player.currentTime); });
             mp4Player.addEventListener('seeked', () => { if (streamerCineAutenticado && !actualizandoLocalmente && !esYouTube) enviarComandoSync('seek', mp4Player.currentTime); });
-            mp4Player.addEventListener('playing', () => { ocultarOverlayCarga(); });
+            mp4Player.addEventListener('playing', () => { cineError = ''; ocultarOverlayCarga(); actualizarControlesCine(); });
+            mp4Player.addEventListener('pause', () => actualizarControlesCine());
+            mp4Player.addEventListener('ended', () => actualizarControlesCine());
             mp4Player.addEventListener('error', () => {
-                mostrarOverlayCarga('Error reproduciendo el video.', true);
+                cineError = 'No se pudo cargar el video';
+                mostrarOverlayCarga(cineError, true);
+                actualizarControlesCine();
                 mostrarToast('Error al reproducir el video.', true);
             });
 
@@ -293,6 +430,37 @@
             if (btnUnirseCine) {
                 btnUnirseCine.addEventListener('click', unirseAReproduccion);
             }
+            if (btnUnirseBar) {
+                btnUnirseBar.addEventListener('click', unirseAReproduccion);
+            }
+            document.getElementById('cine-resync')?.addEventListener('click', resincronizarCine);
+            document.getElementById('cine-fullscreen')?.addEventListener('click', alternarPantallaCompleta);
+            document.querySelectorAll('[data-cine-reaction]').forEach((btn) => {
+                btn.addEventListener('click', () => enviarReaccionCine(btn.dataset.cineReaction));
+            });
+            document.getElementById('inputVideoUrl')?.addEventListener('input', actualizarHintFuente);
+
+            iniciarSalaCine();
+
+            // Latido del streamer: mantiene el tiempo al día aunque no haya eventos.
+            setInterval(() => {
+                if (!window.supabase || !streamerCineAutenticado || !urlActual) return;
+                if (!estaReproduciendoCine()) return;
+                const tiempo = tiempoActualCine();
+                const estado = 'play';
+                window._ultimoSyncEnviado = { estado, tiempo };
+                supabase.from('sync_cine').upsert({
+                    id: 1,
+                    estado,
+                    tiempo,
+                    updated_at: new Date().toISOString()
+                }).then(() => {}).catch(() => {});
+            }, 8000);
+
+            // Respaldo si Realtime falla: refrescar estado cada 20 s.
+            setInterval(() => {
+                if (!streamerCineAutenticado && urlActual) cargarEstadoCine();
+            }, 20000);
 
             // La cámara de reacción solo aporta si el stream está en vivo.
             actualizarCamaraDirecto();
@@ -307,15 +475,121 @@
         }
 
         function unirseAReproduccion() {
-            if (esYouTube && ytPlayer && typeof ytPlayer.playVideo === 'function') {
-                ytPlayer.playVideo();
+            if (!urlActual) return;
+            if (ultimoEstadoRemoto !== 'play') {
+                mostrarToast('El streamer tiene el video en pausa.', true);
                 return;
             }
-            if (mp4Player) {
+
+            // El gesto del usuario debe iniciar el play de inmediato para que
+            // el navegador no lo bloquee; la sincronización va después.
+            if (esYouTube && ytPlayer && typeof ytPlayer.playVideo === 'function') {
+                try {
+                    ytPlayer.unMute();
+                    ytPlayer.setVolume(100);
+                    ytPlayer.playVideo();
+                } catch (e) {}
+            } else if (mp4Player) {
+                mp4Player.muted = false;
                 mp4Player.play().catch(() => {
                     mostrarOverlayCarga('No se pudo iniciar la reproducción.', true);
                 });
             }
+
+            cargarEstadoCine();
+        }
+
+        async function resincronizarCine() {
+            // Si el iframe quedó en error, recrearlo al sincronizar.
+            if (cineError && esYouTube && ytPlayer) {
+                try { ytPlayer.destroy(); } catch (e) {}
+                ytPlayer = null;
+                urlActual = '';
+            }
+            await cargarEstadoCine();
+            mostrarToast(cineError ? 'No se pudo cargar el video.' : 'Reproductor sincronizado.', !!cineError);
+        }
+
+        function alternarPantallaCompleta() {
+            const box = document.getElementById('videoBoxContainer');
+            if (!box) return;
+            if (document.fullscreenElement) {
+                document.exitFullscreen?.();
+            } else {
+                box.requestFullscreen?.().catch(() => mostrarToast('Pantalla completa no disponible.', true));
+            }
+        }
+
+        function actualizarHintFuente() {
+            if (!urlSourceHint) return;
+            const valor = document.getElementById('inputVideoUrl')?.value.trim() || '';
+            if (!valor) {
+                urlSourceHint.textContent = 'Fuente: esperando enlace';
+                return;
+            }
+            const fuente = detectarFuente(valor);
+            const normalizada = procesarUrlEntrante(valor);
+            const etiqueta = fuente === 'youtube' ? 'YouTube'
+                : fuente === 'drive' ? 'Google Drive'
+                : normalizada && /\.(webm|ogg|ogv|mov)(\?|#|$)/i.test(normalizada) ? 'Video directo'
+                : 'Video directo';
+            urlSourceHint.textContent = `Fuente detectada: ${etiqueta}`;
+            urlSourceHint.style.color = fuente === 'video' && !/\.(mp4|webm|ogg|ogv|mov)(\?|#|$)/i.test(normalizada)
+                ? '#fbbf24'
+                : '';
+        }
+
+        function iniciarSalaCine() {
+            if (!window.supabase) return;
+            canalCineSocial = supabase
+                .channel('cine_sala', { config: { presence: { key: cinePresenceId } } })
+                .on('presence', { event: 'sync' }, () => {
+                    try {
+                        const estado = canalCineSocial.presenceState();
+                        if (viewersCount) viewersCount.textContent = String(Object.keys(estado).length);
+                    } catch (e) {}
+                })
+                .on('broadcast', { event: 'reaccion' }, ({ payload }) => {
+                    if (payload && payload.emoji) animarReaccionCine(payload.emoji);
+                })
+                .subscribe(async (status) => {
+                    if (status !== 'SUBSCRIBED') return;
+                    try {
+                        await canalCineSocial.track({
+                            nick: localStorage.getItem('comunidad_nickname') || 'Invitado'
+                        });
+                    } catch (e) {}
+                });
+            window.addEventListener('pagehide', () => {
+                try { canalCineSocial?.unsubscribe(); } catch (e) {}
+            });
+        }
+
+        function enviarReaccionCine(emoji) {
+            if (!emoji) return;
+            const ahora = Date.now();
+            if (ahora - ultimaReaccion < 450) return;
+            ultimaReaccion = ahora;
+            animarReaccionCine(emoji);
+            try {
+                const envio = canalCineSocial?.send({
+                    type: 'broadcast',
+                    event: 'reaccion',
+                    payload: { emoji }
+                });
+                if (envio && typeof envio.catch === 'function') envio.catch(() => {});
+            } catch (e) {}
+        }
+
+        function animarReaccionCine(emoji) {
+            const layer = document.getElementById('cineFloatingReactions');
+            if (!layer) return;
+            const el = document.createElement('span');
+            el.className = 'cine-floating-reaction';
+            el.textContent = emoji;
+            el.style.left = (10 + Math.random() * 80) + '%';
+            layer.appendChild(el);
+            setTimeout(() => el.remove(), 2500);
         }
 
         document.addEventListener('click', (e) => {
@@ -339,6 +613,7 @@
                     sincronizarReproductorRemoto(data);
                 }
             } catch(e) { console.error(e); }
+            actualizarControlesCine();
         }
 
         async function actualizarUrlPelicula() {
@@ -429,6 +704,10 @@
             }
             if (!data || !data.video_url) {
                 esYouTube = false;
+                ultimoEstadoRemoto = 'pause';
+                urlActual = '';
+                fuenteActual = '';
+                cineError = '';
                 if (mp4Player) {
                     mp4Player.pause();
                     mp4Player.currentTime = 0;
@@ -443,13 +722,19 @@
                     ytContainer.innerHTML = '';
                 }
                 mostrarOverlayCarga('Esperando video del streamer…');
+                actualizarControlesCine();
                 return;
             }
 
+            ultimoEstadoRemoto = data.estado === 'play' ? 'play' : 'pause';
+            marcarFuente(data.video_url);
             const finalUrl = procesarUrlEntrante(data.video_url);
             const ytId = extraerYouTubeId(finalUrl);
 
             if (ytId) {
+                const cambioVideoYt = !ytPlayer || urlActual !== finalUrl;
+                urlActual = finalUrl;
+                actualizarControlesCine();
                 // El iframe de YouTube puede tardar o estar bloqueado; MP4 no
                 // depende de su API y debe seguir funcionando igualmente.
                 if (!ytApiReady) {
@@ -469,8 +754,12 @@
                 mp4Player.pause();
                 ytContainer.style.display = 'block';
 
-                if (!ytPlayer || urlActual !== finalUrl) {
-                    urlActual = finalUrl;
+                if (cambioVideoYt) {
+                    cineError = '';
+                    if (ytPlayer && typeof ytPlayer.destroy === 'function') {
+                        try { ytPlayer.destroy(); } catch (e) {}
+                        ytPlayer = null;
+                    }
                     ytContainer.innerHTML = '<div id="ytPlayerTarget"></div>';
                     if (_ytLoadTimer) clearTimeout(_ytLoadTimer);
                     _cargandoVideo = true;
@@ -483,22 +772,32 @@
                             events: {
                                 'onReady': (event) => {
                                     _cargandoVideo = false;
+                                    cineError = '';
                                     try { event.target.seekTo(data.tiempo || 0, true); } catch (e) {}
                                     if (data.estado === 'play') {
                                         mostrarOverlayCarga('Pulsa para unirte a la reproducción', false, true);
                                         event.target.playVideo();
                                     }
+                                    actualizarControlesCine();
                                 },
                                 'onError': (event) => {
+                                    // Ignorar errores de un reproductor viejo ya destruido.
+                                    if (ytPlayer !== event.target) return;
                                     console.error('Error YouTube Player:', event.data);
                                     _cargandoVideo = false;
-                                    mostrarOverlayCarga('Error cargando el video de YouTube.', true);
-                                    mostrarToast('Error cargando el video de YouTube.', true);
+                                    cineError = event.data === 101 || event.data === 150
+                                        ? 'Este video no permite reproducción incrustada'
+                                        : 'No se pudo cargar el video de YouTube';
+                                    mostrarOverlayCarga(cineError, true);
+                                    actualizarControlesCine();
+                                    mostrarToast(cineError + '.', true);
                                 },
                                 'onStateChange': (event) => {
                                     if (event.data === YT.PlayerState.PLAYING) {
+                                        cineError = '';
                                         ocultarOverlayCarga();
                                     }
+                                    actualizarControlesCine();
                                     if (streamerCineAutenticado && !actualizandoLocalmente) {
                                         if (event.data === YT.PlayerState.PLAYING) enviarComandoSync('play', ytPlayer.getCurrentTime());
                                         if (event.data === YT.PlayerState.PAUSED) enviarComandoSync('pause', ytPlayer.getCurrentTime());
@@ -530,6 +829,7 @@
                         } else if (data.estado === 'pause') ytPlayer.pauseVideo();
                     } catch (e) { /* ignorar errores de estado intermedio */ }
                     actualizandoLocalmente = false;
+                    actualizarControlesCine();
                 }
             } else {
                 esYouTube = false;
@@ -541,10 +841,13 @@
                 }
                 if (_ytLoadTimer) clearTimeout(_ytLoadTimer);
                 mp4Player.style.display = 'block';
+                urlActual = finalUrl;
 
                 const source = document.getElementById('cineVideoSource');
                 if (source && source.src !== finalUrl) {
+                    cineError = '';
                     source.src = finalUrl;
+                    source.type = tipoVideoPorUrl(finalUrl);
                     mp4Player.load();
                 }
 
@@ -562,6 +865,7 @@
                     }
                 } catch (e) { /* ignorar */ }
                 actualizandoLocalmente = false;
+                actualizarControlesCine();
             }
         }
 
