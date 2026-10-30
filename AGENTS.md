@@ -133,7 +133,7 @@ Las migraciones SQL no se versionan en este repo: el historial vive en Supabase.
 - En cada release, actualizar el query de caché `?v=X.Y.Z` de `style.css` y `main.js` en los HTML (GitHub Pages cachea agresivamente).
 - Formato de commit: `vX.Y.Z - resumen corto` (seguir el historial existente).
 - No commitear ni pushear una versión inestable. Probar antes.
-- Versión de esta release: `1.8.0` (Cine 2.0: join persistente, reacciones, presencia, fuentes y sync con heartbeat; sobre 1.7.4).
+- Versión de esta release: `1.8.1` (perfil minimalista, redes compactas y tienda móvil en 2 columnas; sobre 1.8.0).
 
 ## 9. Pruebas antes de commitear
 

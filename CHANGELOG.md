@@ -3,6 +3,20 @@
 Formato basado en Keep a Changelog. Versionado SemVer (`MAJOR.MINOR.PATCH`).
 El historial anterior a 1.5.0 está en los commits `v1.4.x`.
 
+## [1.8.1] - 2026-10-30
+
+### Perfil y tienda
+
+- Perfil minimalista: avatar a la izquierda, nombre/rango/bio/redes a la
+  derecha; acciones abajo a la derecha.
+- Sin placeholders vacíos de “Sin bio” ni “Sin enlaces”.
+- Redes principales: X, Instagram, YouTube y Discord. TikTok, Kick, Twitch y
+  Web quedan en “Más redes” plegable.
+- Enlaces del perfil como iconos compactos con tooltip/aria-label.
+- Tienda móvil en 2 columnas con tarjetas compactas, descripción a 2 líneas y
+  botones reducidos; menos scroll.
+- Botón de cerrar sesión alineado a la derecha en el modal móvil.
+
 ## [1.8.0] - 2026-10-30
 
 ### Cine 2.0

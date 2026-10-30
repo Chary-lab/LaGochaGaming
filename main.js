@@ -909,6 +909,8 @@ document.addEventListener('DOMContentLoaded', () => {
     website: 'fa-solid fa-globe'
   };
   const LINK_KEYS = Object.keys(LINK_LABELS);
+  const LINK_PRIMARY = ['twitter', 'instagram', 'youtube', 'discord'];
+  const LINK_SECONDARY = ['tiktok', 'kick', 'twitch', 'website'];
   const ERRORES = {
     sin_sesion: 'Sesión expirada. Inicia sesión de nuevo.',
     baneado: 'Tu cuenta está suspendida.',
@@ -996,14 +998,14 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function renderLinks(links) {
-    if (!links || typeof links !== 'object') return '<span class="mp-vacio">Sin enlaces.</span>';
+    if (!links || typeof links !== 'object') return '';
     const piezas = [];
-    LINK_KEYS.forEach((clave) => {
+    [...LINK_PRIMARY, ...LINK_SECONDARY].forEach((clave) => {
       const url = links[clave];
       if (typeof url !== 'string' || !/^https?:\/\//i.test(url)) return;
-      piezas.push(`<a class="mp-link" href="${escapeAttr(url)}" target="_blank" rel="noopener noreferrer"><i class="${LINK_ICONS[clave]}" aria-hidden="true"></i> ${escapeHtml(LINK_LABELS[clave])}</a>`);
+      piezas.push(`<a class="mp-link" href="${escapeAttr(url)}" target="_blank" rel="noopener noreferrer" title="${escapeAttr(LINK_LABELS[clave])}" aria-label="${escapeAttr(LINK_LABELS[clave])}"><i class="${LINK_ICONS[clave]}" aria-hidden="true"></i></a>`);
     });
-    return piezas.length ? piezas.join('') : '<span class="mp-vacio">Sin enlaces.</span>';
+    return piezas.join('');
   }
 
   async function cargarPerfil() {
@@ -1064,18 +1066,23 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderPerfil(perfilDiv, ajustesDiv) {
     const avatar = window.avatarUsuarioComunidad(usuario);
     const inicial = inicialDe(usuario.apodo || localStorage.getItem('comunidad_nickname'));
-    const bio = usuario.bio ? escapeHtml(usuario.bio) : '<span class="mp-vacio">Sin bio todavía.</span>';
+    const bio = usuario.bio ? `<p class="mp-bio">${escapeHtml(usuario.bio)}</p>` : '';
     const icono = usuario.icono ? ` <span class="mp-icono">${escapeHtml(usuario.icono)}</span>` : '';
+    const linksHtml = renderLinks(usuario.links_json);
     const avatarPerfil = avatar
       ? `<img class="mp-avatar" src="${escapeAttr(avatar)}" alt="Avatar de ${escapeAttr(usuario.apodo || 'usuario')}">`
       : `<span class="mp-avatar-inicial" aria-hidden="true">${escapeHtml(inicial)}</span>`;
 
     perfilDiv.innerHTML = `
-      <div class="mp-avatar-wrap">${avatarPerfil}</div>
-      <h4 class="mp-apodo">${escapeHtml(usuario.apodo || localStorage.getItem('comunidad_nickname') || '')}</h4>
-      <p class="mp-meta">${escapeHtml(usuario.rango || 'semilla')} · ${Number(usuario.puntos || 0)} pts${icono}</p>
-      <p class="mp-bio">${bio}</p>
-      <div class="mp-links">${renderLinks(usuario.links_json)}</div>
+      <div class="mp-profile-head">
+        <div class="mp-avatar-wrap">${avatarPerfil}</div>
+        <div class="mp-profile-info">
+          <h4 class="mp-apodo">${escapeHtml(usuario.apodo || localStorage.getItem('comunidad_nickname') || '')}</h4>
+          <p class="mp-meta">${escapeHtml(usuario.rango || 'semilla')} · ${Number(usuario.puntos || 0)} pts${icono}</p>
+          ${bio}
+          ${linksHtml ? `<div class="mp-links">${linksHtml}</div>` : ''}
+        </div>
+      </div>
       <div class="mp-actions">
         <button type="button" id="mp-ir-ajustes" class="btn-primary"><i class="fa-solid fa-sliders"></i> Editar perfil y ajustes</button>
         <button type="button" id="mp-cerrar-sesion" class="btn-logout"><i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión</button>
@@ -1084,11 +1091,13 @@ document.addEventListener('DOMContentLoaded', () => {
     perfilDiv.querySelector('#mp-cerrar-sesion')?.addEventListener('click', () => window.cerrarSesion?.());
 
     const links = usuario.links_json && typeof usuario.links_json === 'object' ? usuario.links_json : {};
-    const inputsLinks = LINK_KEYS.map((clave) => `
+    const inputLink = (clave) => `
       <label class="mp-link-field">
         <span><i class="${LINK_ICONS[clave]}" aria-hidden="true"></i> ${LINK_LABELS[clave]}</span>
         <input type="url" data-link="${clave}" value="${escapeAttr(links[clave] || '')}" placeholder="https://..." autocomplete="url">
-      </label>`).join('');
+      </label>`;
+    const inputsPrimarios = LINK_PRIMARY.map(inputLink).join('');
+    const inputsSecundarios = LINK_SECONDARY.map(inputLink).join('');
 
     ajustesDiv.innerHTML = `
       <div class="mp-avatar-wrap">
@@ -1110,9 +1119,16 @@ document.addEventListener('DOMContentLoaded', () => {
         <textarea id="mp-bio" maxlength="160" placeholder="Cuéntanos algo sobre ti...">${escapeHtml(usuario.bio || '')}</textarea>
       </label>
       <fieldset class="mp-links-grid">
-        <legend>Enlaces sociales</legend>
-        ${inputsLinks}
+        <legend>Enlaces principales</legend>
+        ${inputsPrimarios}
       </fieldset>
+      <details class="mp-links-more">
+        <summary>Más redes</summary>
+        <fieldset class="mp-links-grid">
+          <legend class="mp-sr-only">Otras redes</legend>
+          ${inputsSecundarios}
+        </fieldset>
+      </details>
       <p id="mp-error" class="mp-error" role="alert" hidden></p>
       <div class="mp-actions">
         <button type="button" id="mp-cancelar" class="btn-primary btn-muted">Cancelar</button>

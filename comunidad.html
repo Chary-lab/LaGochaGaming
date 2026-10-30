@@ -28,7 +28,7 @@
     <link rel="icon" type="image/png" sizes="512x512" href="img/android-chrome-512x512.png">
     <link rel="manifest" href="manifest.webmanifest">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=1.8.0">
+    <link rel="stylesheet" href="style.css?v=1.8.1">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;800;900&display=swap" rel="stylesheet">
@@ -389,7 +389,7 @@
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
 
-    <script src="main.js?v=1.8.0" defer></script>
+    <script src="main.js?v=1.8.1" defer></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.17.5/dist/cdn.min.js"
             integrity="sha384-FYLKjwG3aohNhNZoVG8sY/5ntunm+MqylL90Q+rT3OM7AwV9/BKFjk/RjoIpIgsI"
             crossorigin="anonymous"></script>
@@ -1171,7 +1171,8 @@ setInterval(actualizarTypingIndicator, 500);
                         twitch: 'Twitch', website: 'Web'
                     };
                     let hayLinks = false;
-                    Object.entries(links).forEach(([k, v]) => {
+                    ['twitter', 'instagram', 'youtube', 'discord', 'tiktok', 'kick', 'twitch', 'website'].forEach((k) => {
+                        const v = links[k];
                         if (!v) return;
                         let urlSegura;
                         try {
@@ -1185,7 +1186,10 @@ setInterval(actualizarTypingIndicator, 500);
                         a.target = '_blank';
                         a.rel = 'noopener noreferrer';
                         a.className = 'user-link';
-                        a.innerHTML = `<i class="${iconMap[k] || 'fa-solid fa-link'}"></i> ${escapeHtml(labelMap[k] || k)}`;
+                        const etiqueta = labelMap[k] || k;
+                        a.title = etiqueta;
+                        a.setAttribute('aria-label', etiqueta);
+                        a.innerHTML = `<i class="${iconMap[k] || 'fa-solid fa-link'}" aria-hidden="true"></i>`;
                         linksDiv.appendChild(a);
                         hayLinks = true;
                     });
