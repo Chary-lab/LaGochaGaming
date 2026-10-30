@@ -51,7 +51,7 @@ El historial anterior a 1.5.0 está en los commits `v1.4.x`.
   checklist de pruebas.
 - `scripts/check.js`: validación estática sin dependencias (sintaxis JS inline,
   IDs duplicados, recursos locales, SemVer, CSP, mustaches Alpine).
-- Migraciones en `supabase/migrations/` para todos los cambios de base de datos.
+- Migraciones aplicadas en Supabase; la carpeta local `supabase/` no se versiona.
 
 ### Notas de migración
 

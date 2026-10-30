@@ -14,9 +14,9 @@
 # Permitir carpeta de imágenes
 !img/
 !img/*
-# Migraciones SQL y herramientas de validación
-!supabase/
-!supabase/**
+# Migraciones locales de Supabase: viven en Supabase, no en este repo
+supabase/
+# Herramientas de validación
 !scripts/
 !scripts/*
 # Ignorar documentación

@@ -40,7 +40,7 @@ node --check main.js
 ## Base de datos
 
 - Proyecto Supabase: `cydiyaacnyydprgffmkq`.
-- Migraciones en `supabase/migrations/`.
+- Historial de migraciones en Supabase; no se versiona la carpeta local `supabase/`.
 - Las escrituras sensibles pasan por RPC `SECURITY DEFINER`; RLS permanece activo.
 - Nunca agregar `service_role` ni secretos al cliente.
 

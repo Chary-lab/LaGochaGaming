@@ -32,8 +32,9 @@ Guía operativa para agentes que trabajen en este repositorio. Leerla completa a
 | `cine.html` | Sincronización de películas/videos para espectadores y streamer |
 | `_headers` | Cabeceras para hosts que las soportan (NO en GitHub Pages) |
 | `VERSION` | Versión SemVer de la release |
-| `scripts/check.js` | Validaciones estáticas del repo |
-| `supabase/migrations/` | Migraciones SQL aplicadas al proyecto |
+| `scripts/check.js` | Validaciones estáticas del repo (no se carga en Pages) |
+
+Las migraciones SQL no se versionan en este repo: el historial vive en Supabase. La carpeta local `supabase/` está ignorada.
 
 ## 4. Convenciones de JavaScript
 
@@ -136,10 +137,10 @@ Guía operativa para agentes que trabajen en este repositorio. Leerla completa a
    - Sorteo: modo manual agrega/gira; modo streamer pide login; si no hay sesión admin no muestra panel; errores de red no muestran un ganador falso.
    - Cine: estado/video cargan, overlay/join no rompe MP4 si YouTube falla, sin errores propios.
 5. Cambios de base de datos:
-   - Escribir la migración en `supabase/migrations/`.
-   - Probarla en una transacción con un usuario temporal y `ROLLBACK`.
+   - Preparar el SQL y probarlo en una transacción con un usuario temporal y `ROLLBACK`.
    - Verificar que no queden usuarios, mensajes, likes ni sesiones de prueba.
-   - Aplicarla con una migración nombrada y volver a correr advisors.
+   - Aplicarlo en Supabase con una migración nombrada y volver a correr advisors.
+   - No commitear la carpeta local `supabase/` (está ignorada). Documentar el cambio en `CHANGELOG.md`.
 6. Revisar `git diff` y `git status`; no commitear archivos temporales, secretos ni datos de prueba.
 
 ## 10. Flujo de trabajo
