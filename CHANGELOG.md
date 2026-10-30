@@ -3,6 +3,31 @@
 Formato basado en Keep a Changelog. Versionado SemVer (`MAJOR.MINOR.PATCH`).
 El historial anterior a 1.5.0 está en los commits `v1.4.x`.
 
+## [1.7.3] - 2026-10-30
+
+### Correcciones
+
+- Muro de saludos: `btnEliminar` se usaba antes de declararse y rompía el render
+  de todas las tarjetas. Ahora los saludos cargan.
+- Galería: los usuarios sin sesión ven una tarjeta compacta para iniciar sesión
+  en vez del formulario de subida completo; el formulario queda centrado.
+- Cine: la cámara de reacción se oculta cuando el stream está offline y se
+  reduce en móvil; se eliminó el bloque duplicado de instrucciones; el chat
+  vuelve a permitir scroll interno.
+- Comunidad: la tienda se oculta sin sesión; se deduplican usuarios de presencia
+  con varias pestañas; el perfil compacto (avatar) aparece en navbar móvil y de
+  laptops; el modal de perfil incluye “Cerrar sesión”.
+- Se eliminaron restos del helper de copiar enlace y se agregó una guarda en
+  `scripts/check.js`.
+- Se limpiaron las cuentas de prueba `ui_test_172_5057` y `ui_reg_172_8177`
+  junto con sus sesiones y canjes.
+
+### Notas
+
+- `1.7.3` es un PATCH sobre `1.7.2`; no cambia contratos de RPC.
+- Se reparó nuevamente el UTF-8 de los HTML tras un reemplazo masivo con
+  PowerShell; queda documentado en `AGENTS.md` para no repetirlo.
+
 ## [1.7.2] - 2026-10-30
 
 ### Correcciones

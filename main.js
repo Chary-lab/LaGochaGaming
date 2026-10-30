@@ -287,7 +287,7 @@ window.avatarUsuarioComunidad = function avatarUsuarioComunidad(usuario) {
 };
 
 
-// === COPIAR ENLACE (compartido) ===
+// === COPIAR USUARIO (sorteo) ===
 window.copiarEnlace = async function copiarEnlace(url, textoExito = '¡Enlace copiado!') {
     try {
         await navigator.clipboard.writeText(url);
@@ -308,21 +308,6 @@ window.copiarEnlace = async function copiarEnlace(url, textoExito = '¡Enlace co
         }
         textarea.remove();
     }
-};
-
-// Helper para crear botón copiar enlace
-window.crearBotonCopiar = function crearBotonCopiar(url, ariaLabel = 'Copiar enlace') {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'btn-copiar-enlace';
-    btn.setAttribute('aria-label', ariaLabel);
-    btn.title = 'Copiar enlace';
-    btn.innerHTML = '<i class="fa-solid fa-link"></i>';
-    btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        window.copiarEnlace(url);
-    });
-    return btn;
 };
 
 // === REACCIONES MURO DE SALUDOS ===
@@ -1093,8 +1078,10 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="mp-links">${renderLinks(usuario.links_json)}</div>
       <div class="mp-actions">
         <button type="button" id="mp-ir-ajustes" class="btn-primary"><i class="fa-solid fa-sliders"></i> Editar perfil y ajustes</button>
+        <button type="button" id="mp-cerrar-sesion" class="btn-muted"><i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión</button>
       </div>`;
     perfilDiv.querySelector('#mp-ir-ajustes')?.addEventListener('click', () => cambiarVista('ajustes'));
+    perfilDiv.querySelector('#mp-cerrar-sesion')?.addEventListener('click', () => window.cerrarSesion?.());
 
     const links = usuario.links_json && typeof usuario.links_json === 'object' ? usuario.links_json : {};
     const inputsLinks = LINK_KEYS.map((clave) => `

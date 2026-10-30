@@ -103,6 +103,9 @@ for (const pagina of PAGES) {
     if (/<\/butto\b|<\/buttn\b/.test(html)) {
         error(`${pagina}: etiqueta </button> mal escrita`);
     }
+    if (/data-action="copy|Copiar enlace/i.test(html)) {
+        error(`${pagina}: quedó un botón de copiar enlace eliminado`);
+    }
 
     const h1 = (html.match(/<h1\b/gi) || []).length;
     if (h1 !== 1) aviso(`${pagina}: se esperaba 1 <h1>, hay ${h1}`);

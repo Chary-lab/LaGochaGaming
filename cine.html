@@ -25,7 +25,7 @@
     <meta name="twitter:image" content="https://lagochagaming.com/img/3.jpg">
     <link rel="manifest" href="manifest.webmanifest">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=1.7.2">
+    <link rel="stylesheet" href="style.css?v=1.7.3">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;800;900&display=swap" rel="stylesheet">
@@ -75,8 +75,15 @@
             <div id="streamerAdminPanel" class="streamer-admin-panel admin-panel">
                 <h2 class="admin-panel-title"><i class="fa-solid fa-sliders"></i> Panel Maestro de Reproducción</h2>
                 <details class="panel-ayuda">
-                    <summary>¿Cómo funciona?</summary>
-                    <p>Inicia sesión de streamer, pega un enlace (YouTube/MP4/Drive) y pulsa Cargar. Los controles de play/pausa/seek se sincronizan con los espectadores. Si el navegador bloquea el autoplay, usa "Unirme a la reproducción". Apagar limpia el estado; Cerrar sesión finaliza.</p>
+                    <summary>¿Qué hace cada control?</summary>
+                    <ul>
+                        <li><strong>Iniciar sesión:</strong> solo la cuenta admin/streamer puede abrir este panel.</li>
+                        <li><strong>Enlace:</strong> acepta YouTube, Google Drive o un archivo <code>.mp4</code> directo.</li>
+                        <li><strong>Cargar Video:</strong> cambia la película para todos los espectadores.</li>
+                        <li><strong>Play, pausa y barra:</strong> se sincronizan en tiempo real con el público.</li>
+                        <li><strong>Apagar:</strong> detiene el video y limpia la pantalla para todos.</li>
+                        <li><strong>Cerrar Sesión:</strong> sale del panel y del modo streamer.</li>
+                    </ul>
                 </details>
                 <p class="admin-panel-hint">
                     Pega cualquier enlace (<strong>Google Drive</strong>, <strong>YouTube</strong> o <strong>.mp4 directos</strong>).
@@ -91,23 +98,6 @@
                     <span class="admin-status" id="statusSyncText">🟢 Sincronización activa</span>
                 </div>
 
-                <!-- INSTRUCCIONES RÁPIDAS (colapsible, oculto por defecto) -->
-                <div class="admin-instructions">
-                    <button type="button" class="admin-instructions-toggle" id="btn-toggle-instrucciones" data-action="toggle-instrucciones" aria-expanded="false" aria-controls="admin-instructions-body">
-                        <i class="fa-solid fa-circle-info"></i> <span>📖 Cómo usar el Cine</span>
-                        <i class="fa-solid fa-chevron-down" id="icono-instrucciones"></i>
-                    </button>
-                    <div class="admin-instructions-body" id="admin-instructions-body">
-                        <ul class="admin-instructions-list">
-                            <li><i class="fa-solid fa-link"></i> <strong>Enlaces permitidos:</strong> YouTube, Google Drive y videos <strong>.mp4</strong> directos.</li>
-                            <li><i class="fa-solid fa-play"></i> <strong>Cargar video:</strong> pega el enlace y haz clic en "Cargar Video". El reproductor cambiará automáticamente.</li>
-                            <li><i class="fa-solid fa-pause"></i> <strong>Apagar:</strong> detiene la reproducción y limpia el reproductor para todos.</li>
-                            <li><i class="fa-solid fa-sync"></i> <strong>Sincronización:</strong> lo que tú reproduces, pausas o buscas se refleja en tiempo real en la pantalla del público.</li>
-                            <li><i class="fa-solid fa-right-from-bracket"></i> <strong>Cerrar Sesión:</strong> sale de este panel y del modo admin.</li>
-                        </ul>
-                        <p class="admin-instructions-tip"><i class="fa-solid fa-lightbulb"></i> <strong>Tip:</strong> Pega el enlace de YouTube o Drive que copias de tu navegador. Con YouTube, usa el formato <code>youtube.com/watch?v=ID</code> o <code>youtu.be/ID</code>. Con Drive, usa <code>drive.google.com/file/d/ID</code>.</p>
-                    </div>
-                </div>
             </div>
 
             <!-- CONTENEDOR DE REPRODUCCIÓN Y CÁMARA DE KICK -->
@@ -141,7 +131,7 @@
         <!-- BARRA LATERAL (CHAT DE KICK) -->
         <div class="cine-sidebar">
             <div class="chat-box-cine">
-                <iframe src="https://kick.com/popout/lagochagaming/chat" frameborder="0" scrolling="no" title="Chat de Kick" loading="lazy"></iframe>
+                <iframe src="https://kick.com/popout/lagochagaming/chat" frameborder="0" title="Chat de Kick" loading="lazy"></iframe>
             </div>
             <div class="sidebar-info cine-info-card">
                 <h3>ℹ️ ¿Cómo funciona?</h3>
@@ -176,7 +166,7 @@
     <script src="https://www.youtube.com/iframe_api" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0" defer></script>
 
-    <script src="main.js?v=1.7.2" defer></script>
+    <script src="main.js?v=1.7.3" defer></script>
 
     <!-- LÓGICA DE JAVASCRIPT DEL CINE -->
     <script>
@@ -303,7 +293,18 @@
             if (btnUnirseCine) {
                 btnUnirseCine.addEventListener('click', unirseAReproduccion);
             }
+
+            // La cámara de reacción solo aporta si el stream está en vivo.
+            actualizarCamaraDirecto();
+            setTimeout(actualizarCamaraDirecto, 1500);
+            setInterval(actualizarCamaraDirecto, 15000);
         });
+
+        function actualizarCamaraDirecto() {
+            const cam = document.querySelector('.streamer-overlay-cam');
+            if (!cam) return;
+            cam.hidden = window._ultimaEstadoEnVivo !== true;
+        }
 
         function unirseAReproduccion() {
             if (esYouTube && ytPlayer && typeof ytPlayer.playVideo === 'function') {
@@ -323,7 +324,6 @@
 
             switch (trigger.dataset.action) {
                 case 'toggle-streamer-panel': toggleModoStreamerCine(); break;
-                case 'toggle-instrucciones': toggleInstruccionesPanel(); break;
                 case 'load-video': actualizarUrlPelicula(); break;
                 case 'stop-video': cerrarReproductorTotal(); break;
                 case 'logout-admin': window.cerrarSesionAdminGlobal?.(); break;
@@ -589,14 +589,6 @@
             const overlay = document.getElementById('cinePlayerOverlay');
             if (overlay) overlay.classList.add('hide');
             if (btnUnirseCine) btnUnirseCine.hidden = true;
-        }
-
-        function toggleInstruccionesPanel() {
-            const body = document.getElementById('admin-instructions-body');
-            const btn = document.getElementById('btn-toggle-instrucciones');
-            if (!body || !btn) return;
-            const abierto = body.classList.toggle('open');
-            btn.setAttribute('aria-expanded', abierto ? 'true' : 'false');
         }
 
         function mostrarOverlayCarga(mensagem = 'Esperando video del streamer…', esError = false, mostrarUnirse = false) {

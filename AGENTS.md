@@ -48,6 +48,7 @@ Las migraciones SQL no se versionan en este repo: el historial vive en Supabase.
 - No anidar nuevas acciones interactivas dentro de `role="button"` sin revisar propagación de click/teclado y accesibilidad.
 - Respetar `prefers-reduced-motion` en animaciones nuevas (el confeti ya lo hace).
 - Mantener los textos de UI en español y el tono actual.
+- No usar `Get-Content`/`Set-Content` de PowerShell 5.1 para reemplazos masivos en archivos UTF-8: leen ANSI y rompen acentos/emojis. Usar el editor o Node/Python con UTF-8 explícito.
 
 ## 5. Supabase: reglas no negociables
 
@@ -132,7 +133,7 @@ Las migraciones SQL no se versionan en este repo: el historial vive en Supabase.
 - En cada release, actualizar el query de caché `?v=X.Y.Z` de `style.css` y `main.js` en los HTML (GitHub Pages cachea agresivamente).
 - Formato de commit: `vX.Y.Z - resumen corto` (seguir el historial existente).
 - No commitear ni pushear una versión inestable. Probar antes.
-- Versión de esta release: `1.7.2` (correcciones de perfil, género, avatares y tienda sobre `1.7.1`).
+- Versión de esta release: `1.7.3` (perfil móvil, tienda privada, ayuda admin, correcciones de muro/galería/cine y limpieza de cuentas de prueba; sobre 1.7.2).
 
 ## 9. Pruebas antes de commitear
 

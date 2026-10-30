@@ -28,7 +28,7 @@
     <link rel="icon" type="image/png" sizes="512x512" href="img/android-chrome-512x512.png">
     <link rel="manifest" href="manifest.webmanifest">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=1.7.2">
+    <link rel="stylesheet" href="style.css?v=1.7.3">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;800;900&display=swap" rel="stylesheet">
@@ -389,7 +389,7 @@
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
 
-    <script src="main.js?v=1.7.2" defer></script>
+    <script src="main.js?v=1.7.3" defer></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.17.5/dist/cdn.min.js"
             integrity="sha384-FYLKjwG3aohNhNZoVG8sY/5ntunm+MqylL90Q+rT3OM7AwV9/BKFjk/RjoIpIgsI"
             crossorigin="anonymous"></script>
@@ -1086,6 +1086,7 @@ setInterval(actualizarTypingIndicator, 500);
                 cargarPerfilExtendido();
                 // La tienda solo se puede cargar cuando ya hay token de comunidad.
                 if (typeof cargarTiendaCatalogo === 'function') cargarTiendaCatalogo();
+                window.actualizarVisibilidadTienda?.();
             }
 
             // Cargar avatar, bio, enlaces y género del usuario
@@ -1241,6 +1242,7 @@ setInterval(actualizarTypingIndicator, 500);
                         const fill = document.getElementById('rango-progreso-fill');
                         if (fill) fill.style.width = '0%';
                         window.actualizarUsuarioNavComunidad?.();
+                        window.actualizarVisibilidadTienda?.();
                         return false;
                     }
                     const usuario = data.usuario;
@@ -1980,9 +1982,14 @@ if (chatForm) {
                 const rangosMap = await obtenerRangosCache(nicknames);
 
                 onlineUsersListEl.textContent = '';
+                const vistos = new Set();
                 for (const [key, presenceArray] of Object.entries(estadoPresencia)) {
                     const datos = presenceArray[0] || {};
                     const nick = (datos.nickname || 'Anónimo').toString();
+                    // Varias pestañas del mismo usuario no deben duplicar la fila.
+                    const dedupeKey = datos.user_id ? `u:${datos.user_id}` : `n:${nick.toLowerCase()}`;
+                    if (vistos.has(dedupeKey)) continue;
+                    vistos.add(dedupeKey);
                     const initial = nick.charAt(0).toUpperCase();
 
                     const { clave: rangoLower, emoji, nombre: rangoNombre } = datosRango(rangosMap[datos.nickname]);
@@ -2382,7 +2389,7 @@ if (chatForm) {
                 const teclas = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'];
                 if (!teclas.includes(e.key)) return;
                 e.preventDefault();
-                const botones = Array.from(document.querySelectorAll('.tab-btn[data-tab]'));
+                const botones = Array.from(document.querySelectorAll('.tab-btn[data-tab]')).filter(b => !b.hidden);
                 const i = botones.indexOf(btn);
                 let destino = i;
                 if (e.key === 'ArrowRight' || e.key === 'ArrowDown') destino = (i + 1) % botones.length;
@@ -2403,7 +2410,33 @@ if (chatForm) {
         });
     });
 
+    window.actualizarVisibilidadTienda = function actualizarVisibilidadTienda() {
+        const btn = document.getElementById('tabbtn-tienda');
+        const panel = document.getElementById('tab-tienda');
+        const logueado = !!localStorage.getItem('comunidad_session_token');
+        if (btn) {
+            btn.hidden = !logueado;
+            if (!logueado) {
+                btn.classList.remove('active');
+                btn.setAttribute('aria-selected', 'false');
+                btn.tabIndex = -1;
+            }
+        }
+        if (!logueado && panel) {
+            panel.hidden = true;
+            panel.classList.remove('active');
+            if (btn && btn.classList.contains('active')) {
+                window.cambiarTabComunidad?.('canal');
+            }
+        }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        window.actualizarVisibilidadTienda();
+    });
+
     window.cambiarTabComunidad = function(tab) {
+        if (tab === 'tienda' && !localStorage.getItem('comunidad_session_token')) tab = 'canal';
         const botones = document.querySelectorAll('.tab-btn[data-tab]');
         const paneles = document.querySelectorAll('.tab-content');
         let activo = null;

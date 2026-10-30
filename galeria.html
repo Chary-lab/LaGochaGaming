@@ -25,7 +25,7 @@
     <meta name="twitter:image" content="https://lagochagaming.com/img/3.jpg">
     <link rel="manifest" href="manifest.webmanifest">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=1.7.2">
+    <link rel="stylesheet" href="style.css?v=1.7.3">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;800;900&display=swap" rel="stylesheet">
@@ -79,10 +79,12 @@
                 <summary>¿Cómo funciona la moderación?</summary>
                 <ul>
                     <li><strong>Modo Moderación:</strong> inicia sesión de admin (no es cuenta de comunidad).</li>
-                    <li><strong>Pendientes:</strong> aprobar, rechazar y editar autor de fotos subidas.</li>
+                    <li><strong>Aprobar / Rechazar:</strong> publica la foto pendiente o la descarta. El campo autor solo lo cambia un admin.</li>
+                    <li><strong>Borrar foto:</strong> elimina una foto publicada de la galería.</li>
                     <li><strong>Subida:</strong> título, autor (admin) y límites (5MB, JPG/PNG/GIF/WEBP/AVIF).</li>
-                    <li><strong>Usuarios:</strong> buscar, filtrar baneados. <strong>Ban temporal</strong> bloquea el acceso por un tiempo; <strong>Shadowban</strong> oculta sus mensajes de chat a terceros (no es seguridad fuerte).</li>
-                    <li><strong>Auditoría:</strong> historial de ban/shadowban y detalle (escapado).</li>
+                    <li><strong>Usuarios:</strong> buscar y filtrar baneados. <strong>Banear</strong> bloquea 7 días y cierra sus sesiones; <strong>Desbanear</strong> lo reactiva.</li>
+                    <li><strong>Shadowban:</strong> sus mensajes de chat solo los ve él mismo. No es un bloqueo de seguridad fuerte.</li>
+                    <li><strong>Auditoría:</strong> historial de ban/shadowban con detalle escapado.</li>
                     <li><strong>Cerrar sesión admin:</strong> finaliza la sesión de administrador.</li>
                 </ul>
             </details>
@@ -210,10 +212,10 @@
                 <i class="fas fa-upload"></i> Seleccionar Imagen
             </label>
             <p class="upload-hint">Formatos: JPG, PNG, GIF. Tamaño máximo: 5MB por imagen.</p>
-            <p id="aviso-sesion-galeria" class="upload-hint" hidden>
-                <i class="fa-solid fa-lock"></i> Necesitas iniciar sesión en la
-                <a href="comunidad">Comunidad</a> para subir fotos.
-            </p>
+            <div id="aviso-sesion-galeria" class="upload-login-cta" hidden>
+                <p><i class="fa-solid fa-lock"></i> Inicia sesión en la Comunidad para subir tus fotos.</p>
+                <a href="comunidad" class="btn-primary upload-login-link">Ir a la Comunidad</a>
+            </div>
             <div id="uploadFeedback"></div>
         </div>
 
@@ -387,10 +389,12 @@
         function actualizarControlesAdmin() {
             const wrapAutor = document.getElementById('admin-author-wrap');
             const avisoSesion = document.getElementById('aviso-sesion-galeria');
+            const uploadContainer = document.getElementById('uploadContainer');
+            const conSesion = adminAutenticado || !!localStorage.getItem('comunidad_session_token');
+
             if (wrapAutor) wrapAutor.hidden = !adminAutenticado;
-            if (avisoSesion) {
-                avisoSesion.hidden = adminAutenticado || !!localStorage.getItem('comunidad_session_token');
-            }
+            if (avisoSesion) avisoSesion.hidden = conSesion;
+            if (uploadContainer) uploadContainer.classList.toggle('upload-sin-sesion', !conSesion);
         }
 
         // Sincroniza toda la UI de moderación con adminAutenticado. Se usa al cargar,
@@ -1477,7 +1481,7 @@
         // escapeHtml / escapeAttr viven en main.js (fuente única del sitio)
     </script>
 
-    <script src="main.js?v=1.7.2" defer></script>
+    <script src="main.js?v=1.7.3" defer></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.17.5/dist/cdn.min.js"
             integrity="sha384-FYLKjwG3aohNhNZoVG8sY/5ntunm+MqylL90Q+rT3OM7AwV9/BKFjk/RjoIpIgsI"
             crossorigin="anonymous"></script>
