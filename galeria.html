@@ -25,7 +25,7 @@
     <meta name="twitter:image" content="https://lagochagaming.com/img/3.jpg">
     <link rel="manifest" href="manifest.webmanifest">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=1.6.0">
+    <link rel="stylesheet" href="style.css?v=1.7.0">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;800;900&display=swap" rel="stylesheet">
@@ -75,6 +75,17 @@
 
         <!-- PANEL ADMIN UNIFICADO -->
         <div id="panelAdminUnificado" class="panel-admin-unificado" x-data="{ activeTab: 'moderacion' }" hidden>
+            <details class="panel-ayuda">
+                <summary>¿Qué hace cada botón?</summary>
+                <ul>
+                    <li><strong>Modo Moderación:</strong> inicia sesión de admin (no es cuenta de comunidad).</li>
+                    <li><strong>Pendientes:</strong> aprobar, rechazar y editar autor de fotos subidas.</li>
+                    <li><strong>Subida:</strong> título, autor (admin) y límites (5MB, JPG/PNG/GIF/WEBP/AVIF).</li>
+                    <li><strong>Usuarios:</strong> buscar, filtrar baneados, ban temporal y shadowban.</li>
+                    <li><strong>Auditoría:</strong> historial de ban/shadowban y detalle.</li>
+                    <li><strong>Cerrar sesión admin:</strong> finaliza la sesión de administrador.</li>
+                </ul>
+            </details>
             <div class="admin-tabs" role="tablist" aria-label="Paneles de administración">
                 <button type="button" class="admin-tab-btn" :class="{ active: activeTab === 'moderacion' }" @click="activeTab = 'moderacion'" role="tab" :aria-selected="activeTab === 'moderacion' ? 'true' : 'false'" aria-controls="tab-moderacion">🛡️ Moderación</button>
                 <button type="button" class="admin-tab-btn" :class="{ active: activeTab === 'usuarios' }" @click="activeTab = 'usuarios'; window.cargarUsuariosAdmin?.()" role="tab" :aria-selected="activeTab === 'usuarios' ? 'true' : 'false'" aria-controls="tab-usuarios">👥 Usuarios</button>
@@ -236,11 +247,8 @@
                                     <span class="autor-avatar" x-text="foto.inicial"></span><span x-text="foto.autor"></span>
                                 </span>
                             </div>
-                            <div class="gallery-card-actions" @keydown.stop>
-                                <button type="button" class="btn-copiar-enlace" :data-url="'#foto-' + foto.id" aria-label="Copiar enlace a la foto" title="Copiar enlace">
-                                    <i class="fa-solid fa-link"></i>
-                                </button>
-                                <button type="button" class="btn-eliminar-publica" data-action="delete-image" :data-image-id="foto.id" title="Borrar foto de la galería" aria-label="Borrar foto de la galería">
+                             <div class="gallery-card-actions" @keydown.stop>
+                                 <button type="button" class="btn-eliminar-publica" data-action="delete-image" :data-image-id="foto.id" title="Borrar foto de la galería" aria-label="Borrar foto de la galería">
                                     <i class="fa-solid fa-trash-can"></i>
                                 </button>
                                 <button type="button" :class="foto.liked ? 'like-btn liked' : 'like-btn'" data-action="toggle-like" :data-image-id="foto.id" :aria-pressed="foto.liked ? 'true' : 'false'" aria-label="Me gusta">
@@ -669,17 +677,7 @@
             }
         });
 
-        // Delegación para botones copiar enlace (data-url)
-        document.addEventListener('click', (e) => {
-            const btn = e.target.closest('.btn-copiar-enlace');
-            if (!btn) return;
-            e.stopPropagation();
-            const url = btn.dataset.url;
-            if (url) {
-                const fullUrl = window.location.origin + window.location.pathname + url;
-                window.copiarEnlace(fullUrl, '¡Enlace a la foto copiado!');
-            }
-        });
+
 
         const lightbox = document.getElementById('lightbox');
 
@@ -1479,7 +1477,7 @@
         // escapeHtml / escapeAttr viven en main.js (fuente única del sitio)
     </script>
 
-    <script src="main.js?v=1.6.0" defer></script>
+    <script src="main.js?v=1.7.0" defer></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.17.5/dist/cdn.min.js"
             integrity="sha384-FYLKjwG3aohNhNZoVG8sY/5ntunm+MqylL90Q+rT3OM7AwV9/BKFjk/RjoIpIgsI"
             crossorigin="anonymous"></script>

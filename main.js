@@ -840,3 +840,174 @@ document.addEventListener('DOMContentLoaded', () => {
     try { actualizarUsuarioNavComunidad(); } catch (e) { console.error('actualizarUsuarioNavComunidad:', e); }
 });
 
+// === MODAL DE PERFIL GLOBAL (beta 1.7.0) ===
+(function () {
+  let modalEl = null;
+  let lastFocus = null;
+
+  function crearModal() {
+    if (modalEl) return modalEl;
+    modalEl = document.createElement('div');
+    modalEl.id = 'modal-perfil';
+    modalEl.className = 'modal-perfil';
+    modalEl.setAttribute('role', 'dialog');
+    modalEl.setAttribute('aria-modal', 'true');
+    modalEl.setAttribute('aria-labelledby', 'modal-perfil-titulo');
+    modalEl.hidden = true;
+    modalEl.innerHTML = `
+      <div class="modal-perfil-backdrop" data-close></div>
+      <div class="modal-perfil-card" role="document">
+        <button type="button" class="modal-perfil-close" data-close aria-label="Cerrar">&times;</button>
+        <h3 id="modal-perfil-titulo">Mi perfil</h3>
+        <nav class="modal-perfil-tabs">
+          <button type="button" data-view="perfil" class="active">Perfil</button>
+          <button type="button" data-view="ajustes">Ajustes</button>
+        </nav>
+        <div class="modal-perfil-body" id="mp-perfil"></div>
+        <div class="modal-perfil-body" id="mp-ajustes" hidden></div>
+      </div>`;
+    document.body.appendChild(modalEl);
+    modalEl.addEventListener('click', (e) => {
+      if (e.target.hasAttribute('data-close')) cerrar();
+      const btn = e.target.closest('[data-view]');
+      if (btn) cambiarVista(btn.getAttribute('data-view'));
+    });
+    document.addEventListener('keydown', (e) => {
+      if (!modalEl || modalEl.hidden) return;
+      if (e.key === 'Escape') { e.preventDefault(); cerrar(); }
+    });
+    return modalEl;
+  }
+
+  function abrir() {
+    crearModal();
+    lastFocus = document.activeElement;
+    modalEl.hidden = false;
+    document.body.classList.add('modal-perfil-open');
+    cambiarVista('perfil');
+    cargarPerfil();
+  }
+
+  function cerrar() {
+    if (!modalEl) return;
+    modalEl.hidden = true;
+    document.body.classList.remove('modal-perfil-open');
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+
+  function cambiarVista(v) {
+    const tabs = modalEl.querySelectorAll('[data-view]');
+    tabs.forEach((t) => t.classList.toggle('active', t.getAttribute('data-view') === v));
+    modalEl.querySelector('#mp-perfil').hidden = v !== 'perfil';
+    modalEl.querySelector('#mp-ajustes').hidden = v !== 'ajustes';
+  }
+
+  async function cargarPerfil() {
+    const token = localStorage.getItem('comunidad_session_token');
+    const perfilDiv = modalEl.querySelector('#mp-perfil');
+    const ajustesDiv = modalEl.querySelector('#mp-ajustes');
+    if (!token) {
+      perfilDiv.innerHTML = '<p>Sin sesión de comunidad.</p>';
+      ajustesDiv.innerHTML = '';
+      return;
+    }
+    let usuario = {};
+    try { usuario = JSON.parse(localStorage.getItem('comunidad_session_usuario') || '{}'); } catch (e) {}
+    const avatar = usuario.avatar_url || (usuario.genero === 'femenino' ? '/img/avatars/avatar-female.webp' : (usuario.genero === 'masculino' ? '/img/avatars/avatar-male.webp' : null));
+    const avatarSrc = avatar || ('https://ui-avatars.com/api/?name=' + encodeURIComponent((usuario.apodo||'?').charAt(0)));
+    perfilDiv.innerHTML = `
+      <div class="mp-avatar-wrap"><img src="${avatarSrc}" alt="Avatar" class="mp-avatar"></div>
+      <h4>${escapeHtml(usuario.apodo || '')}</h4>
+      <p class="mp-meta">${escapeHtml(usuario.rango || '')} · ${usuario.puntos || 0} pts</p>
+      <p class="mp-bio">${escapeHtml(usuario.bio || '')}</p>`;
+    ajustesDiv.innerHTML = `
+      <div class="mp-avatar-wrap"><img src="${avatarSrc}" alt="Avatar" class="mp-avatar" id="mp-avatar-preview"></div>
+      <div class="mp-avatar-choices" id="mp-avatar-choices"></div>
+      <label>Género
+        <select id="mp-genero">
+          <option value="masculino">Masculino</option>
+          <option value="femenino">Femenino</option>
+          <option value="no_definido">No definido</option>
+        </select>
+      </label>
+      <label>Bio (máx 160)
+        <textarea id="mp-bio" maxlength="160">${escapeHtml(usuario.bio || '')}</textarea>
+      </label>
+      <button type="button" id="mp-guardar" class="btn-primary">Guardar</button>`;
+    const sel = ajustesDiv.querySelector('#mp-genero');
+    if (sel) sel.value = usuario.genero || 'no_definido';
+    try {
+      const { data } = await window.supabase.rpc('obtener_avatares_disponibles', { p_token: token });
+      const choices = ajustesDiv.querySelector('#mp-avatar-choices');
+      if (choices && data && data.ok) {
+        choices.innerHTML = '';
+        (data.avatares || []).forEach((a) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'mp-avatar-choice';
+          btn.dataset.url = a.url;
+          btn.innerHTML = `<img src="${a.url}" alt="${escapeHtml(a.nombre)}">`;
+          btn.addEventListener('click', () => {
+            ajustesDiv.querySelector('#mp-avatar-preview').src = a.url;
+            choices.querySelectorAll('.mp-avatar-choice').forEach((x) => x.classList.remove('selected'));
+            btn.classList.add('selected');
+          });
+          choices.appendChild(btn);
+        });
+      }
+    } catch (e) {}
+    ajustesDiv.querySelector('#mp-guardar').addEventListener('click', () => guardarPerfil(ajustesDiv, token));
+  }
+
+  function escapeHtml(s) { return (window.escapeHtml ? window.escapeHtml(s) : String(s)); }
+
+  async function guardarPerfil(div, token) {
+    let avatarFinal = div.querySelector('#mp-avatar-preview').src;
+    try {
+      const u = new URL(avatarFinal);
+      if (u.origin === location.origin) avatarFinal = u.pathname;
+    } catch (e) {}
+    const genero = div.querySelector('#mp-genero').value;
+    const bio = div.querySelector('#mp-bio').value;
+    const { data } = await window.supabase.rpc('actualizar_perfil_comunidad', {
+      p_token: token,
+      p_avatar_url: avatarFinal,
+      p_bio: bio,
+      p_genero: genero,
+    });
+    if (data && data.ok) {
+      try {
+        const u = JSON.parse(localStorage.getItem('comunidad_session_usuario') || '{}');
+        u.avatar_url = data.avatar_url;
+        u.bio = data.bio;
+        u.genero = data.genero;
+        localStorage.setItem('comunidad_session_usuario', JSON.stringify(u));
+      } catch (e) {}
+      window.actualizarUsuarioNavComunidad?.();
+      cerrar();
+    } else {
+      alert(data?.error || 'Error guardando');
+    }
+  }
+
+  window.abrirModalPerfil = abrir;
+  window.cerrarModalPerfil = cerrar;
+})();
+
+document.addEventListener('DOMContentLoaded', () => {
+  const nav = document.getElementById('nav-user-info');
+  if (nav && nav.tagName !== 'BUTTON') {
+    const btn = document.createElement('button');
+    btn.id = 'nav-user-info';
+    btn.type = 'button';
+    btn.className = nav.className;
+    btn.innerHTML = nav.innerHTML;
+    btn.setAttribute('aria-haspopup', 'dialog');
+    nav.replaceWith(btn);
+    btn.addEventListener('click', () => window.abrirModalPerfil?.());
+  }
+  // also hook existing buttons
+  document.querySelectorAll('#nav-user-info').forEach((b) => {
+    if (!b._hooked) { b._hooked = true; b.addEventListener('click', () => window.abrirModalPerfil?.()); }
+  });
+});

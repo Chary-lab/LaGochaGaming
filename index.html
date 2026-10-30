@@ -28,7 +28,7 @@
 
     <link rel="manifest" href="manifest.webmanifest">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=1.6.0">
+    <link rel="stylesheet" href="style.css?v=1.7.0">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;800;900&display=swap" rel="stylesheet">
@@ -206,7 +206,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0" defer></script>
 
-    <script src="main.js?v=1.6.0" defer></script>
+    <script src="main.js?v=1.7.0" defer></script>
     <script>
         // Navegación Inicio: scroll al top
         document.addEventListener('DOMContentLoaded', () => {
@@ -263,28 +263,14 @@
             autorSpan.appendChild(document.createRange().createContextualFragment(badgeRangoMuro(msg)));
             const actions = document.createElement('div');
             actions.className = 'muro-card-actions';
-            // Botón copiar enlace
-            const btnCopiar = document.createElement('button');
-            btnCopiar.type = 'button';
-            btnCopiar.className = 'btn-copiar-enlace';
-            btnCopiar.dataset.url = '#muro-card-' + msg.id;
-            btnCopiar.setAttribute('aria-label', 'Copiar enlace al saludo');
-            btnCopiar.title = 'Copiar enlace';
-            btnCopiar.innerHTML = '<i class="fa-solid fa-link"></i>';
-            const btnEliminar = document.createElement('button');
-            btnEliminar.type = 'button';
-            btnEliminar.className = 'btn-eliminar-muro';
-            btnEliminar.dataset.id = msg.id;
-            btnEliminar.title = 'Eliminar saludo';
-            btnEliminar.setAttribute('aria-label', 'Eliminar saludo');
+             actions.appendChild(btnEliminar);
             const icon = document.createElement('i');
             icon.className = 'fa-solid fa-trash-can';
             btnEliminar.appendChild(icon);
             const fechaSpan = document.createElement('span');
             fechaSpan.className = 'muro-fecha';
             fechaSpan.textContent = fecha;
-            actions.appendChild(btnCopiar);
-            actions.appendChild(btnEliminar);
+             actions.appendChild(btnEliminar);
             actions.appendChild(fechaSpan);
             header.appendChild(autorSpan);
             header.appendChild(actions);
@@ -359,18 +345,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const muroContainer = document.getElementById('muro-mensajes-container');
         if (muroContainer) {
             muroContainer.addEventListener('click', (e) => {
-                // Botón copiar enlace
-                const btnCopiar = e.target.closest('.btn-copiar-enlace');
-                if (btnCopiar) {
-                    e.stopPropagation();
-                    const url = btnCopiar.dataset.url;
-                    if (url) {
-                        const fullUrl = window.location.origin + window.location.pathname + url;
-                        window.copiarEnlace(fullUrl, '¡Enlace al saludo copiado!');
-                    }
-                    return;
-                }
-                // Botón eliminar (solo admin)
+                 // Botón eliminar (solo admin)
                 const btnEliminar = e.target.closest('.btn-eliminar-muro');
                 if (btnEliminar) {
                     eliminarSaludo(Number(btnEliminar.dataset.id));

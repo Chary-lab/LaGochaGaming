@@ -28,7 +28,7 @@
     <link rel="icon" type="image/png" sizes="512x512" href="img/android-chrome-512x512.png">
     <link rel="manifest" href="manifest.webmanifest">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=1.6.0">
+    <link rel="stylesheet" href="style.css?v=1.7.0">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;800;900&display=swap" rel="stylesheet">
@@ -116,10 +116,8 @@
                         <div class="chat-msg-header">
                             <span class="chat-msg-autor" x-text="msg.autor || 'Anónimo'"></span>
                             <span class="chat-msg-meta">
-                                <span class="chat-msg-fecha" x-text="msg.fecha"></span>
-                                <button type="button" class="btn-copiar-enlace" :data-url="'#chat-msg-' + msg.id" aria-label="Copiar enlace al mensaje" title="Copiar enlace"><i class="fa-solid fa-link"></i></button>
-                                <button type="button" class="btn-eliminar-chat" aria-label="Eliminar mensaje"><i class="fa-solid fa-trash-can"></i></button>
-                            </span>
+                                 <span class="chat-msg-fecha" x-text="msg.fecha"></span>
+                             </span>
                         </div>
                         <div class="chat-msg-texto" x-text="msg.mensaje"></div>
                         <div class="reacciones-badges" x-show="$store.reacciones.chips(msg.id).length" x-cloak>
@@ -191,7 +189,7 @@
             <div class="tab-header" role="tablist" aria-label="Paneles de la comunidad">
                 <button type="button" class="tab-btn active" data-tab="canal" role="tab" id="tabbtn-canal" aria-selected="true" aria-controls="tab-canal">Canal</button>
                 <button type="button" class="tab-btn" data-tab="rangos" role="tab" id="tabbtn-rangos" aria-selected="false" aria-controls="tab-rangos" tabindex="-1">Rangos</button>
-                <button type="button" class="tab-btn" data-tab="tienda" role="tab" id="tabbtn-tienda" aria-selected="false" aria-controls="tab-tienda" tabindex="-1">🛍️ Tienda</button>
+                <button type="button" class="tab-btn" data-tab="tienda" role="tab" id="tabbtn-tienda" aria-selected="false" aria-controls="tab-tienda" tabindex="-1" x-show="!!localStorage.getItem('comunidad_session_token')">🛍️ Tienda</button>
                 <button type="button" class="tab-btn" data-tab="info" role="tab" id="tabbtn-info" aria-selected="false" aria-controls="tab-info" tabindex="-1">Info &amp; Reglas</button>
             </div>
 
@@ -412,7 +410,7 @@
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
 
-    <script src="main.js?v=1.6.0" defer></script>
+    <script src="main.js?v=1.7.0" defer></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.17.5/dist/cdn.min.js"
             integrity="sha384-FYLKjwG3aohNhNZoVG8sY/5ntunm+MqylL90Q+rT3OM7AwV9/BKFjk/RjoIpIgsI"
             crossorigin="anonymous"></script>
@@ -982,19 +980,8 @@ setInterval(actualizarTypingIndicator, 500);
                 }
             } catch (e) { console.warn('No se pudo verificar sesión admin:', e); }
 
-            chatMensajes.addEventListener('click', (e) => {
-                // Botón copiar enlace
-                const btnCopiar = e.target.closest('.btn-copiar-enlace');
-                if (btnCopiar) {
-                    e.stopPropagation();
-                    const url = btnCopiar.dataset.url;
-                    if (url) {
-                        const fullUrl = window.location.origin + window.location.pathname + url;
-                        window.copiarEnlace(fullUrl, '¡Enlace al mensaje copiado!');
-                    }
-                    return;
-                }
-                // Botón eliminar (solo admin)
+             chatMensajes.addEventListener('click', (e) => {
+                 // Botón eliminar (solo admin)
                 const btnEliminar = e.target.closest('.btn-eliminar-chat');
                 if (btnEliminar) {
                     e.stopPropagation();
@@ -2207,7 +2194,7 @@ if (chatForm) {
             store.cargando = true;
             store.error = '';
             try {
-                const { data, error } = await supabase.rpc('tienda_obtener_catalogo');
+                 const { data, error } = await supabase.rpc('tienda_obtener_catalogo', { p_token: token });
                 if (error) throw error;
                 if (!data || !data.ok) {
                     store.error = data?.error || 'Error cargando tienda';

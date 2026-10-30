@@ -3,6 +3,19 @@
 Formato basado en Keep a Changelog. Versionado SemVer (`MAJOR.MINOR.PATCH`).
 El historial anterior a 1.5.0 está en los commits `v1.4.x`.
 
+## [1.7.0] - 2026-10-30
+
+### Funciones nuevas
+- Género en cuentas de comunidad (`masculino`/`femenino`/`no_definido`) y avatares beta locales.
+- Avatares de tienda (`tipo='avatar'`) con validación de propiedad.
+- Modal global de perfil/ajustes inyectado desde `main.js`.
+- Tienda privada: catálogo exige token de comunidad; pestaña oculta sin sesión.
+- Ayuda plegable en paneles admin de galería y cine.
+
+### Cambios
+- Eliminado "copiar enlace" de muro, chat y galería.
+- `tienda_obtener_catalogo` ahora requiere `p_token`.
+
 ## [1.6.0] - 2026-10-30
 
 ### Funciones nuevas

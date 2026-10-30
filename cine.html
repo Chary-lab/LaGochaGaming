@@ -25,7 +25,7 @@
     <meta name="twitter:image" content="https://lagochagaming.com/img/3.jpg">
     <link rel="manifest" href="manifest.webmanifest">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=1.6.0">
+    <link rel="stylesheet" href="style.css?v=1.7.0">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;800;900&display=swap" rel="stylesheet">
@@ -74,6 +74,18 @@
             <!-- PANEL DE CONTROL DEL STREAMER (SOLO ADMINS) -->
             <div id="streamerAdminPanel" class="streamer-admin-panel admin-panel">
                 <h2 class="admin-panel-title"><i class="fa-solid fa-sliders"></i> Panel Maestro de Reproducción</h2>
+                <details class="panel-ayuda">
+                    <summary>¿Qué hace cada botón?</summary>
+                    <ul>
+                        <li><strong>Iniciar sesión de streamer:</strong> autentica al administrador.</li>
+                        <li><strong>Cargar URL:</strong> YouTube, MP4 o Drive.</li>
+                        <li><strong>Play/Pausa/Seek:</strong> sincroniza a los espectadores.</li>
+                        <li><strong>Sincronización activa:</strong> indica que el estado se está compartiendo.</li>
+                        <li><strong>Apagar/Limpiar:</strong> detiene la reproducción.</li>
+                        <li><strong>Unirme a la reproducción:</strong> autoplay bloqueado por el navegador.</li>
+                        <li><strong>Cerrar sesión:</strong> finaliza la sesión de streamer.</li>
+                    </ul>
+                </details>
                 <p class="admin-panel-hint">
                     Pega cualquier enlace (<strong>Google Drive</strong>, <strong>YouTube</strong> o <strong>.mp4 directos</strong>).
                 </p>
@@ -172,7 +184,7 @@
     <script src="https://www.youtube.com/iframe_api" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0" defer></script>
 
-    <script src="main.js?v=1.6.0" defer></script>
+    <script src="main.js?v=1.7.0" defer></script>
 
     <!-- LÓGICA DE JAVASCRIPT DEL CINE -->
     <script>

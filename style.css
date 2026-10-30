@@ -166,7 +166,7 @@ body.light-mode .hero-bio {
 .btn-admin-logout { background: #c0392b; border-color: #c0392b; color: #fff; }
 .btn-admin-logout:hover { background: #d64535; border-color: #d64535; color: #fff; }
 
-/* Botón copiar enlace (icono solo) */
+/* Botón copiar (icono solo) - usado en sorteo para copiar usuario */
 .btn-copiar-enlace {
     background: transparent;
     border: 1px solid var(--border-color);
@@ -193,7 +193,10 @@ body.light-mode .hero-bio {
     outline-offset: 2px;
 }
 
-/* --- Tarjetas y paneles de administración --- */
+.panel-ayuda { margin-bottom: 12px; font-size: 14px; }
+.panel-ayuda summary { cursor: pointer; font-weight: 600; color: var(--accent-color); }
+.panel-ayuda ul { margin: 8px 0 0 18px; line-height: 1.6; }
+.panel-ayuda li { margin-bottom: 4px; }
 .admin-panel { box-sizing: border-box; background: var(--card-bg); border: 1px dashed var(--accent-color); border-radius: 16px; padding: 20px; box-shadow: var(--glow); }
 .admin-panel + .admin-panel { margin-top: 15px; }
 .admin-panel-title { color: var(--accent-color); font-size: 1rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; text-transform: uppercase; }
@@ -4217,3 +4220,24 @@ body.light-mode {
     .sorteo-layout { grid-template-columns: 1fr; }
 }
 
+
+/* Modal perfil */
+.modal-perfil { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; }
+.modal-perfil[hidden] { display: none; }
+.modal-perfil-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,.6); }
+.modal-perfil-card { position: relative; background: var(--card-bg); border-radius: 16px; padding: 24px; max-width: 480px; width: 90%; max-height: 85vh; overflow: auto; }
+.modal-perfil-close { position: absolute; top: 8px; right: 12px; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); }
+.modal-perfil-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+.modal-perfil-tabs button { padding: 6px 12px; border: 1px solid var(--border-color); background: transparent; border-radius: 8px; cursor: pointer; }
+.modal-perfil-tabs button.active { background: var(--accent-color); color: var(--btn-text); }
+.mp-avatar { width: 96px; height: 96px; border-radius: 50%; object-fit: cover; }
+.mp-avatar-wrap { text-align: center; margin-bottom: 12px; }
+.mp-avatar-choices { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 12px 0; }
+.mp-avatar-choice { border: 2px solid transparent; border-radius: 50%; padding: 2px; cursor: pointer; background: none; }
+.mp-avatar-choice.selected { border-color: var(--accent-color); }
+.mp-avatar-choice img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; }
+.mp-meta { color: var(--text-muted); font-size: .9rem; }
+.mp-bio { white-space: pre-wrap; }
+.modal-perfil-body label { display: block; margin: 8px 0; }
+.modal-perfil-body textarea { width: 100%; min-height: 60px; }
+body.modal-perfil-open { overflow: hidden; }
