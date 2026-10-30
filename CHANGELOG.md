@@ -3,6 +3,27 @@
 Formato basado en Keep a Changelog. Versionado SemVer (`MAJOR.MINOR.PATCH`).
 El historial anterior a 1.5.0 está en los commits `v1.4.x`.
 
+## [1.10.0] - 2026-10-30
+
+### Línea de tiempo cósmica de rangos
+
+- Sustituida la escalera Semilla / Gota / Flor / Estrella / Leyenda por seis
+  niveles: Polvo Cósmico (0-49), Protoestrella (50-199), Secuencia Principal
+  (200-499), Gigante Roja (500-749), Supernova (750-999) y Agujero Negro
+  (1000+), cada uno con icono, descripción y multiplicador x1…x6.
+- El rango se calcula con los puntos (tabla canónica en `main.js`), así la UI es
+  correcta aunque la base de datos aún guarde claves antiguas; se aceptan los
+  alias `semilla`, `gota`, `flor`, `estrella` y `leyenda`.
+- Nuevo relieve del nombre según el rango en chat, ranking, usuarios en línea,
+  muro de saludos, navbar y modal de perfil: más resplandor cuanto más alto el
+  rango, con pulso suave en el máximo y respeto de `prefers-reduced-motion`.
+- Badges y fila del rango máximo rediseñados en tonos cósmico/violeta; la
+  escalera muestra ahora la descripción de cada nivel.
+- Se mantienen actualizados el badge, el progreso, el multiplicador y el
+  navbar al subir de rango, incluso al gastar puntos en la tienda.
+- Migración SQL para Supabase (`calcular_rango`, `multiplicador_rango`, trigger
+  de sincronización y recálculo de usuarios existentes).
+
 ## [1.9.2] - 2026-10-30
 
 ### Reacciones del chat al recargar

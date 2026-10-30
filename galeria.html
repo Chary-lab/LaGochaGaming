@@ -25,7 +25,7 @@
     <meta name="twitter:image" content="https://lagochagaming.com/img/3.jpg">
     <link rel="manifest" href="manifest.webmanifest">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=1.9.2">
+    <link rel="stylesheet" href="style.css?v=1.10.0">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;800;900&display=swap" rel="stylesheet">
@@ -144,7 +144,7 @@
                                     <span class="admin-usuario-apodo" x-text="u.apodo"></span>
                                     <span class="admin-usuario-meta">
                                         <span x-text="u.puntos + ' pts'"></span>
-                                        <span class="rango-badge" :class="'rango-' + u.rango" x-text="u.rango.toUpperCase()"></span>
+                                        <span class="rango-badge" :class="'rango-' + window.claveRango(u.rango, u.puntos)" x-text="window.etiquetaRango(u.rango, u.puntos)"></span>
                                     </span>
                                 </div>
                             </div>
@@ -1484,7 +1484,7 @@
         // escapeHtml / escapeAttr viven en main.js (fuente única del sitio)
     </script>
 
-    <script src="main.js?v=1.9.2" defer></script>
+    <script src="main.js?v=1.10.0" defer></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.17.5/dist/cdn.min.js"
             integrity="sha384-FYLKjwG3aohNhNZoVG8sY/5ntunm+MqylL90Q+rT3OM7AwV9/BKFjk/RjoIpIgsI"
             crossorigin="anonymous"></script>

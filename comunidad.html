@@ -28,7 +28,7 @@
     <link rel="icon" type="image/png" sizes="512x512" href="img/android-chrome-512x512.png">
     <link rel="manifest" href="manifest.webmanifest">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=1.9.2">
+    <link rel="stylesheet" href="style.css?v=1.10.0">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;800;900&display=swap" rel="stylesheet">
@@ -94,7 +94,7 @@
                                         <span class="leaderboard-avatar-inicial" x-text="user.inicial"></span>
                                     </template>
                                 </span>
-                                <span class="leaderboard-nombre" x-text="user.medalla + ' ' + user.apodo + (user.icono ? ' ' + user.icono : '')"></span>
+                                <span class="leaderboard-nombre" :class="'rango-texto-' + user.rangoClave" x-text="user.medalla + ' ' + user.apodo + (user.icono ? ' ' + user.icono : '')"></span>
                                 <span class="rango-badge leaderboard-badge" :class="'rango-' + user.rangoClave">
                                     <span x-text="user.rangoEmoji"></span><span x-text="user.rangoNombre"></span>
                                 </span>
@@ -123,7 +123,7 @@
                 <template x-for="msg in $store.chat.mensajes" :key="msg.id">
                     <div class="chat-msg-container" :data-msgid="msg.id" @mouseleave="window.ocultarTooltipReaccion?.()">
                         <div class="chat-msg-header">
-                            <span class="chat-msg-autor" x-text="msg.autor || 'Anónimo'"></span>
+                            <span class="chat-msg-autor" :class="$store.rangosChat.clase(msg.autor)" x-text="msg.autor || 'Anónimo'"></span>
                             <span class="chat-msg-meta">
                                  <span class="chat-msg-fecha" x-text="msg.fecha"></span>
                              </span>
@@ -239,12 +239,12 @@
                             <span id="user-puntos-chip" class="rango-sube-chip" hidden>+0</span>
                             <span id="user-rango-mult" class="rango-mult">x1</span>
                         </div>
-                        <span id="user-rango-badge" class="rango-badge rango-semilla user-rango-badge">🌱 SEMILLA</span>
+                        <span id="user-rango-badge" class="rango-badge rango-polvo_cosmico user-rango-badge">🌫️ POLVO CÓSMICO</span>
                     </div>
                     <div class="rango-progreso rango-progreso-usuario">
                         <div id="user-rango-progreso" class="rango-progreso-fill"></div>
                     </div>
-                    <p id="user-rango-meta" class="rango-meta">Próximo rango: Gota (50 pts)</p>
+                    <p id="user-rango-meta" class="rango-meta">Próximo rango: Protoestrella (50 pts)</p>
 
                     <!-- Bio y enlaces (se muestran si existen) -->
                     <div id="user-bio" class="user-bio" hidden></div>
@@ -264,13 +264,14 @@
             </div>
 
             <div id="tab-rangos" class="tab-content" hidden role="tabpanel" aria-labelledby="tabbtn-rangos">
-                <h4 class="tab-content-title"><i class="fa-solid fa-crown"></i> Rangos y Puntos</h4>
+                <h4 class="tab-content-title"><i class="fa-solid fa-meteor"></i> Línea de Tiempo Cósmica</h4>
                 <div id="cuadro-rangos" class="cuadro-rangos">
-                    <div class="rango-fila"><span class="rango-icono">🌱</span><span class="rango-nombre">Semilla</span><span class="rango-puntos">0 - 49 pts</span></div>
-                    <div class="rango-fila"><span class="rango-icono">💧</span><span class="rango-nombre">Gota</span><span class="rango-puntos">50 - 199 pts</span></div>
-                    <div class="rango-fila"><span class="rango-icono">🌸</span><span class="rango-nombre">Flor</span><span class="rango-puntos">200 - 499 pts</span></div>
-                    <div class="rango-fila"><span class="rango-icono">⭐</span><span class="rango-nombre">Estrella</span><span class="rango-puntos">500 - 999 pts</span></div>
-                    <div class="rango-fila rango-leyenda"><span class="rango-icono">👑</span><span class="rango-nombre">Leyenda</span><span class="rango-puntos">1000+ pts</span></div>
+                    <div class="rango-fila"><span class="rango-icono">🌫️</span><span class="rango-nombre-wrap"><span class="rango-nombre">Polvo Cósmico</span><span class="rango-desc">El inicio de la materia.</span></span><span class="rango-puntos">0 - 49 pts</span></div>
+                    <div class="rango-fila"><span class="rango-icono">🟠</span><span class="rango-nombre-wrap"><span class="rango-nombre">Protoestrella</span><span class="rango-desc">El nacimiento del calor.</span></span><span class="rango-puntos">50 - 199 pts</span></div>
+                    <div class="rango-fila"><span class="rango-icono">☀️</span><span class="rango-nombre-wrap"><span class="rango-nombre">Secuencia Principal</span><span class="rango-desc">La madurez y estabilidad lumínica.</span></span><span class="rango-puntos">200 - 499 pts</span></div>
+                    <div class="rango-fila"><span class="rango-icono">🔴</span><span class="rango-nombre-wrap"><span class="rango-nombre">Gigante Roja</span><span class="rango-desc">La expansión masiva de energía.</span></span><span class="rango-puntos">500 - 749 pts</span></div>
+                    <div class="rango-fila"><span class="rango-icono">✨</span><span class="rango-nombre-wrap"><span class="rango-nombre">Supernova</span><span class="rango-desc">La explosión más brillante del universo.</span></span><span class="rango-puntos">750 - 999 pts</span></div>
+                    <div class="rango-fila rango-maximo"><span class="rango-icono">🕳️</span><span class="rango-nombre-wrap"><span class="rango-nombre">Agujero Negro</span><span class="rango-desc">El colapso final absoluto.</span></span><span class="rango-puntos">1000+ pts</span></div>
                 </div>
                 <div id="rango-progreso-panel" class="rango-progreso-panel">
                     <div class="rango-progreso-head">
@@ -398,7 +399,7 @@
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
 
-    <script src="main.js?v=1.9.2" defer></script>
+    <script src="main.js?v=1.10.0" defer></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.17.5/dist/cdn.min.js"
             integrity="sha384-FYLKjwG3aohNhNZoVG8sY/5ntunm+MqylL90Q+rT3OM7AwV9/BKFjk/RjoIpIgsI"
             crossorigin="anonymous"></script>
@@ -421,6 +422,18 @@
                 usuarios: [],
                 cargando: true,
                 error: ''
+            });
+
+            // Rangos por apodo para el "relieve" del nombre en el chat.
+            window.Alpine.store('rangosChat', {
+                mapa: {}, // apodo en minúsculas -> clave de rango
+                clave(apodo) {
+                    const k = String(apodo || '').trim().toLowerCase();
+                    return this.mapa[k] || 'polvo_cosmico';
+                },
+                clase(apodo) {
+                    return 'rango-texto-' + this.clave(apodo);
+                }
             });
 
             window.Alpine.store('reacciones', {
@@ -722,61 +735,39 @@ setInterval(actualizarTypingIndicator, 500);
             let userNickname = null;
             let userId = null;
 
-            // Datos de rango compartidos por perfil, presencia y leaderboard
-            const RANGOS = {
-                semilla: { emoji: '🌱', nombre: 'Semilla' },
-                gota: { emoji: '💧', nombre: 'Gota' },
-                flor: { emoji: '🌸', nombre: 'Flor' },
-                estrella: { emoji: '⭐', nombre: 'Estrella' },
-                leyenda: { emoji: '👑', nombre: 'Leyenda' }
-            };
-
-            function datosRango(rango) {
-                const clave = String(rango || 'semilla').toLowerCase();
-                return { clave, ...(RANGOS[clave] || RANGOS.semilla) };
+            // Datos de rango compartidos por perfil, presencia y leaderboard.
+            // La tabla canónica vive en main.js (window.RANGOS_COMUNIDAD).
+            function datosRango(rango, puntos) {
+                return window.datosRangoComunidad(rango, puntos);
             }
 
-            function pintarBadgeRango(el, rango) {
+            function pintarBadgeRango(el, rango, puntos) {
                 if (!el) return;
-                const { clave, emoji, nombre } = datosRango(rango);
-                el.classList.remove('rango-semilla', 'rango-gota', 'rango-flor', 'rango-estrella', 'rango-leyenda');
+                const { clave, emoji, nombre } = datosRango(rango, puntos);
+                Array.from(el.classList).forEach((c) => {
+                    if (c.indexOf('rango-') === 0 && c !== 'rango-badge' && c !== 'rango-solo-icono') {
+                        el.classList.remove(c);
+                    }
+                });
                 el.classList.add('rango-badge', 'rango-' + clave);
                 el.textContent = emoji + ' ' + nombre.toUpperCase();
             }
 
             // === GAMIFICACIÓN: escalera de rangos, progreso y celebración ===
 
-            // Fuente de verdad: la RPC obtener_rangos(). El fallback local solo entra
-            // si la RPC falla, para no dejar la UI de rangos vacia.
-            const RANGOS_FALLBACK = [
-                { clave: 'semilla', emoji: '🌱', nombre: 'Semilla', min: 0, max: 49, mult: 1 },
-                { clave: 'gota', emoji: '💧', nombre: 'Gota', min: 50, max: 199, mult: 2 },
-                { clave: 'flor', emoji: '🌸', nombre: 'Flor', min: 200, max: 499, mult: 3 },
-                { clave: 'estrella', emoji: '⭐', nombre: 'Estrella', min: 500, max: 999, mult: 4 },
-                { clave: 'leyenda', emoji: '👑', nombre: 'Leyenda', min: 1000, max: null, mult: 5 }
-            ];
+            // La escalera canónica vive en main.js y debe coincidir con
+            // calcular_rango() y multiplicador_rango() de Supabase.
+            const RANGOS_FALLBACK = window.RANGOS_COMUNIDAD.map(r => ({ ...r }));
 
             let rangosEscalera = RANGOS_FALLBACK;
-            let rangoActualUsuario = 'semilla';
+            let rangoActualUsuario = 'polvo_cosmico';
             let puntosActualesUsuario = 0;
             let sesionComunidadActiva = false;
 
             async function cargarEscaleraRangos() {
-                try {
-                    const { data, error } = await supabase.rpc('obtener_rangos');
-                    if (!error && Array.isArray(data) && data.length > 0) {
-                        rangosEscalera = data.map(r => ({
-                            clave: String(r.clave),
-                            emoji: r.emoji,
-                            nombre: r.nombre,
-                            min: Number(r.min) || 0,
-                            max: (r.max === null || r.max === undefined) ? null : Number(r.max),
-                            mult: Number(r.mult) || 1
-                        }));
-                    }
-                } catch (e) {
-                    console.warn('No se pudo cargar la escalera de rangos:', e);
-                }
+                // Se usa la tabla de main.js (misma que la migración SQL). Así la
+                // UI es correcta aunque la BD todavía guarde claves antiguas.
+                rangosEscalera = window.RANGOS_COMUNIDAD.map(r => ({ ...r }));
                 pintarEscaleraRangos();
                 actualizarProgresoRangos(puntosActualesUsuario, rangoActualUsuario);
             }
@@ -820,15 +811,17 @@ setInterval(actualizarTypingIndicator, 500);
             function pintarEscaleraRangos() {
                 const cont = document.getElementById('cuadro-rangos');
                 if (!cont) return;
+                const claveMaxima = rangosEscalera[rangosEscalera.length - 1].clave;
                 cont.innerHTML = rangosEscalera.map(r => {
                     const esActual = sesionComunidadActiva && r.clave === rangoActualUsuario;
                     const puntosTxt = (r.max === null) ? (r.min + '+ pts') : (r.min + ' - ' + r.max + ' pts');
                     const clases = 'rango-fila'
                         + (esActual ? ' rango-actual' : '')
-                        + (r.clave === 'leyenda' ? ' rango-leyenda' : '');
+                        + (r.clave === claveMaxima ? ' rango-maximo' : '');
+                    const desc = r.desc ? `<span class="rango-desc">${escapeHtml(r.desc)}</span>` : '';
                     return `<div class="${clases}" data-rango="${r.clave}">
                         <span class="rango-icono">${r.emoji}</span>
-                        <span class="rango-nombre">${escapeHtml(r.nombre)}</span>
+                        <span class="rango-nombre-wrap"><span class="rango-nombre">${escapeHtml(r.nombre)}</span>${desc}</span>
                         <span class="rango-puntos">${puntosTxt}</span>
                         <span class="rango-mult">x${r.mult}</span>
                         ${esActual ? '<span class="rango-actual-chip">TÚ</span>' : ''}
@@ -838,13 +831,22 @@ setInterval(actualizarTypingIndicator, 500);
 
             function actualizarProgresoRangos(puntos, rango) {
                 const info = calcularProgreso(puntos);
-                rangoActualUsuario = rango ? String(rango).toLowerCase() : info.actual.clave;
+                rangoActualUsuario = rango ? window.claveRango(rango) : info.actual.clave;
                 puntosActualesUsuario = Number(puntos) || 0;
 
                 pintarEscaleraRangos();
 
                 const chipMult = document.getElementById('user-rango-mult');
                 if (chipMult) chipMult.textContent = 'x' + info.actual.mult;
+
+                // Relieve del nombre propio en el panel de perfil.
+                const infoDisplay = document.getElementById('user-info-display');
+                if (infoDisplay) {
+                    Array.from(infoDisplay.classList).forEach((c) => {
+                        if (c.indexOf('rango-texto-') === 0) infoDisplay.classList.remove(c);
+                    });
+                    infoDisplay.classList.add('rango-texto-' + info.actual.clave);
+                }
 
                 const fillUsuario = document.getElementById('user-rango-progreso');
                 if (fillUsuario) fillUsuario.style.width = info.porcentaje + '%';
@@ -854,7 +856,7 @@ setInterval(actualizarTypingIndicator, 500);
 
                 const panel = document.getElementById('tab-rangos');
                 if (panel) {
-                    panel.classList.toggle('rango-progreso-leyenda', info.esMaximo);
+                    panel.classList.toggle('rango-progreso-maximo', info.esMaximo);
                     const barra = panel.querySelector('.rango-progreso');
                     if (barra) barra.setAttribute('aria-valuenow', String(info.porcentaje));
                 }
@@ -876,7 +878,7 @@ setInterval(actualizarTypingIndicator, 500);
                 const meta = document.getElementById('rango-meta');
                 if (meta) {
                     meta.textContent = info.esMaximo
-                        ? ('Multiplicador actual: x' + info.actual.mult + ' · Eres Leyenda')
+                        ? ('Multiplicador actual: x' + info.actual.mult + ' · Eres ' + info.actual.nombre)
                         : ('Multiplicador actual: x' + info.actual.mult
                             + ' · Te faltan ' + info.faltan + ' pts para ' + info.siguiente.emoji + ' ' + info.siguiente.nombre
                             + ' · al llegar x' + info.siguiente.mult);
@@ -885,7 +887,7 @@ setInterval(actualizarTypingIndicator, 500);
                 const metaUsuario = document.getElementById('user-rango-meta');
                 if (metaUsuario) {
                     metaUsuario.textContent = info.esMaximo
-                        ? ('👑 Rango máximo · x' + info.actual.mult)
+                        ? (info.actual.emoji + ' Rango máximo · x' + info.actual.mult)
                         : ('Te faltan ' + info.faltan + ' pts para ' + info.siguiente.emoji + ' ' + info.siguiente.nombre
                             + ' · al llegar x' + info.siguiente.mult);
                 }
@@ -931,10 +933,15 @@ setInterval(actualizarTypingIndicator, 500);
             function aplicarEstadoRango(puntos, rango, opciones) {
                 const op = opciones || {};
                 const rangoAnterior = op.rangoAnterior || rangoActualUsuario;
-                const rangoNuevo = String(rango || obtenerRangoPorPuntos(puntos).clave).toLowerCase();
+                // Los puntos mandan: la clave guardada en la BD puede ser antigua.
+                const rangoNuevo = obtenerRangoPorPuntos(puntos).clave;
 
-                pintarBadgeRango(document.getElementById('user-rango-badge'), rangoNuevo);
+                pintarBadgeRango(document.getElementById('user-rango-badge'), rangoNuevo, puntos);
                 actualizarProgresoRangos(puntos, rangoNuevo);
+
+                // Mantener la sesión y el navbar en sintonía con el rango nuevo.
+                window.actualizarSesionUsuarioComunidad?.({ puntos: Number(puntos) || 0, rango: rangoNuevo });
+                window.actualizarUsuarioNavComunidad?.();
 
                 if (op.silencioso) return;
 
@@ -946,6 +953,8 @@ setInterval(actualizarTypingIndicator, 500);
             function celebrarAscenso(rangoAnterior, rangoNuevo) {
                 const info = datosRango(rangoNuevo);
                 const mult = (rangosEscalera.find(r => r.clave === rangoNuevo) || {}).mult || 1;
+                const esMaximo = rangosEscalera.length > 0
+                    && rangoNuevo === rangosEscalera[rangosEscalera.length - 1].clave;
 
                 const badge = document.getElementById('user-rango-badge');
                 if (badge) {
@@ -954,13 +963,13 @@ setInterval(actualizarTypingIndicator, 500);
                     badge.classList.add('rango-subida');
                 }
 
-                window.lanzarConfetti?.(null, { cantidad: rangoNuevo === 'leyenda' ? 320 : 140 });
+                window.lanzarConfetti?.(null, { cantidad: esMaximo ? 320 : 140 });
 
-                if (rangoNuevo === 'leyenda') {
+                if (esMaximo) {
                     const overlay = obtenerOverlayCelebracion();
                     overlay.innerHTML = `<div class="celebracion-caja">
-                        <span class="celebracion-emoji">👑</span>
-                        <h2 class="celebracion-titulo">¡Te has convertido en Leyenda!</h2>
+                        <span class="celebracion-emoji">${info.emoji}</span>
+                        <h2 class="celebracion-titulo">¡Te has convertido en ${escapeHtml(info.nombre)}!</h2>
                         <p class="celebracion-texto">Multiplicador x${mult} en cada crédito de puntos.</p>
                         <button type="button" class="btn-primary celebracion-cierre" data-cierre-celebracion>¡Vamos!</button>
                     </div>`;
@@ -1051,7 +1060,7 @@ setInterval(actualizarTypingIndicator, 500);
                     id: u.id ?? null,
                     apodo: apodo,
                     puntos: u.puntos ?? 0,
-                    rango: u.rango || 'semilla',
+                    rango: window.claveRango(u.rango, u.puntos),
                     icono: u.icono || '',
                     genero: u.genero || 'no_definido',
                     avatar_url: u.avatar_url || null,
@@ -1248,7 +1257,7 @@ setInterval(actualizarTypingIndicator, 500);
                         userNickname = null;
                         userId = null;
                         sesionComunidadActiva = false;
-                        rangoActualUsuario = 'semilla';
+                        rangoActualUsuario = 'polvo_cosmico';
                         puntosActualesUsuario = 0;
                         pintarEscaleraRangos();
                         if (userProfilePanel) { userProfilePanel.style.display = 'none'; }
@@ -1423,6 +1432,8 @@ setInterval(actualizarTypingIndicator, 500);
                     }
                     store.hayMas = nuevos.length >= 50;
                     chatInicializado = true;
+                    // Relieve del nombre según el rango de cada autor.
+                    cargarRangosChat(nuevos.map(m => m.autor));
                     // Los chips viven en el servidor: hay que pedirlos también en la
                     // carga inicial. Antes solo se leían de localStorage, así que al
                     // cerrar sesión (que limpia la caché) las reacciones guardadas
@@ -1671,6 +1682,31 @@ setInterval(actualizarTypingIndicator, 500);
                 if (ids.length) cargarReaccionesDeSupabase(ids);
             }
 
+            // Rango de los autores visibles para el relieve del nombre en el chat.
+            async function cargarRangosChat(autores) {
+                if (!window.Alpine || !Array.isArray(autores)) return;
+                const store = window.Alpine.store('rangosChat');
+                if (!store || !window.supabase) return;
+                const faltan = [];
+                [...new Set(autores.map(a => String(a || '').trim()).filter(Boolean))].forEach((a) => {
+                    const k = a.toLowerCase();
+                    if (store.mapa[k] === undefined) {
+                        store.mapa[k] = 'polvo_cosmico'; // provisional hasta resolver
+                        faltan.push(a);
+                    }
+                });
+                if (!faltan.length) return;
+                try {
+                    const { data } = await supabase
+                        .from('usuarios_comunidad')
+                        .select('apodo, puntos')
+                        .in('apodo', faltan);
+                    (data || []).forEach((u) => {
+                        store.mapa[String(u.apodo).toLowerCase()] = window.rangoPorPuntos(Number(u.puntos) || 0).clave;
+                    });
+                } catch (e) { /* el relieve es cosmético */ }
+            }
+
             // Cargar reacciones de Supabase para una lista de mensajes
             async function cargarReaccionesDeSupabase(mensajes) {
                 if (!mensajes || mensajes.length === 0) return;
@@ -1767,6 +1803,7 @@ setInterval(actualizarTypingIndicator, 500);
                 store.cargando = false;
                 store.error = '';
                 chatInicializado = true;
+                cargarRangosChat([normalizado.autor]);
                 cargarReaccionesDeSupabase([normalizado]);
                 if (desplazarAlFinal) scrollAlFinalChat();
             }
@@ -1955,7 +1992,7 @@ if (chatForm) {
                 }
             }
 
-            // Caché de rangos en memoria (refrescado como máximo cada 30 s)
+            // Caché de puntos en memoria (refrescado como máximo cada 30 s)
             let rangosCache = { map: {}, ts: 0 };
             async function obtenerRangosCache(nicknames) {
                 const ahora = Date.now();
@@ -1971,21 +2008,21 @@ if (chatForm) {
                 });
                 if (faltantes.length === 0) return out;
 
-                // Los nicks que no estan en la cache se vuelven a consultar: rellenarlos
-                // con 'semilla' dejaba a los usuarios recien conectados sin su rango real.
+                // Se consultan los puntos para calcular el rango con la escalera
+                // cósmica; la clave guardada en la BD puede ser antigua.
                 try {
                     const { data } = await supabase
                         .from('usuarios_comunidad')
-                        .select('apodo, rango')
+                        .select('apodo, puntos')
                         .in('apodo', faltantes);
                     if (data) {
-                        data.forEach(u => { out[u.apodo] = u.rango; });
+                        data.forEach(u => { out[u.apodo] = Number(u.puntos) || 0; });
                     }
                 } catch (e) { console.error('Error cargando rangos:', e); }
 
                 rangosCache = { map: { ...rangosCache.map, ...out }, ts: ahora };
                 // Los que no existen en la comunidad no tienen rango propio.
-                faltantes.forEach(n => { if (out[n] === undefined) out[n] = 'semilla'; });
+                faltantes.forEach(n => { if (out[n] === undefined) out[n] = null; });
                 return out;
             }
 
@@ -2020,7 +2057,8 @@ if (chatForm) {
                     vistos.add(dedupeKey);
                     const initial = nick.charAt(0).toUpperCase();
 
-                    const { clave: rangoLower, emoji, nombre: rangoNombre } = datosRango(rangosMap[datos.nickname]);
+                    const { clave: rangoLower, emoji, nombre: rangoNombre } = datosRango(null, rangosMap[datos.nickname]);
+                    const claseTextoRango = 'rango-texto-' + rangoLower;
 
                     const userItem = document.createElement('div');
                     userItem.className = 'user-item';
@@ -2030,6 +2068,9 @@ if (chatForm) {
                     const userName = document.createElement('div');
                     userName.className = 'user-name';
                     userName.textContent = nick;
+                    if (rangosMap[datos.nickname] !== null && rangosMap[datos.nickname] !== undefined) {
+                        userName.classList.add(claseTextoRango);
+                    }
                     const badge = document.createElement('span');
                     badge.className = `rango-badge rango-solo-icono rango-${rangoLower}`;
                     badge.title = rangoNombre || '';
@@ -2136,8 +2177,8 @@ if (chatForm) {
 
                     store.usuarios = data.map((user, index) => {
                         const medalla = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`;
-                        // Badge de rango (siempre se muestra, incluso semilla)
-                        const { clave, emoji, nombre } = datosRango(user.rango);
+                        // Rango calculado con los puntos (la clave de la BD puede ser antigua)
+                        const { clave, emoji, nombre } = datosRango(user.rango, user.puntos);
                         return {
                             apodo: user.apodo,
                             puntos: user.puntos,

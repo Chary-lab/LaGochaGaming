@@ -286,6 +286,62 @@ window.avatarUsuarioComunidad = function avatarUsuarioComunidad(usuario) {
     return null;
 };
 
+// === RANGOS DE LA COMUNIDAD (línea de tiempo cósmica) ===
+// Fuente de verdad en cliente. Debe coincidir con calcular_rango() y
+// multiplicador_rango() de Supabase (migración de rangos cósmicos).
+window.RANGOS_COMUNIDAD = [
+    { clave: 'polvo_cosmico',       nombre: 'Polvo Cósmico',       emoji: '🌫️', min: 0,    max: 49,   mult: 1, desc: 'El inicio de la materia.' },
+    { clave: 'protoestrella',       nombre: 'Protoestrella',       emoji: '🟠', min: 50,   max: 199,  mult: 2, desc: 'El nacimiento del calor.' },
+    { clave: 'secuencia_principal', nombre: 'Secuencia Principal', emoji: '☀️', min: 200,  max: 499,  mult: 3, desc: 'La madurez y estabilidad lumínica.' },
+    { clave: 'gigante_roja',        nombre: 'Gigante Roja',        emoji: '🔴', min: 500,  max: 749,  mult: 4, desc: 'La expansión masiva de energía.' },
+    { clave: 'supernova',           nombre: 'Supernova',           emoji: '✨', min: 750,  max: 999,  mult: 5, desc: 'La explosión más brillante del universo.' },
+    { clave: 'agujero_negro',       nombre: 'Agujero Negro',       emoji: '🕳️', min: 1000, max: null, mult: 6, desc: 'El colapso final absoluto.' }
+];
+
+// Claves antiguas que pueden seguir guardadas en la BD o en saludos viejos.
+window.ALIAS_RANGOS_COMUNIDAD = {
+    semilla: 'polvo_cosmico',
+    gota: 'protoestrella',
+    flor: 'secuencia_principal',
+    estrella: 'gigante_roja',
+    leyenda: 'agujero_negro'
+};
+
+window.rangoPorPuntos = function rangoPorPuntos(puntos) {
+    const valor = Number(puntos);
+    const p = Number.isFinite(valor) ? valor : 0;
+    let actual = window.RANGOS_COMUNIDAD[0];
+    for (const r of window.RANGOS_COMUNIDAD) {
+        if (p >= r.min) actual = r;
+    }
+    return actual;
+};
+
+// Devuelve la clave canónica. Si hay puntos se calcula con ellos (los puntos
+// mandan sobre una clave antigua o desfasada en la BD).
+window.claveRango = function claveRango(clave, puntos) {
+    const tienePuntos = puntos !== null && puntos !== undefined && puntos !== '' && Number.isFinite(Number(puntos));
+    if (tienePuntos) return window.rangoPorPuntos(puntos).clave;
+    const k = String(clave || '').toLowerCase();
+    if (window.RANGOS_COMUNIDAD.some(r => r.clave === k)) return k;
+    return window.ALIAS_RANGOS_COMUNIDAD[k] || 'polvo_cosmico';
+};
+
+window.datosRangoComunidad = function datosRangoComunidad(clave, puntos) {
+    const k = window.claveRango(clave, puntos);
+    return window.RANGOS_COMUNIDAD.find(r => r.clave === k) || window.RANGOS_COMUNIDAD[0];
+};
+
+// Clase CSS del "relieve" del nombre según el rango.
+window.claseRangoTexto = function claseRangoTexto(clave, puntos) {
+    return 'rango-texto-' + window.datosRangoComunidad(clave, puntos).clave;
+};
+
+window.etiquetaRango = function etiquetaRango(clave, puntos) {
+    const r = window.datosRangoComunidad(clave, puntos);
+    return r.emoji + ' ' + r.nombre.toUpperCase();
+};
+
 
 // === COPIAR USUARIO (sorteo) ===
 window.copiarEnlace = async function copiarEnlace(url, textoExito = '¡Enlace copiado!') {
@@ -453,6 +509,7 @@ window.actualizarUsuarioNavComunidad = function actualizarUsuarioNavComunidad() 
         const avatar = window.avatarUsuarioComunidad(usuario);
         const inicial = apodo.charAt(0).toUpperCase();
         const icono = usuario.icono || '';
+        const claseRango = window.claseRangoTexto(usuario.rango, usuario.puntos);
         const avatarHtml = avatar
             ? `<img class="nav-user-avatar" src="${window.escapeAttr(avatar)}" alt="" loading="lazy">`
             : `<span class="nav-user-inicial" aria-hidden="true">${window.escapeHtml(inicial)}</span>`;
@@ -461,7 +518,7 @@ window.actualizarUsuarioNavComunidad = function actualizarUsuarioNavComunidad() 
         navUserInfo.innerHTML = `
             <button type="button" class="nav-user-btn" aria-haspopup="dialog" aria-expanded="false" aria-label="Abrir mi perfil y ajustes">
                 ${avatarHtml}
-                <span id="nav-username" class="nav-user-name">${apodoSeguro}</span>
+                <span id="nav-username" class="nav-user-name ${claseRango}">${apodoSeguro}</span>
                 <span class="nav-user-icono" ${icono ? '' : 'hidden'}>${window.escapeHtml(icono)}</span>
                 <i class="fa-solid fa-chevron-down nav-user-chevron" aria-hidden="true"></i>
             </button>
@@ -1069,6 +1126,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const bio = usuario.bio ? `<p class="mp-bio">${escapeHtml(usuario.bio)}</p>` : '';
     const icono = usuario.icono ? ` <span class="mp-icono">${escapeHtml(usuario.icono)}</span>` : '';
     const linksHtml = renderLinks(usuario.links_json);
+    const rangoInfo = window.datosRangoComunidad(usuario.rango, usuario.puntos);
     const avatarPerfil = avatar
       ? `<img class="mp-avatar" src="${escapeAttr(avatar)}" alt="Avatar de ${escapeAttr(usuario.apodo || 'usuario')}">`
       : `<span class="mp-avatar-inicial" aria-hidden="true">${escapeHtml(inicial)}</span>`;
@@ -1077,8 +1135,8 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="mp-profile-head">
         <div class="mp-avatar-wrap">${avatarPerfil}</div>
         <div class="mp-profile-info">
-          <h4 class="mp-apodo">${escapeHtml(usuario.apodo || localStorage.getItem('comunidad_nickname') || '')}</h4>
-          <p class="mp-meta">${escapeHtml(usuario.rango || 'semilla')} · ${Number(usuario.puntos || 0)} pts${icono}</p>
+          <h4 class="mp-apodo rango-texto-${rangoInfo.clave}">${escapeHtml(usuario.apodo || localStorage.getItem('comunidad_nickname') || '')}</h4>
+          <p class="mp-meta">${escapeHtml(rangoInfo.emoji + ' ' + rangoInfo.nombre)} · ${Number(usuario.puntos || 0)} pts${icono}</p>
           ${bio}
           ${linksHtml ? `<div class="mp-links">${linksHtml}</div>` : ''}
         </div>

@@ -28,7 +28,7 @@
 
     <link rel="manifest" href="manifest.webmanifest">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=1.9.2">
+    <link rel="stylesheet" href="style.css?v=1.10.0">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;800;900&display=swap" rel="stylesheet">
@@ -209,7 +209,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0" defer></script>
 
-    <script src="main.js?v=1.9.2" defer></script>
+    <script src="main.js?v=1.10.0" defer></script>
     <script>
         // Navegación Inicio: scroll al top
         document.addEventListener('DOMContentLoaded', () => {
@@ -231,23 +231,18 @@
         const LIMITE_POR_PAGINA = 12;
         let adminAutenticado = false;
 
-        // El rango llega en el propio mensaje (snapshot del servidor). Solo los
-        // saludos de usuarios con sesion verificada llevan badge: el nombre que
-        // escribe el invitado jamas se resuelve contra usuarios_comunidad.
-        const RANGOS_MURO = {
-            semilla:  { emoji: '🌱', nombre: 'Semilla' },
-            gota:     { emoji: '💧', nombre: 'Gota' },
-            flor:     { emoji: '🌸', nombre: 'Flor' },
-            estrella: { emoji: '⭐', nombre: 'Estrella' },
-            leyenda:  { emoji: '👑', nombre: 'Leyenda' }
-        };
+        // Los saludos guardan una instantánea del rango (puede ser una clave
+        // antigua). Se normaliza a la escalera cósmica de main.js.
+        function infoRangoMuro(clave) {
+            if (!window.RANGOS_COMUNIDAD || !window.claveRango) return null;
+            const normalizada = window.claveRango(clave);
+            return window.RANGOS_COMUNIDAD.find(r => r.clave === normalizada) || null;
+        }
 
         function badgeRangoMuro(msg) {
-            if (!msg || !msg.verificado || !msg.rango) return '';
-            const clave = String(msg.rango).toLowerCase();
-            const info = RANGOS_MURO[clave];
+            const info = (msg && msg.verificado && msg.rango) ? infoRangoMuro(msg.rango) : null;
             if (!info) return '';
-            return `<span class="rango-badge rango-solo-icono rango-${clave}" title="${escapeAttr(info.nombre)}">${info.emoji}</span>`;
+            return `<span class="rango-badge rango-solo-icono rango-${info.clave}" title="${escapeAttr(info.nombre)}">${info.emoji}</span>`;
         }
 
         function construirTarjetaMuro(msg) {
@@ -263,6 +258,8 @@
             const autorSpan = document.createElement('span');
             autorSpan.className = 'muro-autor';
             autorSpan.textContent = msg.autor || '';
+            const infoAutor = (msg.verificado && msg.rango) ? infoRangoMuro(msg.rango) : null;
+            if (infoAutor) autorSpan.classList.add('rango-texto-' + infoAutor.clave);
             autorSpan.appendChild(document.createRange().createContextualFragment(badgeRangoMuro(msg)));
             const actions = document.createElement('div');
             actions.className = 'muro-card-actions';
