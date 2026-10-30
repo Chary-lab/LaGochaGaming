@@ -28,7 +28,7 @@
 
     <link rel="manifest" href="manifest.webmanifest">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=1.12.1">
+    <link rel="stylesheet" href="style.css?v=1.12.2">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;800;900&display=swap" rel="stylesheet">
@@ -154,11 +154,13 @@
             </div>
             <div class="social-column tiktok-col">
                 <h3>🎵 TikTok Shorts</h3>
-                <div class="social-feed-box tiktok-embed-box">
-                    <iframe src="https://www.tiktok.com/embed/@lagochagaming11?lang=es"
-                            title="Últimos videos de TikTok de @lagochagaming11"
-                            loading="lazy" scrolling="no"
-                            allow="encrypted-media; fullscreen; picture-in-picture"></iframe>
+                <div class="social-feed-box tiktok-embed-box" id="tiktok-embed-box">
+                    <button type="button" class="tiktok-cargar" id="tiktok-cargar">
+                        <span class="tiktok-cargar-icono"><i class="fa-brands fa-tiktok" aria-hidden="true"></i></span>
+                        <span class="tiktok-cargar-titulo">Ver los últimos videos</span>
+                        <span class="tiktok-cargar-handle">@lagochagaming11</span>
+                        <span class="tiktok-cargar-aviso">TikTok limita las cargas automáticas</span>
+                    </button>
                 </div>
                 <p class="social-feed-nota">
                     Se actualiza solo con los últimos videos publicados.
@@ -220,7 +222,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0" defer></script>
 
-    <script src="main.js?v=1.12.1" defer></script>
+    <script src="main.js?v=1.12.2" defer></script>
     <script>
         // Navegación Inicio: scroll al top
         document.addEventListener('DOMContentLoaded', () => {
@@ -338,6 +340,23 @@
         // === FEED DE INSTAGRAM (función Supabase, sin Juicer ni publicidad) ===
         const IG_FEED_URL = 'https://cydiyaacnyydprgffmkq.supabase.co/functions/v1/instagram-feed?limit=6';
         const IG_IMG_URL = 'https://cydiyaacnyydprgffmkq.supabase.co/functions/v1/instagram-feed?img=';
+        const TIKTOK_EMBED_URL = 'https://www.tiktok.com/embed/@lagochagaming11?lang=es';
+
+        // TikTok bloquea el embed si se carga muchas veces por IP. Se carga solo
+        // a petición del usuario para no mostrar "overload-protect triggered".
+        function cargarEmbedTikTok() {
+            const caja = document.getElementById('tiktok-embed-box');
+            if (!caja || caja.dataset.cargado === '1') return;
+            caja.dataset.cargado = '1';
+            caja.textContent = '';
+            const marco = document.createElement('iframe');
+            marco.src = TIKTOK_EMBED_URL;
+            marco.title = 'Últimos videos de TikTok de @lagochagaming11';
+            marco.setAttribute('scrolling', 'no');
+            marco.setAttribute('allow', 'encrypted-media; fullscreen; picture-in-picture');
+            caja.appendChild(marco);
+        }
+        window.cargarEmbedTikTok = cargarEmbedTikTok;
 
         function formatearNumeroFeed(n) {
             const v = Number(n) || 0;
@@ -420,6 +439,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         cargarMensajes(true);
         iniciarRealtimeMuro();
         cargarFeedInstagram();
+        document.getElementById('tiktok-cargar')?.addEventListener('click', cargarEmbedTikTok);
         if (window.iniciarRealtimeMuroReacciones) window.iniciarRealtimeMuroReacciones();
 
         document.getElementById('muro-form').addEventListener('submit', (e) => {

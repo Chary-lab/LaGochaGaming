@@ -3,6 +3,15 @@
 Formato basado en Keep a Changelog. Versionado SemVer (`MAJOR.MINOR.PATCH`).
 El historial anterior a 1.5.0 está en los commits `v1.4.x`.
 
+## [1.12.2] - 2026-10-30
+
+### TikTok bajo demanda
+
+- El embed de TikTok ya no se carga automáticamente: la tarjeta muestra
+  “Ver los últimos videos” y monta el iframe al pulsar. Evita el mensaje
+  `overload-protect triggered` que TikTok devuelve al limitar cargas por IP.
+- Se mantiene el recorte del pie del embed y el enlace al perfil.
+
 ## [1.12.1] - 2026-10-30
 
 ### TikTok sin pie del embed

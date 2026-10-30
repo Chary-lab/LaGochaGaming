@@ -342,6 +342,57 @@ body.light-mode .hero-bio {
 .social-feed-box.tiktok-embed-box {
     height: 400px;
 }
+.tiktok-cargar {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 20px;
+    font-family: inherit;
+    color: var(--text-main);
+    background:
+        radial-gradient(circle at 50% 30%, rgba(103, 232, 249, 0.16), transparent 60%),
+        var(--card-bg-subtle);
+    transition: box-shadow 0.25s ease;
+}
+.tiktok-cargar:hover,
+.tiktok-cargar:focus-visible {
+    box-shadow: inset 0 0 0 1px var(--accent-tiktok);
+    outline: none;
+}
+.tiktok-cargar-icono {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000;
+    color: #fff;
+    font-size: 1.6rem;
+    box-shadow: 0 0 18px rgba(103, 232, 249, 0.35);
+    margin-bottom: 4px;
+}
+.tiktok-cargar-titulo {
+    font-weight: 800;
+    font-size: 1rem;
+    color: var(--accent-tiktok);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.tiktok-cargar-handle {
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+.tiktok-cargar-aviso {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+}
 .social-feed-box.tiktok-embed-box iframe {
     transform: none;
 }
