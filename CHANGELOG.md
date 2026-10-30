@@ -1,3 +1,8 @@
+## [1.7.1] - 2026-10-30
+
+### Cambios
+- Refinada ayuda admin en cine (resumen conciso) y galeria (explica ban/shadowban).
+
 # Changelog - LaGochaGaming
 
 Formato basado en Keep a Changelog. Versionado SemVer (`MAJOR.MINOR.PATCH`).
