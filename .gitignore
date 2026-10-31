@@ -27,3 +27,6 @@ supabase/
 !AGENTS.md
 !CHANGELOG.md
 !beta.md
+# CSS por pagina
+!css/
+!css/*.css
