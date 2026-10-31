@@ -3,6 +3,20 @@
 Formato basado en Keep a Changelog. Versionado SemVer (`MAJOR.MINOR.PATCH`).
 El historial anterior a 1.5.0 está en los commits `v1.4.x`.
 
+## [1.18.0] - 2026-10-31
+
+### Sin Bootstrap y Alpine en todas las páginas
+
+- Retirado Bootstrap 6 alpha de las 5 páginas. Las utilidades que se usaban
+  (`.nav-right`, `.visually-hidden`) son CSS propio.
+- Alpine + `@alpinejs/focus` cargados con `defer` en index y cine; ya están en
+  todas las páginas.
+- El modal de fotos/vídeos de los feeds pasa a `$store.media`: `x-trap`,
+  cierre con Escape/fondo/botón, foco devuelto y sin manipulación de `iframe`
+  a mano.
+- Visibilidad con `:hidden` + `[hidden]`; `x-show` no es fiable con
+  `display: flex` en este build.
+
 ## [1.17.1] - 2026-10-31
 
 ### Perfil público sin pestañas de ajustes

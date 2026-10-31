@@ -27,8 +27,7 @@
     <meta name="twitter:image" content="https://lagochagaming.com/img/3.jpg">
 
     <link rel="manifest" href="manifest.webmanifest">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=1.17.1">
+    <link rel="stylesheet" href="style.css?v=1.18.0">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;800;900&display=swap" rel="stylesheet">
@@ -61,7 +60,7 @@
                 <a href="galeria" class="nav-link">📸 Galería</a>
                 <a href="comunidad" class="nav-link">💬 Comunidad</a>
             </div>
-            <div class="nav-right ms-auto d-flex align-items-center gap-2">
+            <div class="nav-right">
                 <button type="button" id="btn-toggle-tema" class="btn-tema-nav" title="Cambiar tema" aria-label="Cambiar tema claro/oscuro"><i class="fa-solid fa-sun"></i></button>
                 <div id="nav-user-info"></div>
             </div>
@@ -200,16 +199,32 @@
     </section>
 
     <!-- MODAL DE VIDEOS (Instagram / TikTok) -->
-    <div id="media-modal" class="media-modal" hidden>
-        <div class="media-modal-backdrop" data-media-cerrar></div>
-        <div class="media-modal-card" role="dialog" aria-modal="true" aria-labelledby="media-modal-titulo">
-            <button type="button" class="media-modal-cerrar" data-media-cerrar aria-label="Cerrar reproductor">
+    <div id="media-modal" class="media-modal" x-data="{ }" x-cloak
+         :hidden="!$store.media.abierto"
+         @keydown.escape.window="$store.media.cerrar()">
+        <div class="media-modal-backdrop" @click="$store.media.cerrar()"></div>
+        <div class="media-modal-card" role="dialog" aria-modal="true" aria-labelledby="media-modal-titulo"
+             x-trap.noscroll="$store.media.abierto">
+            <button type="button" class="media-modal-cerrar" @click="$store.media.cerrar()" aria-label="Cerrar reproductor">
                 <i class="fa-solid fa-xmark" aria-hidden="true"></i>
             </button>
-            <div class="media-modal-marco" id="media-modal-marco"></div>
+            <div class="media-modal-marco" :class="$store.media.marcoClase">
+                <template x-if="$store.media.tipo === 'tiktok'">
+                    <iframe :src="$store.media.src" title="Video de TikTok"
+                            allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe>
+                </template>
+                <template x-if="$store.media.tipo === 'ig-video'">
+                    <iframe :src="$store.media.src" :title="$store.media.titulo || 'Reel de Instagram'"
+                            allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe>
+                </template>
+                <template x-if="$store.media.tipo === 'foto'">
+                    <img :src="$store.media.imagen" :alt="$store.media.titulo || 'Publicación de Instagram'">
+                </template>
+            </div>
             <div class="media-modal-pie">
-                <span class="media-modal-titulo" id="media-modal-titulo"></span>
-                <a class="media-modal-enlace" id="media-modal-enlace" href="#" target="_blank" rel="noopener noreferrer">Abrir</a>
+                <span class="media-modal-titulo" id="media-modal-titulo" x-text="$store.media.titulo"></span>
+                <a class="media-modal-enlace" :href="$store.media.enlace" target="_blank" rel="noopener noreferrer"
+                   x-text="$store.media.textoEnlace"></a>
             </div>
         </div>
     </div>
@@ -232,7 +247,9 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0" defer></script>
 
-    <script src="main.js?v=1.17.1" defer></script>
+    <script src="main.js?v=1.18.0" defer></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/focus@3.17.5/dist/cdn.min.js" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.17.5/dist/cdn.min.js" crossorigin="anonymous"></script>
     <script>
         // Navegación Inicio: scroll al top
         document.addEventListener('DOMContentLoaded', () => {
@@ -496,86 +513,50 @@
         }
 
         // === MODAL DE VIDEOS (Instagram / TikTok) ===
-        let mediaFocoAnterior = null;
-
-        function abrirMediaModal(datos) {
-            const modal = document.getElementById('media-modal');
-            const marco = document.getElementById('media-modal-marco');
-            const tituloEl = document.getElementById('media-modal-titulo');
-            const enlace = document.getElementById('media-modal-enlace');
-            if (!modal || !marco || !enlace) return;
-
-            const tipo = datos.mediaTipo || 'ig-foto';
-            const titulo = datos.mediaTitulo || '';
-            marco.textContent = '';
-            marco.className = 'media-modal-marco';
-
-            if (tipo === 'tiktok') {
-                marco.classList.add('video-tiktok');
-                const iframe = document.createElement('iframe');
-                iframe.src = 'https://www.tiktok.com/player/v1/' + encodeURIComponent(datos.mediaId) + '?autoplay=1';
-                iframe.title = titulo || 'Video de TikTok';
-                iframe.setAttribute('allow', 'autoplay; encrypted-media; fullscreen; picture-in-picture');
-                iframe.setAttribute('allowfullscreen', '');
-                marco.appendChild(iframe);
-                enlace.href = datos.mediaUrl || 'https://www.tiktok.com/@lagochagaming11';
-                enlace.textContent = 'Abrir en TikTok';
-            } else if (tipo === 'ig-video') {
-                marco.classList.add('video-instagram');
-                const iframe = document.createElement('iframe');
-                iframe.src = 'https://www.instagram.com/p/' + encodeURIComponent(datos.mediaId) + '/embed/';
-                iframe.title = titulo || 'Reel de Instagram';
-                iframe.setAttribute('allow', 'autoplay; encrypted-media; fullscreen; picture-in-picture');
-                iframe.setAttribute('allowfullscreen', '');
-                marco.appendChild(iframe);
-                enlace.href = datos.mediaUrl || 'https://www.instagram.com/oscurostefany/';
-                enlace.textContent = 'Abrir en Instagram';
-            } else {
-                marco.classList.add('foto');
-                const img = document.createElement('img');
-                img.src = datos.mediaImagen || '';
-                img.alt = titulo || 'Publicación de Instagram';
-                marco.appendChild(img);
-                enlace.href = datos.mediaUrl || 'https://www.instagram.com/oscurostefany/';
-                enlace.textContent = 'Abrir en Instagram';
-            }
-
-            tituloEl.textContent = titulo;
-            mediaFocoAnterior = document.activeElement;
-            modal.hidden = false;
-            document.body.classList.add('media-modal-open');
-            modal.querySelector('.media-modal-cerrar')?.focus();
-        }
-
-        function cerrarMediaModal() {
-            const modal = document.getElementById('media-modal');
-            const marco = document.getElementById('media-modal-marco');
-            if (!modal || modal.hidden) return;
-            modal.hidden = true;
-            if (marco) {
-                marco.querySelectorAll('iframe').forEach((f) => { f.src = 'about:blank'; });
-                marco.textContent = '';
-            }
-            document.body.classList.remove('media-modal-open');
-            if (mediaFocoAnterior && typeof mediaFocoAnterior.focus === 'function') mediaFocoAnterior.focus();
-            mediaFocoAnterior = null;
-        }
-
-        function trampaFocoMedia(e) {
-            const modal = document.getElementById('media-modal');
-            if (!modal || modal.hidden || e.key !== 'Tab') return;
-            const focos = modal.querySelectorAll('button, [href], iframe, [tabindex]:not([tabindex="-1"])');
-            if (!focos.length) return;
-            const primero = focos[0];
-            const ultimo = focos[focos.length - 1];
-            if (e.shiftKey && document.activeElement === primero) {
-                e.preventDefault();
-                ultimo.focus();
-            } else if (!e.shiftKey && document.activeElement === ultimo) {
-                e.preventDefault();
-                primero.focus();
-            }
-        }
+        // Estado en Alpine: apertura, iframe, scroll y foco los gestiona $store.media.
+        document.addEventListener('alpine:init', () => {
+            window.Alpine.store('media', {
+                abierto: false,
+                tipo: '',
+                titulo: '',
+                src: '',
+                imagen: '',
+                enlace: '#',
+                textoEnlace: 'Abrir',
+                get marcoClase() {
+                    if (this.tipo === 'tiktok') return 'video-tiktok';
+                    if (this.tipo === 'ig-video') return 'video-instagram';
+                    return 'foto';
+                },
+                abrir(datos) {
+                    const tipo = datos.mediaTipo || 'ig-foto';
+                    this.titulo = datos.mediaTitulo || '';
+                    this.tipo = tipo === 'tiktok' ? 'tiktok' : (tipo === 'ig-video' ? 'ig-video' : 'foto');
+                    this.src = '';
+                    this.imagen = '';
+                    if (tipo === 'tiktok') {
+                        this.src = 'https://www.tiktok.com/player/v1/' + encodeURIComponent(datos.mediaId) + '?autoplay=1';
+                        this.enlace = datos.mediaUrl || 'https://www.tiktok.com/@lagochagaming11';
+                        this.textoEnlace = 'Abrir en TikTok';
+                    } else if (tipo === 'ig-video') {
+                        this.src = 'https://www.instagram.com/p/' + encodeURIComponent(datos.mediaId) + '/embed/';
+                        this.enlace = datos.mediaUrl || 'https://www.instagram.com/oscurostefany/';
+                        this.textoEnlace = 'Abrir en Instagram';
+                    } else {
+                        this.imagen = datos.mediaImagen || '';
+                        this.enlace = datos.mediaUrl || 'https://www.instagram.com/oscurostefany/';
+                        this.textoEnlace = 'Abrir en Instagram';
+                    }
+                    this.abierto = true;
+                },
+                cerrar() {
+                    this.abierto = false;
+                    this.tipo = '';
+                    this.src = '';
+                    this.imagen = '';
+                }
+            });
+        });
 
 document.addEventListener('DOMContentLoaded', async () => {
     if (window.supabase) {
@@ -599,20 +580,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Lightbox de videos/fotos de los feeds sociales.
         document.addEventListener('click', (e) => {
-            if (e.target.closest('[data-media-cerrar]')) {
-                e.preventDefault();
-                cerrarMediaModal();
-                return;
-            }
             const tarjeta = e.target.closest('.ig-card[data-media-tipo]');
             if (!tarjeta) return;
-            if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+            if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
             e.preventDefault();
-            abrirMediaModal(tarjeta.dataset);
-        });
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') cerrarMediaModal();
-            trampaFocoMedia(e);
+            window.Alpine?.store('media')?.abrir(tarjeta.dataset);
         });
         if (window.iniciarRealtimeMuroReacciones) window.iniciarRealtimeMuroReacciones();
 

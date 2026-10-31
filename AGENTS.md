@@ -14,8 +14,8 @@ Guía operativa para agentes que trabajen en este repositorio. Leerla completa a
 ## 2. Reglas de stack
 
 - No introducir frameworks, bundlers ni dependencias npm de runtime sin autorización explícita.
-- No añadir jQuery. Bootstrap se carga solo por CSS; no usar su JS.
-- Las librerías externas se cargan por CDN con versión fijada (Supabase JS 2.118.0, Alpine 3.17.5, Font Awesome 6.4.0). No cambiar versiones a `latest`.
+- No añadir jQuery ni Bootstrap. El sitio usa CSS propio (`.visually-hidden`, `.nav-right`) y Alpine para la UI.
+- Las librerías externas se cargan por CDN con versión fijada (Supabase JS 2.118.0, Alpine 3.17.5, `@alpinejs/focus` 3.17.5, Font Awesome 6.6.0). No cambiar versiones a `latest`.
 - Mantener el estilo actual: variables CSS, clases semánticas, modo claro/oscuro y diseño responsive.
 - El sitio debe funcionar sin build. No crear pasos de compilación obligatorios.
 
@@ -44,6 +44,8 @@ Las migraciones SQL no se versionan en este repo: el historial vive en Supabase.
 - Preferir `textContent` y creación de nodos a `innerHTML` cuando sea posible.
 - No usar `eval`, `new Function` ni `document.write`.
 - En Alpine, no usar mustaches `{{ }}` dentro de atributos. Usar bindings (`:aria-label="'...' + variable"`).
+- Alpine va con `defer` y los stores se registran en `alpine:init`. Usar `x-cloak` en lo que deba ocultarse antes de inicializar.
+- Para visibilidad usar `:hidden="!abierto"` con la regla global `[hidden]`; no `x-show` (en este build no vuelve a ocultar elementos con `display: flex`).
 - Cuidado con la propagación de clics: las tarjetas de galería abren el lightbox, pero los botones de acción deben llegar al listener delegado del documento. Usar `window.abrirLightboxDesdeTarjeta($event, foto, $el)` y no `@click.stop` en la zona de acciones.
 - No anidar nuevas acciones interactivas dentro de `role="button"` sin revisar propagación de click/teclado y accesibilidad.
 - Respetar `prefers-reduced-motion` en animaciones nuevas (el confeti ya lo hace).
@@ -138,7 +140,7 @@ Las migraciones SQL no se versionan en este repo: el historial vive en Supabase.
 - En cada release, actualizar el query de caché `?v=X.Y.Z` de `style.css` y `main.js` en los HTML (GitHub Pages cachea agresivamente).
 - Formato de commit: `vX.Y.Z - resumen corto` (seguir el historial existente).
 - No commitear ni pushear una versión inestable. Probar antes.
-- Versión de esta release: `1.17.1` (fix de pestañas de Ajustes en perfiles públicos; sobre 1.17.0).
+- Versión de esta release: `1.18.0` (sin Bootstrap y Alpine en todas las páginas; sobre 1.17.1).
 
 ## 9. Pruebas antes de commitear
 
