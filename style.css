@@ -1688,6 +1688,23 @@ body.light-mode #lightbox .lightbox-caption {
       white-space: nowrap;
   }
 
+  .rango-datos {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+      flex-shrink: 0;
+  }
+  .rango-datos .rango-puntos { margin-left: 0; }
+  .rango-datos .rango-mult { margin-left: 0; }
+  .rango-max-tag {
+      font-size: 0.55rem;
+      font-weight: 900;
+      letter-spacing: 1px;
+      color: #c4b5fd;
+      text-shadow: 0 0 8px rgba(168, 85, 247, 0.8);
+  }
+
   /* --- GAMIFICACIÓN: MULTIPLICADOR, PROGRESO Y CELEBRACIÓN --- */
 
   /* Multiplicador por rango (×1 … ×5) */
@@ -1925,22 +1942,6 @@ body.light-mode #lightbox .lightbox-caption {
           conic-gradient(from var(--ang), #22d3ee, #a855f7, #4c1d95, #22d3ee) border-box;
       border: 2px solid transparent;
       animation: leyendaGiro 5s linear infinite;
-  }
-
-  .rango-fila.rango-maximo::after {
-      content: 'MÁXIMO';
-      position: absolute;
-      top: 6px;
-      right: 8px;
-      font-size: 0.58rem;
-      font-weight: 900;
-      letter-spacing: 1px;
-      color: #c4b5fd;
-      text-shadow: 0 0 8px rgba(168, 85, 247, 0.85);
-  }
-
-  .rango-fila.rango-maximo .rango-puntos {
-      margin-right: 52px;
   }
 
   /* Gloss sweep over the Leyenda badge */
@@ -4759,6 +4760,24 @@ body.modal-perfil-open { overflow: hidden; }
     font-weight: 700;
 }
 .nav-user-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nav-user-puntos {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: var(--card-bg-subtle);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    font-size: 0.7rem;
+    font-weight: 800;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+.nav-user-puntos .nav-user-rango { font-size: 0.78rem; }
+@media (max-width: 640px) {
+    .nav-user-puntos { display: none; }
+}
 .nav-user-icono { font-size: 0.9rem; line-height: 1; }
 .nav-user-chevron { font-size: 0.65rem; opacity: 0.7; }
 @media (max-width: 640px) {
@@ -4828,6 +4847,29 @@ body.modal-perfil-open { overflow: hidden; }
 }
 .mp-apodo { margin: 6px 0 2px; text-align: center; font-size: 1.25rem; }
 .mp-meta { margin: 0 0 8px; text-align: center; }
+.mp-badges {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin: 2px 0 6px;
+}
+.mp-puntos {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--card-bg-subtle);
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+.mp-logout {
+    width: 100%;
+    margin-top: 10px;
+}
 .mp-bio { margin: 10px 0; text-align: center; white-space: pre-wrap; overflow-wrap: anywhere; }
 .mp-icono { font-size: 1rem; }
 .mp-links { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 10px 0 16px; }

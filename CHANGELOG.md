@@ -3,6 +3,18 @@
 Formato basado en Keep a Changelog. Versionado SemVer (`MAJOR.MINOR.PATCH`).
 El historial anterior a 1.5.0 está en los commits `v1.4.x`.
 
+## [1.15.1] - 2026-10-30
+
+### Perfil, rangos y navbar
+
+- Perfil: fuera los botones “Editar perfil y ajustes” y “Cerrar sesión”; las
+  pestañas ya cambian de vista y el cierre de sesión vive en Ajustes.
+- Perfil: rango y puntos como chips bajo el nombre, con el relieve del rango.
+- Panel de rangos: filas simétricas con columna derecha para puntos y
+  multiplicador; etiquetas TÚ y MÁXIMO integradas sin solaparse.
+- Navbar: chip con icono de rango y puntos junto al avatar; se actualiza al
+  ganar puntos y se oculta en móvil.
+
 ## [1.15.0] - 2026-10-30
 
 ### Puntos en toda la web

@@ -28,7 +28,7 @@
     <link rel="icon" type="image/png" sizes="512x512" href="img/android-chrome-512x512.png">
     <link rel="manifest" href="manifest.webmanifest">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=1.15.0">
+    <link rel="stylesheet" href="style.css?v=1.15.1">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;800;900&display=swap" rel="stylesheet">
@@ -267,12 +267,12 @@
             <div id="tab-rangos" class="tab-content" hidden role="tabpanel" aria-labelledby="tabbtn-rangos">
                 <h4 class="tab-content-title"><i class="fa-solid fa-meteor"></i> Línea de Tiempo Cósmica</h4>
                 <div id="cuadro-rangos" class="cuadro-rangos">
-                    <div class="rango-fila"><span class="rango-icono">🌫️</span><span class="rango-nombre-wrap"><span class="rango-nombre">Polvo Cósmico</span><span class="rango-desc">El inicio de la materia.</span></span><span class="rango-puntos">0 - 49 pts</span></div>
-                    <div class="rango-fila"><span class="rango-icono">🟠</span><span class="rango-nombre-wrap"><span class="rango-nombre">Protoestrella</span><span class="rango-desc">El nacimiento del calor.</span></span><span class="rango-puntos">50 - 199 pts</span></div>
-                    <div class="rango-fila"><span class="rango-icono">☀️</span><span class="rango-nombre-wrap"><span class="rango-nombre">Secuencia Principal</span><span class="rango-desc">La madurez y estabilidad lumínica.</span></span><span class="rango-puntos">200 - 499 pts</span></div>
-                    <div class="rango-fila"><span class="rango-icono">🔴</span><span class="rango-nombre-wrap"><span class="rango-nombre">Gigante Roja</span><span class="rango-desc">La expansión masiva de energía.</span></span><span class="rango-puntos">500 - 749 pts</span></div>
-                    <div class="rango-fila"><span class="rango-icono">✨</span><span class="rango-nombre-wrap"><span class="rango-nombre">Supernova</span><span class="rango-desc">La explosión más brillante del universo.</span></span><span class="rango-puntos">750 - 999 pts</span></div>
-                    <div class="rango-fila rango-maximo"><span class="rango-icono">🕳️</span><span class="rango-nombre-wrap"><span class="rango-nombre">Agujero Negro</span><span class="rango-desc">El colapso final absoluto.</span></span><span class="rango-puntos">1000+ pts</span></div>
+                    <div class="rango-fila"><span class="rango-icono">🌫️</span><span class="rango-nombre-wrap"><span class="rango-nombre">Polvo Cósmico</span><span class="rango-desc">El inicio de la materia.</span></span><span class="rango-datos"><span class="rango-puntos">0 - 99 pts</span><span class="rango-mult">x1</span></span></div>
+                    <div class="rango-fila"><span class="rango-icono">🟠</span><span class="rango-nombre-wrap"><span class="rango-nombre">Protoestrella</span><span class="rango-desc">El nacimiento del calor.</span></span><span class="rango-datos"><span class="rango-puntos">100 - 399 pts</span><span class="rango-mult">x2</span></span></div>
+                    <div class="rango-fila"><span class="rango-icono">☀️</span><span class="rango-nombre-wrap"><span class="rango-nombre">Secuencia Principal</span><span class="rango-desc">La madurez y estabilidad lumínica.</span></span><span class="rango-datos"><span class="rango-puntos">400 - 999 pts</span><span class="rango-mult">x3</span></span></div>
+                    <div class="rango-fila"><span class="rango-icono">🔴</span><span class="rango-nombre-wrap"><span class="rango-nombre">Gigante Roja</span><span class="rango-desc">La expansión masiva de energía.</span></span><span class="rango-datos"><span class="rango-puntos">1000 - 1999 pts</span><span class="rango-mult">x4</span></span></div>
+                    <div class="rango-fila"><span class="rango-icono">✨</span><span class="rango-nombre-wrap"><span class="rango-nombre">Supernova</span><span class="rango-desc">La explosión más brillante del universo.</span></span><span class="rango-datos"><span class="rango-puntos">2000 - 3499 pts</span><span class="rango-mult">x5</span></span></div>
+                    <div class="rango-fila rango-maximo"><span class="rango-icono">🕳️</span><span class="rango-nombre-wrap"><span class="rango-nombre">Agujero Negro</span><span class="rango-desc">El colapso final absoluto.</span></span><span class="rango-datos"><span class="rango-max-tag">MÁXIMO</span><span class="rango-puntos">3500+ pts</span><span class="rango-mult">x6</span></span></div>
                 </div>
                 <div id="rango-progreso-panel" class="rango-progreso-panel">
                     <div class="rango-progreso-head">
@@ -400,7 +400,7 @@
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
 
-    <script src="main.js?v=1.15.0" defer></script>
+    <script src="main.js?v=1.15.1" defer></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.17.5/dist/cdn.min.js"
             integrity="sha384-FYLKjwG3aohNhNZoVG8sY/5ntunm+MqylL90Q+rT3OM7AwV9/BKFjk/RjoIpIgsI"
             crossorigin="anonymous"></script>
@@ -820,12 +820,12 @@ setInterval(actualizarTypingIndicator, 500);
                         + (esActual ? ' rango-actual' : '')
                         + (r.clave === claveMaxima ? ' rango-maximo' : '');
                     const desc = r.desc ? `<span class="rango-desc">${escapeHtml(r.desc)}</span>` : '';
+                    const etiqueta = esActual ? '<span class="rango-actual-chip">TÚ</span>' : '';
+                    const maxTag = r.clave === claveMaxima ? '<span class="rango-max-tag">MÁXIMO</span>' : '';
                     return `<div class="${clases}" data-rango="${r.clave}">
                         <span class="rango-icono">${r.emoji}</span>
                         <span class="rango-nombre-wrap"><span class="rango-nombre">${escapeHtml(r.nombre)}</span>${desc}</span>
-                        <span class="rango-puntos">${puntosTxt}</span>
-                        <span class="rango-mult">x${r.mult}</span>
-                        ${esActual ? '<span class="rango-actual-chip">TÚ</span>' : ''}
+                        <span class="rango-datos">${etiqueta}${maxTag}<span class="rango-puntos">${puntosTxt}</span><span class="rango-mult">x${r.mult}</span></span>
                     </div>`;
                 }).join('');
             }

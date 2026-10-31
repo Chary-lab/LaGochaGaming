@@ -510,15 +510,21 @@ window.actualizarUsuarioNavComunidad = function actualizarUsuarioNavComunidad() 
         const inicial = apodo.charAt(0).toUpperCase();
         const icono = usuario.icono || '';
         const claseRango = window.claseRangoTexto(usuario.rango, usuario.puntos);
+        const rangoInfo = window.datosRangoComunidad(usuario.rango, usuario.puntos);
+        const puntosNav = Number(usuario.puntos || 0);
         const avatarHtml = avatar
             ? `<img class="nav-user-avatar" src="${window.escapeAttr(avatar)}" alt="" loading="lazy">`
             : `<span class="nav-user-inicial" aria-hidden="true">${window.escapeHtml(inicial)}</span>`;
 
         navUserInfo.style.display = 'inline-flex';
         navUserInfo.innerHTML = `
-            <button type="button" class="nav-user-btn" aria-haspopup="dialog" aria-expanded="false" aria-label="Abrir mi perfil y ajustes">
+            <button type="button" class="nav-user-btn" aria-haspopup="dialog" aria-expanded="false" aria-label="Abrir mi perfil y ajustes, ${puntosNav} puntos">
                 ${avatarHtml}
                 <span id="nav-username" class="nav-user-name ${claseRango}">${apodoSeguro}</span>
+                <span class="nav-user-puntos" title="${window.escapeAttr(rangoInfo.nombre + ' · ' + puntosNav + ' pts')}">
+                    <span class="nav-user-rango" aria-hidden="true">${rangoInfo.emoji}</span>
+                    <span class="nav-user-pts">${puntosNav}</span>
+                </span>
                 <span class="nav-user-icono" ${icono ? '' : 'hidden'}>${window.escapeHtml(icono)}</span>
                 <i class="fa-solid fa-chevron-down nav-user-chevron" aria-hidden="true"></i>
             </button>
@@ -1162,17 +1168,15 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="mp-avatar-wrap">${avatarPerfil}</div>
         <div class="mp-profile-info">
           <h4 class="mp-apodo rango-texto-${rangoInfo.clave}">${escapeHtml(usuario.apodo || localStorage.getItem('comunidad_nickname') || '')}</h4>
-          <p class="mp-meta">${escapeHtml(rangoInfo.emoji + ' ' + rangoInfo.nombre)} · ${Number(usuario.puntos || 0)} pts${icono}</p>
+          <div class="mp-badges">
+            <span class="rango-badge rango-${rangoInfo.clave}" title="Rango actual">${escapeHtml(rangoInfo.emoji + ' ' + rangoInfo.nombre)}</span>
+            <span class="mp-puntos" title="Puntos totales">${Number(usuario.puntos || 0)} pts</span>
+            ${icono}
+          </div>
           ${bio}
           ${linksHtml ? `<div class="mp-links">${linksHtml}</div>` : ''}
         </div>
-      </div>
-      <div class="mp-actions">
-        <button type="button" id="mp-ir-ajustes" class="btn-primary"><i class="fa-solid fa-sliders"></i> Editar perfil y ajustes</button>
-        <button type="button" id="mp-cerrar-sesion" class="btn-logout"><i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión</button>
       </div>`;
-    perfilDiv.querySelector('#mp-ir-ajustes')?.addEventListener('click', () => cambiarVista('ajustes'));
-    perfilDiv.querySelector('#mp-cerrar-sesion')?.addEventListener('click', () => window.cerrarSesion?.());
 
     const links = usuario.links_json && typeof usuario.links_json === 'object' ? usuario.links_json : {};
     const inputLink = (clave) => `
@@ -1217,7 +1221,10 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="mp-actions">
         <button type="button" id="mp-cancelar" class="btn-primary btn-muted">Cancelar</button>
         <button type="button" id="mp-guardar" class="btn-primary">Guardar cambios</button>
-      </div>`;
+      </div>
+      <button type="button" id="mp-cerrar-sesion" class="btn-logout mp-logout">
+        <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i> Cerrar sesión
+      </button>`;
 
     const generoSel = ajustesDiv.querySelector('#mp-genero');
     if (generoSel) generoSel.value = usuario.genero || 'no_definido';
@@ -1292,6 +1299,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     ajustesDiv.querySelector('#mp-cancelar')?.addEventListener('click', () => cambiarVista('perfil'));
+    ajustesDiv.querySelector('#mp-cerrar-sesion')?.addEventListener('click', () => window.cerrarSesion?.());
     ajustesDiv.querySelector('#mp-guardar')?.addEventListener('click', () => guardarPerfil(ajustesDiv));
   }
 
