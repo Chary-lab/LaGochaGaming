@@ -1075,7 +1075,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const { data, error } = await window.supabase
         .from('usuarios_comunidad')
-        .select('apodo,puntos,rango,genero,avatar_url,bio,links_json,icono_equipado')
+        .select('apodo,puntos,rango,genero,avatar_url,bio,links_json,icono_equipado,creado_en')
         .ilike('apodo', apodo)
         .maybeSingle();
       if (error) throw error;
@@ -1114,6 +1114,13 @@ document.addEventListener('DOMContentLoaded', () => {
     return String(apodo || '?').trim().charAt(0).toUpperCase() || '?';
   }
 
+  function mesDesde(iso) {
+    if (!iso) return '';
+    const fecha = new Date(iso);
+    if (Number.isNaN(fecha.getTime())) return '';
+    return fecha.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+  }
+
   function renderLinks(links) {
     if (!links || typeof links !== 'object') return '';
     const piezas = [];
@@ -1146,7 +1153,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (userId) {
         const { data, error } = await window.supabase
           .from('usuarios_comunidad')
-          .select('apodo,puntos,rango,avatar_url,bio,links_json,icono_equipado')
+          .select('apodo,puntos,rango,genero,avatar_url,bio,links_json,icono_equipado,creado_en')
           .eq('id', userId)
           .maybeSingle();
         if (!error && data) {
@@ -1155,10 +1162,12 @@ document.addEventListener('DOMContentLoaded', () => {
             apodo: data.apodo ?? usuario.apodo,
             puntos: data.puntos ?? usuario.puntos,
             rango: data.rango ?? usuario.rango,
+            genero: data.genero ?? usuario.genero,
             avatar_url: data.avatar_url ?? null,
             bio: data.bio ?? null,
             links_json: data.links_json ?? null,
-            icono: data.icono_equipado ?? ''
+            icono: data.icono_equipado ?? '',
+            creado_en: data.creado_en ?? usuario.creado_en ?? null
           });
         }
       }
@@ -1187,6 +1196,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const icono = usuario.icono ? ` <span class="mp-icono">${escapeHtml(usuario.icono)}</span>` : '';
     const linksHtml = renderLinks(usuario.links_json);
     const rangoInfo = window.datosRangoComunidad(usuario.rango, usuario.puntos);
+    const miembro = mesDesde(usuario.creado_en);
     const avatarPerfil = avatar
       ? `<img class="mp-avatar" src="${escapeAttr(avatar)}" alt="Avatar de ${escapeAttr(usuario.apodo || 'usuario')}">`
       : `<span class="mp-avatar-inicial" aria-hidden="true">${escapeHtml(inicial)}</span>`;
@@ -1201,6 +1211,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <span class="mp-puntos" title="Puntos totales">${Number(usuario.puntos || 0)} pts</span>
             ${icono}
           </div>
+          ${miembro ? `<p class="mp-desde">Miembro desde ${miembro}</p>` : ''}
           ${bio}
           ${linksHtml ? `<div class="mp-links">${linksHtml}</div>` : ''}
         </div>
@@ -1325,6 +1336,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderPerfilPublico(perfilDiv, perfil) {
     const rangoInfo = window.datosRangoComunidad(perfil.rango, perfil.puntos);
+    const miembro = mesDesde(perfil.creado_en);
     const avatar = window.avatarUsuarioComunidad(perfil);
     const inicial = inicialDe(perfil.apodo);
     const bio = perfil.bio ? `<p class="mp-bio">${escapeHtml(perfil.bio)}</p>` : '';
@@ -1347,6 +1359,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ${genero ? `<span class="mp-genero">${genero}</span>` : ''}
             ${icono}
           </div>
+          ${miembro ? `<p class="mp-desde">Miembro desde ${miembro}</p>` : ''}
           ${bio}
           ${linksHtml ? `<div class="mp-links">${linksHtml}</div>` : ''}
         </div>

@@ -721,6 +721,10 @@ body.light-mode .gallery-card:hover {
     font-size: 0.72rem;
 }
 
+.gallery-card-autor-link { cursor: pointer; }
+.gallery-card-autor-link:hover,
+.gallery-card-autor-link:focus-visible { text-decoration: underline; outline: none; }
+
 /* Badges floating on card image */
 .badge-tag {
     position: absolute;
@@ -4876,6 +4880,12 @@ body.modal-perfil-open { overflow: hidden; }
     color: var(--text-muted);
     font-size: 0.72rem;
     font-weight: 600;
+}
+.mp-desde {
+    margin: 2px 0 6px;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    opacity: 0.9;
 }
 .mp-logout {
     width: 100%;

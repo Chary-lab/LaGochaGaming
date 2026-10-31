@@ -3,6 +3,15 @@
 Formato basado en Keep a Changelog. Versionado SemVer (`MAJOR.MINOR.PATCH`).
 El historial anterior a 1.5.0 está en los commits `v1.4.x`.
 
+## [1.17.0] - 2026-10-30
+
+### Miembro desde y perfil desde la galería
+
+- Nueva columna `usuarios_comunidad.creado_en` con backfill desde el primer
+  chat/muro o la última actividad; lectura pública.
+- El perfil propio y el público muestran “Miembro desde <mes año>”.
+- El autor de cada foto de la galería abre su perfil público (clic o Enter).
+
 ## [1.16.0] - 2026-10-30
 
 ### Perfiles públicos y editor de redes minimalista
