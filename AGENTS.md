@@ -14,8 +14,8 @@ Guía operativa para agentes que trabajen en este repositorio. Leerla completa a
 ## 2. Reglas de stack
 
 - No introducir frameworks, bundlers ni dependencias npm de runtime sin autorización explícita.
-- No añadir jQuery. Bootstrap se carga solo por CSS; no usar su JS.
-- Las librerías externas se cargan por CDN con versión fijada (Supabase JS 2.118.0, Alpine 3.17.5, Font Awesome 6.4.0). No cambiar versiones a `latest`.
+- No añadir jQuery ni Bootstrap (retirado en 1.17.1): el sitio usa CSS propio y utilidades propias como `.nav-right` o `.visually-hidden`.
+- Las librerías externas se cargan por CDN con versión fijada (Supabase JS 2.118.0, Alpine 3.17.5, Font Awesome 6.6.0). No cambiar versiones a `latest`.
 - Mantener el estilo actual: variables CSS, clases semánticas, modo claro/oscuro y diseño responsive.
 - El sitio debe funcionar sin build. No crear pasos de compilación obligatorios.
 
@@ -138,7 +138,7 @@ Las migraciones SQL no se versionan en este repo: el historial vive en Supabase.
 - En cada release, actualizar el query de caché `?v=X.Y.Z` de `style.css` y `main.js` en los HTML (GitHub Pages cachea agresivamente).
 - Formato de commit: `vX.Y.Z - resumen corto` (seguir el historial existente).
 - No commitear ni pushear una versión inestable. Probar antes.
-- Versión de esta release: `1.17.0` (miembro desde y perfil desde la galería; sobre 1.16.0).
+- Versión de esta release: `1.17.1` (rendimiento: sin Bootstrap, defer y preconnect; sobre 1.17.0).
 
 ## 9. Pruebas antes de commitear
 

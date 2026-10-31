@@ -3,6 +3,18 @@
 Formato basado en Keep a Changelog. Versionado SemVer (`MAJOR.MINOR.PATCH`).
 El historial anterior a 1.5.0 está en los commits `v1.4.x`.
 
+## [1.17.1] - 2026-10-30
+
+### Rendimiento y limpieza
+
+- Retirado Bootstrap 6 alpha de las 5 páginas: solo aportaba utilidades de
+  navbar. Las utilidades propias viven en `style.css`.
+- Supabase JS con `defer` en comunidad, galería y sorteo (sin bloquear el
+  parser).
+- `preconnect` al proyecto Supabase y `decoding="async"` en las imágenes de
+  la galería.
+- El autor por defecto de la galería ya no abre un perfil inexistente.
+
 ## [1.17.0] - 2026-10-30
 
 ### Miembro desde y perfil desde la galería
