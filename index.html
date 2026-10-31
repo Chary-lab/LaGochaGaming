@@ -28,7 +28,7 @@
 
     <link rel="manifest" href="manifest.webmanifest">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=1.15.1">
+    <link rel="stylesheet" href="style.css?v=1.16.0">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;800;900&display=swap" rel="stylesheet">
@@ -232,7 +232,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0" defer></script>
 
-    <script src="main.js?v=1.15.1" defer></script>
+    <script src="main.js?v=1.16.0" defer></script>
     <script>
         // Navegación Inicio: scroll al top
         document.addEventListener('DOMContentLoaded', () => {
@@ -283,6 +283,20 @@
             autorSpan.textContent = msg.autor || '';
             const infoAutor = (msg.verificado && msg.rango) ? infoRangoMuro(msg.rango) : null;
             if (infoAutor) autorSpan.classList.add('rango-texto-' + infoAutor.clave);
+            if (msg.verificado && msg.autor && window.abrirPerfilUsuario) {
+                autorSpan.classList.add('muro-autor-link');
+                autorSpan.setAttribute('role', 'button');
+                autorSpan.setAttribute('tabindex', '0');
+                autorSpan.title = 'Ver perfil de ' + msg.autor;
+                const abrirPerfil = () => window.abrirPerfilUsuario?.(msg.autor);
+                autorSpan.addEventListener('click', abrirPerfil);
+                autorSpan.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        abrirPerfil();
+                    }
+                });
+            }
             autorSpan.appendChild(document.createRange().createContextualFragment(badgeRangoMuro(msg)));
             const actions = document.createElement('div');
             actions.className = 'muro-card-actions';

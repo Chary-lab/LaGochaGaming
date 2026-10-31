@@ -978,28 +978,18 @@ document.addEventListener('DOMContentLoaded', () => {
   let cargando = false;
 
   const LINK_LABELS = {
-    twitter: 'X/Twitter',
     instagram: 'Instagram',
-    youtube: 'YouTube',
-    tiktok: 'TikTok',
     discord: 'Discord',
-    kick: 'Kick',
-    twitch: 'Twitch',
-    website: 'Web'
+    tiktok: 'TikTok',
+    kick: 'Kick'
   };
   const LINK_ICONS = {
-    twitter: 'fab fa-twitter',
     instagram: 'fab fa-instagram',
-    youtube: 'fab fa-youtube',
-    tiktok: 'fab fa-tiktok',
     discord: 'fab fa-discord',
-    kick: 'fa-solid fa-k',
-    twitch: 'fab fa-twitch',
-    website: 'fa-solid fa-globe'
+    tiktok: 'fab fa-tiktok',
+    kick: 'fa-solid fa-k'
   };
   const LINK_KEYS = Object.keys(LINK_LABELS);
-  const LINK_PRIMARY = ['twitter', 'instagram', 'youtube', 'discord'];
-  const LINK_SECONDARY = ['tiktok', 'kick', 'twitch', 'website'];
   const ERRORES = {
     sin_sesion: 'Sesión expirada. Inicia sesión de nuevo.',
     baneado: 'Tu cuenta está suspendida.',
@@ -1054,6 +1044,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function abrir(vista) {
     crearModal();
+    modalEl.querySelector('.modal-perfil-tabs').hidden = false;
+    const titulo = modalEl.querySelector('#modal-perfil-titulo');
+    if (titulo) titulo.textContent = 'Mi perfil';
     modalEl.hidden = false;
     document.body.classList.add('modal-perfil-open');
     cambiarVista(vista === 'ajustes' ? 'ajustes' : 'perfil');
@@ -1061,6 +1054,41 @@ document.addEventListener('DOMContentLoaded', () => {
     window.activarTrampaFoco?.(modalEl, modalEl.querySelector('.modal-perfil-close'));
     cargarPerfil();
   }
+
+  // Perfil público de otro usuario: sin ajustes ni sesión.
+  window.abrirPerfilUsuario = async function abrirPerfilUsuario(apodo) {
+    if (!apodo || !window.supabase) return;
+    crearModal();
+    modalEl.hidden = false;
+    document.body.classList.add('modal-perfil-open');
+    const tabs = modalEl.querySelector('.modal-perfil-tabs');
+    if (tabs) tabs.hidden = true;
+    const titulo = modalEl.querySelector('#modal-perfil-titulo');
+    if (titulo) titulo.textContent = 'Perfil público';
+    const perfilDiv = modalEl.querySelector('#mp-perfil');
+    const ajustesDiv = modalEl.querySelector('#mp-ajustes');
+    ajustesDiv.innerHTML = '';
+    cambiarVista('perfil');
+    perfilDiv.innerHTML = '<p class="mp-cargando">Cargando perfil…</p>';
+    setNavExpanded(false);
+    window.activarTrampaFoco?.(modalEl, modalEl.querySelector('.modal-perfil-close'));
+    try {
+      const { data, error } = await window.supabase
+        .from('usuarios_comunidad')
+        .select('apodo,puntos,rango,genero,avatar_url,bio,links_json,icono_equipado')
+        .ilike('apodo', apodo)
+        .maybeSingle();
+      if (error) throw error;
+      if (!data) {
+        perfilDiv.innerHTML = '<p class="mp-vacio">No se encontró ese perfil.</p>';
+        return;
+      }
+      renderPerfilPublico(perfilDiv, data);
+    } catch (e) {
+      console.error('Error cargando perfil público:', e);
+      perfilDiv.innerHTML = '<p class="mp-error">No se pudo cargar el perfil.</p>';
+    }
+  };
 
   function cerrar() {
     if (!modalEl || modalEl.hidden) return;
@@ -1089,7 +1117,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderLinks(links) {
     if (!links || typeof links !== 'object') return '';
     const piezas = [];
-    [...LINK_PRIMARY, ...LINK_SECONDARY].forEach((clave) => {
+    [...LINK_KEYS].forEach((clave) => {
       const url = links[clave];
       if (typeof url !== 'string' || !/^https?:\/\//i.test(url)) return;
       piezas.push(`<a class="mp-link" href="${escapeAttr(url)}" target="_blank" rel="noopener noreferrer" title="${escapeAttr(LINK_LABELS[clave])}" aria-label="${escapeAttr(LINK_LABELS[clave])}"><i class="${LINK_ICONS[clave]}" aria-hidden="true"></i></a>`);
@@ -1184,8 +1212,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <span><i class="${LINK_ICONS[clave]}" aria-hidden="true"></i> ${LINK_LABELS[clave]}</span>
         <input type="url" data-link="${clave}" value="${escapeAttr(links[clave] || '')}" placeholder="https://..." autocomplete="url">
       </label>`;
-    const inputsPrimarios = LINK_PRIMARY.map(inputLink).join('');
-    const inputsSecundarios = LINK_SECONDARY.map(inputLink).join('');
+    const inputsRedes = LINK_KEYS.map(inputLink).join('');
 
     ajustesDiv.innerHTML = `
       <div class="mp-avatar-wrap">
@@ -1207,16 +1234,9 @@ document.addEventListener('DOMContentLoaded', () => {
         <textarea id="mp-bio" maxlength="160" placeholder="Cuéntanos algo sobre ti...">${escapeHtml(usuario.bio || '')}</textarea>
       </label>
       <fieldset class="mp-links-grid">
-        <legend>Enlaces principales</legend>
-        ${inputsPrimarios}
+        <legend>Redes</legend>
+        ${inputsRedes}
       </fieldset>
-      <details class="mp-links-more">
-        <summary>Más redes</summary>
-        <fieldset class="mp-links-grid">
-          <legend class="mp-sr-only">Otras redes</legend>
-          ${inputsSecundarios}
-        </fieldset>
-      </details>
       <p id="mp-error" class="mp-error" role="alert" hidden></p>
       <div class="mp-actions">
         <button type="button" id="mp-cancelar" class="btn-primary btn-muted">Cancelar</button>
@@ -1301,6 +1321,36 @@ document.addEventListener('DOMContentLoaded', () => {
     ajustesDiv.querySelector('#mp-cancelar')?.addEventListener('click', () => cambiarVista('perfil'));
     ajustesDiv.querySelector('#mp-cerrar-sesion')?.addEventListener('click', () => window.cerrarSesion?.());
     ajustesDiv.querySelector('#mp-guardar')?.addEventListener('click', () => guardarPerfil(ajustesDiv));
+  }
+
+  function renderPerfilPublico(perfilDiv, perfil) {
+    const rangoInfo = window.datosRangoComunidad(perfil.rango, perfil.puntos);
+    const avatar = window.avatarUsuarioComunidad(perfil);
+    const inicial = inicialDe(perfil.apodo);
+    const bio = perfil.bio ? `<p class="mp-bio">${escapeHtml(perfil.bio)}</p>` : '';
+    const linksHtml = renderLinks(perfil.links_json);
+    const icono = perfil.icono_equipado ? ` <span class="mp-icono">${escapeHtml(perfil.icono_equipado)}</span>` : '';
+    const generos = { femenino: 'Femenino', masculino: 'Masculino' };
+    const genero = generos[perfil.genero] || '';
+    const avatarPerfil = avatar
+      ? `<img class="mp-avatar" src="${escapeAttr(avatar)}" alt="Avatar de ${escapeAttr(perfil.apodo)}">`
+      : `<span class="mp-avatar-inicial" aria-hidden="true">${escapeHtml(inicial)}</span>`;
+
+    perfilDiv.innerHTML = `
+      <div class="mp-profile-head">
+        <div class="mp-avatar-wrap">${avatarPerfil}</div>
+        <div class="mp-profile-info">
+          <h4 class="mp-apodo rango-texto-${rangoInfo.clave}">${escapeHtml(perfil.apodo)}</h4>
+          <div class="mp-badges">
+            <span class="rango-badge rango-${rangoInfo.clave}" title="Rango">${escapeHtml(rangoInfo.emoji + ' ' + rangoInfo.nombre)}</span>
+            <span class="mp-puntos" title="Puntos">${Number(perfil.puntos || 0)} pts</span>
+            ${genero ? `<span class="mp-genero">${genero}</span>` : ''}
+            ${icono}
+          </div>
+          ${bio}
+          ${linksHtml ? `<div class="mp-links">${linksHtml}</div>` : ''}
+        </div>
+      </div>`;
   }
 
   function mostrarError(ajustesDiv, mensaje) {

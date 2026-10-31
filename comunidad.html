@@ -28,7 +28,7 @@
     <link rel="icon" type="image/png" sizes="512x512" href="img/android-chrome-512x512.png">
     <link rel="manifest" href="manifest.webmanifest">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=1.15.1">
+    <link rel="stylesheet" href="style.css?v=1.16.0">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;800;900&display=swap" rel="stylesheet">
@@ -94,7 +94,10 @@
                                         <span class="leaderboard-avatar-inicial" x-text="user.inicial"></span>
                                     </template>
                                 </span>
-                                <span class="leaderboard-nombre" :class="'rango-texto-' + user.rangoClave" x-text="user.medalla + ' ' + user.apodo + (user.icono ? ' ' + user.icono : '')"></span>
+                                <button type="button" class="leaderboard-nombre leaderboard-nombre-btn"
+                                        :class="'rango-texto-' + user.rangoClave"
+                                        @click.stop="window.abrirPerfilUsuario?.(user.apodo)"
+                                        x-text="user.medalla + ' ' + user.apodo + (user.icono ? ' ' + user.icono : '')"></button>
                                 <span class="rango-badge leaderboard-badge" :class="'rango-' + user.rangoClave">
                                     <span x-text="user.rangoEmoji"></span><span x-text="user.rangoNombre"></span>
                                 </span>
@@ -123,7 +126,12 @@
                 <template x-for="msg in $store.chat.mensajes" :key="msg.id">
                     <div class="chat-msg-container" :data-msgid="msg.id" @mouseleave="window.ocultarTooltipReaccion?.()">
                         <div class="chat-msg-header">
-                            <span class="chat-msg-autor" :class="$store.rangosChat.clase(msg.autor)" x-text="msg.autor || 'Anónimo'"></span>
+                            <span class="chat-msg-autor chat-msg-autor-link" :class="$store.rangosChat.clase(msg.autor)"
+                                  role="button" tabindex="0"
+                                  @click.stop="window.abrirPerfilUsuario?.(msg.autor)"
+                                  @keydown.enter.prevent="window.abrirPerfilUsuario?.(msg.autor)"
+                                  @keydown.space.prevent="window.abrirPerfilUsuario?.(msg.autor)"
+                                  x-text="msg.autor || 'Anónimo'"></span>
                             <span class="chat-msg-meta">
                                  <span class="chat-msg-fecha" x-text="msg.fecha"></span>
                              </span>
@@ -254,12 +262,6 @@
                     <div id="aviso-genero" class="aviso-genero" hidden>
                         <span><i class="fa-solid fa-circle-info" aria-hidden="true"></i> Elige tu género en Ajustes para asignar tu avatar.</span>
                         <button type="button" id="btn-aviso-genero" class="btn-primary btn-muted">Abrir Ajustes</button>
-                    </div>
-
-                    <div class="user-profile-acciones">
-                        <button type="button" id="btn-abrir-ajustes" class="btn-primary btn-muted">
-                            <i class="fa-solid fa-sliders"></i> Editar perfil y ajustes
-                        </button>
                     </div>
                 </div>
             </div>
@@ -400,7 +402,7 @@
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
 
-    <script src="main.js?v=1.15.1" defer></script>
+    <script src="main.js?v=1.16.0" defer></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.17.5/dist/cdn.min.js"
             integrity="sha384-FYLKjwG3aohNhNZoVG8sY/5ntunm+MqylL90Q+rT3OM7AwV9/BKFjk/RjoIpIgsI"
             crossorigin="anonymous"></script>
@@ -2084,8 +2086,18 @@ if (chatForm) {
                     userIcon.className = 'user-icon';
                     userIcon.textContent = initial;
                     const userName = document.createElement('div');
-                    userName.className = 'user-name';
+                    userName.className = 'user-name user-name-click';
                     userName.textContent = nick;
+                    userName.setAttribute('role', 'button');
+                    userName.setAttribute('tabindex', '0');
+                    userName.title = 'Ver perfil de ' + nick;
+                    userName.addEventListener('click', () => window.abrirPerfilUsuario?.(nick));
+                    userName.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            window.abrirPerfilUsuario?.(nick);
+                        }
+                    });
                     if (rangosMap[datos.nickname] !== null && rangosMap[datos.nickname] !== undefined) {
                         userName.classList.add(claseTextoRango);
                     }
@@ -2541,7 +2553,6 @@ if (chatForm) {
         }
 
         document.getElementById('btn-editar-perfil')?.addEventListener('click', abrirAjustesPerfil);
-        document.getElementById('btn-abrir-ajustes')?.addEventListener('click', abrirAjustesPerfil);
         document.getElementById('btn-aviso-genero')?.addEventListener('click', abrirAjustesPerfil);
 
         // Navegacion por teclado entre tabs (patron WAI-ARIA de tabs).

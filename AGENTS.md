@@ -98,7 +98,7 @@ Las migraciones SQL no se versionan en este repo: el historial vive en Supabase.
 - Sorteo: nombre único sin distinguir mayúsculas (`lower(username)`), límite de 500 participantes, rate limit por IP y ganador decidido SOLO en el servidor. No insertar ganadores desde el cliente.
 - Galería: subida anónima permitida por diseño (bucket `fotos-galeria`, prefijo `gallery/`, 5MB, JPG/PNG/GIF/WEBP/AVIF). Si la RPC falla después de subir, puede quedar un archivo huérfano; no prometer limpieza automática.
 - Avatares: bucket público `avatares-comunidad` (500KB), subida anónima solo bajo `avatar/`, sin update; borrado solo admin. Los avatares beta locales viven en `/img/avatars/avatar-male.webp` y `/img/avatars/avatar-female.webp` y se asignan por género cuando no hay avatar propio.
-- Perfil: `bio` máximo 160, `links_json` solo claves whitelist y URLs `http/https` máximo 300; `avatar_url` acepta los avatares beta locales, el bucket propio o un avatar comprado en la tienda. `genero` es `masculino`/`femenino`/`no_definido`; el registro nuevo exige masculino o femenino. El editor vive solo en el modal global de `main.js`.
+- Perfil: `bio` máximo 160, `links_json` solo claves `instagram`, `discord`, `tiktok` y `kick` con URLs `http/https` máximo 300 (la BD aún acepta las antiguas, la UI ya no las edita); `avatar_url` acepta los avatares beta locales, el bucket propio o un avatar comprado en la tienda. `genero` es `masculino`/`femenino`/`no_definido`, tiene lectura pública y el registro nuevo exige masculino o femenino. El editor vive solo en el modal global de `main.js`; el perfil público se abre con `window.abrirPerfilUsuario(apodo)`.
 - Sesión de comunidad: `comunidad_session_usuario` guarda el objeto completo (id, apodo, puntos, rango, icono, género, avatar, bio, enlaces) y es la fuente de verdad del navbar/modal; limpiarlo junto con el token al cerrar o invalidar sesión.
 - Tienda: el canje descuenta puntos y stock en una transacción con locks; los iconos son uno por usuario (`icono_equipado`) y los avatares se equipan al canjear. Usar las columnas reales de `tienda_canjes` (`nombre`, `costo_puntos`, `entregado_at`); no existe `metadata` ni `puntos_gastados`. No insertar canjes ni premios desde el cliente.
 - Baneo: `baneado_hasta` bloquea login, chat, muro, puntos, likes, reacciones, galería, tienda y perfil. Al banear se borran las sesiones de comunidad. `shadowban` solo oculta los mensajes de chat a terceros (no es un límite de seguridad fuerte).
@@ -138,7 +138,7 @@ Las migraciones SQL no se versionan en este repo: el historial vive en Supabase.
 - En cada release, actualizar el query de caché `?v=X.Y.Z` de `style.css` y `main.js` en los HTML (GitHub Pages cachea agresivamente).
 - Formato de commit: `vX.Y.Z - resumen corto` (seguir el historial existente).
 - No commitear ni pushear una versión inestable. Probar antes.
-- Versión de esta release: `1.15.1` (perfil, rangos y navbar; sobre 1.15.0).
+- Versión de esta release: `1.16.0` (perfiles públicos y redes minimalistas; sobre 1.15.1).
 
 ## 9. Pruebas antes de commitear
 

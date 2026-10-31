@@ -3,6 +3,20 @@
 Formato basado en Keep a Changelog. Versionado SemVer (`MAJOR.MINOR.PATCH`).
 El historial anterior a 1.5.0 está en los commits `v1.4.x`.
 
+## [1.16.0] - 2026-10-30
+
+### Perfiles públicos y editor de redes minimalista
+
+- El editor de enlaces queda solo con Instagram, Discord, TikTok y Kick; fuera
+  X/Twitter, YouTube, Twitch y Web.
+- Perfil propio más limpio: chips de rango, puntos y género; sin botones
+  duplicados.
+- Nuevo perfil público de otros usuarios desde el ranking, usuarios en línea,
+  el chat y el muro: avatar, rango, puntos, género, bio y redes. Sin ajustes.
+- `genero` pasa a ser columna pública de solo lectura.
+- Eliminado el botón inferior “Editar perfil y ajustes” del panel de Comunidad;
+  queda el lápiz del panel y el acceso desde el navbar.
+
 ## [1.15.1] - 2026-10-30
 
 ### Perfil, rangos y navbar
