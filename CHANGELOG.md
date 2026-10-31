@@ -3,6 +3,21 @@
 Formato basado en Keep a Changelog. Versionado SemVer (`MAJOR.MINOR.PATCH`).
 El historial anterior a 1.5.0 está en los commits `v1.4.x`.
 
+## [1.14.0] - 2026-10-30
+
+### Lightbox de Instagram y TikTok
+
+- Las tarjetas de los feeds abren un reproductor superpuesto en la misma
+  página, sin pestaña nueva.
+- TikTok usa el player oficial `player/v1/<id>`; los reels de Instagram el
+  embed `/p/<shortcode>/embed/`; las fotos se abren en grande.
+- Cierre con X, Esc o clic en el fondo. Al cerrar se destruye el iframe (corta
+  el audio), se libera el scroll y el foco vuelve a la tarjeta.
+- Botón “Abrir en TikTok/Instagram” dentro del modal como respaldo si el embed
+  pide login o está bloqueado.
+- El @usuario aparece junto al título de cada feed, enlazado al perfil con
+  subrayado animado.
+
 ## [1.13.2] - 2026-10-30
 
 ### Guía de trabajo

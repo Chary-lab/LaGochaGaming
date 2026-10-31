@@ -28,7 +28,7 @@
 
     <link rel="manifest" href="manifest.webmanifest">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=1.13.2">
+    <link rel="stylesheet" href="style.css?v=1.14.0">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;800;900&display=swap" rel="stylesheet">
@@ -143,24 +143,24 @@
         <h2>📱 Mi Feed Social</h2>
         <div class="social-grid">
             <div class="social-column">
-                <h3>📸 Instagram</h3>
+                <h3 class="social-titulo">
+                    <span>📸 Instagram</span>
+                    <a class="social-handle" href="https://www.instagram.com/oscurostefany/" target="_blank" rel="noopener noreferrer" aria-label="Abrir el perfil de Instagram de oscurostefany">@oscurostefany</a>
+                </h3>
                 <div id="ig-feed" class="ig-feed" aria-live="polite">
                     <div class="ig-feed-cargando">Cargando publicaciones…</div>
                 </div>
-                <p class="social-feed-nota">
-                    Se actualiza solo con las últimas publicaciones.
-                    <a href="https://www.instagram.com/oscurostefany/" target="_blank" rel="noopener noreferrer">Ver perfil en Instagram</a>
-                </p>
+                <p class="social-feed-nota">Se actualiza solo con las últimas publicaciones.</p>
             </div>
             <div class="social-column tiktok-col">
-                <h3>🎵 TikTok Shorts</h3>
+                <h3 class="social-titulo">
+                    <span>🎵 TikTok Shorts</span>
+                    <a class="social-handle" href="https://www.tiktok.com/@lagochagaming11" target="_blank" rel="noopener noreferrer" aria-label="Abrir el perfil de TikTok de lagochagaming11">@lagochagaming11</a>
+                </h3>
                 <div id="tiktok-feed" class="ig-feed tt-feed" aria-live="polite">
                     <div class="ig-feed-cargando">Cargando videos…</div>
                 </div>
-                <p class="social-feed-nota">
-                    Se actualiza solo con los últimos videos publicados.
-                    <a href="https://www.tiktok.com/@lagochagaming11" target="_blank" rel="noopener noreferrer">Ver perfil en TikTok</a>
-                </p>
+                <p class="social-feed-nota">Se actualiza solo con los últimos videos publicados.</p>
             </div>
         </div>
     </section>
@@ -199,6 +199,21 @@
         </div>
     </section>
 
+    <!-- MODAL DE VIDEOS (Instagram / TikTok) -->
+    <div id="media-modal" class="media-modal" hidden>
+        <div class="media-modal-backdrop" data-media-cerrar></div>
+        <div class="media-modal-card" role="dialog" aria-modal="true" aria-labelledby="media-modal-titulo">
+            <button type="button" class="media-modal-cerrar" data-media-cerrar aria-label="Cerrar reproductor">
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            </button>
+            <div class="media-modal-marco" id="media-modal-marco"></div>
+            <div class="media-modal-pie">
+                <span class="media-modal-titulo" id="media-modal-titulo"></span>
+                <a class="media-modal-enlace" id="media-modal-enlace" href="#" target="_blank" rel="noopener noreferrer">Abrir</a>
+            </div>
+        </div>
+    </div>
+
     <!-- FOOTER -->
 </div>
 
@@ -217,7 +232,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0" defer></script>
 
-    <script src="main.js?v=1.13.2" defer></script>
+    <script src="main.js?v=1.14.0" defer></script>
     <script>
         // Navegación Inicio: scroll al top
         document.addEventListener('DOMContentLoaded', () => {
@@ -364,6 +379,11 @@
                     enlace.rel = 'noopener noreferrer';
                     const desc = String(post.texto || '').replace(/\s+/g, ' ').trim().slice(0, 90);
                     enlace.setAttribute('aria-label', desc ? 'Publicación de Instagram: ' + desc : 'Abrir publicación de Instagram');
+                    enlace.dataset.mediaTipo = post.esVideo ? 'ig-video' : 'ig-foto';
+                    enlace.dataset.mediaId = post.shortcode || '';
+                    enlace.dataset.mediaUrl = post.url || '';
+                    enlace.dataset.mediaTitulo = desc;
+                    if (!post.esVideo) enlace.dataset.mediaImagen = IG_IMG_URL + encodeURIComponent(post.imagen);
 
                     const img = document.createElement('img');
                     img.src = IG_IMG_URL + encodeURIComponent(post.imagen);
@@ -420,6 +440,11 @@
                     enlace.rel = 'noopener noreferrer';
                     const desc = String(video.titulo || '').replace(/\s+/g, ' ').trim().slice(0, 90);
                     enlace.setAttribute('aria-label', desc ? 'Video de TikTok: ' + desc : 'Abrir video de TikTok');
+                    enlace.dataset.mediaTipo = 'tiktok';
+                    enlace.dataset.mediaId = video.id || '';
+                    enlace.dataset.mediaUrl = video.url || '';
+                    enlace.dataset.mediaTitulo = desc;
+                    enlace.dataset.mediaImagen = TT_IMG_URL + encodeURIComponent(video.portada);
 
                     const img = document.createElement('img');
                     img.src = TT_IMG_URL + encodeURIComponent(video.portada);
@@ -456,6 +481,88 @@
             }
         }
 
+        // === MODAL DE VIDEOS (Instagram / TikTok) ===
+        let mediaFocoAnterior = null;
+
+        function abrirMediaModal(datos) {
+            const modal = document.getElementById('media-modal');
+            const marco = document.getElementById('media-modal-marco');
+            const tituloEl = document.getElementById('media-modal-titulo');
+            const enlace = document.getElementById('media-modal-enlace');
+            if (!modal || !marco || !enlace) return;
+
+            const tipo = datos.mediaTipo || 'ig-foto';
+            const titulo = datos.mediaTitulo || '';
+            marco.textContent = '';
+            marco.className = 'media-modal-marco';
+
+            if (tipo === 'tiktok') {
+                marco.classList.add('video-tiktok');
+                const iframe = document.createElement('iframe');
+                iframe.src = 'https://www.tiktok.com/player/v1/' + encodeURIComponent(datos.mediaId) + '?autoplay=1';
+                iframe.title = titulo || 'Video de TikTok';
+                iframe.setAttribute('allow', 'autoplay; encrypted-media; fullscreen; picture-in-picture');
+                iframe.setAttribute('allowfullscreen', '');
+                marco.appendChild(iframe);
+                enlace.href = datos.mediaUrl || 'https://www.tiktok.com/@lagochagaming11';
+                enlace.textContent = 'Abrir en TikTok';
+            } else if (tipo === 'ig-video') {
+                marco.classList.add('video-instagram');
+                const iframe = document.createElement('iframe');
+                iframe.src = 'https://www.instagram.com/p/' + encodeURIComponent(datos.mediaId) + '/embed/';
+                iframe.title = titulo || 'Reel de Instagram';
+                iframe.setAttribute('allow', 'autoplay; encrypted-media; fullscreen; picture-in-picture');
+                iframe.setAttribute('allowfullscreen', '');
+                marco.appendChild(iframe);
+                enlace.href = datos.mediaUrl || 'https://www.instagram.com/oscurostefany/';
+                enlace.textContent = 'Abrir en Instagram';
+            } else {
+                marco.classList.add('foto');
+                const img = document.createElement('img');
+                img.src = datos.mediaImagen || '';
+                img.alt = titulo || 'Publicación de Instagram';
+                marco.appendChild(img);
+                enlace.href = datos.mediaUrl || 'https://www.instagram.com/oscurostefany/';
+                enlace.textContent = 'Abrir en Instagram';
+            }
+
+            tituloEl.textContent = titulo;
+            mediaFocoAnterior = document.activeElement;
+            modal.hidden = false;
+            document.body.classList.add('media-modal-open');
+            modal.querySelector('.media-modal-cerrar')?.focus();
+        }
+
+        function cerrarMediaModal() {
+            const modal = document.getElementById('media-modal');
+            const marco = document.getElementById('media-modal-marco');
+            if (!modal || modal.hidden) return;
+            modal.hidden = true;
+            if (marco) {
+                marco.querySelectorAll('iframe').forEach((f) => { f.src = 'about:blank'; });
+                marco.textContent = '';
+            }
+            document.body.classList.remove('media-modal-open');
+            if (mediaFocoAnterior && typeof mediaFocoAnterior.focus === 'function') mediaFocoAnterior.focus();
+            mediaFocoAnterior = null;
+        }
+
+        function trampaFocoMedia(e) {
+            const modal = document.getElementById('media-modal');
+            if (!modal || modal.hidden || e.key !== 'Tab') return;
+            const focos = modal.querySelectorAll('button, [href], iframe, [tabindex]:not([tabindex="-1"])');
+            if (!focos.length) return;
+            const primero = focos[0];
+            const ultimo = focos[focos.length - 1];
+            if (e.shiftKey && document.activeElement === primero) {
+                e.preventDefault();
+                ultimo.focus();
+            } else if (!e.shiftKey && document.activeElement === ultimo) {
+                e.preventDefault();
+                primero.focus();
+            }
+        }
+
 document.addEventListener('DOMContentLoaded', async () => {
     if (window.supabase) {
         try {
@@ -475,6 +582,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         iniciarRealtimeMuro();
         cargarFeedInstagram();
         cargarFeedTikTok();
+
+        // Lightbox de videos/fotos de los feeds sociales.
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('[data-media-cerrar]')) {
+                e.preventDefault();
+                cerrarMediaModal();
+                return;
+            }
+            const tarjeta = e.target.closest('.ig-card[data-media-tipo]');
+            if (!tarjeta) return;
+            if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+            e.preventDefault();
+            abrirMediaModal(tarjeta.dataset);
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') cerrarMediaModal();
+            trampaFocoMedia(e);
+        });
         if (window.iniciarRealtimeMuroReacciones) window.iniciarRealtimeMuroReacciones();
 
         document.getElementById('muro-form').addEventListener('submit', (e) => {
