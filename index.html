@@ -27,7 +27,7 @@
     <meta name="twitter:image" content="https://lagochagaming.com/img/3.jpg">
 
     <link rel="manifest" href="manifest.webmanifest">
-    <link rel="stylesheet" href="style.css?v=1.18.0">
+    <link rel="stylesheet" href="style.css?v=1.19.0">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;800;900&display=swap" rel="stylesheet">
@@ -48,10 +48,13 @@
 
     <!-- ALERTA VISUAL DE STREAM EN VIVO -->
     <header id="global-header">
-        <nav class="navbar navbar-expand-lg">
+        <nav class="navbar navbar-expand-lg" x-data="{ }" x-on:resize.window="if (window.innerWidth >= 1101) $store.ui.menuAbierto = false">
             <div class="logo navbar-brand">LAGOCHA<span>GAMING</span></div>
-            <button type="button" class="mobile-menu-toggle-btn navbar-toggler" aria-label="Abrir menú"><i class="fa-solid fa-bars"></i></button>
-            <div class="nav-links navbar-nav">
+            <button type="button" class="mobile-menu-toggle-btn navbar-toggler" aria-label="Abrir menú"
+                    x-bind:aria-expanded="$store.ui.menuAbierto"
+                    x-bind:aria-label="$store.ui.menuAbierto ? 'Cerrar menú' : 'Abrir menú'"
+                    x-on:click="$store.ui.menuAbierto = !$store.ui.menuAbierto"><i class="fa-solid fa-bars"></i></button>
+            <div class="nav-links navbar-nav" x-bind:class="{ 'mobile-active': $store.ui.menuAbierto }">
                 <a href="#top" class="nav-link nav-active" aria-current="page" id="nav-inicio">Inicio</a>
                 <a href="#stream" class="nav-link">Directo</a>
                 <a href="#clips" class="nav-link">Clips</a>
@@ -247,7 +250,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0" defer></script>
 
-    <script src="main.js?v=1.18.0" defer></script>
+    <script src="main.js?v=1.19.0" defer></script>
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/focus@3.17.5/dist/cdn.min.js" crossorigin="anonymous"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.17.5/dist/cdn.min.js" crossorigin="anonymous"></script>
     <script>

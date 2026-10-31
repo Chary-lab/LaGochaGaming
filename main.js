@@ -720,9 +720,16 @@ document.addEventListener('keydown', (evento) => {
 
 // === MENÚ MÓVIL ===
 
+// Estado global de UI (menú móvil) para Alpine.
+document.addEventListener('alpine:init', () => {
+    window.Alpine.store('ui', { menuAbierto: false });
+});
+
 window.cerrarMenuMovil = function cerrarMenuMovil(devolverFoco = false) {
     const btn = document.querySelector('.mobile-menu-toggle-btn');
     const menu = document.querySelector('.nav-links');
+    const ui = window.Alpine?.store('ui');
+    if (ui) ui.menuAbierto = false;
     if (!btn || !menu) return;
     menu.classList.remove('mobile-active');
     btn.setAttribute('aria-expanded', 'false');
@@ -741,12 +748,6 @@ window.inicializarMenuMovil = function inicializarMenuMovil() {
     btn.setAttribute('aria-label', 'Abrir menú');
 
     btn.onclick = null;
-    btn.onclick = () => {
-        const abierto = !navLinks.classList.contains('mobile-active');
-        navLinks.classList.toggle('mobile-active', abierto);
-        btn.setAttribute('aria-expanded', abierto ? 'true' : 'false');
-        btn.setAttribute('aria-label', abierto ? 'Cerrar menú' : 'Abrir menú');
-    };
 
     if (window.escapeMenuMovilRegistrado) return;
     window.escapeMenuMovilRegistrado = true;
@@ -969,13 +970,9 @@ document.addEventListener('DOMContentLoaded', () => {
     try { iniciarPuntosGlobal(); } catch (e) { console.error('iniciarPuntosGlobal:', e); }
 });
 
-// === MODAL DE PERFIL GLOBAL (beta 1.7.2) ===
+// === MODAL DE PERFIL GLOBAL (Alpine) ===
 (function () {
   let modalEl = null;
-  let usuario = {};
-  let avatares = [];
-  let avatarSeleccionado; // undefined = no cambiar; '' = quitar; url = nuevo
-  let cargando = false;
 
   const LINK_LABELS = {
     instagram: 'Instagram',
@@ -1000,116 +997,6 @@ document.addEventListener('DOMContentLoaded', () => {
     error_interno: 'No se pudo guardar. Inténtalo de nuevo.'
   };
 
-  function escapeHtml(s) { return window.escapeHtml(String(s ?? '')); }
-  function escapeAttr(s) { return window.escapeAttr(String(s ?? '')); }
-
-  function crearModal() {
-    if (modalEl) return modalEl;
-    modalEl = document.createElement('div');
-    modalEl.id = 'modal-perfil';
-    modalEl.className = 'modal-perfil';
-    modalEl.setAttribute('role', 'dialog');
-    modalEl.setAttribute('aria-modal', 'true');
-    modalEl.setAttribute('aria-labelledby', 'modal-perfil-titulo');
-    modalEl.hidden = true;
-    modalEl.innerHTML = `
-      <div class="modal-perfil-backdrop" data-close></div>
-      <div class="modal-perfil-card" role="document">
-        <button type="button" class="modal-perfil-close" data-close aria-label="Cerrar">&times;</button>
-        <h3 id="modal-perfil-titulo">Mi perfil</h3>
-        <nav class="modal-perfil-tabs" role="tablist" aria-label="Perfil y ajustes">
-          <button type="button" role="tab" data-view="perfil" class="active" aria-selected="true">Perfil</button>
-          <button type="button" role="tab" data-view="ajustes" aria-selected="false">Ajustes</button>
-        </nav>
-        <div class="modal-perfil-body" id="mp-perfil" role="tabpanel"></div>
-        <div class="modal-perfil-body" id="mp-ajustes" role="tabpanel" hidden></div>
-      </div>`;
-    document.body.appendChild(modalEl);
-    modalEl.addEventListener('click', (e) => {
-      if (e.target.hasAttribute('data-close')) cerrar();
-      const btn = e.target.closest('[data-view]');
-      if (btn) cambiarVista(btn.getAttribute('data-view'));
-    });
-    document.addEventListener('keydown', (e) => {
-      if (!modalEl || modalEl.hidden) return;
-      if (e.key === 'Escape') { e.preventDefault(); cerrar(); }
-    });
-    return modalEl;
-  }
-
-  function setNavExpanded(abierto) {
-    const btn = document.querySelector('#nav-user-info .nav-user-btn');
-    if (btn) btn.setAttribute('aria-expanded', abierto ? 'true' : 'false');
-  }
-
-  function abrir(vista) {
-    crearModal();
-    modalEl.querySelector('.modal-perfil-tabs').hidden = false;
-    const titulo = modalEl.querySelector('#modal-perfil-titulo');
-    if (titulo) titulo.textContent = 'Mi perfil';
-    modalEl.hidden = false;
-    document.body.classList.add('modal-perfil-open');
-    cambiarVista(vista === 'ajustes' ? 'ajustes' : 'perfil');
-    setNavExpanded(true);
-    window.activarTrampaFoco?.(modalEl, modalEl.querySelector('.modal-perfil-close'));
-    cargarPerfil();
-  }
-
-  // Perfil público de otro usuario: sin ajustes ni sesión.
-  window.abrirPerfilUsuario = async function abrirPerfilUsuario(apodo) {
-    if (!apodo || !window.supabase) return;
-    crearModal();
-    modalEl.hidden = false;
-    document.body.classList.add('modal-perfil-open');
-    const tabs = modalEl.querySelector('.modal-perfil-tabs');
-    if (tabs) tabs.hidden = true;
-    const titulo = modalEl.querySelector('#modal-perfil-titulo');
-    if (titulo) titulo.textContent = 'Perfil público';
-    const perfilDiv = modalEl.querySelector('#mp-perfil');
-    const ajustesDiv = modalEl.querySelector('#mp-ajustes');
-    ajustesDiv.innerHTML = '';
-    cambiarVista('perfil');
-    perfilDiv.innerHTML = '<p class="mp-cargando">Cargando perfil…</p>';
-    setNavExpanded(false);
-    window.activarTrampaFoco?.(modalEl, modalEl.querySelector('.modal-perfil-close'));
-    try {
-      const { data, error } = await window.supabase
-        .from('usuarios_comunidad')
-        .select('apodo,puntos,rango,genero,avatar_url,bio,links_json,icono_equipado,creado_en')
-        .ilike('apodo', apodo)
-        .maybeSingle();
-      if (error) throw error;
-      if (!data) {
-        perfilDiv.innerHTML = '<p class="mp-vacio">No se encontró ese perfil.</p>';
-        return;
-      }
-      renderPerfilPublico(perfilDiv, data);
-    } catch (e) {
-      console.error('Error cargando perfil público:', e);
-      perfilDiv.innerHTML = '<p class="mp-error">No se pudo cargar el perfil.</p>';
-    }
-  };
-
-  function cerrar() {
-    if (!modalEl || modalEl.hidden) return;
-    modalEl.hidden = true;
-    document.body.classList.remove('modal-perfil-open');
-    setNavExpanded(false);
-    window.desactivarTrampaFoco?.();
-  }
-
-  function cambiarVista(v) {
-    if (!modalEl) return;
-    const tabs = modalEl.querySelectorAll('[data-view]');
-    tabs.forEach((t) => {
-      const activa = t.getAttribute('data-view') === v;
-      t.classList.toggle('active', activa);
-      t.setAttribute('aria-selected', activa ? 'true' : 'false');
-    });
-    modalEl.querySelector('#mp-perfil').hidden = v !== 'perfil';
-    modalEl.querySelector('#mp-ajustes').hidden = v !== 'ajustes';
-  }
-
   function inicialDe(apodo) {
     return String(apodo || '?').trim().charAt(0).toUpperCase() || '?';
   }
@@ -1121,331 +1008,383 @@ document.addEventListener('DOMContentLoaded', () => {
     return fecha.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
   }
 
-  function renderLinks(links) {
-    if (!links || typeof links !== 'object') return '';
-    const piezas = [];
-    [...LINK_KEYS].forEach((clave) => {
-      const url = links[clave];
-      if (typeof url !== 'string' || !/^https?:\/\//i.test(url)) return;
-      piezas.push(`<a class="mp-link" href="${escapeAttr(url)}" target="_blank" rel="noopener noreferrer" title="${escapeAttr(LINK_LABELS[clave])}" aria-label="${escapeAttr(LINK_LABELS[clave])}"><i class="${LINK_ICONS[clave]}" aria-hidden="true"></i></a>`);
-    });
-    return piezas.join('');
+  function setNavExpanded(abierto) {
+    const btn = document.querySelector('#nav-user-info .nav-user-btn');
+    if (btn) btn.setAttribute('aria-expanded', abierto ? 'true' : 'false');
   }
 
-  async function cargarPerfil() {
-    if (!modalEl) return;
-    const token = localStorage.getItem('comunidad_session_token');
-    const perfilDiv = modalEl.querySelector('#mp-perfil');
-    const ajustesDiv = modalEl.querySelector('#mp-ajustes');
-    if (!token || !window.supabase) {
-      perfilDiv.innerHTML = '<p class="mp-vacio">Inicia sesión en la Comunidad para ver tu perfil.</p>';
-      ajustesDiv.innerHTML = '';
-      return;
-    }
-    if (cargando) return;
-    cargando = true;
-    perfilDiv.innerHTML = '<p class="mp-cargando">Cargando perfil…</p>';
-    ajustesDiv.innerHTML = '';
+  function crearModal() {
+    if (modalEl) return modalEl;
+    modalEl = document.createElement('div');
+    modalEl.id = 'modal-perfil';
+    modalEl.className = 'modal-perfil';
+    modalEl.setAttribute('role', 'dialog');
+    modalEl.setAttribute('aria-modal', 'true');
+    modalEl.setAttribute('aria-labelledby', 'modal-perfil-titulo');
+    modalEl.hidden = true;
+    modalEl.setAttribute('x-data', '{ }');
+    modalEl.setAttribute('x-cloak', '');
+    modalEl.setAttribute('x-bind:hidden', '!$store.perfil.abierto');
+    modalEl.setAttribute('x-on:keydown.escape.window', '$store.perfil.cerrar()');
+    modalEl.innerHTML = `
+      <div class="modal-perfil-backdrop" x-on:click="$store.perfil.cerrar()"></div>
+      <div class="modal-perfil-card" role="document" x-trap.noscroll="$store.perfil.abierto">
+        <button type="button" class="modal-perfil-close" x-on:click="$store.perfil.cerrar()" aria-label="Cerrar">&times;</button>
+        <h3 id="modal-perfil-titulo" x-text="$store.perfil.titulo">Mi perfil</h3>
+        <nav class="modal-perfil-tabs" role="tablist" aria-label="Perfil y ajustes" x-bind:hidden="$store.perfil.publico">
+          <button type="button" role="tab" x-bind:class="{ active: $store.perfil.vista === 'perfil' }"
+                  x-bind:aria-selected="$store.perfil.vista === 'perfil'"
+                  x-on:click="$store.perfil.vista = 'perfil'">Perfil</button>
+          <button type="button" role="tab" x-bind:class="{ active: $store.perfil.vista === 'ajustes' }"
+                  x-bind:aria-selected="$store.perfil.vista === 'ajustes'"
+                  x-on:click="$store.perfil.vista = 'ajustes'">Ajustes</button>
+        </nav>
+        <div class="modal-perfil-body" role="tabpanel" aria-label="Perfil"
+             x-bind:hidden="$store.perfil.vista !== 'perfil'">
+          <p class="mp-cargando" x-bind:hidden="!$store.perfil.cargando">Cargando perfil…</p>
+          <p class="mp-error" role="alert" x-bind:hidden="!$store.perfil.error" x-text="$store.perfil.error"></p>
+          <div class="mp-profile-head" x-bind:hidden="$store.perfil.cargando || !!$store.perfil.error">
+            <div class="mp-avatar-wrap">
+              <img class="mp-avatar" x-bind:src="$store.perfil.avatar" x-bind:hidden="!$store.perfil.avatar"
+                   x-bind:alt="'Avatar de ' + $store.perfil.nombre">
+              <span class="mp-avatar-inicial" x-bind:hidden="!!$store.perfil.avatar" x-text="$store.perfil.inicial"></span>
+            </div>
+            <div class="mp-profile-info">
+              <h4 class="mp-apodo" x-bind:class="'rango-texto-' + $store.perfil.rango.clave" x-text="$store.perfil.nombre"></h4>
+              <div class="mp-badges">
+                <span class="rango-badge" x-bind:class="'rango-' + $store.perfil.rango.clave"
+                      x-bind:title="'Rango: ' + $store.perfil.rango.nombre"
+                      x-text="$store.perfil.rango.emoji + ' ' + $store.perfil.rango.nombre"></span>
+                <span class="mp-puntos" title="Puntos" x-text="(Number($store.perfil.usuario.puntos) || 0) + ' pts'"></span>
+                <span class="mp-genero" x-bind:hidden="!$store.perfil.publico || !$store.perfil.generoTexto"
+                      x-text="$store.perfil.generoTexto"></span>
+                <span class="mp-icono" x-bind:hidden="!$store.perfil.usuario.icono" x-text="$store.perfil.usuario.icono"></span>
+              </div>
+              <p class="mp-desde" x-bind:hidden="!$store.perfil.miembro" x-text="'Miembro desde ' + $store.perfil.miembro"></p>
+              <p class="mp-bio" x-bind:hidden="!$store.perfil.usuario.bio" x-text="$store.perfil.usuario.bio"></p>
+              <div class="mp-links" x-bind:hidden="!$store.perfil.linksVisibles.length">
+                <template x-for="l in $store.perfil.linksVisibles" :key="l.clave">
+                  <a class="mp-link" x-bind:href="l.url" x-bind:title="l.label" x-bind:aria-label="l.label"
+                     target="_blank" rel="noopener noreferrer"><i x-bind:class="l.icon" aria-hidden="true"></i></a>
+                </template>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-perfil-body" role="tabpanel" aria-label="Ajustes"
+             x-bind:hidden="$store.perfil.publico || $store.perfil.vista !== 'ajustes'">
+          <div class="mp-avatar-wrap">
+            <img class="mp-avatar" x-bind:src="$store.perfil.previewAvatar" x-bind:hidden="!$store.perfil.previewAvatar"
+                 alt="Vista previa del avatar">
+            <span class="mp-avatar-inicial" x-bind:hidden="!!$store.perfil.previewAvatar" x-text="$store.perfil.inicial"></span>
+          </div>
+          <div class="mp-avatar-acciones">
+            <button type="button" class="btn-primary btn-muted" x-on:click="$store.perfil.quitarAvatar()">Usar avatar por defecto</button>
+          </div>
+          <div class="mp-avatar-choices" aria-label="Avatares disponibles">
+            <template x-for="a in $store.perfil.avatares" :key="a.url">
+              <button type="button" class="mp-avatar-choice"
+                      x-bind:class="{ selected: ($store.perfil.avatarSeleccionado === undefined ? $store.perfil.avatar : $store.perfil.avatarSeleccionado) === a.url }"
+                      x-bind:title="a.nombre || 'Avatar'" x-bind:aria-label="'Elegir ' + (a.nombre || 'avatar')"
+                      x-on:click="$store.perfil.elegirAvatar(a.url)">
+                <img x-bind:src="a.url" x-bind:alt="a.nombre || 'Avatar'" loading="lazy">
+              </button>
+            </template>
+            <span class="mp-vacio" x-bind:hidden="$store.perfil.avatares.length">No se pudieron cargar los avatares.</span>
+          </div>
+          <label class="mp-field">Género
+            <select x-model="$store.perfil.genero">
+              <option value="femenino">Femenino</option>
+              <option value="masculino">Masculino</option>
+              <option value="no_definido">No definido</option>
+            </select>
+          </label>
+          <label class="mp-field">Bio <span class="mp-contador" x-text="$store.perfil.bio.length + '/160'"></span>
+            <textarea maxlength="160" x-model="$store.perfil.bio" placeholder="Cuéntanos algo sobre ti..."></textarea>
+          </label>
+          <fieldset class="mp-links-grid">
+            <legend>Redes</legend>
+            <template x-for="clave in $store.perfil.linkKeys" :key="clave">
+              <label class="mp-link-field">
+                <span><i x-bind:class="$store.perfil.linkIconos[clave]" aria-hidden="true"></i>
+                  <span x-text="$store.perfil.linkLabels[clave]"></span></span>
+                <input type="url" x-bind:value="$store.perfil.links[clave]"
+                       x-on:input="$store.perfil.links[clave] = $event.target.value"
+                       placeholder="https://..." autocomplete="url">
+              </label>
+            </template>
+          </fieldset>
+          <p class="mp-error" role="alert" x-bind:hidden="!$store.perfil.error" x-text="$store.perfil.error"></p>
+          <div class="mp-actions">
+            <button type="button" class="btn-primary btn-muted" x-on:click="$store.perfil.vista = 'perfil'">Cancelar</button>
+            <button type="button" class="btn-primary" x-bind:disabled="$store.perfil.guardando"
+                    x-on:click="$store.perfil.guardar()">Guardar cambios</button>
+          </div>
+          <button type="button" class="btn-logout mp-logout" x-on:click="$store.perfil.logout()">
+            <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i> Cerrar sesión
+          </button>
+        </div>
+      </div>`;
+    document.body.appendChild(modalEl);
+    return modalEl;
+  }
 
-    usuario = window.obtenerSesionUsuarioComunidad();
-    const userId = usuario.id || localStorage.getItem('comunidad_user_id');
-    try {
-      if (userId) {
-        const { data, error } = await window.supabase
-          .from('usuarios_comunidad')
-          .select('apodo,puntos,rango,genero,avatar_url,bio,links_json,icono_equipado,creado_en')
-          .eq('id', userId)
-          .maybeSingle();
-        if (!error && data) {
-          usuario = Object.assign({}, usuario, {
-            id: Number(userId),
-            apodo: data.apodo ?? usuario.apodo,
-            puntos: data.puntos ?? usuario.puntos,
-            rango: data.rango ?? usuario.rango,
-            genero: data.genero ?? usuario.genero,
-            avatar_url: data.avatar_url ?? null,
-            bio: data.bio ?? null,
-            links_json: data.links_json ?? null,
-            icono: data.icono_equipado ?? '',
-            creado_en: data.creado_en ?? usuario.creado_en ?? null
+  document.addEventListener('alpine:init', () => {
+    window.Alpine.store('perfil', {
+      abierto: false,
+      publico: false,
+      vista: 'perfil',
+      titulo: 'Mi perfil',
+      cargando: false,
+      guardando: false,
+      error: '',
+      usuario: {},
+      avatares: [],
+      avatarSeleccionado: undefined,
+      genero: 'no_definido',
+      bio: '',
+      links: { instagram: '', discord: '', tiktok: '', kick: '' },
+      linkKeys: LINK_KEYS,
+      linkLabels: LINK_LABELS,
+      linkIconos: LINK_ICONS,
+
+      get nombre() {
+        return this.usuario.apodo || localStorage.getItem('comunidad_nickname') || '';
+      },
+      get inicial() {
+        return inicialDe(this.nombre);
+      },
+      get avatar() {
+        return window.avatarUsuarioComunidad(this.usuario) || '';
+      },
+      get rango() {
+        return window.datosRangoComunidad(this.usuario.rango, this.usuario.puntos);
+      },
+      get miembro() {
+        return mesDesde(this.usuario.creado_en);
+      },
+      get generoTexto() {
+        const textos = { femenino: 'Femenino', masculino: 'Masculino' };
+        return textos[this.usuario.genero] || '';
+      },
+      get linksVisibles() {
+        const visibles = [];
+        const json = this.usuario.links_json && typeof this.usuario.links_json === 'object' ? this.usuario.links_json : {};
+        LINK_KEYS.forEach((clave) => {
+          const url = json[clave];
+          if (typeof url === 'string' && /^https?:\/\//i.test(url)) {
+            visibles.push({ clave, url, icon: LINK_ICONS[clave], label: LINK_LABELS[clave] });
+          }
+        });
+        return visibles;
+      },
+      avatarPorGenero() {
+        if (this.genero === 'femenino') return '/img/avatars/avatar-female.webp';
+        if (this.genero === 'masculino') return '/img/avatars/avatar-male.webp';
+        return '';
+      },
+      get previewAvatar() {
+        if (this.avatarSeleccionado === undefined) return this.avatar;
+        if (this.avatarSeleccionado === '') return this.avatarPorGenero();
+        return this.avatarSeleccionado;
+      },
+
+      abrir(vista) {
+        crearModal();
+        this.publico = false;
+        this.titulo = 'Mi perfil';
+        this.error = '';
+        this.vista = vista === 'ajustes' ? 'ajustes' : 'perfil';
+        this.abierto = true;
+        setNavExpanded(true);
+        this.cargar();
+      },
+
+      async abrirUsuario(apodo) {
+        if (!apodo || !window.supabase) return;
+        crearModal();
+        this.publico = true;
+        this.titulo = 'Perfil público';
+        this.vista = 'perfil';
+        this.error = '';
+        this.usuario = {};
+        this.cargando = true;
+        this.abierto = true;
+        setNavExpanded(false);
+        try {
+          const { data, error } = await window.supabase
+            .from('usuarios_comunidad')
+            .select('apodo,puntos,rango,genero,avatar_url,bio,links_json,icono_equipado,creado_en')
+            .ilike('apodo', apodo)
+            .maybeSingle();
+          if (error) throw error;
+          if (!data) {
+            this.error = 'No se encontró ese perfil.';
+            return;
+          }
+          this.usuario = data;
+        } catch (e) {
+          console.error('Error cargando perfil público:', e);
+          this.error = 'No se pudo cargar el perfil.';
+        } finally {
+          this.cargando = false;
+        }
+      },
+
+      cerrar() {
+        this.abierto = false;
+        setNavExpanded(false);
+      },
+
+      async cargar() {
+        const token = localStorage.getItem('comunidad_session_token');
+        this.cargando = true;
+        this.error = '';
+        if (!token || !window.supabase) {
+          this.usuario = {};
+          this.error = 'Inicia sesión en la Comunidad para ver tu perfil.';
+          this.cargando = false;
+          return;
+        }
+
+        let u = window.obtenerSesionUsuarioComunidad() || {};
+        const userId = u.id || localStorage.getItem('comunidad_user_id');
+        try {
+          if (userId) {
+            const { data, error } = await window.supabase
+              .from('usuarios_comunidad')
+              .select('apodo,puntos,rango,genero,avatar_url,bio,links_json,icono_equipado,creado_en')
+              .eq('id', userId)
+              .maybeSingle();
+            if (!error && data) {
+              u = Object.assign({}, u, {
+                id: Number(userId),
+                apodo: data.apodo ?? u.apodo,
+                puntos: data.puntos ?? u.puntos,
+                rango: data.rango ?? u.rango,
+                genero: data.genero ?? u.genero,
+                avatar_url: data.avatar_url ?? null,
+                bio: data.bio ?? null,
+                links_json: data.links_json ?? null,
+                icono: data.icono_equipado ?? '',
+                creado_en: data.creado_en ?? u.creado_en ?? null
+              });
+            }
+          }
+
+          const { data: avData, error: avError } = await window.supabase.rpc('obtener_avatares_disponibles', { p_token: token });
+          if (!avError && avData && avData.ok) {
+            this.avatares = Array.isArray(avData.avatares) ? avData.avatares : [];
+            if (avData.genero) u.genero = avData.genero;
+          }
+
+          window.actualizarSesionUsuarioComunidad(u);
+          this.usuario = u;
+          this.genero = u.genero || 'no_definido';
+          this.bio = u.bio || '';
+          this.links = { instagram: '', discord: '', tiktok: '', kick: '' };
+          const lj = u.links_json;
+          if (lj && typeof lj === 'object') {
+            LINK_KEYS.forEach((clave) => {
+              if (typeof lj[clave] === 'string') this.links[clave] = lj[clave];
+            });
+          }
+          this.avatarSeleccionado = undefined;
+        } catch (e) {
+          console.error('Error cargando perfil:', e);
+          this.error = 'No se pudo cargar el perfil.';
+        } finally {
+          this.cargando = false;
+        }
+      },
+
+      elegirAvatar(url) {
+        this.avatarSeleccionado = url;
+      },
+      quitarAvatar() {
+        this.avatarSeleccionado = '';
+      },
+      logout() {
+        window.cerrarSesion?.();
+      },
+
+      async guardar() {
+        this.error = '';
+        const token = localStorage.getItem('comunidad_session_token');
+        if (!token || !window.supabase) {
+          this.error = ERRORES.sin_sesion;
+          return;
+        }
+
+        const links = {};
+        for (const clave of LINK_KEYS) {
+          const valor = String(this.links[clave] || '').trim();
+          if (!valor) continue;
+          if (!/^https?:\/\//i.test(valor) || valor.length > 300) {
+            this.error = ERRORES.links_invalidos;
+            return;
+          }
+          links[clave] = valor;
+        }
+
+        const payload = {
+          p_token: token,
+          p_bio: this.bio.trim(),
+          p_links_json: links,
+          p_genero: this.genero
+        };
+        if (this.avatarSeleccionado !== undefined) {
+          payload.p_avatar_url = this.avatarSeleccionado;
+        }
+
+        this.guardando = true;
+        try {
+          const { data, error } = await window.supabase.rpc('actualizar_perfil_comunidad', payload);
+          if (error) {
+            console.error('Error guardando perfil:', error);
+            this.error = ERRORES.error_interno;
+            return;
+          }
+          if (!data || !data.ok) {
+            this.error = ERRORES[data?.error] || ERRORES.error_interno;
+            return;
+          }
+
+          const perfil = data.perfil || data;
+          const actualizado = window.actualizarSesionUsuarioComunidad({
+            avatar_url: perfil.avatar_url !== undefined ? perfil.avatar_url : (this.usuario.avatar_url ?? null),
+            bio: perfil.bio !== undefined ? perfil.bio : (this.usuario.bio ?? null),
+            links_json: perfil.links_json !== undefined
+              ? perfil.links_json
+              : (perfil.links !== undefined ? perfil.links : links),
+            genero: perfil.genero !== undefined ? perfil.genero : this.genero,
+            icono: perfil.icono !== undefined ? perfil.icono : (this.usuario.icono || '')
           });
+          this.usuario = Object.assign({}, this.usuario, actualizado);
+          this.avatarSeleccionado = undefined;
+          this.bio = this.usuario.bio || '';
+          window.actualizarUsuarioNavComunidad?.();
+          window.recargarPerfilComunidad?.();
+          window.mostrarToast?.('Perfil actualizado');
+          this.cerrar();
+        } catch (e) {
+          console.error('Error guardando perfil:', e);
+          this.error = ERRORES.error_interno;
+        } finally {
+          this.guardando = false;
         }
       }
-
-      const { data: avData, error: avError } = await window.supabase.rpc('obtener_avatares_disponibles', { p_token: token });
-      if (!avError && avData && avData.ok) {
-        avatares = Array.isArray(avData.avatares) ? avData.avatares : [];
-        if (avData.genero) usuario.genero = avData.genero;
-      }
-
-      window.actualizarSesionUsuarioComunidad(usuario);
-      avatarSeleccionado = undefined;
-      renderPerfil(perfilDiv, ajustesDiv);
-    } catch (e) {
-      console.error('Error cargando perfil:', e);
-      perfilDiv.innerHTML = '<p class="mp-error">No se pudo cargar el perfil.</p>';
-    } finally {
-      cargando = false;
-    }
-  }
-
-  function renderPerfil(perfilDiv, ajustesDiv) {
-    const avatar = window.avatarUsuarioComunidad(usuario);
-    const inicial = inicialDe(usuario.apodo || localStorage.getItem('comunidad_nickname'));
-    const bio = usuario.bio ? `<p class="mp-bio">${escapeHtml(usuario.bio)}</p>` : '';
-    const icono = usuario.icono ? ` <span class="mp-icono">${escapeHtml(usuario.icono)}</span>` : '';
-    const linksHtml = renderLinks(usuario.links_json);
-    const rangoInfo = window.datosRangoComunidad(usuario.rango, usuario.puntos);
-    const miembro = mesDesde(usuario.creado_en);
-    const avatarPerfil = avatar
-      ? `<img class="mp-avatar" src="${escapeAttr(avatar)}" alt="Avatar de ${escapeAttr(usuario.apodo || 'usuario')}">`
-      : `<span class="mp-avatar-inicial" aria-hidden="true">${escapeHtml(inicial)}</span>`;
-
-    perfilDiv.innerHTML = `
-      <div class="mp-profile-head">
-        <div class="mp-avatar-wrap">${avatarPerfil}</div>
-        <div class="mp-profile-info">
-          <h4 class="mp-apodo rango-texto-${rangoInfo.clave}">${escapeHtml(usuario.apodo || localStorage.getItem('comunidad_nickname') || '')}</h4>
-          <div class="mp-badges">
-            <span class="rango-badge rango-${rangoInfo.clave}" title="Rango actual">${escapeHtml(rangoInfo.emoji + ' ' + rangoInfo.nombre)}</span>
-            <span class="mp-puntos" title="Puntos totales">${Number(usuario.puntos || 0)} pts</span>
-            ${icono}
-          </div>
-          ${miembro ? `<p class="mp-desde">Miembro desde ${miembro}</p>` : ''}
-          ${bio}
-          ${linksHtml ? `<div class="mp-links">${linksHtml}</div>` : ''}
-        </div>
-      </div>`;
-
-    const links = usuario.links_json && typeof usuario.links_json === 'object' ? usuario.links_json : {};
-    const inputLink = (clave) => `
-      <label class="mp-link-field">
-        <span><i class="${LINK_ICONS[clave]}" aria-hidden="true"></i> ${LINK_LABELS[clave]}</span>
-        <input type="url" data-link="${clave}" value="${escapeAttr(links[clave] || '')}" placeholder="https://..." autocomplete="url">
-      </label>`;
-    const inputsRedes = LINK_KEYS.map(inputLink).join('');
-
-    ajustesDiv.innerHTML = `
-      <div class="mp-avatar-wrap">
-        <img id="mp-avatar-preview" class="mp-avatar" src="${avatar ? escapeAttr(avatar) : ''}" alt="Vista previa del avatar" ${avatar ? '' : 'hidden'}>
-        <span id="mp-avatar-inicial" class="mp-avatar-inicial" aria-hidden="true" ${avatar ? 'hidden' : ''}>${escapeHtml(inicial)}</span>
-      </div>
-      <div class="mp-avatar-acciones">
-        <button type="button" id="mp-quitar-avatar" class="btn-primary btn-muted">Usar avatar por defecto</button>
-      </div>
-      <div class="mp-avatar-choices" id="mp-avatar-choices" aria-label="Avatares disponibles"></div>
-      <label class="mp-field">Género
-        <select id="mp-genero">
-          <option value="femenino">Femenino</option>
-          <option value="masculino">Masculino</option>
-          <option value="no_definido">No definido</option>
-        </select>
-      </label>
-      <label class="mp-field">Bio <span class="mp-contador" id="mp-bio-count">0/160</span>
-        <textarea id="mp-bio" maxlength="160" placeholder="Cuéntanos algo sobre ti...">${escapeHtml(usuario.bio || '')}</textarea>
-      </label>
-      <fieldset class="mp-links-grid">
-        <legend>Redes</legend>
-        ${inputsRedes}
-      </fieldset>
-      <p id="mp-error" class="mp-error" role="alert" hidden></p>
-      <div class="mp-actions">
-        <button type="button" id="mp-cancelar" class="btn-primary btn-muted">Cancelar</button>
-        <button type="button" id="mp-guardar" class="btn-primary">Guardar cambios</button>
-      </div>
-      <button type="button" id="mp-cerrar-sesion" class="btn-logout mp-logout">
-        <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i> Cerrar sesión
-      </button>`;
-
-    const generoSel = ajustesDiv.querySelector('#mp-genero');
-    if (generoSel) generoSel.value = usuario.genero || 'no_definido';
-
-    const bioInput = ajustesDiv.querySelector('#mp-bio');
-    const bioCount = ajustesDiv.querySelector('#mp-bio-count');
-    const actualizarContador = () => {
-      if (bioInput && bioCount) bioCount.textContent = `${bioInput.value.length}/160`;
-    };
-    actualizarContador();
-    bioInput?.addEventListener('input', actualizarContador);
-
-    const previewImg = ajustesDiv.querySelector('#mp-avatar-preview');
-    const previewInicial = ajustesDiv.querySelector('#mp-avatar-inicial');
-    const choices = ajustesDiv.querySelector('#mp-avatar-choices');
-
-    const setPreview = (url) => {
-      if (url) {
-        if (previewImg) { previewImg.src = url; previewImg.hidden = false; }
-        if (previewInicial) previewInicial.hidden = true;
-      } else {
-        if (previewImg) { previewImg.removeAttribute('src'); previewImg.hidden = true; }
-        if (previewInicial) previewInicial.hidden = false;
-      }
-    };
-    const marcarSeleccion = (url) => {
-      choices?.querySelectorAll('.mp-avatar-choice').forEach((b) => {
-        b.classList.toggle('selected', !!url && b.dataset.url === url);
-      });
-    };
-
-    if (choices) {
-      choices.innerHTML = '';
-      if (!avatares.length) {
-        choices.innerHTML = '<span class="mp-vacio">No se pudieron cargar los avatares.</span>';
-      }
-      avatares.forEach((a) => {
-        if (!a || !a.url) return;
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'mp-avatar-choice';
-        btn.dataset.url = a.url;
-        btn.title = a.nombre || 'Avatar';
-        btn.setAttribute('aria-label', `Elegir ${a.nombre || 'avatar'}`);
-        btn.innerHTML = `<img src="${escapeAttr(a.url)}" alt="${escapeAttr(a.nombre || 'Avatar')}" loading="lazy">`;
-        btn.addEventListener('click', () => {
-          avatarSeleccionado = a.url;
-          setPreview(a.url);
-          marcarSeleccion(a.url);
-        });
-        choices.appendChild(btn);
-      });
-      if (avatar) marcarSeleccion(avatar);
-    }
-
-    ajustesDiv.querySelector('#mp-quitar-avatar')?.addEventListener('click', () => {
-      avatarSeleccionado = '';
-      const generoActual = ajustesDiv.querySelector('#mp-genero')?.value || 'no_definido';
-      const porDefecto = generoActual === 'femenino'
-        ? '/img/avatars/avatar-female.webp'
-        : (generoActual === 'masculino' ? '/img/avatars/avatar-male.webp' : null);
-      setPreview(porDefecto);
-      marcarSeleccion(null);
     });
+  });
 
-    generoSel?.addEventListener('change', () => {
-      if (avatarSeleccionado !== '') return;
-      const porDefecto = generoSel.value === 'femenino'
-        ? '/img/avatars/avatar-female.webp'
-        : (generoSel.value === 'masculino' ? '/img/avatars/avatar-male.webp' : null);
-      setPreview(porDefecto);
-    });
-
-    ajustesDiv.querySelector('#mp-cancelar')?.addEventListener('click', () => cambiarVista('perfil'));
-    ajustesDiv.querySelector('#mp-cerrar-sesion')?.addEventListener('click', () => window.cerrarSesion?.());
-    ajustesDiv.querySelector('#mp-guardar')?.addEventListener('click', () => guardarPerfil(ajustesDiv));
-  }
-
-  function renderPerfilPublico(perfilDiv, perfil) {
-    const rangoInfo = window.datosRangoComunidad(perfil.rango, perfil.puntos);
-    const miembro = mesDesde(perfil.creado_en);
-    const avatar = window.avatarUsuarioComunidad(perfil);
-    const inicial = inicialDe(perfil.apodo);
-    const bio = perfil.bio ? `<p class="mp-bio">${escapeHtml(perfil.bio)}</p>` : '';
-    const linksHtml = renderLinks(perfil.links_json);
-    const icono = perfil.icono_equipado ? ` <span class="mp-icono">${escapeHtml(perfil.icono_equipado)}</span>` : '';
-    const generos = { femenino: 'Femenino', masculino: 'Masculino' };
-    const genero = generos[perfil.genero] || '';
-    const avatarPerfil = avatar
-      ? `<img class="mp-avatar" src="${escapeAttr(avatar)}" alt="Avatar de ${escapeAttr(perfil.apodo)}">`
-      : `<span class="mp-avatar-inicial" aria-hidden="true">${escapeHtml(inicial)}</span>`;
-
-    perfilDiv.innerHTML = `
-      <div class="mp-profile-head">
-        <div class="mp-avatar-wrap">${avatarPerfil}</div>
-        <div class="mp-profile-info">
-          <h4 class="mp-apodo rango-texto-${rangoInfo.clave}">${escapeHtml(perfil.apodo)}</h4>
-          <div class="mp-badges">
-            <span class="rango-badge rango-${rangoInfo.clave}" title="Rango">${escapeHtml(rangoInfo.emoji + ' ' + rangoInfo.nombre)}</span>
-            <span class="mp-puntos" title="Puntos">${Number(perfil.puntos || 0)} pts</span>
-            ${genero ? `<span class="mp-genero">${genero}</span>` : ''}
-            ${icono}
-          </div>
-          ${miembro ? `<p class="mp-desde">Miembro desde ${miembro}</p>` : ''}
-          ${bio}
-          ${linksHtml ? `<div class="mp-links">${linksHtml}</div>` : ''}
-        </div>
-      </div>`;
-  }
-
-  function mostrarError(ajustesDiv, mensaje) {
-    const el = ajustesDiv.querySelector('#mp-error');
-    if (!el) return;
-    el.textContent = mensaje;
-    el.hidden = false;
-  }
-
-  async function guardarPerfil(ajustesDiv) {
-    const token = localStorage.getItem('comunidad_session_token');
-    if (!token || !window.supabase) {
-      mostrarError(ajustesDiv, ERRORES.sin_sesion);
-      return;
-    }
-
-    const bio = ajustesDiv.querySelector('#mp-bio')?.value.trim() || '';
-    const genero = ajustesDiv.querySelector('#mp-genero')?.value || 'no_definido';
-    const links = {};
-    let enlaceInvalido = false;
-    LINK_KEYS.forEach((clave) => {
-      const input = ajustesDiv.querySelector(`[data-link="${clave}"]`);
-      const valor = input ? input.value.trim() : '';
-      if (!valor) return;
-      if (!/^https?:\/\//i.test(valor) || valor.length > 300) {
-        enlaceInvalido = true;
-        return;
-      }
-      links[clave] = valor;
-    });
-    if (enlaceInvalido) {
-      mostrarError(ajustesDiv, ERRORES.links_invalidos);
-      return;
-    }
-
-    const payload = {
-      p_token: token,
-      p_bio: bio,
-      p_links_json: links,
-      p_genero: genero
-    };
-    if (avatarSeleccionado !== undefined) {
-      payload.p_avatar_url = avatarSeleccionado;
-    }
-
-    const btn = ajustesDiv.querySelector('#mp-guardar');
-    if (btn) btn.disabled = true;
-    try {
-      const { data, error } = await window.supabase.rpc('actualizar_perfil_comunidad', payload);
-      if (error) {
-        console.error('Error guardando perfil:', error);
-        mostrarError(ajustesDiv, ERRORES.error_interno);
-        return;
-      }
-      if (!data || !data.ok) {
-        mostrarError(ajustesDiv, ERRORES[data?.error] || ERRORES.error_interno);
-        return;
-      }
-
-      const perfil = data.perfil || data;
-      const actualizado = window.actualizarSesionUsuarioComunidad({
-        avatar_url: perfil.avatar_url !== undefined ? perfil.avatar_url : (usuario.avatar_url ?? null),
-        bio: perfil.bio !== undefined ? perfil.bio : (usuario.bio ?? null),
-        links_json: perfil.links_json !== undefined
-          ? perfil.links_json
-          : (perfil.links !== undefined ? perfil.links : links),
-        genero: perfil.genero !== undefined ? perfil.genero : genero,
-        icono: perfil.icono !== undefined ? perfil.icono : (usuario.icono || '')
-      });
-      usuario = Object.assign({}, usuario, actualizado);
-      window.actualizarUsuarioNavComunidad?.();
-      window.recargarPerfilComunidad?.();
-      window.mostrarToast?.('Perfil actualizado');
-      cerrar();
-    } catch (e) {
-      console.error('Error guardando perfil:', e);
-      mostrarError(ajustesDiv, ERRORES.error_interno);
-    } finally {
-      if (btn) btn.disabled = false;
-    }
-  }
-
-  window.abrirModalPerfil = abrir;
-  window.cerrarModalPerfil = cerrar;
+  window.abrirModalPerfil = function abrirModalPerfil(vista) {
+    window.Alpine?.store('perfil')?.abrir(vista);
+  };
+  window.cerrarModalPerfil = function cerrarModalPerfil() {
+    window.Alpine?.store('perfil')?.cerrar();
+  };
+  window.abrirPerfilUsuario = function abrirPerfilUsuario(apodo) {
+    window.Alpine?.store('perfil')?.abrirUsuario(apodo);
+  };
 })();
+

@@ -3,6 +3,18 @@
 Formato basado en Keep a Changelog. Versionado SemVer (`MAJOR.MINOR.PATCH`).
 El historial anterior a 1.5.0 está en los commits `v1.4.x`.
 
+## [1.19.0] - 2026-10-31
+
+### Modal de perfil y menú móvil en Alpine
+
+- Modal de perfil reescrito sobre el store Alpine `perfil`: pestañas, avatar,
+  género, bio, redes, guardado y perfil público sin `innerHTML` ni listeners a
+  mano.
+- Foco atrapado con `x-trap.noscroll`; visibilidad con `:hidden`.
+- Menú móvil con el store `ui`: apertura/cierre, `aria-expanded`, Escape y
+  cierre al cambiar a escritorio.
+- `@alpinejs/focus` cargado en las 5 páginas.
+
 ## [1.18.0] - 2026-10-31
 
 ### Sin Bootstrap y Alpine en todas las páginas
