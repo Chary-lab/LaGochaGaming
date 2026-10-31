@@ -24,7 +24,7 @@
     <meta name="twitter:description" content="Explora las mejores fotos y momentos de La Gocha.">
     <meta name="twitter:image" content="https://lagochagaming.com/img/3.jpg">
     <link rel="manifest" href="manifest.webmanifest">
-    <link rel="stylesheet" href="style.css?v=1.21.0">
+    <link rel="stylesheet" href="style.css?v=1.22.0">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;800;900&display=swap" rel="stylesheet">
@@ -198,11 +198,16 @@
         </div>
 
         <!-- SUBIDA DE IMÁGENES -->
-        <div class="upload-container" id="uploadContainer">
+        <div class="upload-container" id="uploadContainer" x-data="{ }"
+             x-bind:class="{ dragover: $store.subida.arrastrando }"
+             x-on:dragenter.prevent="$store.subida.arrastrando = true"
+             x-on:dragover.prevent="$store.subida.arrastrando = true"
+             x-on:dragleave.prevent="$store.subida.arrastrando = false"
+             x-on:drop.prevent="$store.subida.soltar($event)">
             <div class="upload-title-wrap">
-                <input type="text" id="imageTitleInput" class="gallery-title-input" aria-label="Título de la imagen" placeholder="Escribe un título para tu imagen..." maxlength="60" autocomplete="off">
+                <input type="text" id="imageTitleInput" class="gallery-title-input" aria-label="Título de la imagen" placeholder="Escribe un título para tu imagen..." maxlength="60" autocomplete="off" x-model="$store.subida.titulo">
                 <div id="admin-author-wrap" hidden>
-                    <input type="text" id="imageAuthorInput" class="gallery-title-input" placeholder="Autor de la foto" maxlength="30" value="LaGochaGaming" autocomplete="name">
+                    <input type="text" id="imageAuthorInput" class="gallery-title-input" placeholder="Autor de la foto" maxlength="30" value="LaGochaGaming" autocomplete="name" x-model="$store.subida.autorAdmin">
                     <p class="upload-hint">
                         <i class="fa-solid fa-crown"></i> Sesión de admin: la foto se publicará con este autor
                         (vacío = LaGochaGaming).
@@ -210,7 +215,7 @@
                 </div>
             </div>
 
-            <input type="file" id="uploadInput" class="upload-input" accept="image/*">
+            <input type="file" id="uploadInput" class="upload-input" accept="image/*" x-on:change="$store.subida.elegir($event)">
             <label for="uploadInput" class="upload-label">
                 <i class="fas fa-upload"></i> Seleccionar Imagen
             </label>
@@ -219,7 +224,11 @@
                 <p><i class="fa-solid fa-lock"></i> Inicia sesión en la Comunidad para subir tus fotos.</p>
                 <a href="comunidad" class="btn-primary upload-login-link">Ir a la Comunidad</a>
             </div>
-            <div id="uploadFeedback"></div>
+            <div id="uploadFeedback">
+                <p x-bind:hidden="!$store.subida.feedback"
+                   x-bind:class="$store.subida.tipo === 'error' ? 'msg-subida-error' : 'msg-subida-exito'"
+                   x-text="$store.subida.feedback"></p>
+            </div>
         </div>
 
         <!-- FILTROS Y PESTAÑAS POPULARES / RECIENTES -->
@@ -384,6 +393,121 @@
             errorAudit: '',
             totalAudit: 0,
             paginaAudit: 0
+        });
+
+        window.Alpine.store('subida', {
+            titulo: '',
+            autorAdmin: AUTOR_POR_DEFECTO,
+            feedback: '',
+            tipo: '',
+            arrastrando: false,
+            subiendo: false,
+            _timer: null,
+            aviso(texto, tipo) {
+                clearTimeout(this._timer);
+                this.feedback = texto;
+                this.tipo = tipo || '';
+                if (tipo === 'ok') this._timer = setTimeout(() => { this.feedback = ''; }, 5000);
+            },
+            elegir(evento) {
+                const file = evento.target.files && evento.target.files[0];
+                evento.target.value = '';
+                if (file) this.procesar(file);
+            },
+            soltar(evento) {
+                this.arrastrando = false;
+                const file = evento.dataTransfer && evento.dataTransfer.files && evento.dataTransfer.files[0];
+                if (file) this.procesar(file);
+            },
+            async procesar(file) {
+                if (this.subiendo) return;
+                if (!file.type.startsWith('image/')) {
+                    this.aviso('❌ Solo se permiten archivos de imagen.', 'error');
+                    return;
+                }
+                if (!this.titulo.trim()) {
+                    window.mostrarToast?.('Por favor escribe un título para la foto.', true);
+                    return;
+                }
+                if (file.size > 5 * 1024 * 1024) {
+                    this.aviso('❌ La imagen supera el límite máximo de 5MB.', 'error');
+                    return;
+                }
+                const TIPOS_PERMITIDOS = ['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'image/avif'];
+                if (!TIPOS_PERMITIDOS.includes(file.type)) {
+                    this.aviso('❌ Formato no admitido. Usa JPG, PNG, GIF o WEBP.', 'error');
+                    return;
+                }
+                const buf = await file.arrayBuffer();
+                const bytes = new Uint8Array(buf.slice(0, 12));
+                const hex = [...bytes].map((b) => b.toString(16).padStart(2, '0')).join('');
+                const magicOk =
+                    hex.startsWith('89504e47') ||
+                    hex.startsWith('ffd8ff') ||
+                    hex.startsWith('47494638') ||
+                    hex.startsWith('52494646') ||
+                    hex.slice(8, 16) === '66747970';
+                if (!magicOk) {
+                    this.aviso('❌ El archivo no es una imagen válida.', 'error');
+                    return;
+                }
+                const nombreSeguro = (file.name || 'imagen').replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 100);
+                const filePath = 'gallery/' + Date.now() + '_' + nombreSeguro;
+                this.subiendo = true;
+                try {
+                    const { error } = await window.supabase.storage.from('fotos-galeria').upload(filePath, file);
+                    if (error) {
+                        console.error('Error subiendo a Storage:', error);
+                        this.aviso('❌ Error al subir imagen: ' + error.message, 'error');
+                        return;
+                    }
+                    const { data: publicURLData } = window.supabase.storage.from('fotos-galeria').getPublicUrl(filePath);
+                    const guardada = await this.guardar(this.titulo.trim(), publicURLData.publicUrl);
+                    if (guardada) this.titulo = '';
+                } catch (e) {
+                    console.error('Error inesperado en la subida:', e);
+                    this.aviso('❌ Error inesperado al subir la imagen.', 'error');
+                } finally {
+                    this.subiendo = false;
+                }
+            },
+            async guardar(title, publicUrl) {
+                const token = localStorage.getItem('comunidad_session_token') || '';
+                const esAdmin = adminAutenticado;
+                if (!esAdmin && !token) {
+                    this.aviso('❌ Inicia sesión en la Comunidad para subir fotos.', 'error');
+                    return false;
+                }
+                const args = { p_token: token, p_title: title, p_image_url: publicUrl };
+                if (esAdmin) args.p_autor = (this.autorAdmin || '').trim() || AUTOR_POR_DEFECTO;
+                try {
+                    const { data: resultado, error } = await window.supabase.rpc('publicar_foto_galeria', args);
+                    if (!error && resultado && resultado.ok) {
+                        const autor = resultado.autor || (esAdmin ? AUTOR_POR_DEFECTO : 'Anónimo');
+                        this.aviso('✅ ¡Imagen enviada como "' + autor + '"! Aparecerá cuando sea aprobada. 💖', 'ok');
+                        paginaActualGaleria = 0;
+                        loadApprovedImages();
+                        if (adminAutenticado) loadPendingImages();
+                        return true;
+                    }
+                    const codigo = resultado && resultado.error ? resultado.error : (error ? error.message : 'desconocido');
+                    console.error('Error al registrar la foto en la galería:', codigo);
+                    const mensajes = {
+                        sin_sesion: esAdmin
+                            ? '❌ Tu sesión de admin no es válida. Vuelve a iniciar sesión.'
+                            : '❌ Tu sesión de comunidad no es válida. Vuelve a iniciar sesión.',
+                        titulo_invalido: '❌ El título no es válido (1-60 caracteres).',
+                        url_invalida: '❌ La imagen no se pudo registrar. Inténtalo de nuevo.',
+                        galeria_limite: '❌ Ya tienes 5 fotos pendientes de moderación.'
+                    };
+                    this.aviso(mensajes[codigo] || '❌ Error al guardar en base de datos.', 'error');
+                    return false;
+                } catch (e) {
+                    console.error('Error inesperado al guardar la foto:', e);
+                    this.aviso('❌ Error inesperado al guardar la foto.', 'error');
+                    return false;
+                }
+            }
         });
         });
 
@@ -1271,183 +1395,6 @@
         // ===================================================
         // 5. SUBIDA DE ARCHIVOS A SUPABASE STORAGE
         // ===================================================
-        const uploadInput = document.getElementById('uploadInput');
-        const titleInput = document.getElementById('imageTitleInput');
-        const uploadFeedback = document.getElementById('uploadFeedback');
-
-        uploadInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            const customTitle = titleInput.value.trim();
-
-            if (!file) return;
-
-            if (!customTitle) {
-                mostrarToast('Por favor escribe un título para la foto.', true);
-                uploadInput.value = '';
-                return;
-            }
-
-            if (file.size > 5 * 1024 * 1024) {
-                uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ La imagen supera el límite máximo de 5MB.</p>';
-                uploadInput.value = '';
-                return;
-            }
-
-            uploadToSupabase(file, customTitle);
-        });
-
-        // ===================================================
-        // SOPORTE DE ARRASTRAR Y SOLTAR EN #uploadContainer
-        // ===================================================
-        const uploadContainer = document.getElementById('uploadContainer');
-        if (uploadContainer) {
-            ['dragenter', 'dragover'].forEach((evt) => {
-                uploadContainer.addEventListener(evt, (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    uploadContainer.classList.add('dragover');
-                });
-            });
-            ['dragleave', 'drop'].forEach((evt) => {
-                uploadContainer.addEventListener(evt, (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    uploadContainer.classList.remove('dragover');
-                });
-            });
-            uploadContainer.addEventListener('drop', (e) => {
-                const file = e.dataTransfer.files[0];
-                if (!file) return;
-                if (!file.type.startsWith('image/')) {
-                    mostrarToast('Solo se permiten archivos de imagen.', true);
-                    return;
-                }
-                const customTitle = titleInput.value.trim();
-                if (!customTitle) {
-                    mostrarToast('Por favor escribe un título para la foto.', true);
-                    return;
-                }
-                if (file.size > 5 * 1024 * 1024) {
-                    uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ La imagen supera el límite máximo de 5MB.</p>';
-                    return;
-                }
-                uploadToSupabase(file, customTitle);
-            });
-        }
-
-        async function uploadToSupabase(file, title) {
-            if (!file.type.startsWith('image/')) {
-                uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ Solo se permiten archivos de imagen.</p>';
-                return;
-            }
-
-            // El bucket fotos-galeria solo admite estos tipos
-            const TIPOS_PERMITIDOS = ['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'image/avif'];
-            if (!TIPOS_PERMITIDOS.includes(file.type)) {
-                uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ Formato no admitido. Usa JPG, PNG, GIF o WEBP.</p>';
-                uploadInput.value = '';
-                return;
-            }
-
-            // Validar magic bytes (no confiar solo en MIME del cliente)
-            const buf = await file.arrayBuffer();
-            const bytes = new Uint8Array(buf.slice(0, 12));
-            const hex = [...bytes].map(b => b.toString(16).padStart(2,'0')).join('');
-            const magicOk =
-              hex.startsWith('89504e47') || // PNG
-              hex.startsWith('ffd8ff') ||   // JPEG
-              hex.startsWith('47494638') || // GIF
-              hex.startsWith('52494646') || // WEBP (RIFF)
-              hex.slice(8, 16) === '66747970'; // AVIF/HEIC (caja ftyp)
-            if (!magicOk) {
-              uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ El archivo no es una imagen válida.</p>';
-              uploadInput.value = '';
-              return;
-            }
-
-            // La carpeta "gallery/" es obligatoria: la policy de Storage solo permite
-            // subir dentro de esa ruta y el RPC publicar_foto_galeria valida la URL.
-            const nombreSeguro = (file.name || 'imagen')
-                .replace(/[^a-zA-Z0-9._-]/g, '_')
-                .slice(0, 100);
-            const filePath = `gallery/${Date.now()}_${nombreSeguro}`;
-
-            try {
-                const { error } = await supabase.storage.from('fotos-galeria').upload(filePath, file);
-
-                if (error) {
-                    console.error('Error subiendo a Storage:', error);
-                    uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ Error al subir imagen: ' + escapeHtml(error.message) + '</p>';
-                    return;
-                }
-
-                const { data: publicURLData } = supabase.storage.from('fotos-galeria').getPublicUrl(filePath);
-                const guardada = await saveToSupabaseTable(title, publicURLData.publicUrl);
-
-                if (guardada) {
-                    titleInput.value = '';
-                    uploadInput.value = '';
-                }
-            } catch (e) {
-                console.error('Error inesperado en la subida:', e);
-                uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ Error inesperado al subir la imagen.</p>';
-            }
-        }
-
-        async function saveToSupabaseTable(title, publicUrl) {
-            const token = localStorage.getItem('comunidad_session_token') || '';
-            const esAdmin = adminAutenticado;
-
-            // El admin puede subir sin sesión de comunidad; el usuario común no
-            if (!esAdmin && !token) {
-                uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ Inicia sesión en la Comunidad para subir fotos.</p>';
-                return false;
-            }
-
-            const args = {
-                p_token: token,
-                p_title: title,
-                p_image_url: publicUrl
-            };
-
-            if (esAdmin) {
-                // El admin decide el autor de la foto (por defecto LaGochaGaming)
-                const autorAdmin = (document.getElementById('imageAuthorInput')?.value || '').trim() || AUTOR_POR_DEFECTO;
-                args.p_autor = autorAdmin;
-            }
-
-            try {
-                const { data: resultado, error } = await supabase.rpc('publicar_foto_galeria', args);
-
-                if (!error && resultado && resultado.ok) {
-                    const autor = resultado.autor || (esAdmin ? AUTOR_POR_DEFECTO : 'Anónimo');
-                    uploadFeedback.innerHTML = `<p class="msg-subida-exito">✅ ¡Imagen enviada como "${escapeHtml(autor)}"! Aparecerá cuando sea aprobada. 💖</p>`;
-                    setTimeout(() => { uploadFeedback.innerHTML = ''; }, 5000);
-                    paginaActualGaleria = 0;
-                    loadApprovedImages();
-                    if (adminAutenticado) loadPendingImages();
-                    return true;
-                }
-
-                const codigo = resultado && resultado.error ? resultado.error : (error ? error.message : 'desconocido');
-                console.error('Error al registrar la foto en la galería:', codigo);
-                const mensajes = {
-                    sin_sesion: esAdmin
-                        ? '❌ Tu sesión de admin no es válida. Vuelve a iniciar sesión.'
-                        : '❌ Tu sesión de comunidad no es válida. Vuelve a iniciar sesión.',
-                    titulo_invalido: '❌ El título no es válido (1-60 caracteres).',
-                    url_invalida: '❌ La imagen no se pudo registrar. Inténtalo de nuevo.',
-                    galeria_limite: '❌ Ya tienes 5 fotos pendientes de moderación.'
-                };
-                uploadFeedback.innerHTML = '<p class="msg-subida-error">' + (mensajes[codigo] || '❌ Error al guardar en base de datos.') + '</p>';
-                return false;
-            } catch (e) {
-                console.error('Error inesperado al guardar la foto:', e);
-                uploadFeedback.innerHTML = '<p class="msg-subida-error">❌ Error inesperado al guardar la foto.</p>';
-                return false;
-            }
-        }
-
         // El admin puede corregir el autor de cualquier foto pendiente
         async function guardarAutorImagen(imageId) {
             const input = document.querySelector(`.autor-input[data-image-id="${imageId}"]`);
@@ -1491,7 +1438,7 @@
         // escapeHtml / escapeAttr viven en main.js (fuente única del sitio)
     </script>
 
-    <script src="main.js?v=1.21.0" defer></script>
+    <script src="main.js?v=1.22.0" defer></script>
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/focus@3.17.5/dist/cdn.min.js" crossorigin="anonymous"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.17.5/dist/cdn.min.js"
             integrity="sha384-FYLKjwG3aohNhNZoVG8sY/5ntunm+MqylL90Q+rT3OM7AwV9/BKFjk/RjoIpIgsI"

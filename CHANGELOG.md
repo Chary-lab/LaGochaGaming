@@ -3,6 +3,17 @@
 Formato basado en Keep a Changelog. Versionado SemVer (`MAJOR.MINOR.PATCH`).
 El historial anterior a 1.5.0 está en los commits `v1.4.x`.
 
+## [1.22.0] - 2026-10-31
+
+### Subida de galería en Alpine y auditoría
+
+- Subida con el store `subida`: título, autor admin, drag & drop, validación,
+  magic bytes, Storage, RPC y feedback reactivo.
+- Eliminados el render manual y las funciones sin uso del muro; quitadas
+  constantes muertas de cine.
+- AGENTS: política “Alpine primero”, stores por página y reglas de visibilidad,
+  modales y datos.
+
 ## [1.21.0] - 2026-10-31
 
 ### Muro completo y cine en Alpine

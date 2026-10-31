@@ -15,6 +15,7 @@ Guía operativa para agentes que trabajen en este repositorio. Leerla completa a
 
 - No introducir frameworks, bundlers ni dependencias npm de runtime sin autorización explícita.
 - No añadir jQuery ni Bootstrap. El sitio usa CSS propio (`.visually-hidden`, `.nav-right`) y Alpine para la UI.
+- **Alpine primero:** toda UI interactiva (listas, tarjetas, modales, formularios, menús, toasts y estados) se implementa con Alpine (`x-data`/stores, `x-for`, `x-model`, `:hidden`, `x-trap`). El JS clásico queda para Supabase, RPC, Realtime, cálculo y APIs `window.*`; no se añaden renders con `innerHTML` ni listeners por elemento.
 - Las librerías externas se cargan por CDN con versión fijada (Supabase JS 2.118.0, Alpine 3.17.5, `@alpinejs/focus` 3.17.5, Font Awesome 6.6.0). No cambiar versiones a `latest`.
 - Mantener el estilo actual: variables CSS, clases semánticas, modo claro/oscuro y diseño responsive.
 - El sitio debe funcionar sin build. No crear pasos de compilación obligatorios.
@@ -25,11 +26,11 @@ Guía operativa para agentes que trabajen en este repositorio. Leerla completa a
 |---|---|
 | `main.js` | Utilidades globales, tema, toasts, sesión comunidad, admin Supabase, confeti, alertas de stream; stores Alpine `perfil`, `ui` y `toast` |
 | `style.css` | Estilos compartidos, variables, componentes, responsive, modo claro |
-| `index.html` | Home, player Kick, clips, feed social, YouTube, muro de saludos |
-| `comunidad.html` | Presencia, chat, reacciones, ranking, rangos, login/registro comunidad |
-| `galeria.html` | Subida, galería pública, likes, lightbox, moderación |
-| `sorteo.html` | Modo manual, modo streamer, tómbola online, ganadores |
-| `cine.html` | Sincronización de películas/videos para espectadores y streamer |
+| `index.html` | Home, player Kick, clips, feed social, YouTube, muro de saludos (store `muro`) y modal de feeds (store `media`) |
+| `comunidad.html` | Presencia, chat, reacciones, ranking, rangos, login/registro comunidad (stores `chat`, `ranking`, `rangosChat`, `reacciones`, `tienda`) |
+| `galeria.html` | Subida (store `subida`), galería pública y lightbox (store `galeria`), moderación (store `admin`) |
+| `sorteo.html` | Modo manual, modo streamer, tómbola online, ganadores (store `sorteo`) |
+| `cine.html` | Sincronización de películas/videos para espectadores y streamer (store `cine`) |
 | `_headers` | Cabeceras para hosts que las soportan (NO en GitHub Pages) |
 | `VERSION` | Versión SemVer de la release |
 | `beta.md` | Plan de trabajo de la beta de perfil, tienda privada y admin (implementado en 1.7.2) |
@@ -52,6 +53,17 @@ Las migraciones SQL no se versionan en este repo: el historial vive en Supabase.
 - Respetar `prefers-reduced-motion` en animaciones nuevas (el confeti ya lo hace).
 - Mantener los textos de UI en español y el tono actual.
 - No usar `Get-Content`/`Set-Content` de PowerShell 5.1 para reemplazos masivos en archivos UTF-8: leen ANSI y rompen acentos/emojis. Usar el editor o Node/Python con UTF-8 explícito.
+
+### 4.1 Alpine: reglas obligatorias
+
+- Stores globales en `main.js`: `perfil` (modal), `ui` (menú móvil) y `toast`.
+- Stores por página: `media`/`muro` (index), `galeria`/`admin`/`subida` (galería), `chat`/`ranking`/`rangosChat`/`reacciones`/`tienda` (comunidad), `sorteo` y `cine`.
+- Listas y tarjetas con `x-for` y `:key`. Formularios con `x-model` (o `:value` + `@input` en objetos anidados). Textos y feedback con `x-text` + `:hidden`.
+- Visibilidad con `:hidden="!abierto"` y la regla global `[hidden]`; `x-cloak` para lo que deba ocultarse antes de inicializar. Evitar `x-show` en elementos con `display: flex` (en este build puede no volver a ocultarlos).
+- Modales con `x-trap.noscroll` y cierre por Escape, fondo o botón; el foco vuelve solo.
+- Al migrar una zona, borrar el render manual anterior, sus listeners y las funciones sin uso. No dejar dos mecanismos para lo mismo.
+- `innerHTML` solo para markup estático propio; nunca con datos de usuario.
+- Realtime y RPC actualizan el store; la vista reacciona sola.
 
 ## 5. Supabase: reglas no negociables
 
@@ -141,7 +153,7 @@ Las migraciones SQL no se versionan en este repo: el historial vive en Supabase.
 - En cada release, actualizar el query de caché `?v=X.Y.Z` de `style.css` y `main.js` en los HTML (GitHub Pages cachea agresivamente).
 - Formato de commit: `vX.Y.Z - resumen corto` (seguir el historial existente).
 - No commitear ni pushear una versión inestable. Probar antes.
-- Versión de esta release: `1.21.0` (muro completo y cine en Alpine; sobre 1.20.0).
+- Versión de esta release: `1.22.0` (subida de galería en Alpine y auditoría; sobre 1.21.0).
 
 ## 9. Pruebas antes de commitear
 
@@ -152,6 +164,7 @@ Las migraciones SQL no se versionan en este repo: el historial vive en Supabase.
    - Home: player/clips/feed cargan, muro pinta mensajes, no errores de consola propios.
    - Comunidad: presencia muestra "Nadie en línea" si no hay nadie, chat/ranking cargan, login/registro y reacciones funcionan.
    - Galería: tarjetas abren lightbox; like sin sesión NO abre lightbox y pide login; con sesión alterna like/contador; moderación rechaza cuentas no admin; pestañas Usuarios/Auditoría cargan y el detalle de auditoría se escapa.
+   - Galería (subida): sin título muestra toast; archivo que no es imagen o formato no permitido muestra el feedback del store y no sube nada.
    - Comunidad: perfil (bio/links/avatar), tienda (catálogo/canje), icono equipado y reacciones del muro; probar con usuario temporal y borrarlo.
    - Sorteo: modo manual agrega/gira; modo streamer pide login; si no hay sesión admin no muestra panel; errores de red no muestran un ganador falso.
    - Cine: estado/video cargan, overlay/join no rompe MP4 si YouTube falla, sin errores propios.

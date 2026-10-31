@@ -27,7 +27,7 @@
     <meta name="twitter:image" content="https://lagochagaming.com/img/3.jpg">
 
     <link rel="manifest" href="manifest.webmanifest">
-    <link rel="stylesheet" href="style.css?v=1.21.0">
+    <link rel="stylesheet" href="style.css?v=1.22.0">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;800;900&display=swap" rel="stylesheet">
@@ -302,7 +302,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0" defer></script>
 
-    <script src="main.js?v=1.21.0" defer></script>
+    <script src="main.js?v=1.22.0" defer></script>
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/focus@3.17.5/dist/cdn.min.js" crossorigin="anonymous"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.17.5/dist/cdn.min.js" crossorigin="anonymous"></script>
     <script>
@@ -332,12 +332,6 @@
             if (!window.RANGOS_COMUNIDAD || !window.claveRango) return null;
             const normalizada = window.claveRango(clave);
             return window.RANGOS_COMUNIDAD.find(r => r.clave === normalizada) || null;
-        }
-
-        function badgeRangoMuro(msg) {
-            const info = (msg && msg.verificado && msg.rango) ? infoRangoMuro(msg.rango) : null;
-            if (!info) return '';
-            return `<span class="rango-badge rango-solo-icono rango-${info.clave}" title="${escapeAttr(info.nombre)}">${info.emoji}</span>`;
         }
 
         // === FEED DE INSTAGRAM Y TIKTOK (Edge Functions propias, sin Juicer) ===
@@ -769,9 +763,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
         // Las funciones del toast de stream y su listener viven en main.js
-        function cargarMensajes(reiniciar = false) {
-            window.Alpine?.store('muro')?.cargar(!!reiniciar);
-        }
 
         function iniciarRealtimeMuro() {
             if (!window.supabase) return;
@@ -786,13 +777,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
 
-        function cargarMasMensajes() {
-            window.Alpine?.store('muro')?.cargarMas();
-        }
 
-        async function eliminarSaludo(id) {
-            await window.Alpine?.store('muro')?.eliminar(id);
-        }
 
         // escapeHtml / escapeAttr viven en main.js (fuente única del sitio)
 

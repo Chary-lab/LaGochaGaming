@@ -1,0 +1,24 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>subida</title>
+<iframe id="f" src="galeria.html" style="width=1200px;height=900px;border:0"></iframe>
+<script>
+setTimeout(() => {
+  const d = document.getElementById('f').contentDocument;
+  const w = document.getElementById('f').contentWindow;
+  const st = w.Alpine.store('subida');
+  const fb = d.querySelector('#uploadFeedback p');
+  const out = { existe: !!st, titulo: st.titulo, autor: st.autorAdmin };
+  st.titulo = '';
+  st.procesar(new File(['x'], 'a.png', { type: 'image/png' }));
+  setTimeout(() => {
+    out.sinTitulo = { toast: d.querySelector('#gochi-toast')?.textContent, feedback: fb?.textContent, hidden: fb?.hidden };
+    st.titulo = 'Prueba';
+    st.procesar(new File(['x'], 'a.txt', { type: 'text/plain' }));
+    setTimeout(() => {
+      out.tipoMalo = { feedback: fb?.textContent, hidden: fb?.hidden, clase: fb?.className };
+      document.title = JSON.stringify(out);
+    }, 700);
+  }, 700);
+}, 9000);
+</script>
