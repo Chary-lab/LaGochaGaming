@@ -135,7 +135,7 @@ Las migraciones SQL no se versionan en este repo: el historial vive en Supabase.
 - En cada release, actualizar el query de caché `?v=X.Y.Z` de `style.css` y `main.js` en los HTML (GitHub Pages cachea agresivamente).
 - Formato de commit: `vX.Y.Z - resumen corto` (seguir el historial existente).
 - No commitear ni pushear una versión inestable. Probar antes.
-- Versión de esta release: `1.13.1` (simetría de los feeds 4:5; sobre 1.13.0).
+- Versión de esta release: `1.13.2` (guía de trabajo actualizada; sobre 1.13.1).
 
 ## 9. Pruebas antes de commitear
 
@@ -166,6 +166,8 @@ Las migraciones SQL no se versionan en este repo: el historial vive en Supabase.
 5. Actualizar `VERSION`, `CHANGELOG.md` y `sitemap.xml` si corresponde.
 6. Commit con `vX.Y.Z - resumen` y push solo si la versión es estable (el usuario lo autoriza).
 7. Reportar hallazgos, cambios, pruebas y riesgos pendientes.
+8. Usar las skills cuando encajen (`frontend-developer`, `backend-architect`, `supabase`) y MCP (Supabase, Context7) para DB, Edge Functions, logs y docs, en vez de llamadas manuales. Nunca escribir tokens o secretos en archivos, commits ni prompts; usarlos en memoria y recomendar revocarlos.
+9. Mantener el repo limpio y barato de leer: borrar archivos temporales (`_test-*`, probes), VERSION/CHANGELOG/AGENTS sincronizados, caché `?v=X.Y.Z` al día, y usar `grep` o lecturas por rangos en vez de volcar archivos enteros.
 
 ## 11. Lista de "no hacer"
 

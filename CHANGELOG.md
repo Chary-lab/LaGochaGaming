@@ -3,6 +3,13 @@
 Formato basado en Keep a Changelog. Versionado SemVer (`MAJOR.MINOR.PATCH`).
 El historial anterior a 1.5.0 está en los commits `v1.4.x`.
 
+## [1.13.2] - 2026-10-30
+
+### Guía de trabajo
+
+- Concretados los pasos 8 y 9 de `AGENTS.md`: skills y MCP preferidos, manejo de
+  tokens en memoria, limpieza de temporales y lectura eficiente del repo.
+
 ## [1.13.1] - 2026-10-30
 
 ### Simetría de los feeds
