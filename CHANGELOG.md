@@ -3,6 +3,16 @@
 Formato basado en Keep a Changelog. Versionado SemVer (`MAJOR.MINOR.PATCH`).
 El historial anterior a 1.5.0 está en los commits `v1.4.x`.
 
+## [1.23.0] - 2026-10-31
+
+### Sorteo completo en Alpine
+
+- Lista manual con `x-for` y store (`sorteo.manual`): agregar, quitar y limpiar.
+- Ganadores oficiales con `x-for` (`sorteo.ganadores`), estado de carga y vacío.
+- La ruleta manual lee la lista del store; fuera el render con `innerHTML`.
+- Corregido `:hidden` con `.length` numérico: un `0` mantenía ocultos los
+  estados vacíos del muro y de ganadores.
+
 ## [1.22.0] - 2026-10-31
 
 ### Subida de galería en Alpine y auditoría

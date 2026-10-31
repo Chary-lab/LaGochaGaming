@@ -27,7 +27,7 @@
     <meta name="twitter:image" content="https://lagochagaming.com/img/3.jpg">
 
     <link rel="manifest" href="manifest.webmanifest">
-    <link rel="stylesheet" href="style.css?v=1.22.0">
+    <link rel="stylesheet" href="style.css?v=1.23.0">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;800;900&display=swap" rel="stylesheet">
@@ -195,7 +195,7 @@
                  x-bind:hidden="!$store.muro.feedback" x-text="$store.muro.feedback"></div>
         </div>
         <div id="muro-mensajes-container" class="muro-grid">
-            <p class="muro-empty" x-bind:hidden="$store.muro.cargando || $store.muro.mensajes.length">Aún no hay saludos. ¡Sé el primero en escribir uno! 💖</p>
+            <p class="muro-empty" x-bind:hidden="$store.muro.cargando || $store.muro.mensajes.length > 0">Aún no hay saludos. ¡Sé el primero en escribir uno! 💖</p>
             <template x-for="msg in $store.muro.mensajes" :key="msg.id">
                 <div class="muro-card" x-bind:id="'muro-card-' + msg.id">
                     <div class="muro-card-header">
@@ -302,7 +302,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0" defer></script>
 
-    <script src="main.js?v=1.22.0" defer></script>
+    <script src="main.js?v=1.23.0" defer></script>
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/focus@3.17.5/dist/cdn.min.js" crossorigin="anonymous"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.17.5/dist/cdn.min.js" crossorigin="anonymous"></script>
     <script>

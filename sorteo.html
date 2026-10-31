@@ -24,7 +24,7 @@
     <meta name="twitter:description" content="Sorteos de La Gocha con premios increíbles: el modo streamer sortea en el servidor y el manual gira en tu navegador.">
     <meta name="twitter:image" content="https://lagochagaming.com/img/3.jpg">
     <link rel="manifest" href="manifest.webmanifest">
-    <link rel="stylesheet" href="style.css?v=1.22.0">
+    <link rel="stylesheet" href="style.css?v=1.23.0">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;800;900&display=swap" rel="stylesheet">
@@ -71,8 +71,15 @@
             <p class="sidebar-ganadores-lead">
                 Registro histórico con los últimos ganadores afortunados de los sorteos oficiales de la comunidad.
             </p>
-            <div id="top-ganadores-grid">
-                <div class="ganadores-empty">Cargando ganadores oficiales...</div>
+            <div id="top-ganadores-grid" x-data="{ }">
+                <template x-for="g in $store.sorteo.ganadores" :key="g.nombre + g.created_at">
+                    <div class="ganador-card-side">
+                        <div class="ganador-nombre" x-text="'🎉 ' + (g.nombre || '')"></div>
+                        <div class="ganador-fecha" x-text="g.fechaTexto"></div>
+                    </div>
+                </template>
+                <div class="ganadores-empty" x-bind:hidden="$store.sorteo.ganadoresEstado !== 'inicial'">Cargando ganadores oficiales...</div>
+                <div class="ganadores-empty" x-bind:hidden="$store.sorteo.ganadoresEstado !== 'lista' || $store.sorteo.ganadores.length > 0">Sin ganadores registrados.</div>
             </div>
         </div>
 
@@ -90,7 +97,7 @@
             </div>
 
             <!-- MODO MANUAL -->
-            <div id="sec-modo-manual" class="sorteo-panel-manual" role="tabpanel" aria-labelledby="tab-manual">
+            <div id="sec-modo-manual" class="sorteo-panel-manual" role="tabpanel" aria-labelledby="tab-manual" x-data="{ }">
                 <h2 class="sorteo-page-title">✍️ App de Sorteos Manual</h2>
                 <p class="sorteo-lead">
                     Función para la comunidad y moderadores: Agrega nombres personalizados de participantes de forma local y haz girar la ruleta de prueba con efectos de confeti.
@@ -114,8 +121,16 @@
                 </div>
 
                 <div class="participants-box">
-                    <h3 class="participants-title">Participantes (<span id="count-publico">0</span>)</h3>
-                    <ul id="lista-participantes-publico" class="participants-list"></ul>
+                    <h3 class="participants-title">Participantes (<span x-text="$store.sorteo.manual.length">0</span>)</h3>
+                    <ul id="lista-participantes-publico" class="participants-list">
+                        <template x-for="(p, index) in $store.sorteo.manual" :key="p">
+                            <li class="tag-participante">
+                                <span x-text="'@' + p"></span>
+                                <button type="button" class="btn-copiar-enlace" x-bind:data-user="'@' + p" aria-label="Copiar usuario" title="Copiar usuario"><i class="fa-solid fa-link"></i></button>
+                                <button type="button" x-on:click="$store.sorteo.manual.splice(index, 1)" aria-label="Quitar participante" title="Quitar participante"><i class="fa-solid fa-xmark"></i></button>
+                            </li>
+                        </template>
+                    </ul>
                 </div>
             </div>
 
@@ -210,14 +225,13 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
     <script>
-        let listaPublica = [];
         let sorteoAbierto = false;
         let modoManualAbierto = false;
         let streamerAutenticado = false;
         let ruletaGirando = false;
 
         document.addEventListener('alpine:init', () => {
-            window.Alpine.store('sorteo', { participantes: [] });
+            window.Alpine.store('sorteo', { participantes: [], manual: [], ganadores: [], ganadoresEstado: 'inicial' });
         });
 
         function obtenerStoreSorteo() {
@@ -299,9 +313,6 @@
                 case 'spin-streamer': girarRuletaStreamer(); break;
                 case 'close-login': cerrarModalPin(); break;
                 case 'join-draw': enviarParticipacionTemporal(); break;
-                case 'remove-public-participant':
-                    if (Number.isInteger(index)) eliminarParticipantePublico(index);
-                    break;
             }
         });
 
@@ -656,48 +667,29 @@
         }
 
         function agregarParticipantePublico() {
+            const store = obtenerStoreSorteo();
             const input = document.getElementById('nombre-input-publico');
-            if (!input) return;
-            let nombre = input.value.trim().replace('@', '');
+            if (!store || !input) return;
+            const nombre = input.value.trim().replace('@', '');
             if (!nombre) return;
 
-            if (listaPublica.some(p => p.toLowerCase() === nombre.toLowerCase())) {
+            if (store.manual.some((p) => p.toLowerCase() === nombre.toLowerCase())) {
                 mostrarFeedback('feedback-manual', '⚠️ Este participante ya está en la lista.', true);
                 return;
             }
 
-            listaPublica.push(nombre);
-            actualizarListaPublica();
+            store.manual.push(nombre);
             input.value = '';
             input.focus();
             mostrarFeedback('feedback-manual', `✅ @${nombre} agregado a la lista.`);
         }
 
-        function eliminarParticipantePublico(index) {
-            listaPublica.splice(index, 1);
-            actualizarListaPublica();
-        }
-
         function limpiarListaPublica() {
-            listaPublica = [];
-            actualizarListaPublica();
-            document.getElementById('ruleta-display-publico').innerText = "¡Sorteo Listo!";
+            const store = obtenerStoreSorteo();
+            if (store) store.manual = [];
+            const display = document.getElementById('ruleta-display-publico');
+            if (display) display.innerText = '¡Sorteo Listo!';
             mostrarFeedback('feedback-manual', '🧹 Lista de participantes limpiada.');
-        }
-
-        function actualizarListaPublica() {
-            const ul = document.getElementById('lista-participantes-publico');
-            const count = document.getElementById('count-publico');
-            if (!ul || !count) return;
-
-            ul.innerHTML = '';
-            listaPublica.forEach((p, index) => {
-                const li = document.createElement('li');
-                li.className = 'tag-participante';
-                li.innerHTML = `@${escapeHtml(p)} <button type="button" class="btn-copiar-enlace" data-user="@${escapeHtml(p)}" aria-label="Copiar usuario" title="Copiar usuario"><i class="fa-solid fa-link"></i></button> <button type="button" data-action="remove-public-participant" data-index="${index}"><i class="fa-solid fa-xmark"></i></button>`;
-                ul.appendChild(li);
-            });
-            count.innerText = listaPublica.length;
         }
 
         // Indice aleatorio con crypto.getRandomValues y rejection sampling
@@ -718,7 +710,9 @@
 
         function girarRuletaPublica() {
             if (ruletaGirando) return;
-            if (listaPublica.length === 0) {
+            const store = obtenerStoreSorteo();
+            const lista = store ? store.manual : [];
+            if (lista.length === 0) {
                 mostrarFeedback('feedback-manual', '⚠️ Agrega al menos un participante antes de girar.', true);
                 return;
             }
@@ -726,12 +720,12 @@
             let display = document.getElementById('ruleta-display-publico');
             let counter = 0;
             let intervalo = setInterval(() => {
-                let randomIndex = indiceAleatorioSeguro(listaPublica.length);
-                display.innerText = `@${escapeHtml(listaPublica[randomIndex])}`;
+                let randomIndex = indiceAleatorioSeguro(lista.length);
+                display.innerText = `@${escapeHtml(lista[randomIndex])}`;
                 counter++;
                 if (counter > 25) {
                     clearInterval(intervalo);
-                    let ganadorFinal = listaPublica[indiceAleatorioSeguro(listaPublica.length)];
+                    let ganadorFinal = lista[indiceAleatorioSeguro(lista.length)];
                     display.innerHTML = `🎉 ¡@${escapeHtml(ganadorFinal)}! 🎉`;
                     lanzarConfetti('confetti-canvas-publico');
                     ruletaGirando = false;
@@ -898,29 +892,21 @@
         async function cargarTopGanadores() {
             try {
                 const { data, error } = await supabase.from('ganadores_sorteo').select('nombre, created_at').order('created_at', { ascending: false }).limit(20);
-                if (error) return;
-                const grid = document.getElementById('top-ganadores-grid');
-                if (!grid) return;
-                grid.innerHTML = '';
-                if (!data || data.length === 0) {
-                    grid.innerHTML = '<div class="ganadores-empty">Sin ganadores registrados.</div>';
-                    return;
-                }
-                data.forEach(g => {
-                    const card = document.createElement('div');
-                    card.className = 'ganador-card-side';
-                    const fecha = new Date(g.created_at).toLocaleString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-                    const nombreDiv = document.createElement('div');
-                    nombreDiv.className = 'ganador-nombre';
-                    nombreDiv.textContent = `🎉 ${g.nombre || ''}`;
-                    const fechaDiv = document.createElement('div');
-                    fechaDiv.className = 'ganador-fecha';
-                    fechaDiv.textContent = fecha;
-                    card.appendChild(nombreDiv);
-                    card.appendChild(fechaDiv);
-                    grid.appendChild(card);
-                });
-            } catch (err) { console.error('Error:', err); }
+                if (error) throw error;
+                const store = obtenerStoreSorteo();
+                if (!store) return;
+                store.ganadores = (data || []).map((g) => Object.assign({}, g, {
+                    fechaTexto: new Date(g.created_at).toLocaleString('es-ES', {
+                        day: '2-digit', month: '2-digit', year: 'numeric',
+                        hour: '2-digit', minute: '2-digit'
+                    })
+                }));
+                store.ganadoresEstado = 'lista';
+            } catch (err) {
+                console.error('Error:', err);
+                const store = obtenerStoreSorteo();
+                if (store) store.ganadoresEstado = 'lista';
+            }
         }
 
         // El confeti se lanza con window.lanzarConfetti (main.js).
@@ -941,7 +927,7 @@
         </div>
     </footer>
 
-    <script src="main.js?v=1.22.0" defer></script>
+    <script src="main.js?v=1.23.0" defer></script>
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/focus@3.17.5/dist/cdn.min.js" crossorigin="anonymous"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.17.5/dist/cdn.min.js"
             integrity="sha384-FYLKjwG3aohNhNZoVG8sY/5ntunm+MqylL90Q+rT3OM7AwV9/BKFjk/RjoIpIgsI"

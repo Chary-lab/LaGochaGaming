@@ -29,7 +29,7 @@ Guía operativa para agentes que trabajen en este repositorio. Leerla completa a
 | `index.html` | Home, player Kick, clips, feed social, YouTube, muro de saludos (store `muro`) y modal de feeds (store `media`) |
 | `comunidad.html` | Presencia, chat, reacciones, ranking, rangos, login/registro comunidad (stores `chat`, `ranking`, `rangosChat`, `reacciones`, `tienda`) |
 | `galeria.html` | Subida (store `subida`), galería pública y lightbox (store `galeria`), moderación (store `admin`) |
-| `sorteo.html` | Modo manual, modo streamer, tómbola online, ganadores (store `sorteo`) |
+| `sorteo.html` | Modo manual, modo streamer, tómbola online, ganadores (store `sorteo` con `participantes`, `manual` y `ganadores`) |
 | `cine.html` | Sincronización de películas/videos para espectadores y streamer (store `cine`) |
 | `_headers` | Cabeceras para hosts que las soportan (NO en GitHub Pages) |
 | `VERSION` | Versión SemVer de la release |
@@ -153,7 +153,7 @@ Las migraciones SQL no se versionan en este repo: el historial vive en Supabase.
 - En cada release, actualizar el query de caché `?v=X.Y.Z` de `style.css` y `main.js` en los HTML (GitHub Pages cachea agresivamente).
 - Formato de commit: `vX.Y.Z - resumen corto` (seguir el historial existente).
 - No commitear ni pushear una versión inestable. Probar antes.
-- Versión de esta release: `1.22.0` (subida de galería en Alpine y auditoría; sobre 1.21.0).
+- Versión de esta release: `1.23.0` (sorteo completo en Alpine; sobre 1.22.0).
 
 ## 9. Pruebas antes de commitear
 
