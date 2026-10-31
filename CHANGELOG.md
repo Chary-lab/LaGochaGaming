@@ -3,6 +3,14 @@
 Formato basado en Keep a Changelog. Versionado SemVer (`MAJOR.MINOR.PATCH`).
 El historial anterior a 1.5.0 está en los commits `v1.4.x`.
 
+## [1.13.1] - 2026-10-30
+
+### Simetría de los feeds
+
+- Las tarjetas de Instagram usan la misma proporción que TikTok (4:5). Ambas
+  columnas quedan con 6 tarjetas y la misma altura.
+- Sin cambios en la carga de datos.
+
 ## [1.13.0] - 2026-10-30
 
 ### Feed de TikTok propio (sin embed)

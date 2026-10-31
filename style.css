@@ -339,9 +339,7 @@ body.light-mode .hero-bio {
 }
 
 /* TikTok: rejilla propia con la función tiktok-feed */
-.tt-feed .ig-card {
-    aspect-ratio: 4 / 5;
-}
+/* (misma proporción de tarjeta que Instagram para mantener la simetría) */
 /* Nota bajo los feeds sociales (Instagram / TikTok) */
 .social-feed-nota {
     margin: 12px 0 0;
@@ -367,7 +365,7 @@ body.light-mode .hero-bio {
 .ig-card {
     position: relative;
     display: block;
-    aspect-ratio: 1 / 1;
+    aspect-ratio: 4 / 5;
     border-radius: 10px;
     overflow: hidden;
     background: var(--card-bg-subtle);
