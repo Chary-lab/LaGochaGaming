@@ -366,76 +366,7 @@ window.copiarEnlace = async function copiarEnlace(url, textoExito = '¡Enlace co
     }
 };
 
-// === REACCIONES MURO DE SALUDOS ===
-window.establecerReaccionMuro = async function establecerReaccionMuro(muroId, emoji) {
-    if (!window.supabase) return;
-    const token = localStorage.getItem('comunidad_session_token');
-    if (!token) {
-        window.mostrarToast?.('Inicia sesión en la Comunidad para reaccionar', true);
-        return;
-    }
-    try {
-        const { data, error } = await supabase.rpc('establecer_reaccion_muro', {
-            p_token: token,
-            p_muro_id: muroId,
-            p_emoji: emoji
-        });
-        if (error) throw error;
-        if (!data || !data.ok) {
-            if (data && data.error === 'sin_sesion') {
-                window.mostrarToast?.('Sesión expirada. Inicia sesión de nuevo.', true);
-            } else {
-                window.mostrarToast?.('No se pudo reaccionar.', true);
-            }
-            return;
-        }
-        // La UI se actualiza vía Realtime o recarga manual
-        cargarReaccionesMuro(muroId);
-    } catch (e) {
-        console.error(e);
-        window.mostrarToast?.('Error al reaccionar.', true);
-    }
-};
-
-// Cargar reacciones de un muro específico
-window.cargarReaccionesMuro = async function cargarReaccionesMuro(muroId) {
-    if (!window.supabase) return;
-    const token = localStorage.getItem('comunidad_session_token');
-    try {
-        const { data, error } = await supabase.rpc('obtener_reacciones_muro', {
-            p_muro_id: muroId,
-            p_token: token || null
-        });
-        if (error) throw error;
-        if (!data || !data.ok) return;
-        const reacciones = data.reacciones || [];
-        const container = document.querySelector(`.muro-reacciones[data-muro-id="${muroId}"]`);
-        if (!container) return;
-        container.innerHTML = '';
-        reacciones.forEach(r => {
-            const chip = document.createElement('span');
-            chip.className = 'reaccion-badge' + (r.mia ? ' mia' : '');
-            chip.tabIndex = 0;
-            chip.setAttribute('role', 'button');
-            chip.setAttribute('aria-label', `Reaccionar con ${r.emoji}, ${r.count} reacciones`);
-            chip.innerHTML = `<span class="emoji">${window.escapeHtml(r.emoji)}</span><span class="count">${r.count}</span>`;
-            chip.addEventListener('click', (e) => {
-                e.stopPropagation();
-                window.establecerReaccionMuro(muroId, r.emoji);
-            });
-            chip.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    window.establecerReaccionMuro(muroId, r.emoji);
-                }
-            });
-            container.appendChild(chip);
-        });
-    } catch (e) {
-        console.error('Error cargando reacciones muro:', e);
-    }
-};
+// === REACCIONES MURO: viven en el store Alpine `muro` (index.html) ===
 
 // Iniciar Realtime para reacciones de muro
 window.iniciarRealtimeMuroReacciones = function iniciarRealtimeMuroReacciones() {
@@ -445,7 +376,7 @@ window.iniciarRealtimeMuroReacciones = function iniciarRealtimeMuroReacciones() 
             .on('postgres_changes', { event: '*', schema: 'public', table: 'muro_reactions' }, (payload) => {
                 const muroId = payload.new?.muro_id || payload.old?.muro_id;
                 if (muroId) {
-                    window.cargarReaccionesMuro(muroId);
+                    window.Alpine?.store('muro')?.cargarReacciones(muroId);
                 }
             })
             .subscribe();

@@ -3,6 +3,17 @@
 Formato basado en Keep a Changelog. Versionado SemVer (`MAJOR.MINOR.PATCH`).
 El historial anterior a 1.5.0 está en los commits `v1.4.x`.
 
+## [1.21.0] - 2026-10-31
+
+### Muro completo y cine en Alpine
+
+- Muro con `x-for`: tarjetas, autor con rango, enlace al perfil, reacciones,
+  burbuja rápida, borrado admin, paginación y estado vacío desde el store.
+- Realtime de saludos y reacciones escribe en el store (sin reconstruir DOM).
+- Cine con store `cine` para overlay, estado, fuente, botones de unirse,
+  enlace a YouTube y espectadores. El motor de sincronización no cambia.
+- Galería: lightbox y panel admin ya eran Alpine; sin cambios funcionales.
+
 ## [1.20.0] - 2026-10-31
 
 ### Toasts y muro en Alpine

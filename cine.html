@@ -24,7 +24,7 @@
     <meta name="twitter:description" content="Disfruta de películas y videos en comunidad con La Gocha.">
     <meta name="twitter:image" content="https://lagochagaming.com/img/3.jpg">
     <link rel="manifest" href="manifest.webmanifest">
-    <link rel="stylesheet" href="style.css?v=1.20.0">
+    <link rel="stylesheet" href="style.css?v=1.21.0">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;800;900&display=swap" rel="stylesheet">
@@ -65,7 +65,7 @@
     <!-- TOAST DE STREAM EN VIVO se inserta dinámicamente desde main.js -->
 
     <div class="cine-layout page-layout" id="contenido" tabindex="-1">
-        <div class="cine-main-screen">
+        <div class="cine-main-screen" x-data="{ }">
             <!-- BARRA DE TÍTULO Y BOTÓN DE PANEL -->
             <div class="cine-controls-bar">
                 <h1 class="cine-title"><i class="fa-solid fa-film cine-title-icon"></i> GochiWatch - Cine en Directo</h1>
@@ -111,14 +111,17 @@
             <!-- CONTENEDOR DE REPRODUCCIÓN Y CÁMARA DE KICK -->
             <div class="video-player-box" id="videoBoxContainer">
                 <!-- Estado de carga / error -->
-                <div id="cinePlayerOverlay" class="cine-player-overlay">
+                <div id="cinePlayerOverlay" class="cine-player-overlay"
+                     x-bind:class="{ hide: !$store.cine.overlayVisible, error: $store.cine.overlayError }">
                     <div class="cine-overlay-text">
-                        <i class="fa-solid fa-circle-info"></i>
-                        <span>Esperando video del streamer…</span>
-                        <button type="button" id="cine-join-play" class="btn-primary cine-join-btn" hidden>
+                        <i x-bind:class="$store.cine.overlayError ? 'fa-solid fa-triangle-exclamation' : 'fa-solid fa-circle-info'"></i>
+                        <span x-text="$store.cine.overlayTexto">Esperando video del streamer…</span>
+                        <button type="button" id="cine-join-play" class="btn-primary cine-join-btn" hidden
+                                x-bind:hidden="!$store.cine.overlayUnirse">
                             ▶ Unirme a la reproducción
                         </button>
-                        <a id="cine-open-youtube" class="btn-cine-ghost cine-open-youtube" href="#" target="_blank" rel="noopener noreferrer" hidden>
+                        <a id="cine-open-youtube" class="btn-cine-ghost cine-open-youtube" href="#" target="_blank" rel="noopener noreferrer" hidden
+                           x-bind:hidden="!$store.cine.youtubeVisible" x-bind:href="$store.cine.youtubeUrl">
                             <i class="fa-brands fa-youtube"></i> Abrir en YouTube
                         </a>
                     </div>
@@ -141,13 +144,19 @@
 
             <div class="cine-now-playing">
                 <div class="cine-now-meta">
-                    <span id="cineSourceBadge" class="cine-source-badge" hidden><i class="fa-solid fa-film"></i> <span>Video</span></span>
-                    <span id="cineStatusPill" class="cine-status-pill is-waiting"><i class="fa-solid fa-circle"></i> <span>Esperando</span></span>
-                    <span class="cine-viewers"><i class="fa-solid fa-users"></i> <span id="cineViewersCount">0</span> viendo</span>
+                    <span id="cineSourceBadge" class="cine-source-badge" hidden x-bind:hidden="!$store.cine.fuenteVisible">
+                        <i x-bind:class="$store.cine.fuenteIcono"></i> <span x-text="$store.cine.fuenteTexto">Video</span>
+                    </span>
+                    <span id="cineStatusPill" class="cine-status-pill is-waiting"
+                          x-bind:class="'cine-status-pill ' + $store.cine.estadoClase">
+                        <i class="fa-solid fa-circle"></i> <span x-text="$store.cine.estadoTexto">Esperando</span>
+                    </span>
+                    <span class="cine-viewers"><i class="fa-solid fa-users"></i> <span id="cineViewersCount" x-text="$store.cine.viewers">0</span> viendo</span>
                 </div>
                 <div class="cine-now-actions">
-                    <button type="button" id="cine-join-bar" class="btn-primary cine-join-bar" hidden>
-                        <i class="fa-solid fa-play"></i> Unirme a la reproducción
+                    <button type="button" id="cine-join-bar" class="btn-primary cine-join-bar" hidden
+                            x-bind:hidden="!$store.cine.joinVisible">
+                        <i x-bind:class="$store.cine.joinIcono"></i> <span x-text="$store.cine.joinTexto">Unirme a la reproducción</span>
                     </button>
                     <button type="button" id="cine-resync" class="btn-cine-ghost" title="Volver a sincronizar">
                         <i class="fa-solid fa-rotate"></i> Sincronizar
@@ -207,7 +216,7 @@
     <script src="https://www.youtube.com/iframe_api" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0" defer></script>
 
-    <script src="main.js?v=1.20.0" defer></script>
+    <script src="main.js?v=1.21.0" defer></script>
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/focus@3.17.5/dist/cdn.min.js" crossorigin="anonymous"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.17.5/dist/cdn.min.js" crossorigin="anonymous"></script>
 
@@ -233,6 +242,30 @@
         let _ytLoadTimer = null;
         let _cargandoVideo = false;
         let ultimoEstadoRemoto = 'pause';
+
+        document.addEventListener('alpine:init', () => {
+            window.Alpine.store('cine', {
+                overlayVisible: true,
+                overlayTexto: 'Esperando video del streamer…',
+                overlayError: false,
+                overlayUnirse: false,
+                estadoTexto: 'Esperando',
+                estadoClase: 'is-waiting',
+                joinVisible: false,
+                joinTexto: 'Unirme a la reproducción',
+                joinIcono: 'fa-solid fa-play',
+                youtubeVisible: false,
+                youtubeUrl: '#',
+                fuenteVisible: false,
+                fuenteIcono: 'fa-solid fa-film',
+                fuenteTexto: 'Video',
+                viewers: 0
+            });
+        });
+
+        function storeCine() {
+            return window.Alpine?.store('cine') || null;
+        }
         let fuenteActual = '';
         let cineError = '';
         let canalCineSocial = null;
@@ -293,9 +326,10 @@
         }
 
         function actualizarFuenteBadge() {
-            if (!sourceBadge) return;
+            const store = storeCine();
+            if (!store) return;
             if (!urlActual) {
-                sourceBadge.hidden = true;
+                store.fuenteVisible = false;
                 return;
             }
             const fuente = fuenteActual || detectarFuente(urlActual);
@@ -304,8 +338,9 @@
                 : fuente === 'drive'
                     ? { icono: 'fa-brands fa-google-drive', texto: 'Google Drive' }
                     : { icono: 'fa-solid fa-film', texto: 'Video directo' };
-            sourceBadge.hidden = false;
-            sourceBadge.innerHTML = `<i class="${datos.icono}"></i> <span>${datos.texto}</span>`;
+            store.fuenteVisible = true;
+            store.fuenteIcono = datos.icono;
+            store.fuenteTexto = datos.texto;
         }
 
         function estaReproduciendoCine() {
@@ -323,33 +358,27 @@
         }
 
         function actualizarControlesCine() {
+            const store = storeCine();
+            if (!store) return;
             const playing = estaReproduciendoCine();
-            if (statusPill) {
-                let texto = 'Esperando';
-                let clase = 'is-waiting';
-                if (cineError) {
-                    texto = cineError;
-                    clase = 'is-error';
-                } else if (urlActual) {
-                    if (playing) { texto = 'Reproduciendo'; clase = 'is-playing'; }
-                    else if (ultimoEstadoRemoto === 'play') { texto = 'Pulsa unirte'; clase = 'is-paused'; }
-                    else { texto = 'Pausado por el streamer'; clase = 'is-paused'; }
-                }
-                statusPill.className = `cine-status-pill ${clase}`;
-                const span = statusPill.querySelector('span');
-                if (span) span.textContent = texto;
+            let texto = 'Esperando';
+            let clase = 'is-waiting';
+            if (cineError) {
+                texto = cineError;
+                clase = 'is-error';
+            } else if (urlActual) {
+                if (playing) { texto = 'Reproduciendo'; clase = 'is-playing'; }
+                else if (ultimoEstadoRemoto === 'play') { texto = 'Pulsa unirte'; clase = 'is-paused'; }
+                else { texto = 'Pausado por el streamer'; clase = 'is-paused'; }
             }
-            if (btnUnirseBar) {
-                btnUnirseBar.hidden = !urlActual || !!cineError;
-                btnUnirseBar.innerHTML = playing
-                    ? '<i class="fa-solid fa-volume-high"></i> Activar audio'
-                    : '<i class="fa-solid fa-play"></i> Unirme a la reproducción';
-            }
-            if (btnAbrirYouTube) {
-                const mostrar = !!cineError && fuenteActual === 'youtube' && !!urlActual;
-                btnAbrirYouTube.hidden = !mostrar;
-                if (mostrar) btnAbrirYouTube.href = urlActual;
-            }
+            store.estadoTexto = texto;
+            store.estadoClase = clase;
+            store.joinVisible = !!urlActual && !cineError;
+            store.joinTexto = playing ? 'Activar audio' : 'Unirme a la reproducción';
+            store.joinIcono = playing ? 'fa-solid fa-volume-high' : 'fa-solid fa-play';
+            const mostrarYouTube = !!cineError && fuenteActual === 'youtube' && !!urlActual;
+            store.youtubeVisible = mostrarYouTube;
+            if (mostrarYouTube) store.youtubeUrl = urlActual;
             actualizarFuenteBadge();
         }
 
@@ -552,6 +581,8 @@
                     try {
                         const estado = canalCineSocial.presenceState();
                         if (viewersCount) viewersCount.textContent = String(Object.keys(estado).length);
+            const cineStore = storeCine();
+            if (cineStore) cineStore.viewers = Object.keys(estado).length;
                     } catch (e) {}
                 })
                 .on('broadcast', { event: 'reaccion' }, ({ payload }) => {
@@ -895,21 +926,20 @@
         }
 
         function ocultarOverlayCarga() {
-            const overlay = document.getElementById('cinePlayerOverlay');
-            if (overlay) overlay.classList.add('hide');
-            if (btnUnirseCine) btnUnirseCine.hidden = true;
+            const store = storeCine();
+            if (store) {
+                store.overlayVisible = false;
+                store.overlayUnirse = false;
+            }
         }
 
         function mostrarOverlayCarga(mensagem = 'Esperando video del streamer…', esError = false, mostrarUnirse = false) {
-            const overlay = document.getElementById('cinePlayerOverlay');
-            if (!overlay) return;
-            overlay.classList.remove('hide', 'error');
-            if (esError) overlay.classList.add('error');
-            const texto = overlay.querySelector('.cine-overlay-text span');
-            const icono = overlay.querySelector('.cine-overlay-text i');
-            if (texto) texto.textContent = mensagem;
-            if (icono) icono.className = esError ? 'fa-solid fa-triangle-exclamation' : 'fa-solid fa-circle-info';
-            if (btnUnirseCine) btnUnirseCine.hidden = !mostrarUnirse;
+            const store = storeCine();
+            if (!store) return;
+            store.overlayVisible = true;
+            store.overlayError = !!esError;
+            store.overlayTexto = mensagem;
+            store.overlayUnirse = !!mostrarUnirse;
         }
 
         function abrirModalCinePin() {

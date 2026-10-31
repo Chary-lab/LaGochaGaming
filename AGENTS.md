@@ -44,6 +44,7 @@ Las migraciones SQL no se versionan en este repo: el historial vive en Supabase.
 - Preferir `textContent` y creación de nodos a `innerHTML` cuando sea posible.
 - No usar `eval`, `new Function` ni `document.write`.
 - En Alpine, no usar mustaches `{{ }}` dentro de atributos. Usar bindings (`:aria-label="'...' + variable"`).
+- Stores globales en `main.js` (`perfil`, `ui`, `toast`); por página en su HTML (`media`/`muro` en index, `galeria`/`admin` en galería, `cine`, `chat`/`tienda` en comunidad, `sorteo`).
 - Alpine va con `defer` y los stores se registran en `alpine:init`. Usar `x-cloak` en lo que deba ocultarse antes de inicializar.
 - Para visibilidad usar `:hidden="!abierto"` con la regla global `[hidden]`; no `x-show` (en este build no vuelve a ocultar elementos con `display: flex`).
 - Cuidado con la propagación de clics: las tarjetas de galería abren el lightbox, pero los botones de acción deben llegar al listener delegado del documento. Usar `window.abrirLightboxDesdeTarjeta($event, foto, $el)` y no `@click.stop` en la zona de acciones.
@@ -140,7 +141,7 @@ Las migraciones SQL no se versionan en este repo: el historial vive en Supabase.
 - En cada release, actualizar el query de caché `?v=X.Y.Z` de `style.css` y `main.js` en los HTML (GitHub Pages cachea agresivamente).
 - Formato de commit: `vX.Y.Z - resumen corto` (seguir el historial existente).
 - No commitear ni pushear una versión inestable. Probar antes.
-- Versión de esta release: `1.20.0` (toasts y muro en Alpine; sobre 1.19.0).
+- Versión de esta release: `1.21.0` (muro completo y cine en Alpine; sobre 1.20.0).
 
 ## 9. Pruebas antes de commitear
 

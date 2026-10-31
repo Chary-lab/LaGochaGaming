@@ -27,7 +27,7 @@
     <meta name="twitter:image" content="https://lagochagaming.com/img/3.jpg">
 
     <link rel="manifest" href="manifest.webmanifest">
-    <link rel="stylesheet" href="style.css?v=1.20.0">
+    <link rel="stylesheet" href="style.css?v=1.21.0">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;800;900&display=swap" rel="stylesheet">
@@ -182,7 +182,7 @@
     </section>
 
     <!-- 💬 MURO DE SALUDOS DE LA COMUNIDAD -->
-    <section id="muro" class="content-section">
+    <section id="muro" class="content-section" x-data="{ }">
         <h2>💬 MURO DE SALUDOS DE LA COMUNIDAD</h2>
         <div class="muro-form-container" x-data="{ }">
             <form id="muro-form" class="muro-form" x-on:submit.prevent="$store.muro.enviar()">
@@ -194,10 +194,60 @@
                  x-bind:class="{ 'muro-feedback-success': $store.muro.tipo === 'ok', 'muro-feedback-error': $store.muro.tipo === 'error' }"
                  x-bind:hidden="!$store.muro.feedback" x-text="$store.muro.feedback"></div>
         </div>
-        <div id="muro-mensajes-container" class="muro-grid"></div>
+        <div id="muro-mensajes-container" class="muro-grid">
+            <p class="muro-empty" x-bind:hidden="$store.muro.cargando || $store.muro.mensajes.length">Aún no hay saludos. ¡Sé el primero en escribir uno! 💖</p>
+            <template x-for="msg in $store.muro.mensajes" :key="msg.id">
+                <div class="muro-card" x-bind:id="'muro-card-' + msg.id">
+                    <div class="muro-card-header">
+                        <span class="muro-autor"
+                              x-bind:class="[msg.autorLink ? 'muro-autor-link' : '', msg.rangoClave ? 'rango-texto-' + msg.rangoClave : '']"
+                              x-bind:role="msg.autorLink ? 'button' : null"
+                              x-bind:tabindex="msg.autorLink ? 0 : null"
+                              x-bind:title="msg.autorLink ? 'Ver perfil de ' + msg.autor : null"
+                              x-on:click="msg.autorLink && window.abrirPerfilUsuario?.(msg.autor)"
+                              x-on:keydown.enter.prevent="msg.autorLink && window.abrirPerfilUsuario?.(msg.autor)"
+                              x-on:keydown.space.prevent="msg.autorLink && window.abrirPerfilUsuario?.(msg.autor)">
+                            <span x-text="msg.autor"></span>
+                            <template x-if="msg.rangoEmoji">
+                                <span class="rango-badge rango-solo-icono" x-bind:class="'rango-' + msg.rangoClave"
+                                      x-bind:title="msg.rangoNombre" x-text="msg.rangoEmoji"></span>
+                            </template>
+                        </span>
+                        <div class="muro-card-actions">
+                            <button type="button" class="btn-eliminar-muro" x-bind:data-id="msg.id"
+                                    title="Eliminar saludo" aria-label="Eliminar saludo"
+                                    x-on:click="$store.muro.eliminar(msg.id)">
+                                <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
+                            </button>
+                            <span class="muro-fecha" x-text="msg.fechaTexto"></span>
+                        </div>
+                    </div>
+                    <p class="muro-texto" x-text="msg.mensaje"></p>
+                    <div class="muro-reacciones">
+                        <template x-for="r in ($store.muro.reacciones[msg.id] || [])" :key="r.emoji">
+                            <span class="reaccion-badge" x-bind:class="{ mia: r.mia }" role="button" tabindex="0"
+                                  x-bind:aria-label="'Reaccionar con ' + r.emoji + ', ' + r.count + ' reacciones'"
+                                  x-on:click.stop="$store.muro.reaccionar(msg.id, r.emoji)"
+                                  x-on:keydown.enter.prevent.stop="$store.muro.reaccionar(msg.id, r.emoji)"
+                                  x-on:keydown.space.prevent.stop="$store.muro.reaccionar(msg.id, r.emoji)">
+                                <span class="emoji" x-text="r.emoji"></span><span class="count" x-text="r.count"></span>
+                            </span>
+                        </template>
+                    </div>
+                    <div class="muro-msg-burbuja" role="group" aria-label="Reacciones rápidas">
+                        <template x-for="emoji in $store.muro.emojis" :key="emoji">
+                            <button type="button" class="btn-burbuja" x-bind:title="emoji"
+                                    x-bind:aria-label="'Reaccionar con ' + emoji"
+                                    x-on:click.stop="$store.muro.reaccionar(msg.id, emoji)" x-text="emoji"></button>
+                        </template>
+                    </div>
+                </div>
+            </template>
+        </div>
         
         <div class="cargar-mas-container">
-            <button type="button" id="btn-cargar-mas-muro" class="btn-primary btn-cargar-mas">
+            <button type="button" id="btn-cargar-mas-muro" class="btn-primary btn-cargar-mas"
+                    x-bind:hidden="!$store.muro.hayMas" x-on:click="$store.muro.cargarMas()">
                 <i class="fa-solid fa-chevron-down"></i> Cargar más saludos
             </button>
         </div>
@@ -252,7 +302,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0" defer></script>
 
-    <script src="main.js?v=1.20.0" defer></script>
+    <script src="main.js?v=1.21.0" defer></script>
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/focus@3.17.5/dist/cdn.min.js" crossorigin="anonymous"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.17.5/dist/cdn.min.js" crossorigin="anonymous"></script>
     <script>
@@ -288,99 +338,6 @@
             const info = (msg && msg.verificado && msg.rango) ? infoRangoMuro(msg.rango) : null;
             if (!info) return '';
             return `<span class="rango-badge rango-solo-icono rango-${info.clave}" title="${escapeAttr(info.nombre)}">${info.emoji}</span>`;
-        }
-
-        function construirTarjetaMuro(msg) {
-            const card = document.createElement('div');
-            card.className = 'muro-card';
-            card.id = `muro-card-${msg.id}`;
-            const fecha = new Date(msg.created_at).toLocaleString('es-ES', {
-                day: '2-digit', month: '2-digit', year: 'numeric',
-                hour: '2-digit', minute: '2-digit'
-            });
-            const header = document.createElement('div');
-            header.className = 'muro-card-header';
-            const autorSpan = document.createElement('span');
-            autorSpan.className = 'muro-autor';
-            autorSpan.textContent = msg.autor || '';
-            const infoAutor = (msg.verificado && msg.rango) ? infoRangoMuro(msg.rango) : null;
-            if (infoAutor) autorSpan.classList.add('rango-texto-' + infoAutor.clave);
-            if (msg.verificado && msg.autor && window.abrirPerfilUsuario) {
-                autorSpan.classList.add('muro-autor-link');
-                autorSpan.setAttribute('role', 'button');
-                autorSpan.setAttribute('tabindex', '0');
-                autorSpan.title = 'Ver perfil de ' + msg.autor;
-                const abrirPerfil = () => window.abrirPerfilUsuario?.(msg.autor);
-                autorSpan.addEventListener('click', abrirPerfil);
-                autorSpan.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        abrirPerfil();
-                    }
-                });
-            }
-            autorSpan.appendChild(document.createRange().createContextualFragment(badgeRangoMuro(msg)));
-            const actions = document.createElement('div');
-            actions.className = 'muro-card-actions';
-            const btnEliminar = document.createElement('button');
-            btnEliminar.type = 'button';
-            btnEliminar.className = 'btn-eliminar-muro';
-            btnEliminar.dataset.id = msg.id;
-            btnEliminar.title = 'Eliminar saludo';
-            btnEliminar.setAttribute('aria-label', 'Eliminar saludo');
-            const icon = document.createElement('i');
-            icon.className = 'fa-solid fa-trash-can';
-            icon.setAttribute('aria-hidden', 'true');
-            btnEliminar.appendChild(icon);
-            actions.appendChild(btnEliminar);
-            const fechaSpan = document.createElement('span');
-            fechaSpan.className = 'muro-fecha';
-            fechaSpan.textContent = fecha;
-            actions.appendChild(fechaSpan);
-            header.appendChild(autorSpan);
-            header.appendChild(actions);
-            const textoP = document.createElement('p');
-            textoP.className = 'muro-texto';
-            textoP.textContent = msg.mensaje || '';
-            card.appendChild(header);
-            card.appendChild(textoP);
-
-            // Contenedor de reacciones (se llena vía RPC)
-            const reaccionesWrap = document.createElement('div');
-            reaccionesWrap.className = 'muro-reacciones';
-            reaccionesWrap.dataset.muroId = msg.id;
-            card.appendChild(reaccionesWrap);
-
-            // Burbuja de reacciones rápidas (hover) - igual que chat
-            const burbuja = document.createElement('div');
-            burbuja.className = 'muro-msg-burbuja';
-            burbuja.setAttribute('role', 'group');
-            burbuja.setAttribute('aria-label', 'Reacciones rápidas');
-            const REACCIONES = ['👍', '❤️', '😂', '🔥', '😀', '🙏'];
-            REACCIONES.forEach(emoji => {
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = 'btn-burbuja';
-                btn.setAttribute('title', emoji);
-                btn.setAttribute('aria-label', 'Reaccionar con ' + emoji);
-                btn.tabIndex = 0;
-                btn.textContent = emoji;
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    window.establecerReaccionMuro?.(msg.id, emoji);
-                });
-                btn.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        window.establecerReaccionMuro?.(msg.id, emoji);
-                    }
-                });
-                burbuja.appendChild(btn);
-            });
-            card.appendChild(burbuja);
-
-            return card;
         }
 
         // === FEED DE INSTAGRAM Y TIKTOK (Edge Functions propias, sin Juicer) ===
@@ -613,7 +570,7 @@
                         this.mensaje = '';
                         this.aviso(token ? '✅ ¡Saludo publicado con tu rango!' : '✅ ¡Tu saludo ha sido publicado! 💖', 'ok');
                         window.avisarPuntos?.(resultado.ganados);
-                        cargarMensajes(true);
+                        this.cargar(true);
                     } catch (err) {
                         console.error('Error:', err);
                         this.aviso('❌ Error al enviar el saludo. Intenta de nuevo.', 'error');
@@ -622,6 +579,147 @@
                     }
                 }
             });
+        });
+
+        // === MURO: LISTA, REACCIONES Y PAGINACIÓN (Alpine) ===
+        document.addEventListener('alpine:init', () => {
+            const muro = window.Alpine.store('muro');
+            if (!muro) return;
+            Object.assign(muro, {
+                mensajes: [],
+                reacciones: {},
+                cargando: true,
+                hayMas: false,
+                pagina: 0,
+                emojis: ['👍', '❤️', '😂', '🔥', '😀', '🙏'],
+                preparar(msg) {
+                    const info = (msg.verificado && msg.rango) ? infoRangoMuro(msg.rango) : null;
+                    return Object.assign({}, msg, {
+                        fechaTexto: new Date(msg.created_at).toLocaleString('es-ES', {
+                            day: '2-digit', month: '2-digit', year: 'numeric',
+                            hour: '2-digit', minute: '2-digit'
+                        }),
+                        rangoClave: info ? info.clave : '',
+                        rangoEmoji: info ? info.emoji : '',
+                        rangoNombre: info ? info.nombre : '',
+                        autorLink: !!(msg.verificado && msg.autor && window.abrirPerfilUsuario)
+                    });
+                },
+                async cargar(reiniciar = false) {
+                    if (!window.supabase) { this.cargando = false; return; }
+                    if (reiniciar) {
+                        this.pagina = 0;
+                        this.mensajes = [];
+                        this.reacciones = {};
+                    }
+                    this.cargando = true;
+                    const desde = this.pagina * LIMITE_POR_PAGINA;
+                    try {
+                        const { data, error } = await window.supabase
+                            .from('muro_saludos')
+                            .select('id, autor, mensaje, created_at, estado, verificado, rango')
+                            .eq('estado', 'aprobado')
+                            .order('created_at', { ascending: false })
+                            .range(desde, desde + LIMITE_POR_PAGINA);
+                        if (error) {
+                            console.error('Error cargando mensajes:', error);
+                            return;
+                        }
+                        const filas = data || [];
+                        this.hayMas = filas.length > LIMITE_POR_PAGINA;
+                        const nuevas = filas.slice(0, LIMITE_POR_PAGINA).map((m) => this.preparar(m));
+                        this.mensajes = reiniciar ? nuevas : this.mensajes.concat(nuevas);
+                        this.pagina += 1;
+                        nuevas.forEach((m) => this.cargarReacciones(m.id));
+                    } catch (e) {
+                        console.error('Error cargando mensajes:', e);
+                    } finally {
+                        this.cargando = false;
+                    }
+                },
+                cargarMas() {
+                    this.cargar(false);
+                },
+                async cargarReacciones(id) {
+                    try {
+                        const token = localStorage.getItem('comunidad_session_token');
+                        const { data, error } = await window.supabase.rpc('obtener_reacciones_muro', {
+                            p_muro_id: id,
+                            p_token: token || null
+                        });
+                        if (error || !data || !data.ok) return;
+                        this.reacciones[id] = Array.isArray(data.reacciones) ? data.reacciones : [];
+                    } catch (e) {
+                        console.error('Error cargando reacciones muro:', e);
+                    }
+                },
+                async reaccionar(id, emoji) {
+                    const token = localStorage.getItem('comunidad_session_token');
+                    if (!token) {
+                        window.mostrarToast?.('Inicia sesión en la Comunidad para reaccionar', true);
+                        return;
+                    }
+                    try {
+                        const { data, error } = await window.supabase.rpc('establecer_reaccion_muro', {
+                            p_token: token,
+                            p_muro_id: id,
+                            p_emoji: emoji
+                        });
+                        if (error) throw error;
+                        if (!data || !data.ok) {
+                            window.mostrarToast?.(
+                                data?.error === 'sin_sesion' ? 'Sesión expirada. Inicia sesión de nuevo.' : 'No se pudo reaccionar.',
+                                true
+                            );
+                            return;
+                        }
+                        this.cargarReacciones(id);
+                    } catch (e) {
+                        console.error(e);
+                        window.mostrarToast?.('Error al reaccionar.', true);
+                    }
+                },
+                insertar(nuevo) {
+                    if (!nuevo || nuevo.estado !== 'aprobado') return;
+                    if (this.mensajes.some((m) => m.id === nuevo.id)) return;
+                    this.mensajes.unshift(this.preparar(nuevo));
+                    this.cargarReacciones(nuevo.id);
+                },
+                async eliminar(id) {
+                    if (!(await window.validarSesionStreamer?.())) {
+                        window.mostrarToast?.('Tu sesión de administración ha expirado.', true);
+                        setTimeout(() => { window.location.reload(); }, 800);
+                        return;
+                    }
+                    window.mostrarConfirmacionModal?.({
+                        titulo: 'Eliminar saludo',
+                        mensaje: '¿Deseas borrar este saludo del muro?',
+                        textoConfirmar: 'Eliminar',
+                        enConfirmar: async () => {
+                            try {
+                                const { error } = await window.supabase
+                                    .from('muro_saludos')
+                                    .delete()
+                                    .eq('id', id);
+                                if (error) {
+                                    window.mostrarToast?.('Error al borrar el saludo.', true);
+                                    return;
+                                }
+                                this.mensajes = this.mensajes.filter((m) => m.id !== id);
+                                delete this.reacciones[id];
+                                window.mostrarToast?.('Saludo eliminado.');
+                            } catch (e) {
+                                console.error('Error:', e);
+                                window.mostrarToast?.('Error inesperado al borrar el saludo.', true);
+                            }
+                        }
+                    });
+                }
+            });
+            muro.autor = localStorage.getItem('comunidad_session_token')
+                ? (localStorage.getItem('comunidad_nickname') || '')
+                : '';
+            muro.cargar(true);
         });
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -639,7 +737,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
         // El polling del stream está centralizado en main.js (iniciarPollingStreamGlobal)
-        cargarMensajes(true);
         iniciarRealtimeMuro();
         cargarFeedInstagram();
         cargarFeedTikTok();
@@ -654,20 +751,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
         if (window.iniciarRealtimeMuroReacciones) window.iniciarRealtimeMuroReacciones();
 
-        const muroContainer = document.getElementById('muro-mensajes-container');
-        if (muroContainer) {
-            muroContainer.addEventListener('click', (e) => {
-                 // Botón eliminar (solo admin)
-                const btnEliminar = e.target.closest('.btn-eliminar-muro');
-                if (btnEliminar) {
-                    eliminarSaludo(Number(btnEliminar.dataset.id));
-                }
-            });
-        }
-
-        const btnCargarMas = document.getElementById('btn-cargar-mas-muro');
-        if (btnCargarMas) btnCargarMas.addEventListener('click', cargarMasMensajes);
-
         // Prefill del autor: con sesión de Comunidad el apodo canónico del
         // servidor deja el campo en solo lectura (el nombre real lo pone la BD).
         const tokenComunidad = localStorage.getItem('comunidad_session_token');
@@ -675,7 +758,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         const autorInputInit = document.getElementById('muro-autor');
         if (autorInputInit) {
             if (tokenComunidad) {
-                autorInputInit.value = savedApodo || '';
                 autorInputInit.readOnly = true;
                 autorInputInit.title = savedApodo
                     ? 'Publicarás como ' + savedApodo
@@ -687,89 +769,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
         // Las funciones del toast de stream y su listener viven en main.js
-        async function cargarMensajes(reiniciar = false) {
-            if (!window.supabase) return;
-            if (reiniciar) {
-                paginaActualMuro = 0;
-                document.getElementById('muro-mensajes-container').innerHTML = '';
-            }
-
-            const desde = paginaActualMuro * LIMITE_POR_PAGINA;
-            // Se pide una fila extra: con ella sabemos si hay más sin pagar
-            // un count completo de la tabla en cada carga.
-            const hasta = desde + LIMITE_POR_PAGINA;
-
-            try {
-                const { data, error } = await supabase
-                    .from('muro_saludos')
-                    .select('id, autor, mensaje, created_at, estado, verificado, rango')
-                    .eq('estado', 'aprobado')
-                    .order('created_at', { ascending: false })
-                    .range(desde, hasta);
-
-                if (error) {
-                    console.error('Error cargando mensajes:', error);
-                    return;
-                }
-
-                const container = document.getElementById('muro-mensajes-container');
-                const btnCargarMas = document.getElementById('btn-cargar-mas-muro');
-                const filas = data || [];
-                const hayMas = filas.length > LIMITE_POR_PAGINA;
-
-                if (reiniciar && filas.length === 0) {
-                    container.innerHTML = '<p class="muro-empty">Aún no hay saludos. ¡Sé el primero en escribir uno! 💖</p>';
-                    btnCargarMas.style.display = 'none';
-                    return;
-                }
-
-                const fragment = document.createDocumentFragment();
-                const mensajesRender = filas.slice(0, LIMITE_POR_PAGINA);
-                mensajesRender.forEach(msg => {
-                    fragment.appendChild(construirTarjetaMuro(msg));
-                });
-                container.appendChild(fragment);
-
-                // Cargar reacciones para los mensajes recién renderizados
-                if (window.cargarReaccionesMuro) {
-                    mensajesRender.forEach(msg => {
-                        window.cargarReaccionesMuro(msg.id);
-                    });
-                }
-
-                paginaActualMuro++;
-
-                btnCargarMas.style.display = hayMas ? 'inline-block' : 'none';
-            } catch (err) {
-                console.error('Error:', err);
-            }
+        function cargarMensajes(reiniciar = false) {
+            window.Alpine?.store('muro')?.cargar(!!reiniciar);
         }
 
-        // Realtime: los saludos nuevos aparecen sin recargar la página.
         function iniciarRealtimeMuro() {
             if (!window.supabase) return;
             try {
-                supabase.channel('muro_saludos_realtime')
+                window.supabase.channel('muro_saludos_realtime')
                     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'muro_saludos' }, (payload) => {
-                        const nuevo = payload.new;
-                        if (!nuevo || nuevo.estado !== 'aprobado') return;
-
-                        const container = document.getElementById('muro-mensajes-container');
-                        if (!container) return;
-
-                        // Si el saludo es nuestro, ya se pintó al enviarlo.
-                        if (document.getElementById(`muro-card-${nuevo.id}`)) return;
-
-                        const vacio = container.querySelector('.muro-empty');
-                        if (vacio) vacio.remove();
-
-                        const card = construirTarjetaMuro(nuevo);
-                        container.insertBefore(card, container.firstChild);
-
-                        // Cargar reacciones para el nuevo mensaje
-                        if (window.cargarReaccionesMuro) {
-                            window.cargarReaccionesMuro(nuevo.id);
-                        }
+                        window.Alpine?.store('muro')?.insertar(payload.new);
                     })
                     .subscribe();
             } catch (e) {
@@ -778,41 +787,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         function cargarMasMensajes() {
-            cargarMensajes(false);
+            window.Alpine?.store('muro')?.cargarMas();
         }
 
         async function eliminarSaludo(id) {
-            if (!(await validarSesionStreamer())) {
-                mostrarToast('Tu sesión de administración ha expirado.', true);
-                setTimeout(() => { window.location.reload(); }, 800);
-                return;
-            }
-
-            mostrarConfirmacionModal({
-                titulo: 'Eliminar saludo',
-                mensaje: '¿Deseas borrar este saludo del muro?',
-                textoConfirmar: 'Eliminar',
-                enConfirmar: async () => {
-                    try {
-                        const { error } = await supabase
-                            .from('muro_saludos')
-                            .delete()
-                            .eq('id', id);
-
-                        if (error) {
-                            mostrarToast('Error al borrar el saludo.', true);
-                            return;
-                        }
-
-                        const card = document.getElementById(`muro-card-${id}`);
-                        if (card) card.remove();
-                        mostrarToast('Saludo eliminado.');
-                    } catch (err) {
-                        console.error('Error:', err);
-                        mostrarToast('Error inesperado al borrar el saludo.', true);
-                    }
-                }
-            });
+            await window.Alpine?.store('muro')?.eliminar(id);
         }
 
         // escapeHtml / escapeAttr viven en main.js (fuente única del sitio)
