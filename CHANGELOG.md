@@ -3,6 +3,18 @@
 Formato basado en Keep a Changelog. Versionado SemVer (`MAJOR.MINOR.PATCH`).
 El historial anterior a 1.5.0 está en los commits `v1.4.x`.
 
+## [1.17.2] - 2026-10-30
+
+### CSS por página y perfil público sin ajustes
+
+- `style.css` dividido: base compartida (~78 KB) y `css/<página>.css` con lo
+  exclusivo de index, comunidad, galería, sorteo y cine.
+- `[hidden]` y `[x-cloak]` globales con `!important`; el perfil público ya no
+  muestra las pestañas Perfil/Ajustes ni permite ver ajustes ajenos.
+- El botón “Cargar mensajes anteriores” no parpadea antes de que Alpine
+  inicialice.
+- El indicador de “escribiendo” pasa de 500 a 900 ms.
+
 ## [1.17.1] - 2026-10-30
 
 ### Rendimiento y limpieza

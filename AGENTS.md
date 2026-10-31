@@ -24,7 +24,12 @@ Guía operativa para agentes que trabajen en este repositorio. Leerla completa a
 | Archivo | Responsabilidad |
 |---|---|
 | `main.js` | Utilidades globales, tema, toasts, sesión comunidad, admin Supabase, confeti, alertas de stream |
-| `style.css` | Estilos compartidos, variables, componentes, responsive, modo claro |
+| `style.css` | Estilos base compartidos: variables, navbar, botones, footer, modales, rangos, admin |
+| `css/index.css` | Estilos exclusivos de la portada |
+| `css/comunidad.css` | Chat, ranking, tienda y rangos de Comunidad |
+| `css/galeria.css` | Rejilla, tarjetas, lightbox y subida de Galería |
+| `css/sorteo.css` | Sorteo manual/streamer y tómbola |
+| `css/cine.css` | GochiWatch, sala y controles |
 | `index.html` | Home, player Kick, clips, feed social, YouTube, muro de saludos |
 | `comunidad.html` | Presencia, chat, reacciones, ranking, rangos, login/registro comunidad |
 | `galeria.html` | Subida, galería pública, likes, lightbox, moderación |

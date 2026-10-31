@@ -27,7 +27,8 @@
     <link rel="icon" type="image/png" sizes="192x192" href="img/android-chrome-192x192.png">
     <link rel="icon" type="image/png" sizes="512x512" href="img/android-chrome-512x512.png">
     <link rel="manifest" href="manifest.webmanifest">
-    <link rel="stylesheet" href="style.css?v=1.17.1">
+    <link rel="stylesheet" href="style.css?v=1.17.2">
+    <link rel="stylesheet" href="css/comunidad.css?v=1.17.2">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;800;900&display=swap" rel="stylesheet">
@@ -174,7 +175,7 @@
             </div>
 
             <!-- BOTÓN CARGAR MÁS HISTORIAL -->
-            <div class="chat-cargar-mas-container" x-show="!$store.chat.cargando && $store.chat.hayMas">
+            <div class="chat-cargar-mas-container" x-cloak x-show="!$store.chat.cargando && $store.chat.hayMas">
                 <button type="button" id="btn-cargar-mas-chat" class="btn-primary btn-cargar-mas" @click="window.cargarMasChat?.()" x-text="$store.chat.cargandoMas ? 'Cargando...' : '⬆ Cargar mensajes anteriores'"></button>
             </div>
 
@@ -402,7 +403,7 @@
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0" defer></script>
 
-    <script src="main.js?v=1.17.1" defer></script>
+    <script src="main.js?v=1.17.2" defer></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.17.5/dist/cdn.min.js"
             integrity="sha384-FYLKjwG3aohNhNZoVG8sY/5ntunm+MqylL90Q+rT3OM7AwV9/BKFjk/RjoIpIgsI"
             crossorigin="anonymous"></script>
@@ -698,7 +699,7 @@
                     typingIndicator.textContent = nombres.join(', ') + ' está escribiendo...';
                 }
             }
-setInterval(actualizarTypingIndicator, 500);
+setInterval(actualizarTypingIndicator, 900);
             const inputAutor = document.getElementById('chat-autor');
             let inputMensaje = document.getElementById('chat-mensaje');
             if (inputMensaje) {
