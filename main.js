@@ -290,12 +290,12 @@ window.avatarUsuarioComunidad = function avatarUsuarioComunidad(usuario) {
 // Fuente de verdad en cliente. Debe coincidir con calcular_rango() y
 // multiplicador_rango() de Supabase (migración de rangos cósmicos).
 window.RANGOS_COMUNIDAD = [
-    { clave: 'polvo_cosmico',       nombre: 'Polvo Cósmico',       emoji: '🌫️', min: 0,    max: 49,   mult: 1, desc: 'El inicio de la materia.' },
-    { clave: 'protoestrella',       nombre: 'Protoestrella',       emoji: '🟠', min: 50,   max: 199,  mult: 2, desc: 'El nacimiento del calor.' },
-    { clave: 'secuencia_principal', nombre: 'Secuencia Principal', emoji: '☀️', min: 200,  max: 499,  mult: 3, desc: 'La madurez y estabilidad lumínica.' },
-    { clave: 'gigante_roja',        nombre: 'Gigante Roja',        emoji: '🔴', min: 500,  max: 749,  mult: 4, desc: 'La expansión masiva de energía.' },
-    { clave: 'supernova',           nombre: 'Supernova',           emoji: '✨', min: 750,  max: 999,  mult: 5, desc: 'La explosión más brillante del universo.' },
-    { clave: 'agujero_negro',       nombre: 'Agujero Negro',       emoji: '🕳️', min: 1000, max: null, mult: 6, desc: 'El colapso final absoluto.' }
+    { clave: 'polvo_cosmico',       nombre: 'Polvo Cósmico',       emoji: '🌫️', min: 0,    max: 99,   mult: 1, desc: 'El inicio de la materia.' },
+    { clave: 'protoestrella',       nombre: 'Protoestrella',       emoji: '🟠', min: 100,  max: 399,  mult: 2, desc: 'El nacimiento del calor.' },
+    { clave: 'secuencia_principal', nombre: 'Secuencia Principal', emoji: '☀️', min: 400,  max: 999,  mult: 3, desc: 'La madurez y estabilidad lumínica.' },
+    { clave: 'gigante_roja',        nombre: 'Gigante Roja',        emoji: '🔴', min: 1000, max: 1999, mult: 4, desc: 'La expansión masiva de energía.' },
+    { clave: 'supernova',           nombre: 'Supernova',           emoji: '✨', min: 2000, max: 3499, mult: 5, desc: 'La explosión más brillante del universo.' },
+    { clave: 'agujero_negro',       nombre: 'Agujero Negro',       emoji: '🕳️', min: 3500, max: null, mult: 6, desc: 'El colapso final absoluto.' }
 ];
 
 // Claves antiguas que pueden seguir guardadas en la BD o en saludos viejos.
@@ -640,6 +640,31 @@ window.mostrarToast = function mostrarToast(mensaje, esError = false) {
     }, 3000);
 };
 
+// Aviso de puntos ganados por una acción (chat, muro, like, reacción...).
+window.avisarPuntos = function avisarPuntos(ganados) {
+    const n = Number(ganados) || 0;
+    if (n <= 0) return;
+    window.mostrarToast('+' + n + ' pts');
+};
+
+// Puntos por tiempo conectado en todas las páginas menos Comunidad
+// (Comunidad ya tiene su propio planificador y el servidor aplica el cooldown).
+window.iniciarPuntosGlobal = function iniciarPuntosGlobal() {
+    if (document.body.classList.contains('comunidad-page')) return;
+    if (!window.supabase) return;
+    let ultimo = 0;
+    const tick = () => {
+        const token = localStorage.getItem('comunidad_session_token');
+        if (!token || document.hidden) return;
+        if (Date.now() - ultimo < 60000) return;
+        ultimo = Date.now();
+        window.supabase.rpc('incrementar_puntos_comunidad', { p_token: token }).catch(() => {});
+    };
+    setInterval(tick, 300000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) tick(); });
+    tick();
+};
+
 window.mostrarConfirmacionModal = function mostrarConfirmacionModal({ titulo, mensaje, textoConfirmar = 'Confirmar', enConfirmar }) {
     const modal = document.getElementById('gochi-confirm-modal');
     if (!modal) return;
@@ -935,6 +960,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try { inicializarMenuMovil(); } catch (e) { console.error('inicializarMenuMovil:', e); }
     try { inicializarNavLinks(); } catch (e) { console.error('inicializarNavLinks:', e); }
     try { actualizarUsuarioNavComunidad(); } catch (e) { console.error('actualizarUsuarioNavComunidad:', e); }
+    try { iniciarPuntosGlobal(); } catch (e) { console.error('iniciarPuntosGlobal:', e); }
 });
 
 // === MODAL DE PERFIL GLOBAL (beta 1.7.2) ===

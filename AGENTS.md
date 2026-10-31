@@ -84,12 +84,15 @@ Las migraciones SQL no se versionan en este repo: el historial vive en Supabase.
 - `admin_audit_log` (auditoría de moderación, solo admin).
 - `instagram_feed` (caché de la Edge Function `instagram-feed`; solo `service_role`, refresco con `pg_cron` cada 20 min).
 - `tiktok_feed` (caché de la Edge Function `tiktok-feed`; solo `service_role`, refresco con `pg_cron` cada 20 min).
+- `puntos_acciones`, `puntos_eventos`, `puntos_topas_rango` (puntos por acción, historial con idempotencia y topes diarios por rango; solo `service_role`, se escriben desde RPC `SECURITY DEFINER`).
 - RPCs importantes: `login_comunidad`, `registrar_comunidad`, `validar_sesion_comunidad`, `cerrar_sesion_comunidad`, `incrementar_puntos_comunidad`, `enviar_mensaje_chat`, `obtener_chat_historial`, `establecer_reaccion`, `establecer_reaccion_muro`, `obtener_reacciones_muro`, `publicar_saludo_muro`, `publicar_foto_galeria`, `actualizar_perfil_comunidad`, `incrementar_likes`, `obtener_likes_galeria`, `tienda_obtener_catalogo`, `tienda_canjear_premio`, `tienda_mis_canjes`, `registrar_participante_sorteo`, `sortear_ganador_sorteo`, `admin_listar_usuarios`, `admin_ban_usuario`, `admin_shadowban_usuario`, `admin_obtener_audit_log`.
 
 ### 5.5 Invariantes de integridad
 
 - Likes: una fila por `(image_id, usuario_id)` en `galeria_likes`; el contador `galeria.likes` se actualiza solo dentro de `incrementar_likes`. No volver a usar contadores basados en `localStorage` ni aceptar incrementos arbitrarios.
 - Puntos: cooldown de 5 minutos por CUENTA en `usuarios_comunidad.ultimo_punto`, con `FOR UPDATE` para evitar carreras entre sesiones. El multiplicador sale del rango actual.
+- Puntos por acciones: `puntos_eventos` es el historial; `registrar_puntos` valida acción, baneo, cooldown, tope por acción (`max_dia`) y tope diario del rango (`puntos_topas_rango`). Idempotencia por `(usuario_id, accion, ref)`. `registrar_puntos` y `otorgar_puntos_accion` no se conceden a `anon`: los puntos se otorgan dentro de las RPC de cada acción.
+- Rangos: umbrales 0 / 100 / 400 / 1000 / 2000 / 3500 y topes diarios 60 / 85 / 120 / 165 / 220 / 300.
 - Chat: rate limit de 2.5 s por CUENTA revisando todas las sesiones del usuario, con `FOR UPDATE` sobre el usuario.
 - Muro: rate limit por autor normalizado; mensajes máximo 280 caracteres (servidor y cliente).
 - Sorteo: nombre único sin distinguir mayúsculas (`lower(username)`), límite de 500 participantes, rate limit por IP y ganador decidido SOLO en el servidor. No insertar ganadores desde el cliente.
@@ -135,7 +138,7 @@ Las migraciones SQL no se versionan en este repo: el historial vive en Supabase.
 - En cada release, actualizar el query de caché `?v=X.Y.Z` de `style.css` y `main.js` en los HTML (GitHub Pages cachea agresivamente).
 - Formato de commit: `vX.Y.Z - resumen corto` (seguir el historial existente).
 - No commitear ni pushear una versión inestable. Probar antes.
-- Versión de esta release: `1.14.0` (lightbox de videos y @usuarios en los feeds; sobre 1.13.2).
+- Versión de esta release: `1.15.0` (puntos por acciones en toda la web y rangos recalibrados; sobre 1.14.0).
 
 ## 9. Pruebas antes de commitear
 

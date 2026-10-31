@@ -28,7 +28,7 @@
     <link rel="icon" type="image/png" sizes="512x512" href="img/android-chrome-512x512.png">
     <link rel="manifest" href="manifest.webmanifest">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=1.14.0">
+    <link rel="stylesheet" href="style.css?v=1.15.0">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;800;900&display=swap" rel="stylesheet">
@@ -244,7 +244,8 @@
                     <div class="rango-progreso rango-progreso-usuario">
                         <div id="user-rango-progreso" class="rango-progreso-fill"></div>
                     </div>
-                    <p id="user-rango-meta" class="rango-meta">Próximo rango: Protoestrella (50 pts)</p>
+                    <p id="user-rango-meta" class="rango-meta">Próximo rango: Protoestrella (100 pts)</p>
+                    <p id="puntos-hoy" class="rango-meta" hidden></p>
 
                     <!-- Bio y enlaces (se muestran si existen) -->
                     <div id="user-bio" class="user-bio" hidden></div>
@@ -399,7 +400,7 @@
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0"></script>
 
-    <script src="main.js?v=1.14.0" defer></script>
+    <script src="main.js?v=1.15.0" defer></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.17.5/dist/cdn.min.js"
             integrity="sha384-FYLKjwG3aohNhNZoVG8sY/5ntunm+MqylL90Q+rT3OM7AwV9/BKFjk/RjoIpIgsI"
             crossorigin="anonymous"></script>
@@ -929,9 +930,19 @@ setInterval(actualizarTypingIndicator, 500);
                 chip._temporizador = setTimeout(() => chip.classList.remove('visible'), 4000);
             }
 
+            function pintarPuntosHoy(datos) {
+                const el = document.getElementById('puntos-hoy');
+                if (!el || !datos || datos.ok === false) return;
+                const hoy = Number(datos.hoy);
+                const tope = Number(datos.tope);
+                if (!Number.isFinite(hoy) || !Number.isFinite(tope) || tope <= 0) return;
+                el.hidden = false;
+                el.textContent = 'Hoy: ' + hoy + ' / ' + tope + ' pts';
+            }
+            window.pintarPuntosHoy = pintarPuntosHoy;
+
             // Aplica el estado de rango: badge, progreso y celebracion si hubo ascenso.
-            function aplicarEstadoRango(puntos, rango, opciones) {
-                const op = opciones || {};
+            function aplicarEstadoRango(puntos, rango, opciones) {                const op = opciones || {};
                 const rangoAnterior = op.rangoAnterior || rangoActualUsuario;
                 // Los puntos mandan: la clave guardada en la BD puede ser antigua.
                 const rangoNuevo = obtenerRangoPorPuntos(puntos).clave;
@@ -1103,6 +1114,11 @@ setInterval(actualizarTypingIndicator, 500);
 
                 // Refrescar desde la base de datos (por si el login vino incompleto).
                 cargarPerfilExtendido();
+                if (token) {
+                    supabase.rpc('obtener_puntos_hoy', { p_token: token })
+                        .then(({ data }) => pintarPuntosHoy(data))
+                        .catch(() => {});
+                }
                 // La tienda solo se puede cargar cuando ya hay token de comunidad.
                 if (typeof cargarTiendaCatalogo === 'function') cargarTiendaCatalogo();
                 window.actualizarVisibilidadTienda?.();
@@ -1518,6 +1534,7 @@ setInterval(actualizarTypingIndicator, 500);
                     }
                     // Servidor confirmó: el emoji devuelto (null = borrada) es el estado final
                     guardarPendienteLocal(msgIdStr, null);
+                    window.avisarPuntos?.(resultado.ganados);
                 } catch (err) {
                     // Rollback completo
                     store.cache = prevCache;
@@ -1880,6 +1897,7 @@ if (chatForm) {
                             });
                             // Actualizar streak de mensajes
                             actualizarStreak();
+                            window.avisarPuntos?.(resultado.ganados);
                             // ultima_actividad se actualiza dentro del RPC
                         }
                     } catch (e) {
@@ -2282,6 +2300,7 @@ if (chatForm) {
                             userPointsDisplay.textContent = (resultado.puntos || 0) + ' pts';
                         }
                         aplicarEstadoRango(resultado.puntos || 0, resultado.rango, { rangoAnterior });
+                        pintarPuntosHoy(resultado);
                         if (resultado.ganados) mostrarChipPuntos(resultado.ganados);
                     }
                 } catch (e) {

@@ -3,6 +3,26 @@
 Formato basado en Keep a Changelog. Versionado SemVer (`MAJOR.MINOR.PATCH`).
 El historial anterior a 1.5.0 está en los commits `v1.4.x`.
 
+## [1.15.0] - 2026-10-30
+
+### Puntos en toda la web
+
+- Nuevo sistema de puntos por acciones: visita diaria (+2), chat (+1), muro
+  (+2), reacciones (+1), likes (+1), subir foto (+3) y tiempo conectado
+  (multiplicador del rango).
+- Topes diarios por rango: 60 / 85 / 120 / 165 / 220 / 300. Además, tope por
+  acción e idempotencia por objetivo para evitar farmeo.
+- Los puntos se otorgan dentro de las RPC existentes (`enviar_mensaje_chat`,
+  `publicar_saludo_muro`, `establecer_reaccion`, `establecer_reaccion_muro`,
+  `incrementar_likes`, `publicar_foto_galeria`, `incrementar_puntos_comunidad`
+  y `validar_sesion_comunidad`). No hay RPC pública para otorgar puntos.
+- Rangos recalibrados: 0–99, 100–399, 400–999, 1000–1999, 2000–3499, 3500+.
+- Tick de tiempo conectado en todas las páginas (`main.js`), excepto Comunidad
+  que mantiene el suyo.
+- Aviso “+N pts” al comentar, publicar en el muro, reaccionar o dar like.
+- Nuevas tablas `puntos_acciones`, `puntos_eventos`, `puntos_topas_rango` y RPC
+  `obtener_puntos_hoy`. El perfil muestra “Hoy: X / Y pts”.
+
 ## [1.14.0] - 2026-10-30
 
 ### Lightbox de Instagram y TikTok
