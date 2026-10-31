@@ -3,6 +3,15 @@
 Formato basado en Keep a Changelog. Versionado SemVer (`MAJOR.MINOR.PATCH`).
 El historial anterior a 1.5.0 está en los commits `v1.4.x`.
 
+## [1.17.1] - 2026-10-31
+
+### Perfil público sin pestañas de ajustes
+
+- Regla global `[hidden] { display: none !important; }`: el `display: flex` de
+  `.modal-perfil-tabs` ya no pisa el atributo `hidden`.
+- El perfil público de otro usuario no muestra Perfil/Ajustes ni permite abrir
+  sus ajustes.
+
 ## [1.17.0] - 2026-10-30
 
 ### Miembro desde y perfil desde la galería

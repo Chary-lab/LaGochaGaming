@@ -1,3 +1,5 @@
+[hidden] { display: none !important; }
+
 :root {
     /* Modo Oscuro por defecto con el nuevo rosado pastel más claro */
     --bg-color: #111827;
