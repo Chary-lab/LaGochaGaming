@@ -23,7 +23,7 @@ Guía operativa para agentes que trabajen en este repositorio. Leerla completa a
 
 | Archivo | Responsabilidad |
 |---|---|
-| `main.js` | Utilidades globales, tema, toasts, sesión comunidad, admin Supabase, confeti, alertas de stream; stores Alpine `perfil` y `ui` |
+| `main.js` | Utilidades globales, tema, toasts, sesión comunidad, admin Supabase, confeti, alertas de stream; stores Alpine `perfil`, `ui` y `toast` |
 | `style.css` | Estilos compartidos, variables, componentes, responsive, modo claro |
 | `index.html` | Home, player Kick, clips, feed social, YouTube, muro de saludos |
 | `comunidad.html` | Presencia, chat, reacciones, ranking, rangos, login/registro comunidad |
@@ -140,7 +140,7 @@ Las migraciones SQL no se versionan en este repo: el historial vive en Supabase.
 - En cada release, actualizar el query de caché `?v=X.Y.Z` de `style.css` y `main.js` en los HTML (GitHub Pages cachea agresivamente).
 - Formato de commit: `vX.Y.Z - resumen corto` (seguir el historial existente).
 - No commitear ni pushear una versión inestable. Probar antes.
-- Versión de esta release: `1.19.0` (modal de perfil y menú móvil en Alpine; sobre 1.18.0).
+- Versión de esta release: `1.20.0` (toasts y muro en Alpine; sobre 1.19.0).
 
 ## 9. Pruebas antes de commitear
 

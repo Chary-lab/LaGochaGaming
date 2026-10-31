@@ -1146,6 +1146,10 @@ body.light-mode #lightbox .lightbox-caption {
     transform: translateX(-50%) translateY(0);
     opacity: 1;
 }
+.gochi-toast-center.error {
+    border-color: #ff4d4d;
+    box-shadow: 0 0 15px rgba(255, 77, 77, 0.4);
+}
 
 .gochi-modal-overlay {
     position: fixed;

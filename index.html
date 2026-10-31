@@ -27,7 +27,7 @@
     <meta name="twitter:image" content="https://lagochagaming.com/img/3.jpg">
 
     <link rel="manifest" href="manifest.webmanifest">
-    <link rel="stylesheet" href="style.css?v=1.19.0">
+    <link rel="stylesheet" href="style.css?v=1.20.0">
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;800;900&display=swap" rel="stylesheet">
@@ -184,13 +184,15 @@
     <!-- 💬 MURO DE SALUDOS DE LA COMUNIDAD -->
     <section id="muro" class="content-section">
         <h2>💬 MURO DE SALUDOS DE LA COMUNIDAD</h2>
-        <div class="muro-form-container">
-            <form id="muro-form" class="muro-form">
-                <input type="text" id="muro-autor" aria-label="Tu apodo o nombre" placeholder="Tu apodo o nombre (invitado)" maxlength="30" required autocomplete="name">
-                <textarea id="muro-mensaje" aria-label="Tu saludo o mensaje" placeholder="Escribe tu saludo o mensaje para La Gocha..." maxlength="280" required></textarea>
-                <button type="submit" id="btn-enviar-muro" class="btn-primary">ENVIAR SALUDO</button>
+        <div class="muro-form-container" x-data="{ }">
+            <form id="muro-form" class="muro-form" x-on:submit.prevent="$store.muro.enviar()">
+                <input type="text" id="muro-autor" aria-label="Tu apodo o nombre" placeholder="Tu apodo o nombre (invitado)" maxlength="30" required autocomplete="name" x-model="$store.muro.autor">
+                <textarea id="muro-mensaje" aria-label="Tu saludo o mensaje" placeholder="Escribe tu saludo o mensaje para La Gocha..." maxlength="280" required x-model="$store.muro.mensaje"></textarea>
+                <button type="submit" id="btn-enviar-muro" class="btn-primary" x-bind:disabled="$store.muro.enviando">ENVIAR SALUDO</button>
             </form>
-            <div id="muro-feedback" class="muro-feedback"></div>
+            <div id="muro-feedback" class="muro-feedback"
+                 x-bind:class="{ 'muro-feedback-success': $store.muro.tipo === 'ok', 'muro-feedback-error': $store.muro.tipo === 'error' }"
+                 x-bind:hidden="!$store.muro.feedback" x-text="$store.muro.feedback"></div>
         </div>
         <div id="muro-mensajes-container" class="muro-grid"></div>
         
@@ -250,7 +252,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0" defer></script>
 
-    <script src="main.js?v=1.19.0" defer></script>
+    <script src="main.js?v=1.20.0" defer></script>
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/focus@3.17.5/dist/cdn.min.js" crossorigin="anonymous"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.17.5/dist/cdn.min.js" crossorigin="anonymous"></script>
     <script>
@@ -561,6 +563,67 @@
             });
         });
 
+        // === MURO DE SALUDOS (composer Alpine) ===
+        document.addEventListener('alpine:init', () => {
+            window.Alpine.store('muro', {
+                autor: '',
+                mensaje: '',
+                enviando: false,
+                feedback: '',
+                tipo: '',
+                _timer: null,
+                aviso(texto, tipo) {
+                    clearTimeout(this._timer);
+                    this.feedback = texto;
+                    this.tipo = tipo;
+                    if (tipo === 'ok') this._timer = setTimeout(() => { this.feedback = ''; }, 4000);
+                },
+                async enviar() {
+                    if (this.enviando) return;
+                    const token = localStorage.getItem('comunidad_session_token');
+                    const autor = this.autor.trim();
+                    const mensaje = this.mensaje.trim();
+                    if (!mensaje) {
+                        this.aviso('❌ Escribe un mensaje.', 'error');
+                        return;
+                    }
+                    if (!autor && !token) {
+                        this.aviso('❌ Escribe tu nombre para publicar.', 'error');
+                        return;
+                    }
+                    const ERRORES_MURO = {
+                        sin_sesion: 'Tu sesión de Comunidad expiró. Inicia sesión para publicar con tu rango.',
+                        autor_invalido: 'Nombre no válido. Usa solo letras, números, espacios, guion y guion bajo.',
+                        nombre_reservado: 'Ese nombre ya pertenece a un miembro de la comunidad.',
+                        mensaje_invalido: 'El mensaje es demasiado largo o está vacío.',
+                        frecuencia: 'Espera un momento antes de enviar otro saludo.',
+                        limite_hora: 'Has alcanzado el límite de saludos por hora.',
+                        muro_lleno: 'El muro está completo por ahora. Vuelve luego.'
+                    };
+                    this.enviando = true;
+                    try {
+                        const { data: resultado, error } = await window.supabase.rpc('publicar_saludo_muro', {
+                            p_autor: autor, p_mensaje: mensaje, p_token: token
+                        });
+                        if (error) throw error;
+                        if (!resultado || !resultado.ok) {
+                            this.aviso('❌ ' + (ERRORES_MURO[resultado?.error] || 'No se pudo publicar el saludo.'), 'error');
+                            return;
+                        }
+                        this.mensaje = '';
+                        this.aviso(token ? '✅ ¡Saludo publicado con tu rango!' : '✅ ¡Tu saludo ha sido publicado! 💖', 'ok');
+                        window.avisarPuntos?.(resultado.ganados);
+                        cargarMensajes(true);
+                    } catch (err) {
+                        console.error('Error:', err);
+                        this.aviso('❌ Error al enviar el saludo. Intenta de nuevo.', 'error');
+                    } finally {
+                        this.enviando = false;
+                    }
+                }
+            });
+        });
+
 document.addEventListener('DOMContentLoaded', async () => {
     if (window.supabase) {
         try {
@@ -590,11 +653,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             window.Alpine?.store('media')?.abrir(tarjeta.dataset);
         });
         if (window.iniciarRealtimeMuroReacciones) window.iniciarRealtimeMuroReacciones();
-
-        document.getElementById('muro-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            enviarMensaje();
-        });
 
         const muroContainer = document.getElementById('muro-mensajes-container');
         if (muroContainer) {
@@ -721,72 +779,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         function cargarMasMensajes() {
             cargarMensajes(false);
-        }
-
-        async function enviarMensaje() {
-            if (!window.supabase) return;
-            const autorInput = document.getElementById('muro-autor');
-            const mensajeInput = document.getElementById('muro-mensaje');
-            const feedback = document.getElementById('muro-feedback');
-            const autor = autorInput.value.trim();
-            const mensaje = mensajeInput.value.trim();
-
-            if (!mensaje) return;
-
-            // Con sesión de comunidad el autor lo decide el servidor; sin
-            // sesión el nombre va como invitado (el servidor valida el charset
-            // y además impide usar el nombre de un miembro registrado).
-            const token = localStorage.getItem('comunidad_session_token');
-            if (!autor && !token) {
-                feedback.classList.remove('muro-feedback-success');
-                feedback.classList.add('muro-feedback-error');
-                feedback.innerText = '❌ Escribe tu nombre para publicar.';
-                return;
-            }
-
-            const ERRORES_MURO = {
-                sin_sesion:       'Tu sesión de Comunidad expiró. Inicia sesión para publicar con tu rango.',
-                autor_invalido:   'Nombre no válido. Usa solo letras, números, espacios, guion y guion bajo.',
-                nombre_reservado: 'Ese nombre ya pertenece a un miembro de la comunidad.',
-                mensaje_invalido: 'El mensaje es demasiado largo o está vacío.',
-                frecuencia:       'Espera un momento antes de enviar otro saludo.',
-                limite_hora:      'Has alcanzado el límite de saludos por hora.',
-                muro_lleno:       'El muro está completo por ahora. Vuelve luego.'
-            };
-
-            try {
-                const { data: resultado, error } = await supabase.rpc('publicar_saludo_muro', {
-                    p_autor: autor, p_mensaje: mensaje, p_token: token
-                });
-
-                if (error) throw error;
-
-                if (!resultado || !resultado.ok) {
-                    feedback.classList.remove('muro-feedback-success');
-                    feedback.classList.add('muro-feedback-error');
-                    feedback.innerText = '❌ ' + (ERRORES_MURO[resultado?.error] || 'No se pudo publicar el saludo.');
-                    return;
-                }
-
-                mensajeInput.value = '';
-                feedback.classList.remove('muro-feedback-error');
-                feedback.classList.add('muro-feedback-success');
-                feedback.innerText = token
-                    ? '✅ ¡Saludo publicado con tu rango!'
-                    : '✅ ¡Tu saludo ha sido publicado! 💖';
-                setTimeout(() => {
-                    feedback.innerText = '';
-                    feedback.classList.remove('muro-feedback-success');
-                }, 4000);
-
-                window.avisarPuntos?.(resultado.ganados);
-                cargarMensajes(true);
-            } catch (err) {
-                console.error('Error:', err);
-                feedback.classList.remove('muro-feedback-success');
-                feedback.classList.add('muro-feedback-error');
-                feedback.innerText = '❌ Error al enviar el saludo. Intenta de nuevo.';
-            }
         }
 
         async function eliminarSaludo(id) {

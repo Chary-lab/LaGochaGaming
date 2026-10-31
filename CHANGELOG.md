@@ -3,6 +3,17 @@
 Formato basado en Keep a Changelog. Versionado SemVer (`MAJOR.MINOR.PATCH`).
 El historial anterior a 1.5.0 está en los commits `v1.4.x`.
 
+## [1.20.0] - 2026-10-31
+
+### Toasts y muro en Alpine
+
+- Toasts con el store `toast`: mensaje, variante de error y auto-cierre a los
+  3 s sin timers globales.
+- Formulario del muro con el store `muro`: `x-model` en autor/mensaje,
+  feedback de éxito/error, bloqueo mientras envía y puntos.
+- El render de tarjetas y el realtime del muro siguen en JS; pasarlos a
+  `x-for` queda para otra fase.
+
 ## [1.19.0] - 2026-10-31
 
 ### Modal de perfil y menú móvil en Alpine

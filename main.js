@@ -562,6 +562,11 @@ window.insertarComponentesUIGlobales = function insertarComponentesUIGlobales() 
         const toast = document.createElement('div');
         toast.id = 'gochi-toast';
         toast.className = 'gochi-toast-center';
+        toast.setAttribute('role', 'status');
+        toast.setAttribute('aria-live', 'polite');
+        toast.setAttribute('x-data', '{ }');
+        toast.setAttribute('x-bind:class', "{ show: $store.toast.visible, error: $store.toast.esError }");
+        toast.setAttribute('x-text', '$store.toast.mensaje');
         document.body.appendChild(toast);
     }
     if (!document.getElementById('gochi-confirm-modal')) {
@@ -625,25 +630,9 @@ window.insertarToastStream = function insertarToastStream() {
 };
 
 window.mostrarToast = function mostrarToast(mensaje, esError = false) {
-    const toast = document.getElementById('gochi-toast');
-    if (!toast) return;
-    if (window._toastTimer) {
-        clearTimeout(window._toastTimer);
-        window._toastTimer = null;
-    }
-    toast.textContent = mensaje;
-    if (esError) {
-        toast.style.borderColor = '#ff4d4d';
-        toast.style.boxShadow = '0 0 15px rgba(255,77,77,0.4)';
-    } else {
-        toast.style.borderColor = 'var(--accent-color)';
-        toast.style.boxShadow = 'var(--glow)';
-    }
-    toast.classList.add('show');
-    window._toastTimer = setTimeout(() => {
-        toast.classList.remove('show');
-        window._toastTimer = null;
-    }, 3000);
+    const store = window.Alpine?.store('toast');
+    if (!store) return;
+    store.mostrar(mensaje, esError);
 };
 
 // Aviso de puntos ganados por una acción (chat, muro, like, reacción...).
@@ -723,6 +712,23 @@ document.addEventListener('keydown', (evento) => {
 // Estado global de UI (menú móvil) para Alpine.
 document.addEventListener('alpine:init', () => {
     window.Alpine.store('ui', { menuAbierto: false });
+    window.Alpine.store('toast', {
+        visible: false,
+        mensaje: '',
+        esError: false,
+        _timer: null,
+        mostrar(mensaje, esError = false) {
+            clearTimeout(this._timer);
+            this.mensaje = String(mensaje ?? '');
+            this.esError = !!esError;
+            this.visible = true;
+            this._timer = setTimeout(() => { this.visible = false; }, 3000);
+        },
+        ocultar() {
+            clearTimeout(this._timer);
+            this.visible = false;
+        }
+    });
 });
 
 window.cerrarMenuMovil = function cerrarMenuMovil(devolverFoco = false) {
